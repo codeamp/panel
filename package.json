@@ -1,24 +1,25 @@
 {
-  "name": "mobx-router-example",
+  "name": "panel",
   "version": "0.1.0",
   "devDependencies": {
-    "react-scripts": "0.5.1"
+    "custom-react-scripts": "0.0.23"
   },
   "dependencies": {
+    "apollo-client": "1.7.0",
+    "apollo-fetch": "0.6.0",
     "director": "1.2.8",
-    "lodash": "4.16.0",
-    "mobx": "2.5.1",
-    "mobx-react": "3.5.6",
+    "lodash": "4.17.4",
+    "mobx": "3.2.2",
+    "mobx-react": "4.2.2",
     "mobx-router": "0.0.7",
-    "react": "15.3.2",
-    "react-dom": "15.3.2"
+    "react": "15.6.1",
+    "react-apollo": "1.4.2",
+    "react-dom": "15.6.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject",
-    "deploy": "surge build/ mobx-router-example.surge.sh",
-    "bnd": "npm run build && npm run deploy"
+    "eject": "react-scripts eject"
   }
 }

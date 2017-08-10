@@ -3,7 +3,7 @@ import {extendObservable, action} from 'mobx';
 class AppStore {
   constructor() {
     extendObservable(this, {
-      title: 'MobX Router Tutorial',
+      title: 'CodeAmp Panel',
       user: undefined
     });
   }

@@ -10,12 +10,15 @@ import store from 'mobx/store';
 import views from 'config/views';
 startRouter(views, store);
 
+// Apollo
+import { ApolloProvider } from 'react-apollo';
+import makeClient from 'lib/apollo';
+const client = makeClient('http://localhost:3001/query');
+
 ReactDOM.render(
-  <Provider store={store}>
-    <div>
-      <h1>{store.app.title}</h1>
-      <button onClick={() => store.router.goTo(views.home)}> go home</button>
+  <ApolloProvider client={client}>
+    <Provider store={store}>
       <MobxRouter/>
-    </div>
-  </Provider>, document.getElementById('root')
+    </Provider>
+  </ApolloProvider>, document.getElementById('root')
 )

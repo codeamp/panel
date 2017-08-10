@@ -1,60 +1,36 @@
-import React, {Component} from 'react';
-import {observer} from 'mobx-react';
-import {Link} from 'mobx-router';
-import views from 'config/views';
+import React from 'react';
+import { observer, inject } from 'mobx-react';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
-class Home extends Component {
+@inject("store") @observer
+@graphql(gql`
+  query allProjects {
+    projects {
+      id
+      name
+      slug
+    }
+  }
+`)
+
+export default class Home extends React.Component {
   render() {
+    const { loading, projects } = this.props.data;
 
-    const {store} = this.props;
-    const {router: {goTo}} = store;
-
-    return (
-      <div>
-        <h3> Home </h3>
-
-        <Link view={views.gallery} store={store}> Go to gallery </Link>
-
-        <br/>
-        <br/>
-        <Link view={views.gallery} store={store} queryParams={{start: 5}}>
-          Go to gallery and start from 5th image
-        </Link>
-
-        <br/>
-        <br/>
-
-        <Link view={views.document} params={{id: 456}} title="Go to document 456" store={store}/>
-
-        <br/>
-        <br/>
-
-        <Link view={views.document} params={{id: 999}} store={store}>
-          <div style={{display: 'inline-block'}}>
-            Go to document <b> 999 </b>
-          </div>
-        </Link>
-
-        <br/>
-        <br/>
-
-        <button onClick={() => goTo(views.document, {id: 123}, store)}> Go to document 123</button>
-
-        <br/>
-        <br/>
-
-        <Link view={views.book} params={{id: 250, page: 130}} title="Go to book 250, page 130" store={store}/>
-
-        <br/>
-        <br/>
-
-        <button onClick={() => goTo(views.userProfile, {username: 'kitze', tab: 'articles'}, store)}>
-          go to user kitze
-        </button>
-
-      </div>
-    );
+    if (loading) {
+      return <div>Loading</div>;
+    } else {
+      return (
+        <ul>
+          {projects.map(project =>
+          <li key={project.id}>
+            {project.name} {" "}
+            <span>{project.slug}</span>
+          </li>
+          )}
+        </ul>
+      );
+    }
   }
 }
-
-export default observer(['store'], Home);
