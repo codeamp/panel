@@ -6,6 +6,10 @@ import Typography from 'material-ui/Typography';
 @inject("store") @observer
 
 export default class Create extends React.Component {
+  componentWillMount() {
+    this.props.store.app.setNavProjects(this.props.projects) 
+  }
+
   render() {
     return (
       <div className={styles.root}>

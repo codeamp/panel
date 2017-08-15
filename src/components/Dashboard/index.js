@@ -3,7 +3,6 @@ import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import Button from 'material-ui/Button';
 import { Link } from "react-router-dom";
-import map from 'lodash/map';
 
 @inject("store") @observer
 
@@ -22,14 +21,7 @@ export default class Dashboard extends React.Component {
   };
 
   componentWillMount() {
-    this.props.store.app.leftNavItems = [] 
-    map(this.props.projects, (project)=>{
-      this.props.store.app.leftNavItems.push({
-        key: project.id,
-        name: project.name,
-        slug: "/projects/"+project.slug,
-      })
-    });
+    this.props.store.app.setNavProjects(this.props.projects) 
   }
 
   render() {

@@ -45,9 +45,13 @@ export default class App extends React.Component {
                   <Route exact path='/' render={(props) => (
                     <Dashboard projects={projects} />
                   )} />
-                  <Route exact path='/create' component={Create} />
+                  <Route exact path='/create' render={(props) => (
+                    <Create projects={projects} />
+                  )} />
+                  <Route exact path='/admin' render={(props) => (
+                    <Admin projects={projects} />
+                  )} />
                   <Route path='/projects/:slug' component={Project} />
-                  <Route exact path='/admin' component={Admin} />
                 </Switch>
               </div>
             </Grid>

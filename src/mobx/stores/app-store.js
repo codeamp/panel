@@ -1,4 +1,5 @@
 import {extendObservable, action} from 'mobx';
+import map from 'lodash/map';
 
 class AppStore {
   constructor() {
@@ -11,6 +12,17 @@ class AppStore {
 
   setTitle = action(title => {
     this.title = title;
+  });
+
+  setNavProjects = action(projects => {
+    this.leftNavItems = [] 
+    map(projects, (project)=>{
+      this.leftNavItems.push({
+        key: project.id,
+        name: project.name,
+        slug: "/projects/"+project.slug,
+      })
+    });
   });
 
 }
