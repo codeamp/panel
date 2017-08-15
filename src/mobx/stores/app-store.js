@@ -4,13 +4,15 @@ class AppStore {
   constructor() {
     extendObservable(this, {
       title: 'CodeAmp Panel',
-      user: undefined
+      user: undefined,
+      leftNavItems: [],
     });
   }
 
   setTitle = action(title => {
     this.title = title;
   });
+
 }
 
 export default AppStore;

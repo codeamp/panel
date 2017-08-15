@@ -2,20 +2,22 @@
   "name": "panel",
   "version": "0.1.0",
   "devDependencies": {
-    "custom-react-scripts": "0.0.23"
+    "custom-react-scripts": "1.0.11"
   },
   "dependencies": {
-    "apollo-client": "1.7.0",
+    "apollo-client": "^1.9.1",
     "apollo-fetch": "0.6.0",
     "css-loader": "^0.28.4",
     "director": "1.2.8",
     "lodash": "4.17.4",
+    "material-ui": "next",
+    "material-ui-icons": "^1.0.0-alpha.19",
     "mobx": "3.2.2",
     "mobx-react": "4.2.2",
-    "mobx-router": "0.0.7",
     "react": "15.6.1",
-    "react-apollo": "1.4.2",
+    "react-apollo": "^1.4.14",
     "react-dom": "15.6.1",
+    "react-router-dom": "^4.1.2",
     "style-loader": "^0.18.2"
   },
   "scripts": {

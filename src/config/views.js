@@ -5,11 +5,19 @@ import {Route} from 'mobx-router';
 
 //components
 import Home from 'components/Home';
+import Login from 'components/Login';
+
+//layouts
+import DefaultLayout from 'layouts/Default';
 
 const views = {
   home: new Route({
     path: '/',
-    component: <Home/>
+    component: <DefaultLayout><Home/></DefaultLayout>
+  }),
+  login: new Route({
+    path: '/login',
+    component: <DefaultLayout><Login/></DefaultLayout>
   })
 };
 

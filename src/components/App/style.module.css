@@ -1,0 +1,21 @@
+.root {
+  flex-grow: 1,
+}
+
+.top {
+  z-index: 100;
+}
+
+.center {
+  z-index: 1;
+}
+
+.children {
+  width: calc(100% - 282px);
+  top: 64px;
+  bottom: 0;
+  right: 0;
+  position: fixed !important;
+  padding: 16px 16px;
+  overflow: scroll;
+}

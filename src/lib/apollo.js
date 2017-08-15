@@ -1,4 +1,4 @@
-import ApolloClient, { createNetworkInterface, addTypename } from 'apollo-client';
+import ApolloClient, { createNetworkInterface } from 'apollo-client';
 
 export default (GRAPHQL_URI = 'http://localhost:3001/query') => {
   const networkInterface = createNetworkInterface({
@@ -22,7 +22,6 @@ export default (GRAPHQL_URI = 'http://localhost:3001/query') => {
 
   return new ApolloClient({
     networkInterface,
-    queryTransformer: addTypename,
     dataIdFromObject: (result) => {
       if (result.id && result.__typename) { // eslint-disable-line no-underscore-dangle
         return result.__typename + result.id; // eslint-disable-line no-underscore-dangle

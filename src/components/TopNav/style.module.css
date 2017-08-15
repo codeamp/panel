@@ -1,0 +1,11 @@
+.root {
+
+}
+
+.flex {
+  flex: 1;
+}
+
+.appBar {
+  z-index: 1000;
+}
