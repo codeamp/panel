@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -17,6 +17,10 @@ import Grid from 'material-ui/Grid';
 @inject("store") @observer
 @graphql(gql`
   query {
+    user {
+      id
+      email
+    }
     projects {
       id
       name
@@ -26,11 +30,25 @@ import Grid from 'material-ui/Grid';
 `)
 
 export default class App extends React.Component {
+  state = {
+    redirectToLogin: false,
+  };
+
+  componentWillReceiveProps(nextProps) {
+    const { loading, user } = nextProps.data;
+
+    if (!loading && !user) {
+      this.setState({ redirectToLogin: true });
+    }
+  }
+
   render() {
     const { loading, projects } = this.props.data;
 
     if (loading) {
       return <div>Loading</div>;
+    } else if (this.state.redirectToLogin) {
+      return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else { 
       return (
         <div className={styles.root}>

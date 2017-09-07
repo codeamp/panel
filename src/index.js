@@ -21,7 +21,7 @@ import createPalette from 'material-ui/styles/palette';
 import blue from 'material-ui/colors/blue';
 import pink from 'material-ui/colors/pink';
 
-const client = makeClient('http://localhost:3001/query');
+const client = makeClient('http://localhost:3011/query');
 const theme = createMuiTheme({
   palette: createPalette({
     primary: blue,

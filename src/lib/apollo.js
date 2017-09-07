@@ -1,6 +1,6 @@
 import ApolloClient, { createNetworkInterface } from 'apollo-client';
 
-export default (GRAPHQL_URI = 'http://localhost:3001/query') => {
+export default (GRAPHQL_URI = 'http://localhost:3011/query') => {
   const networkInterface = createNetworkInterface({
     uri: GRAPHQL_URI,
     credentials: 'cross-origin',
@@ -12,12 +12,24 @@ export default (GRAPHQL_URI = 'http://localhost:3001/query') => {
         req.options.headers = {};  // Create the header object if needed.
       }
 
-      const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (user.token) {
-        req.options.headers.authorization = 'Bearer ' + user.token;
+        req.options.headers.Authorization = 'Bearer ' + user.token;
       }
       next();
     },
+  }]);
+
+  networkInterface.useAfter([{
+    applyAfterware({ response }, next) {
+      for (var [key, value] of response.headers.entries()) {
+        if (key === "www-authenticate" && value === 'Bearer token_type="JWT"') {
+          const { location } = window;
+          location.assign("/login")
+        }
+      }
+      next();
+    }
   }]);
 
   return new ApolloClient({

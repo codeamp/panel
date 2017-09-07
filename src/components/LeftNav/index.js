@@ -2,8 +2,6 @@ import React from 'react';
 import { NavLink } from "react-router-dom";
 import { withRouter } from 'react-router'
 import { observer, inject } from 'mobx-react';
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
 import styles from './style.module.css';
 import Drawer from 'material-ui/Drawer';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
@@ -13,15 +11,6 @@ import SupervisorAccountIcon from 'material-ui-icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
 
-@graphql(gql`
-  query {
-    projects {
-      id
-      name
-      slug
-    }
-  }
-`)
 @withRouter
 @inject("store") @observer
 

@@ -2,7 +2,7 @@
   "name": "panel",
   "version": "0.1.0",
   "devDependencies": {
-    "custom-react-scripts": "1.0.11"
+    "custom-react-scripts": "0.1.4"
   },
   "dependencies": {
     "apollo-client": "^1.9.1",
@@ -14,11 +14,13 @@
     "material-ui-icons": "^1.0.0-alpha.19",
     "mobx": "3.2.2",
     "mobx-react": "4.2.2",
+    "mobx-react-form": "^1.31.16",
     "react": "15.6.1",
     "react-apollo": "^1.4.14",
     "react-dom": "15.6.1",
     "react-router-dom": "^4.1.2",
-    "style-loader": "^0.18.2"
+    "style-loader": "^0.18.2",
+    "validatorjs": "^3.13.3"
   },
   "scripts": {
     "start": "react-scripts start",

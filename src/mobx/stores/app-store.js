@@ -24,7 +24,12 @@ class AppStore {
       })
     });
   });
-
+  
+  setUser = action(user => {
+    let { localStorage } = window
+    this.user = user 
+    localStorage.setItem('user', user);
+  });
 }
 
 export default AppStore;
