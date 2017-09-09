@@ -5,3 +5,16 @@
 .li {
   color: red;
 }
+
+.card {
+  min-width: 275px;
+}
+
+.formControl {
+  margin-top: 25px;
+  width: 100%;
+}
+
+.bookmarked {
+  margin-top: 20px;
+}
