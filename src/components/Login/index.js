@@ -56,7 +56,8 @@ class Login extends Component {
       this.props.mutate({
         variables: form.values(),
       }).then(({data}) => {
-        this.props.store.app.setUser(JSON.stringify(data.userToken))
+          this.props.store.app.setUser(JSON.stringify(data.userToken))
+          this.props.history.push('/')
       }).catch(error => {
           let obj = JSON.parse(JSON.stringify(error))
           console.log(obj)

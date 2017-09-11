@@ -10,8 +10,24 @@ import Button from 'material-ui/Button';
 import Radio, {RadioGroup} from 'material-ui/Radio';
 import Checkbox from 'material-ui/Checkbox';
 import { FormLabel, FormControl, FormControlLabel, FormHelperText, FormGroup } from 'material-ui/Form';
+import { graphql, gql } from 'react-apollo';
 
 @inject("store") @observer
+
+
+@graphql(gql`
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked}) {
+      id
+      name
+      slug
+      repository
+      gitUrl
+      gitProtocol
+      rsaPublicKey
+    }
+  }
+`)
 
 export default class Create extends React.Component {
 
@@ -26,6 +42,7 @@ export default class Create extends React.Component {
       projectType: "docker",
       bookmarked: true,
     }
+    console.log(this.props.store)
   }
 
   componentWillMount() {
@@ -50,10 +67,6 @@ export default class Create extends React.Component {
     this.setState({ repoType: event.currentTarget.value, url: urlString, msg: msg });
   }
 
-  onBookmarkedChange(event){
-    this.setState({ bookmarked: !this.state.bookmarked })
-  }
-
   handleUrlChange(event){
     let showBadUrlMsg = false
     let msg = ""
@@ -68,7 +81,6 @@ export default class Create extends React.Component {
       msg = '* URL must be a valid HTTPS or SSH url.'
       showBadUrlMsg = true
       urlIsValid = false
-      this.setState({ showBadUrlMsg: showBadUrlMsg, msg: msg })     
     }
 
     if(isHTTPS) {
@@ -85,11 +97,33 @@ export default class Create extends React.Component {
   }
 
   onProjectCreate(event){
-    console.log('onProjectCreate')
-    return
+    console.log('onProjectCreate', event)
+
+    let projectName = ''
+    if(this.state.repoType == "private"){
+      projectName = this.state.url.split(':')[1].split('.git')[0]
+    } else {
+      projectName = this.state.url.split('.com/')[1].split('.git')[0]
+    }
+
+    // Post to graphql
+    var self = this
+    this.props.mutate({
+      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked  }
+    }).then(({data}) => {
+      self.props.store.app.leftNavItems.push({
+        key: data.createProject.id,
+        name: data.createProject.name,
+        slug: "/projects/"+data.createProject.slug,
+      })
+    }).catch(error => {
+      let obj = JSON.parse(JSON.stringify(error))
+      console.log(obj)
+      self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
+    });
   }
 
-  render() {
+    render() {
 
     let urlTextField = (
       <FormControl className={styles.formControl}>
@@ -107,7 +141,7 @@ export default class Create extends React.Component {
       urlTextField = (
         <FormControl  className={styles.formControl} error>
           <InputLabel htmlFor="name-error">Git Url</InputLabel>
-          <Input id="name-error" value={this.state.name} onChange={this.handleUrlChange.bind(this)} />
+          <Input id="name-error" value={this.state.url} onChange={this.handleUrlChange.bind(this)} />
           <FormHelperText>{this.state.msg}</FormHelperText>
         </FormControl>        
       )
@@ -154,24 +188,11 @@ export default class Create extends React.Component {
               </RadioGroup>                
             </FormControl>
 
-            <FormGroup row>
-              <FormControlLabel
-                className={styles.bookmarked}
-                control={
-                  <Checkbox
-                    value="bookmarked"
-                    checked={this.state.bookmarked}
-                    onChange={this.onBookmarkedChange.bind(this)}
-                  />
-                }
-                label="Add to my bookmarks"
-              />
-            </FormGroup>            
-
             
           </CardContent>
           <CardActions>
             <Button 
+              disabled={!this.state.urlIsValid}
               onClick={this.onProjectCreate.bind(this)}
               raised color="primary">
               Create

@@ -7,6 +7,8 @@ import Button from 'material-ui/Button';
 import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
 
+import { gql, graphql } from 'react-apollo';
+
 @inject("store") @observer
 
 export default class Features extends React.Component {
@@ -68,3 +70,4 @@ export default class Features extends React.Component {
     );
   }
 }
+
