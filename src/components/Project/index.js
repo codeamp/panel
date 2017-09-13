@@ -11,17 +11,22 @@ import ResourcesIcon from 'material-ui-icons/Widgets';
 import ProjectFeatures from 'components/Project/Features';
 import ProjectReleases from 'components/Project/Releases';
 
+import { gql, graphql } from 'react-apollo';
+import { autorun } from 'mobx';
+
 @inject("store") @observer
 
-export default class Project extends React.Component {
+
+class Project extends React.Component {
   componentWillMount() {
+
     this.props.store.app.leftNavItems = [
       {
         key: "10",
         icon: <FeaturesIcon />,
         name: "Features",
         slug: "/projects/"+this.props.match.params.slug+"/features",
-        count: 4,
+        count: 0,
       }, 
       {
         key: "20",
@@ -50,21 +55,56 @@ export default class Project extends React.Component {
     ]; 
   }
 
+  componentWillReact(){
+    const { loading, project } = this.props.data;
+
+    if(loading){
+      return null;
+    }
+    console.log('project index');
+    if(this.props.store.app.ws.channel == "projects/" + this.props.data.project.slug) {
+      this.props.data.refetch()
+    }
+  }
+
   render() {
+    const { loading, project } = this.props.data;
+    const { ws } = this.props.store.app;
+
     return (
+
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures/>
+            <ProjectFeatures project={this.props.data} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures/>
+            <ProjectFeatures project={this.props.data} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases/>
+            <ProjectReleases project={this.props.data} />
           )}/>
         </Switch>
       </div>
     );
   }
 }
+
+
+const GQL = gql`
+  query Project($slug: String!){
+    project(slug: $slug) {
+      id
+      name
+      slug
+    }
+  }
+`;
+
+export default graphql(GQL, {
+    options: (props) => ({
+        variables: {
+          slug: props.match.params.slug
+        }
+    }),
+})(Project)

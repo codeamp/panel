@@ -14,7 +14,9 @@ import Badge from 'material-ui/Badge';
 @withRouter
 @inject("store") @observer
 
+
 export default class LeftNav extends React.Component {
+
   render() {
     return (
       <Drawer docked={true} open={true} className={styles.root}>

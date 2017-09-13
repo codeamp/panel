@@ -4,6 +4,7 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
+import { observable } from 'mobx';
 
 //components
 import LeftNav from 'components/LeftNav';
@@ -14,7 +15,7 @@ import Project from 'components/Project';
 import Admin from 'components/Admin';
 import Grid from 'material-ui/Grid';
 
-@inject("store") @observer
+
 @graphql(gql`
   query {
     user {
@@ -29,21 +30,75 @@ import Grid from 'material-ui/Grid';
   }
 `)
 
+@inject("store") @observer
+
 export default class App extends React.Component {
-  state = {
-    redirectToLogin: false,
-  };
 
-  componentWillReceiveProps(nextProps) {
-    const { loading, user } = nextProps.data;
 
-    if (!loading && !user) {
-      this.setState({ redirectToLogin: true });
+    constructor(props) {
+        super(props)
+        this.state = {
+            redirectToLogin: false,
+            socket: null,
+            reconnectCount: 0,
+            reconnect: null
+        };
     }
-  }
+
+
+    onOpen(_evt) {
+        //Tell the store we're connected
+        // console.log( _evt)
+        console.log(this)
+        clearTimeout(this.state.reconnect)
+        if (this.state.reconnectCount > 5) {
+            this.state.reconnectCount = 0
+            window.location.reload()
+        }
+    }
+
+    onMessage(evt) {
+        //Parse the JSON message received on the websocket
+        evt = JSON.parse(evt.data);
+        console.log(evt)
+        this.props.store.app.ws = evt
+    }
+
+
+    componentWillReceiveProps(nextProps) {
+        const {loading, user} = nextProps.data;
+        console.log(nextProps)
+
+        if (!loading && !user) {
+            this.setState({redirectToLogin: true});
+        }
+    }
+
+    componentWillReact() {
+        console.log('app index', this.props.store.app.ws)
+        if (this.props.store.app.ws.channel === "projects") {
+            console.log("projects were updated" + this.props.store.app.ws.data);
+            this.props.data.refetch();
+        }
+    }
+
+    shouldComponentUpdate() {
+        console.log('hello update')
+        return true
+    }
+
+    componentWillMount() {
+        this.state.socket = new WebSocket("ws://localhost:3003/")
+        this.state.socket.onmessage = this.onMessage.bind(this)
+        // this.state.socket.onclose = this.onClose.bind(this)
+        this.state.socket.onopen = this.onOpen.bind(this)
+        this.state.socket.onerror = function (_evt) {
+        }
+    }
 
   render() {
-    const { loading, projects } = this.props.data;
+    const { loading, projects} = this.props.data;
+    const { ws } = this.props.store.app
 
     if (loading) {
       return <div>Loading</div>;

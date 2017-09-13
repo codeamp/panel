@@ -6,8 +6,8 @@ import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
+import PropTypes from 'prop-types';
 
-import { gql, graphql } from 'react-apollo';
 
 @inject("store") @observer
 
@@ -29,6 +29,7 @@ export default class Features extends React.Component {
   };
 
   render() {
+    console.log(this.props)
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
@@ -70,4 +71,7 @@ export default class Features extends React.Component {
     );
   }
 }
+
+
+
 
