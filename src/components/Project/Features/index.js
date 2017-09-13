@@ -8,7 +8,6 @@ import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
 import PropTypes from 'prop-types';
 
-
 @inject("store") @observer
 
 export default class Features extends React.Component {
@@ -29,7 +28,6 @@ export default class Features extends React.Component {
   };
 
   render() {
-    console.log(this.props)
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>

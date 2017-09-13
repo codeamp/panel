@@ -1,19 +1,12 @@
 import {extendObservable, action} from 'mobx';
 import map from 'lodash/map';
 
-
-const onClose = (ws) => _evt => {
-  //Tell the store we've disconnected
-  console.log('onClose', ws)
-}
-
 class AppStore {
   constructor() {
     extendObservable(this, {
       title: 'CodeAmp Panel',
       user: null,
       leftNavItems: [],
-      socket: null,
       ws: {
         channel: null,
         data: null,
