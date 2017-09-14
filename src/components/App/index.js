@@ -88,7 +88,7 @@ export default class App extends React.Component {
                     <Dashboard projects={projects} />
                     )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} />
+                    <Create projects={projects} type={"create"} />
                     )} />
                   <Route exact path='/admin' render={(props) => (
                     <Admin projects={projects} />

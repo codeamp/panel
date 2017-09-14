@@ -14,7 +14,7 @@ class WsStore {
   }
 
   connect = action(url => {
-    this.socket = new WebSocket("ws://localhost:3013/");
+    this.socket = new WebSocket("ws://localhost:3003/");
     this.socket.onmessage = this.onMessage.bind(this)
     this.socket.onmessage = this.onMessage.bind(this)
     this.socket.onclose = this.onClose.bind(this)

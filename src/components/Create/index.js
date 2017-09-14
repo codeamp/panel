@@ -37,6 +37,7 @@ export default class Create extends React.Component {
       repoType: "",
       url: "",
       msg: "",
+      title: "Create Project",
       showBadUrlMsg: false,
       urlIsValid: false,
       projectType: "docker",
@@ -46,7 +47,22 @@ export default class Create extends React.Component {
   }
 
   componentWillMount() {
-    this.props.store.app.setNavProjects(this.props.projects)
+    console.log(this.props)    
+    if(this.props.title != null){
+      this.setState({ title: this.props.title })
+    }
+
+    if(this.props.project != null){
+      this.setState({ url: this.props.project.gitProtocol })
+    }
+
+    this.props.store.app.setNavProjects(this.props.projects) 
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.project != null){
+      this.validateUrl(nextProps.project.gitUrl)
+    }
   }
 
   handleRepoTypeChange(event){
@@ -67,14 +83,14 @@ export default class Create extends React.Component {
     this.setState({ repoType: event.currentTarget.value, url: urlString, msg: msg });
   }
 
-  handleUrlChange(event){
+  validateUrl(url){
     let showBadUrlMsg = false
     let msg = ""
     let repoType = ""
     let urlIsValid = true
 
-    let isHTTPS = /^https:\/\/[a-z,0-9,\.]+\/.+\.git$/.test(event.target.value)
-    let isSSH = /^git@[a-z,0-9,\.]+:.+.git$/.test(event.target.value)
+    let isHTTPS = /^https:\/\/[a-z,0-9,\.]+\/.+\.git$/.test(url)
+    let isSSH = /^git@[a-z,0-9,\.]+:.+.git$/.test(url)
 
     if (!isHTTPS && !isSSH) {
       console.log("ERROR")
@@ -93,7 +109,11 @@ export default class Create extends React.Component {
       repoType = "private"
     }
 
-    this.setState({ urlIsValid: urlIsValid, url: event.target.value, showBadUrlMsg: showBadUrlMsg, msg: msg, repoType: repoType })
+    this.setState({ urlIsValid: urlIsValid, url: url, showBadUrlMsg: showBadUrlMsg, msg: msg, repoType: repoType })    
+  }
+
+  handleUrlChange(event){
+    this.validateUrl(event.target.value)
   }
 
   onProjectCreate(event){
@@ -113,12 +133,14 @@ export default class Create extends React.Component {
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
       console.log(obj)
-      self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
+      if(Object.keys(obj).length > 0 && obj.constructor === Object){
+        self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
+      }
     });
 
   }
 
-    render() {
+  render() {
 
     let urlTextField = (
       <FormControl className={styles.formControl}>
@@ -146,7 +168,7 @@ export default class Create extends React.Component {
         <Card className={styles.card}>
           <CardContent>
             <Typography type="subheading" className={styles.title}>
-              Create Project
+              {this.state.title}
             </Typography>
              {urlTextField}
             <FormControl
@@ -190,7 +212,7 @@ export default class Create extends React.Component {
               disabled={!this.state.urlIsValid}
               onClick={this.onProjectCreate.bind(this)}
               raised color="primary">
-              Create
+              {this.props.type}
             </Button>
           </CardActions>
         </Card>

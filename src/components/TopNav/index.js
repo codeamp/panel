@@ -25,6 +25,11 @@ export default class TopNav extends React.Component {
     this.setState({ open: false });
   };
 
+  logout = () => {
+    this.handleRequestClose();
+    window.location.href = '/login';
+  }
+
   render() {
     return (
       <AppBar position="static" className={styles.appBar}>
@@ -48,7 +53,7 @@ export default class TopNav extends React.Component {
             onRequestClose={this.handleRequestClose}
           >
             <MenuItem onClick={this.handleRequestClose}>My account</MenuItem>
-            <MenuItem onClick={this.handleRequestClose}>Logout</MenuItem>
+            <MenuItem onClick={this.logout}>Logout</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

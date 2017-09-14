@@ -9,6 +9,7 @@ import ReleasesIcon from 'material-ui-icons/Timeline';
 import ResourcesIcon from 'material-ui-icons/Widgets';
 import ProjectFeatures from 'components/Project/Features';
 import ProjectReleases from 'components/Project/Releases';
+import ProjectSettings from 'components/Project/Settings';
 import { gql, graphql } from 'react-apollo';
 
 const query = gql`
@@ -17,6 +18,9 @@ const query = gql`
       id
       name
       slug
+      rsaPublicKey
+      gitProtocol
+      gitUrl
     }
   }
 `
@@ -57,7 +61,7 @@ export default class Project extends React.Component {
         key: "40",
         icon: <SettingsIcon />,
         name: "Settings",
-        slug: "/"
+        slug: "/projects/"+this.props.match.params.slug+"/settings",
       }, 
       {
         key: "50",
@@ -95,6 +99,9 @@ export default class Project extends React.Component {
           <Route exact path='/projects/:slug/releases' render={(props) => (
             <ProjectReleases data={this.props.data} />
           )}/>
+          <Route exact path='/projects/:slug/settings' render={(props) => (
+            <ProjectSettings data={this.props.data} />
+          )}/>          
         </Switch>
       </div>
     );
