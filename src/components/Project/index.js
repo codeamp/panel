@@ -17,6 +17,14 @@ const query = gql`
       id
       name
       slug
+      features {
+        message
+        user
+        hash
+        parentHash
+        ref
+        created
+      }
     }
   }
 `
@@ -32,6 +40,10 @@ const query = gql`
 @inject("store") @observer
 
 export default class Project extends React.Component {
+  state = {
+    fetchDelay: null,
+  };
+
   componentWillMount() {
     this.props.store.app.leftNavItems = [
       {
@@ -70,7 +82,16 @@ export default class Project extends React.Component {
     }
 
     if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug) {
+      clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
+    }
+
+    if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug + "/features") {
+      console.log(this.props.store.ws.msg.data)
+      clearTimeout(this.state.fetchDelay)
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch()
+      }, 2000);
     }
   }
 
