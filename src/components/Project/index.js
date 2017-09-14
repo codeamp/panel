@@ -21,6 +21,14 @@ const query = gql`
       rsaPublicKey
       gitProtocol
       gitUrl
+      features {
+        message
+        user
+        hash
+        parentHash
+        ref
+        created
+      }
     }
   }
 `
@@ -36,8 +44,18 @@ const query = gql`
 @inject("store") @observer
 
 export default class Project extends React.Component {
+  state = {
+    fetchDelay: null,
+  };
+
   componentWillMount() {
     this.props.store.app.leftNavItems = [
+      {
+        key: "30",
+        icon: <ResourcesIcon />,
+        name: "Resources",
+        slug: "/"
+      }, 
       {
         key: "10",
         icon: <FeaturesIcon />,
@@ -50,12 +68,6 @@ export default class Project extends React.Component {
         icon: <ReleasesIcon />,
         name: "Releases",
         slug: "/projects/"+this.props.match.params.slug+"/releases",
-      }, 
-      {
-        key: "30",
-        icon: <ResourcesIcon />,
-        name: "Resources",
-        slug: "/"
       }, 
       {
         key: "40",
@@ -80,7 +92,16 @@ export default class Project extends React.Component {
     }
 
     if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug) {
+      clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
+    }
+
+    if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug + "/features") {
+      console.log(this.props.store.ws.msg.data)
+      clearTimeout(this.state.fetchDelay)
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch()
+      }, 2000);
     }
   }
 
