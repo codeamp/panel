@@ -106,7 +106,7 @@ class InitPrivateProjectComponent extends React.Component {
 }
 
 class InitPublicProjectComponent extends React.Component {
-  render() {
+render() {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent className={styles.progress}>
@@ -121,11 +121,44 @@ class InitPublicProjectComponent extends React.Component {
   }
 }
 
+class FeatureView extends React.Component {
+  
+  constructor(props){
+    super(props)
+  }
+
+  render() {
+    return (
+      <Grid item xs={12} key={this.props.key} id={this.props.key} onClick={this.props.handleOnClick}>
+        <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
+          <CardContent>
+            <Typography className={styles.featureCommitMsg}>
+              { this.props.feature.hash } - { this.props.feature.message }
+            </Typography>
+            <Typography component="p" className={styles.featureAuthor}>
+              by <b> { this.props.feature.user } </b> - { this.props.feature.created } 
+            </Typography>
+          </CardContent>
+          <CardActions style={{ float: 'right', paddingRight: 35 }}>
+            <Button raised color="primary" className={this.props.showFullView == false ? styles.hide : '' }>
+              Deploy
+            </Button>
+          </CardActions>
+        </Card>
+      </Grid>      
+    );
+  }
+}
+
 export default class Features extends React.Component {
 
-  state = {
-    activeStep: 0,
-  };
+  constructor(props){ 
+    super(props)
+    this.state = {
+      activeStep: 0,
+      activeFeatureKey: 0,
+    };       
+  }
 
   componentDidMount(){    
     if(this.props.store){
@@ -147,13 +180,50 @@ export default class Features extends React.Component {
     });
   };
 
+  renderFeatureList = (project) => {
+
+    console.log(this.state.activeFeatureKey)
+    return (
+      <div>
+        {[...Array(project.features.length)].map((x, i) =>
+            <FeatureView
+              key={i}
+              feature={project.features[i]} 
+              handleOnClick={() => this.setState({ activeFeatureKey: i })} 
+              showFullView={this.state.activeFeatureKey == i} />
+          )}
+          <br/>  
+        </div>
+      ) 
+  }
+
+          //   <Grid item xs={12}>
+          //   <MobileStepper
+          //     type="text"
+          //     steps={6}
+          //     position="static"
+          //     activeStep={this.state.activeStep}
+          //     className={styles.mobileStepper}
+          //     onBack={this.handleBack}
+          //     onNext={this.handleNext}
+          //     disableBack={this.state.activeStep === 0}
+          //     disableNext={this.state.activeStep === 5}
+          //   />
+          // </Grid> 
+
   render() {
     const { loading, project } = this.props.data
     console.log(project);
     let defaultComponent = (<Typography>Loading...</Typography>)
-    if(!loading && project.gitProtocol == "private"){
+    if(loading){
+      return null
+    }
+
+    if(project.features.length > 0) {
+      defaultComponent = this.renderFeatureList(project);
+    } else if(project.gitProtocol == "SSH"){
         defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={project.rsaPublicKey}/>)
-    } else if(!loading && project.gitProtocol == "public"){
+    } else if(project.gitProtocol == "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
 
