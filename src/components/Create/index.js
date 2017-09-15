@@ -37,19 +37,36 @@ export default class Create extends React.Component {
       repoType: "",
       url: "",
       msg: "",
+      title: "Create Project",
       showBadUrlMsg: false,
       urlIsValid: false,
       projectType: "docker",
       bookmarked: true,
+      previousGitUrl: "",
     }
-    console.log(this.props.store)
   }
 
-  componentWillMount() {
-    this.props.store.app.setNavProjects(this.props.projects) 
+  componentWillMount() {    
+    if(this.props.title != null){
+      this.setState({ title: this.props.title })
+    }
+
+    if(this.props.project != null){
+      this.validateUrl(this.props.project.gitUrl)
+    }
+
+    if(this.props.loadLeftNavBar != false){
+      this.props.store.app.setNavProjects(this.props.projects) 
+    }
   }
 
-  handleRepoTypeChange(event){ 
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.project != null){
+      this.validateUrl(nextProps.project.gitUrl)
+    }
+  }
+
+  handleRepoTypeChange(event){
 
     let urlString = this.state.url
     let msg = ""
@@ -67,45 +84,53 @@ export default class Create extends React.Component {
     this.setState({ repoType: event.currentTarget.value, url: urlString, msg: msg });
   }
 
-  handleUrlChange(event){
-    let showBadUrlMsg = false
-    let msg = ""
-    let repoType = ""
-    let urlIsValid = true
-    
-    let isHTTPS = /^https:\/\/[a-z,0-9,\.]+\/.+\.git$/.test(event.target.value)
-    let isSSH = /^git@[a-z,0-9,\.]+:.+.git$/.test(event.target.value)
+  validateUrl(url){
+
+    let isHTTPS = /^https:\/\/[a-z,0-9,\.]+\/.+\.git$/.test(url)
+    let isSSH = /^git@[a-z,0-9,\.]+:.+.git$/.test(url)
 
     if (!isHTTPS && !isSSH) {
       console.log("ERROR")
-      msg = '* URL must be a valid HTTPS or SSH url.'
-      showBadUrlMsg = true
-      urlIsValid = false
+      this.setState({ 
+        urlIsValid: false, 
+        url: url, 
+        showBadUrlMsg: true, 
+        msg: '* URL must be a valid HTTPS or SSH url.', 
+        repoType: ""
+      })    
+      return      
     }
 
     if(isHTTPS) {
-      msg = "This is a valid HTTPS url."
-      repoType = "public"
+      this.setState({ 
+        previousGitUrl: this.state.url, 
+        repoType: "public", 
+        urlIsValid: true, 
+        url: url, 
+        msg: "This is a valid HTTPS url.", 
+        showBadUrlMsg: false,
+      })
+      return
     }
 
     if (isSSH) {
-      msg = "This is a valid SSH url."
-      repoType = "private"
+      this.setState({ 
+        previousGitUrl: this.state.url, 
+        repoType: "private", 
+        urlIsValid: true, 
+        url: url, 
+        msg: "This is a valid SSH url.", 
+        showBadUrlMsg: false,
+      })
+      return
     }
-
-    this.setState({ urlIsValid: urlIsValid, url: event.target.value, showBadUrlMsg: showBadUrlMsg, msg: msg, repoType: repoType })    
   }
 
-  onProjectCreate(event){
-    console.log('onProjectCreate', event)
+  handleUrlChange(event){
+    this.validateUrl(event.target.value)
+  }
 
-    let projectName = ''
-    if(this.state.repoType == "private"){
-      projectName = this.state.url.split(':')[1].split('.git')[0]
-    } else {
-      projectName = this.state.url.split('.com/')[1].split('.git')[0]
-    }
-
+  createProject(){
     // Post to graphql
     var self = this
     this.props.mutate({
@@ -115,27 +140,41 @@ export default class Create extends React.Component {
         key: data.createProject.id,
         name: data.createProject.name,
         slug: "/projects/"+data.createProject.slug,
-      })
+      });
+      self.props.store.app.wsSendMessage(data.createProject.name)
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
       console.log(obj)
-      self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
-    });
+      if(Object.keys(obj).length > 0 && obj.constructor === Object){
+        self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
+      }
+    });    
+  }  
+
+  onProjectCreate(event){
+    console.log('onProjectCreate', event)
+    if(this.props.onProjectCreate != null){
+      this.props.onProjectCreate(this.state)
+    } else {
+      this.createProject();
+    }
   }
 
-    render() {
+  render() {
+
+    console.log(this.state)
 
     let urlTextField = (
       <FormControl className={styles.formControl}>
         <InputLabel htmlFor="name-simple">Git Url</InputLabel>
-        <Input 
+        <Input
           placeholder="Enter the git url for your project."
-          id="name-simple" 
-          value={this.state.url} 
+          id="name-simple"
+          value={this.state.url}
           onChange={this.handleUrlChange.bind(this)} />
         <FormHelperText>{this.state.msg}</FormHelperText>
-      </FormControl>      
-    )    
+      </FormControl>
+    )
 
     if(this.state.showBadUrlMsg){
       urlTextField = (
@@ -143,18 +182,18 @@ export default class Create extends React.Component {
           <InputLabel htmlFor="name-error">Git Url</InputLabel>
           <Input id="name-error" value={this.state.url} onChange={this.handleUrlChange.bind(this)} />
           <FormHelperText>{this.state.msg}</FormHelperText>
-        </FormControl>        
+        </FormControl>
       )
     }
     return (
       <div className={styles.root}>
-        <Card className={styles.card}>          
-          <CardContent> 
+        <Card className={styles.card}>
+          <CardContent>
             <Typography type="subheading" className={styles.title}>
-              Create Project
-            </Typography>   
+              {this.state.title}
+            </Typography>
              {urlTextField}
-            <FormControl 
+            <FormControl
               className={styles.formControl}
               required>
               <FormLabel>
@@ -170,33 +209,33 @@ export default class Create extends React.Component {
                 <FormControlLabel disabled={!this.state.urlIsValid} value="private" control={<Radio checked={this.state.repoType === 'private'} />} label="Private" />
               </RadioGroup>
 
-           
-            </FormControl>       
 
-            <FormControl 
+            </FormControl>
+
+            <FormControl
               className={styles.formControl}
               required>
               <FormLabel>
                 Project Type
-              </FormLabel>            
+              </FormLabel>
             <RadioGroup
                 aria-label="projectType"
                 name="projectType"
                 value={this.state.value}
               >
                 <FormControlLabel value="docker" control={<Radio checked={this.state.projectType === 'docker'} />} label="Docker" />
-              </RadioGroup>                
+              </RadioGroup>
             </FormControl>
 
-            
+
           </CardContent>
           <CardActions>
-            <Button 
+            <Button
               disabled={!this.state.urlIsValid}
               onClick={this.onProjectCreate.bind(this)}
               raised color="primary">
-              Create
-            </Button>                      
+              {this.props.type}
+            </Button>
           </CardActions>
         </Card>
       </div>

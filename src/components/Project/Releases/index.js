@@ -30,39 +30,7 @@ export default class Releases extends React.Component {
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
-          {[...Array(5)].map((x, i) =>
-          <Grid item xs={12} className={styles.feature} key={i}>
-            <Card className={styles.card} raised={false}>
-              <CardContent>
-                <Typography type="headline" component="h3">
-                  Lizard
-                </Typography>
-                <Typography component="p">
-                  Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging
-                  across all continents except Antarctica
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Button dense color="primary">
-                  Deploy
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-          )}
-          <Grid item xs={12}>
-            <MobileStepper
-              type="text"
-              steps={6}
-              position="static"
-              activeStep={this.state.activeStep}
-              className={styles.mobileStepper}
-              onBack={this.handleBack}
-              onNext={this.handleNext}
-              disableBack={this.state.activeStep === 0}
-              disableNext={this.state.activeStep === 5}
-            />
-          </Grid>
+          releases
         </Grid>
       </div>
     );

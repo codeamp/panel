@@ -5,8 +5,12 @@ class AppStore {
   constructor() {
     extendObservable(this, {
       title: 'CodeAmp Panel',
-      user: undefined,
+      user: null,
       leftNavItems: [],
+      ws: {
+        channel: null,
+        data: null,
+      }
     });
   }
 
@@ -15,7 +19,7 @@ class AppStore {
   });
 
   setNavProjects = action(projects => {
-    this.leftNavItems = [] 
+    this.leftNavItems = []
     map(projects, (project)=>{
       this.leftNavItems.push({
         key: project.id,
@@ -24,12 +28,14 @@ class AppStore {
       })
     });
   });
-  
+
   setUser = action(user => {
     let { localStorage } = window
-    this.user = user 
+    this.user = user
     localStorage.setItem('user', user);
   });
+
+
 }
 
 export default AppStore;

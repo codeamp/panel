@@ -4,6 +4,7 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
+import { isObservable, observable } from "mobx";
 
 //components
 import LeftNav from 'components/LeftNav';
@@ -14,7 +15,7 @@ import Project from 'components/Project';
 import Admin from 'components/Admin';
 import Grid from 'material-ui/Grid';
 
-@inject("store") @observer
+
 @graphql(gql`
   query {
     user {
@@ -29,53 +30,65 @@ import Grid from 'material-ui/Grid';
   }
 `)
 
+@inject("store") @observer
+
 export default class App extends React.Component {
-  state = {
-    redirectToLogin: false,
-  };
+  constructor(props) {
+    super(props)
+    this.state = {
+      redirectToLogin: false,
+    };
+  }
 
   componentWillReceiveProps(nextProps) {
-    const { loading, user } = nextProps.data;
+    const {loading, user} = nextProps.data;
+  }
 
-    if (!loading && !user) {
-      this.setState({ redirectToLogin: true });
+  componentWillReact() {
+    const {loading} = this.props.data;
+
+    if (loading) {
+      return null
+    }
+
+    if (this.props.store.ws.msg.channel === "projects") {
+      this.props.data.refetch();
     }
   }
 
-  render() {
-    const { loading, projects } = this.props.data;
+  componentWillMount() {
+    this.props.store.ws.connect("ws://localhost:3013/")
+  }
 
-    if (loading) {
-      return <div>Loading</div>;
-    } else if (this.state.redirectToLogin) {
-      return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
-    } else { 
-      return (
-        <div className={styles.root}>
-          <Grid container spacing={0}>
-            <Grid item xs={12} className={styles.top}>
-              <TopNav/>
-            </Grid>
-            <Grid item xs={12} className={styles.center}>
-              <LeftNav/>
-              <div className={styles.children}>
-                <Switch>
-                  <Route exact path='/' render={(props) => (
-                    <Dashboard projects={projects} />
-                  )} />
-                  <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} />
-                  )} />
-                  <Route exact path='/admin' render={(props) => (
-                    <Admin projects={projects} />
-                  )} />
-                  <Route path='/projects/:slug' component={Project} />
-                </Switch>
-              </div>
-            </Grid>
+  render() {
+
+    const { loading, projects} = this.props.data;
+    const { msg } = this.props.store.ws;
+    return (
+      <div className={styles.root}>
+        <Grid container spacing={0}>
+          <Grid item xs={12} className={styles.top}>
+            <TopNav/>
           </Grid>
-        </div>
-      );
-    }
+          <Grid item xs={12} className={styles.center}>
+            <LeftNav/>
+            <div className={styles.children}>
+              <Switch>
+                <Route exact path='/' render={(props) => (
+                  <Dashboard projects={projects} />
+                  )} />
+                <Route exact path='/create' render={(props) => (
+                  <Create projects={projects} type={"create"} />
+                  )} />
+                <Route exact path='/admin' render={(props) => (
+                  <Admin projects={projects} />
+                  )} />
+                <Route path='/projects/:slug' component={Project} />
+              </Switch>
+            </div>
+          </Grid>
+        </Grid>
+      </div>
+    );
   }
 }

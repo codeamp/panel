@@ -1,0 +1,16 @@
+.root {
+	flex-grow: 1;
+}
+
+.settingsDescription {
+	padding-top: 15px;
+	font-weight: 500;
+	font-size: 14px;
+}
+
+.settingsCaption {
+	line-height: 1.3em;
+}
+
+.action {
+}
