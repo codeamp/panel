@@ -51,20 +51,20 @@ export default class Project extends React.Component {
   componentWillMount() {
     this.props.store.app.leftNavItems = [
       {
-        key: "30",
+        key: "10",
         icon: <ResourcesIcon />,
         name: "Resources",
-        slug: "/"
+        slug: "/projects/"+this.props.match.params.slug+"/resources",
       }, 
       {
-        key: "10",
+        key: "20",
         icon: <FeaturesIcon />,
         name: "Features",
         slug: "/projects/"+this.props.match.params.slug+"/features",
         count: 0,
       }, 
       {
-        key: "20",
+        key: "30",
         icon: <ReleasesIcon />,
         name: "Releases",
         slug: "/projects/"+this.props.match.params.slug+"/releases",
@@ -78,7 +78,7 @@ export default class Project extends React.Component {
       {
         key: "50",
         icon: <LogsIcon />,
-        name: "Logs",
+        name: "Logs", 
         slug: "/"
       } 
     ]; 

@@ -26,6 +26,7 @@
 
 .feature {
 	margin-top: -1px;
+	cursor: pointer;
 }
 
 .hide {
@@ -41,5 +42,6 @@
 	z-index: 1;
 	margin-left: -8px;
 	margin-right: -8px;
+	cursor: pointer;
 	position: relative;
 }

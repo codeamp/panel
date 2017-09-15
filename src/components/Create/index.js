@@ -42,21 +42,22 @@ export default class Create extends React.Component {
       urlIsValid: false,
       projectType: "docker",
       bookmarked: true,
+      previousGitUrl: "",
     }
-    console.log(this.props.store)
   }
 
-  componentWillMount() {
-    console.log(this.props)    
+  componentWillMount() {    
     if(this.props.title != null){
       this.setState({ title: this.props.title })
     }
 
     if(this.props.project != null){
-      this.setState({ url: this.props.project.gitProtocol })
+      this.validateUrl(this.props.project.gitUrl)
     }
 
-    this.props.store.app.setNavProjects(this.props.projects) 
+    if(this.props.loadLeftNavBar != false){
+      this.props.store.app.setNavProjects(this.props.projects) 
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -84,41 +85,52 @@ export default class Create extends React.Component {
   }
 
   validateUrl(url){
-    let showBadUrlMsg = false
-    let msg = ""
-    let repoType = ""
-    let urlIsValid = true
 
     let isHTTPS = /^https:\/\/[a-z,0-9,\.]+\/.+\.git$/.test(url)
     let isSSH = /^git@[a-z,0-9,\.]+:.+.git$/.test(url)
 
     if (!isHTTPS && !isSSH) {
       console.log("ERROR")
-      msg = '* URL must be a valid HTTPS or SSH url.'
-      showBadUrlMsg = true
-      urlIsValid = false
+      this.setState({ 
+        urlIsValid: false, 
+        url: url, 
+        showBadUrlMsg: true, 
+        msg: '* URL must be a valid HTTPS or SSH url.', 
+        repoType: ""
+      })    
+      return      
     }
 
     if(isHTTPS) {
-      msg = "This is a valid HTTPS url."
-      repoType = "public"
+      this.setState({ 
+        previousGitUrl: this.state.url, 
+        repoType: "public", 
+        urlIsValid: true, 
+        url: url, 
+        msg: "This is a valid HTTPS url.", 
+        showBadUrlMsg: false,
+      })
+      return
     }
 
     if (isSSH) {
-      msg = "This is a valid SSH url."
-      repoType = "private"
+      this.setState({ 
+        previousGitUrl: this.state.url, 
+        repoType: "private", 
+        urlIsValid: true, 
+        url: url, 
+        msg: "This is a valid SSH url.", 
+        showBadUrlMsg: false,
+      })
+      return
     }
-
-    this.setState({ urlIsValid: urlIsValid, url: url, showBadUrlMsg: showBadUrlMsg, msg: msg, repoType: repoType })    
   }
 
   handleUrlChange(event){
     this.validateUrl(event.target.value)
   }
 
-  onProjectCreate(event){
-    console.log('onProjectCreate', event)
-
+  createProject(){
     // Post to graphql
     var self = this
     this.props.mutate({
@@ -136,11 +148,21 @@ export default class Create extends React.Component {
       if(Object.keys(obj).length > 0 && obj.constructor === Object){
         self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
       }
-    });
+    });    
+  }  
 
+  onProjectCreate(event){
+    console.log('onProjectCreate', event)
+    if(this.props.onProjectCreate != null){
+      this.props.onProjectCreate(this.state)
+    } else {
+      this.createProject();
+    }
   }
 
   render() {
+
+    console.log(this.state)
 
     let urlTextField = (
       <FormControl className={styles.formControl}>

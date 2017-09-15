@@ -42,10 +42,6 @@ export default class App extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     const {loading, user} = nextProps.data;
-
-    if (!loading && !user) {
-      this.setState({redirectToLogin: true});
-    }
   }
 
   componentWillReact() {
@@ -62,44 +58,38 @@ export default class App extends React.Component {
 
   componentWillMount() {
     this.props.store.ws.connect("ws://localhost:3013/")
-      
   }
 
   render() {
+    console.log(this.state)
+
     const { loading, projects} = this.props.data;
     const { msg } = this.props.store.ws;
-
-    if (loading) {
-      return <div>Loading</div>;
-    } else if (this.state.redirectToLogin) {
-      return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
-    } else { 
-      return (
-        <div className={styles.root}>
-          <Grid container spacing={0}>
-            <Grid item xs={12} className={styles.top}>
-              <TopNav/>
-            </Grid>
-            <Grid item xs={12} className={styles.center}>
-              <LeftNav/>
-              <div className={styles.children}>
-                <Switch>
-                  <Route exact path='/' render={(props) => (
-                    <Dashboard projects={projects} />
-                    )} />
-                  <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} type={"create"} />
-                    )} />
-                  <Route exact path='/admin' render={(props) => (
-                    <Admin projects={projects} />
-                    )} />
-                  <Route path='/projects/:slug' component={Project} />
-                </Switch>
-              </div>
-            </Grid>
+    return (
+      <div className={styles.root}>
+        <Grid container spacing={0}>
+          <Grid item xs={12} className={styles.top}>
+            <TopNav/>
           </Grid>
-        </div>
-      );
-    }
+          <Grid item xs={12} className={styles.center}>
+            <LeftNav/>
+            <div className={styles.children}>
+              <Switch>
+                <Route exact path='/' render={(props) => (
+                  <Dashboard projects={projects} />
+                  )} />
+                <Route exact path='/create' render={(props) => (
+                  <Create projects={projects} type={"create"} />
+                  )} />
+                <Route exact path='/admin' render={(props) => (
+                  <Admin projects={projects} />
+                  )} />
+                <Route path='/projects/:slug' component={Project} />
+              </Switch>
+            </div>
+          </Grid>
+        </Grid>
+      </div>
+    );
   }
 }

@@ -47,7 +47,7 @@ class Login extends Component {
   componentWillMount() {
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields }, { plugins });
-    //this.props.client.resetStore()
+    console.log(this.props.store)
   }
 
   onSuccess(form) {

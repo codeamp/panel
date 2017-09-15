@@ -8,10 +8,26 @@ import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
 import PropTypes from 'prop-types';
 import Paper from 'material-ui/Paper';
+import { graphql, gql } from 'react-apollo';
 
 import CreateProject from '../../Create';
 
 @inject("store") @observer
+
+@graphql(gql`
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl}) {
+      id
+      name
+      slug
+      repository
+      gitUrl
+      gitProtocol
+      rsaPublicKey
+    }
+  }
+`)
+
 
 export default class Settings extends React.Component {
 
@@ -23,9 +39,29 @@ export default class Settings extends React.Component {
     console.log('settings loaded')
   }
 
+  updateProject(newProjectState){
+    console.log('updateProject')
+    console.log(newProjectState)
+    var self = this
+    console.log(this.props.data.project.id, newProjectState)
+    this.props.mutate({
+      variables: { 
+        id: this.props.data.project.id,
+        gitUrl: newProjectState.url,
+        gitProtocol: newProjectState.repoType
+      }
+    }).then(({data}) => {
+      console.log(self.props)
+      self.props.data.refetch();
+    }).catch(error => {
+      let obj = JSON.parse(JSON.stringify(error))
+      console.log(obj)
+    });  
+  }
+
   render() {
-    const { loading, project } = this.props.data
-    console.log(project)
+
+    const { loading , project} = this.props.data;
 
     return (
       <div className={styles.root}>
@@ -109,7 +145,9 @@ export default class Settings extends React.Component {
           <Grid item sm={9}>
             <CreateProject title={"Update Project"} 
               type={"save changes"}
-              createProjectFunc={this.updateProject} project={project} />
+              onProjectCreate={this.updateProject.bind(this)} 
+              project={project} 
+              loadLeftNavBar={false} />
           </Grid>                        
         </Grid>
       </div>

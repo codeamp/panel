@@ -156,7 +156,7 @@ export default class Features extends React.Component {
     super(props)
     this.state = {
       activeStep: 0,
-      activeFeatureKey: 0,
+      activeFeatureKey: -1,
     };       
   }
 
@@ -213,7 +213,7 @@ export default class Features extends React.Component {
 
   render() {
     const { loading, project } = this.props.data
-    console.log(project);
+
     let defaultComponent = (<Typography>Loading...</Typography>)
     if(loading){
       return null
