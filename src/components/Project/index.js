@@ -97,7 +97,6 @@ export default class Project extends React.Component {
     }
 
     if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug + "/features") {
-      console.log(this.props.store.ws.msg.data)
       clearTimeout(this.state.fetchDelay)
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch()

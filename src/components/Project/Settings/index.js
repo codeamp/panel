@@ -36,14 +36,10 @@ export default class Settings extends React.Component {
   };
 
   componentDidMount(){    
-    console.log('settings loaded')
   }
 
   updateProject(newProjectState){
-    console.log('updateProject')
-    console.log(newProjectState)
     var self = this
-    console.log(this.props.data.project.id, newProjectState)
     this.props.mutate({
       variables: { 
         id: this.props.data.project.id,
@@ -51,11 +47,9 @@ export default class Settings extends React.Component {
         gitProtocol: newProjectState.repoType
       }
     }).then(({data}) => {
-      console.log(self.props)
       self.props.data.refetch();
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
-      console.log(obj)
     });  
   }
 

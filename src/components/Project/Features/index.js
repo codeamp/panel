@@ -23,7 +23,6 @@ class InitPrivateProjectComponent extends React.Component {
   };  
 
   copySSHKey(){
-    console.log('copySSHKey');
     var sshKey = document.querySelector('#ssh-key');
     var range = document.createRange();
     range.selectNode(sshKey);
@@ -182,7 +181,6 @@ export default class Features extends React.Component {
 
   renderFeatureList = (project) => {
 
-    console.log(this.state.activeFeatureKey)
     return (
       <div>
         {[...Array(project.features.length)].map((x, i) =>
