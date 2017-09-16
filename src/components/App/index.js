@@ -49,7 +49,7 @@ export default class App extends React.Component {
   componentDidMount() {
     socket.on('projects', (data) => {
       this.props.data.refetch();
-    }
+    });
   }
 
   render() {
@@ -103,8 +103,8 @@ export default class App extends React.Component {
               </Switch>
             </div>
           </Grid>
-        </Grid>
-      </div>
-    );
+        </div>
+      );
+    }
   }
 }
