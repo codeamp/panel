@@ -84,28 +84,26 @@ export default class Project extends React.Component {
     ]; 
   }
 
-  componentWillReact(){
-    const { loading } = this.props.data;
-
-    if(loading){
-      return null;
-    }
-
-    if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug) {
+  componentDidMount() {
+    this.props.socket.on("projects/" + this.props.data.project.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
-    }
+    })
 
-    if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug + "/features") {
+    this.props.socket.on("projects/" + this.props.data.project.slug + "/features", (data) => {
       clearTimeout(this.state.fetchDelay)
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch()
       }, 2000);
-    }
+    });
   }
 
   render() {
     const { loading, project } = this.props.data;
+
+    if(loading){
+      return null;
+    }
 
     return (
       <div className={styles.root}>

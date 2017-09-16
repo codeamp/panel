@@ -4,7 +4,8 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
-import { isObservable, observable } from "mobx";
+import { isObservable, observable, action } from "mobx";
+import io from 'socket.io-client';
 
 //components
 import LeftNav from 'components/LeftNav';
@@ -15,6 +16,7 @@ import Project from 'components/Project';
 import Admin from 'components/Admin';
 import Grid from 'material-ui/Grid';
 
+const socket = io('http://localhost:3011');
 
 @graphql(gql`
   query {
@@ -44,31 +46,45 @@ export default class App extends React.Component {
     const {loading, user} = nextProps.data;
   }
 
-  componentWillReact() {
-    const {loading} = this.props.data;
-
-    if (loading) {
-      return null
-    }
-
-    if (this.props.store.ws.msg.channel === "projects") {
+  componentDidMount() {
+    socket.on('projects', (data) => {
       this.props.data.refetch();
-    }
-  }
-
-  componentWillMount() {
-    this.props.store.ws.connect("ws://localhost:3013/")
+    });
   }
 
   render() {
-
     const { loading, projects} = this.props.data;
-    const { msg } = this.props.store.ws;
-    return (
-      <div className={styles.root}>
-        <Grid container spacing={0}>
-          <Grid item xs={12} className={styles.top}>
-            <TopNav/>
+    
+    if (loading) {
+      return <div>Loading</div>;
+    } else if (this.state.redirectToLogin) {
+      return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
+    } else { 
+      return (
+        <div className={styles.root}>
+          <Grid container spacing={0}>
+            <Grid item xs={12} className={styles.top}>
+              <TopNav/>
+            </Grid>
+            <Grid item xs={12} className={styles.center}>
+              <LeftNav/>
+              <div className={styles.children}>
+                <Switch>
+                  <Route exact path='/' render={(props) => (
+                    <Dashboard/>
+                    )} />
+                  <Route exact path='/create' render={(props) => (
+                    <Create type={"create"} />
+                    )} />
+                  <Route exact path='/admin' render={(props) => (
+                    <Admin/>
+                    )} />
+                  <Route exact path='/projects/:slug' render={(props) => (
+                    <Project socket={socket} />
+                    )} />
+                </Switch>
+              </div>
+            </Grid>
           </Grid>
           <Grid item xs={12} className={styles.center}>
             <LeftNav/>
@@ -87,8 +103,8 @@ export default class App extends React.Component {
               </Switch>
             </div>
           </Grid>
-        </Grid>
-      </div>
-    );
+        </div>
+      );
+    }
   }
 }

@@ -15,17 +15,15 @@ import { ApolloProvider } from 'react-apollo';
 import makeClient from 'lib/apollo';
 
 // MUI
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import createMuiTheme from 'material-ui/styles/theme';
-import createPalette from 'material-ui/styles/palette';
-import blue from 'material-ui/colors/blue';
-import pink from 'material-ui/colors/pink';
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import createPalette from 'material-ui/styles/createPalette';
+import { blue, pink } from 'material-ui/colors';
 
 const client = makeClient('http://localhost:3011/query');
 const theme = createMuiTheme({
   palette: createPalette({
     primary: blue,
-    accent: pink,
+    secondary: pink,
     type: 'light',
   }),
 });

@@ -16,10 +16,9 @@ import Badge from 'material-ui/Badge';
 
 
 export default class LeftNav extends React.Component {
-
   render() {
     return (
-      <Drawer docked={true} open={true} className={styles.root}>
+      <Drawer type="persistent" open={true} className={styles.root}>
         <div className={styles.drawer}>
           <List>
             <NavLink to="/" exact activeClassName={styles.active}>

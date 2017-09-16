@@ -30,7 +30,6 @@ import CreateProject from '../../Create';
 
 
 export default class Settings extends React.Component {
-
   state = {
     activeStep: 0,
   };
@@ -54,8 +53,7 @@ export default class Settings extends React.Component {
   }
 
   render() {
-
-    const { loading , project} = this.props.data;
+    const { project } = this.props.data
 
     return (
       <div className={styles.root}>
@@ -91,8 +89,6 @@ export default class Settings extends React.Component {
             </Card>
           </Grid>              
 
-
-
           <Grid item sm={3}>
             <Typography type="title" className={styles.settingsDescription}>
               Slack Settings
@@ -122,8 +118,6 @@ export default class Settings extends React.Component {
               </CardActions>
             </Card>
           </Grid>              
-
-
 
           <Grid item sm={3}>
             <Typography type="title" className={styles.settingsDescription}>

@@ -30,7 +30,6 @@ import { graphql, gql } from 'react-apollo';
 `)
 
 export default class Create extends React.Component {
-
   constructor(props){
     super(props)
     this.state = {
@@ -46,18 +45,22 @@ export default class Create extends React.Component {
     }
   }
 
-  componentWillMount() {    
+  componentWillMount() {
     if(this.props.title != null){
       this.setState({ title: this.props.title })
     }
 
     if(this.props.project != null){
+      this.setState({ url: this.props.project.gitUrl })
       this.validateUrl(this.props.project.gitUrl)
-    }
-
-    if(this.props.loadLeftNavBar != false){
+    } else {
       this.props.store.app.setNavProjects(this.props.projects) 
     }
+  }
+
+  componentWillReact() {
+    const { projects } = this.props.data;
+    this.props.store.app.setNavProjects(projects) 
   }
 
   componentWillReceiveProps(nextProps) {
@@ -136,12 +139,7 @@ export default class Create extends React.Component {
     this.props.mutate({
       variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked  }
     }).then(({data}) => {
-      self.props.store.app.leftNavItems.push({
-        key: data.createProject.id,
-        name: data.createProject.name,
-        slug: "/projects/"+data.createProject.slug,
-      });
-      self.props.store.app.wsSendMessage(data.createProject.name)
+
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
       console.log(obj)
@@ -161,9 +159,6 @@ export default class Create extends React.Component {
   }
 
   render() {
-
-    console.log(this.state)
-
     let urlTextField = (
       <FormControl className={styles.formControl}>
         <InputLabel htmlFor="name-simple">Git Url</InputLabel>
