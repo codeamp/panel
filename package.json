@@ -19,6 +19,7 @@
     "react-apollo": "^1.4.14",
     "react-dom": "15.6.1",
     "react-router-dom": "^4.1.2",
+    "socket.io-client": "^2.0.3",
     "style-loader": "^0.18.2",
     "validatorjs": "^3.13.3"
   },

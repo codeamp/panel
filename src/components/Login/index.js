@@ -55,7 +55,8 @@ class Login extends Component {
         variables: form.values(),
       }).then(({data}) => {
           this.props.store.app.setUser(JSON.stringify(data.userToken))
-          this.props.history.push('/')
+          //this.props.history.push('/')
+          window.location.href = '/'
       }).catch(error => {
           let obj = JSON.parse(JSON.stringify(error))
           form.invalidate(error.message);

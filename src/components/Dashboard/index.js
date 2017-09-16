@@ -24,6 +24,11 @@ export default class Dashboard extends React.Component {
     this.props.store.app.setNavProjects(this.props.projects) 
   }
 
+  componentWillReact() {
+    const { projects } = this.props.data;
+    this.props.store.app.setNavProjects(projects) 
+  }
+
   render() {
     return (
       <div className={styles.root}>
