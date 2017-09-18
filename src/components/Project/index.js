@@ -49,6 +49,7 @@ export default class Project extends React.Component {
   };
 
   componentWillMount() {
+    console.log(this)
     this.props.store.app.leftNavItems = [
       {
         key: "10",
@@ -85,12 +86,16 @@ export default class Project extends React.Component {
   }
 
   componentDidMount() {
-    this.props.socket.on("projects/" + this.props.data.project.slug, (data) => {
+    if(!this.props.socket){
+      return null
+    }
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
     })
 
-    this.props.socket.on("projects/" + this.props.data.project.slug + "/features", (data) => {
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/features", (data) => {
       clearTimeout(this.state.fetchDelay)
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch()
@@ -99,6 +104,9 @@ export default class Project extends React.Component {
   }
 
   render() {
+    if(!this.props.data){
+      return null
+    }
     const { loading, project } = this.props.data;
 
     if(loading){
@@ -109,16 +117,16 @@ export default class Project extends React.Component {
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures data={this.props.data} />
+            <ProjectFeatures project={project} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures data={this.props.data} />
+            <ProjectFeatures project={project} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases data={this.props.data} />
+            <ProjectReleases project={project} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
-            <ProjectSettings data={this.props.data} />
+            <ProjectSettings project={project} />
           )}/>          
         </Switch>
       </div>

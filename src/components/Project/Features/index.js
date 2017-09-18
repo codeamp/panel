@@ -161,7 +161,7 @@ export default class Features extends React.Component {
 
   componentDidMount(){    
     if(this.props.store){
-      if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug + "/GitSync"){
+      if(this.props.store.ws.msg.channel == "projects/" + this.props.project.slug + "/GitSync"){
         console.log(this.props.store.ws.msg.data)
       }          
     }
@@ -210,18 +210,17 @@ export default class Features extends React.Component {
           // </Grid> 
 
   render() {
-    const { loading, project } = this.props.data
-
-    let defaultComponent = (<Typography>Loading...</Typography>)
-    if(loading){
+    if(!this.props.project){
       return null
     }
 
-    if(project.features.length > 0) {
-      defaultComponent = this.renderFeatureList(project);
-    } else if(project.gitProtocol == "SSH"){
-        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={project.rsaPublicKey}/>)
-    } else if(project.gitProtocol == "HTTPS"){
+    let defaultComponent = (<Typography>Loading...</Typography>)
+
+    if(this.props.project.features.length > 0) {
+      defaultComponent = this.renderFeatureList(this.props.project);
+    } else if(this.props.project.gitProtocol == "SSH"){
+        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
+    } else if(this.props.project.gitProtocol == "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
 

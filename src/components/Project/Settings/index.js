@@ -53,7 +53,10 @@ export default class Settings extends React.Component {
   }
 
   render() {
-    const { project } = this.props.data
+
+    if(!this.props.project){
+      return null
+    }
 
     return (
       <div className={styles.root}>
@@ -134,7 +137,7 @@ export default class Settings extends React.Component {
             <CreateProject title={"Update Project"} 
               type={"save changes"}
               onProjectCreate={this.updateProject.bind(this)} 
-              project={project} 
+              project={this.props.project} 
               loadLeftNavBar={false} />
           </Grid>                        
         </Grid>

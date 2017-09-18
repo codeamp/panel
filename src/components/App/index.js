@@ -71,16 +71,16 @@ export default class App extends React.Component {
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
-                    <Dashboard/>
+                    <Dashboard {...props} />
                     )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create type={"create"} />
+                    <Create type={"create"} {...props} />
                     )} />
                   <Route exact path='/admin' render={(props) => (
-                    <Admin/>
+                    <Admin {...props} />
                     )} />
                   <Route exact path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} />
+                    <Project socket={socket} {...props} />
                     )} />
                 </Switch>
               </div>
