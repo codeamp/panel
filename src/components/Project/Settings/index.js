@@ -53,10 +53,7 @@ export default class Settings extends React.Component {
   }
 
   render() {
-
-    if(!this.props.project){
-      return null
-    }
+    console.log("HELLO")
 
     return (
       <div className={styles.root}>

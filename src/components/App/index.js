@@ -58,7 +58,7 @@ export default class App extends React.Component {
     if (loading) {
       return <div>Loading</div>;
     } else if (this.state.redirectToLogin) {
-      return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
+    return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else { 
       return (
         <div className={styles.root}>
@@ -71,37 +71,20 @@ export default class App extends React.Component {
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
-                    <Dashboard {...props} />
+                    <Dashboard projects={projects} />
                     )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create type={"create"} {...props} />
+                    <Create projects={projects} type={"create"} />
                     )} />
                   <Route exact path='/admin' render={(props) => (
-                    <Admin {...props} />
+                    <Admin projects={projects} />
                     )} />
-                  <Route exact path='/projects/:slug' render={(props) => (
+                  <Route path='/projects/:slug' render={(props) => (
                     <Project socket={socket} {...props} />
                     )} />
                 </Switch>
               </div>
             </Grid>
-          </Grid>
-          <Grid item xs={12} className={styles.center}>
-            <LeftNav/>
-            <div className={styles.children}>
-              <Switch>
-                <Route exact path='/' render={(props) => (
-                  <Dashboard projects={projects} />
-                  )} />
-                <Route exact path='/create' render={(props) => (
-                  <Create projects={projects} type={"create"} />
-                  )} />
-                <Route exact path='/admin' render={(props) => (
-                  <Admin projects={projects} />
-                  )} />
-                <Route path='/projects/:slug' component={Project} />
-              </Switch>
-            </div>
           </Grid>
         </div>
       );

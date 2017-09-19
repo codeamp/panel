@@ -128,7 +128,7 @@ class FeatureView extends React.Component {
 
   render() {
     return (
-      <Grid item xs={12} key={this.props.key} id={this.props.key} onClick={this.props.handleOnClick}>
+      <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
@@ -185,7 +185,7 @@ export default class Features extends React.Component {
       <div>
         {[...Array(project.features.length)].map((x, i) =>
             <FeatureView
-              key={i}
+              key={project.features[i].hash}
               feature={project.features[i]} 
               handleOnClick={() => this.setState({ activeFeatureKey: i })} 
               showFullView={this.state.activeFeatureKey == i} />
