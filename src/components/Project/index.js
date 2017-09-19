@@ -29,6 +29,32 @@ const query = gql`
         ref
         created
       }
+      releases {
+        id
+        state
+        stateMessage                
+        user {
+          email
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref 
+          created
+        }
+      }
     }
   }
 `

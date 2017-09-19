@@ -8,12 +8,30 @@ import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
 import PropTypes from 'prop-types';
 import { CircularProgress } from 'material-ui/Progress';
+import { graphql, gql } from 'react-apollo';
 
 import Snackbar from 'material-ui/Snackbar';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
 
 @inject("store") @observer
+
+
+@graphql(gql`
+  mutation Mutation($featureId: String!) {
+    createRelease(feature: { id: $featureId }) {
+      headFeature {
+        message 
+      }
+      tailFeature  { 
+        message
+      }
+      state 
+      stateMessage 
+    }
+  }
+`)
+
 
 class InitPrivateProjectComponent extends React.Component {
 
@@ -126,6 +144,11 @@ class FeatureView extends React.Component {
     super(props)
   }
 
+  handleDeploy(){
+    console.log('handleDeploy', this.props)
+
+  }
+
   render() {
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
@@ -139,7 +162,9 @@ class FeatureView extends React.Component {
             </Typography>
           </CardContent>
           <CardActions style={{ float: 'right', paddingRight: 35 }}>
-            <Button raised color="primary" className={this.props.showFullView == false ? styles.hide : '' }>
+            <Button raised color="primary" 
+                    onClick={this.handleDeploy.bind(this)}
+                    className={this.props.showFullView == false ? styles.hide : '' }>
               Deploy
             </Button>
           </CardActions>
