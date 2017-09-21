@@ -7,6 +7,9 @@ import Button from 'material-ui/Button';
 import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
 
+import ForkIcon from 'react-icons/lib/fa/code-fork';
+import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
+
 @inject("store") @observer
 
 class ReleaseView extends React.Component {
@@ -15,16 +18,23 @@ class ReleaseView extends React.Component {
     super(props)
   }
 
+  componentDidMount(){
+    console.log("HELLO THERE")
+  }
+
   render() {
     return (
-      <Grid item xs={12} onClick={this.props.handleOnClick}>
+      <Grid item xs={12} onClick={this.props.handleOnClick} key={this.props.key}>
         <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
-              { this.props.release.hash } - { this.props.release.message }
+              <ForkIcon />
+              { this.props.release.headFeature.hash }
+              <DoubleRightIcon />
+              { this.props.release.tailFeature.hash } - { this.props.release.headFeature.message}
             </Typography>
             <Typography component="p" className={styles.featureAuthor}>
-              by <b> { this.props.release.user } </b> - { this.props.release.created } 
+              by <b> { this.props.release.headFeature.user } </b> - { this.props.release.created } 
             </Typography>
           </CardContent>
           <CardActions style={{ float: 'right', paddingRight: 35 }}>

@@ -32,7 +32,8 @@ const query = gql`
       releases {
         id
         state
-        stateMessage                
+        stateMessage 
+        created               
         user {
           email
         }
@@ -130,7 +131,7 @@ export default class Project extends React.Component {
     if(loading){
       return null;
     }
-
+    console.log(project)
     return (
       <div className={styles.root}>
         <Switch>
