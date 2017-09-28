@@ -15,10 +15,6 @@ class AppStore {
         created: null,
         msg: null,
       },
-      drawer: {
-        component: null,
-        open: false,
-      },
     });
   }
 
@@ -41,12 +37,6 @@ class AppStore {
     console.log(params)
     this.snackbar.created = new Date();
     this.snackbar.msg = params.msg;
-  })
-
-  setDrawer = action(params => {
-    console.log(params)
-    this.drawer.component = params.component;
-    this.drawer.open = true;
   })
 
   setUser = action(user => {

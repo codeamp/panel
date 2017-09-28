@@ -137,10 +137,6 @@ export default class App extends React.Component {
               </IconButton>,
             ]}
           />
-
-          <CreateDrawer
-            open={true}
-          />
         </div>
       );
     }

@@ -88,6 +88,7 @@ class AddContainerPorts extends React.Component {
     render(){
         const { ports } = this.props;
         console.log(ports);
+        console.log("HELLOO THERE")
 
         let containerPortInputs = (
             <div>
@@ -304,7 +305,6 @@ class ServicesTab extends React.Component {
 
     handleClick = event => {
         console.log(this.props)
-        this.props.store.app.setDrawer({ component: this.renderServiceForm.bind(this) })
         this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
     };
     
@@ -335,77 +335,20 @@ class ServicesTab extends React.Component {
         this.setState({ open: true, currentService: service, oneShot: service.oneShot })
     }
 
-    renderServiceForm(){
-        const { serviceForm, oneShot } = this.props;
-
-        this.serviceForm.$('projectId').set(this.props.project.id);
-        
-        let addContainerPorts = (<div></div>);
-        if(oneShot == false){
-            addContainerPorts = (<div>
-                {serviceForm.has('containerPorts') &&
-                    <AddContainerPorts ports={this.serviceForm.$('containerPorts')} />}
-                </div>);
-        }
-
-        return (
-            <Drawer
-            type="persistent"
-            anchor="right"
-            classes={{
-                paper: styles.list,
-            }}
-            open={true}
-            >
-                <div tabIndex={0} className={styles.createServiceBar}>                    
-                    <AppBar position="static" color="default">
-                        <Toolbar>
-                        <Typography type="title" color="inherit">
-                            Create Service
-                        </Typography>
-                        </Toolbar>                        
-                    </AppBar>
-                    <form onSubmit={this.serviceForm.onSubmit}>
-                        <div className={styles.drawerBody}>
-                            <Grid container spacing={24} className={styles.grid}>
-                                <Grid item xs={12}>
-                                    <InputField field={this.serviceForm.$('name')} fullWidth={true} />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <InputField field={this.serviceForm.$('command')} fullWidth={true}/>                      
-                                </Grid>                                
-                                <Grid item xs={3}>
-                                    <InputField field={this.serviceForm.$('count')}/>                                                          
-                                </Grid>
-                                <Grid item xs={9}>
-                                    <SelectField field={this.serviceForm.$('spec')} />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    { addContainerPorts }                           
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Button color="primary" 
-                                        className={styles.buttonSpacing}
-                                        type="submit" raised onClick={e => this.serviceForm.onSubmit(e, { onSuccess: this.props.onSuccess, onError: this.props.onError })}>
-                                        Create
-                                    </Button>                                                                                                  
-                                    <Button color="primary" color="primary" onClick={this.handleToggleDrawer.bind(this)}>
-                                        Cancel
-                                    </Button>                                         
-                                </Grid>
-                            </Grid>                          
-                        </div>
-                    </form>
-                </div>
-            </Drawer>            
-        )        
-    }
-
     render() {
         const { services } = this.props.project;
 
+        console.log(this.props.project);
+        
+        this.serviceForm.$('projectId').set(this.props.project.id);
+
+        let addContainerPorts = ""
+        console.log(this.state.oneShot);
+        if(this.state.oneShot == false){
+            addContainerPorts = ( <AddContainerPorts ports={this.serviceForm.$('containerPorts')} /> )
+        }
         return (
-            <div>           
+            <div>                         
                 {services.map((service, index) => (
                     <ServiceView 
                         editService={this.editService}
@@ -427,8 +370,57 @@ class ServicesTab extends React.Component {
                     >
                     <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>                    
                     <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>                    
-                </Menu>                                                                                  
-            </div>
+                </Menu>          
+                <Drawer
+                type="persistent"
+                anchor="right"
+                classes={{
+                    paper: styles.list,
+                }}
+                open={this.state.open}
+                >
+                    <div tabIndex={0} className={styles.createServiceBar}>                    
+                        <AppBar position="static" color="default">
+                            <Toolbar>
+                            <Typography type="title" color="inherit">
+                                Create Service
+                            </Typography>
+                            </Toolbar>                        
+                        </AppBar>
+                        <form onSubmit={this.serviceForm.onSubmit}>
+                            <div className={styles.drawerBody}>
+                                <Grid container spacing={24} className={styles.grid}>
+                                    <Grid item xs={12}>
+                                        <InputField field={this.serviceForm.$('name')} fullWidth={true} />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <InputField field={this.serviceForm.$('command')} fullWidth={true}/>                      
+                                    </Grid>                                
+                                    <Grid item xs={3}>
+                                        <InputField field={this.serviceForm.$('count')}/>                                                          
+                                    </Grid>
+                                    <Grid item xs={9}>
+                                        <SelectField field={this.serviceForm.$('spec')} />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        { addContainerPorts }
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Button color="primary" 
+                                            className={styles.buttonSpacing}
+                                            type="submit" raised onClick={e => this.serviceForm.onSubmit(e, { onSuccess: this.props.onSuccess, onError: this.props.onError })}>
+                                            Create
+                                        </Button>                                                                                                  
+                                        <Button color="primary" color="primary" onClick={this.handleToggleDrawer.bind(this)}>
+                                            Cancel
+                                        </Button>                                         
+                                    </Grid>
+                                </Grid>                          
+                            </div>
+                        </form>
+                    </div>
+                </Drawer>                                                                                                              
+            </div>            
         )
     }
 }
