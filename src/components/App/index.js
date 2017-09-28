@@ -4,8 +4,11 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
-import { isObservable, observable, action } from "mobx";
 import io from 'socket.io-client';
+import Grid from 'material-ui/Grid';
+import Snackbar from 'material-ui/Snackbar';
+import IconButton from 'material-ui/IconButton';
+import CloseIcon from 'material-ui-icons/Close';
 
 //components
 import LeftNav from 'components/LeftNav';
@@ -14,13 +17,6 @@ import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
 import Project from 'components/Project';
 import Admin from 'components/Admin';
-import CreateDrawer from 'components/CreateDrawer';
-
-import Grid from 'material-ui/Grid';
-import Snackbar from 'material-ui/Snackbar';
-import IconButton from 'material-ui/IconButton';
-
-import CloseIcon from 'material-ui-icons/Close';
 
 const socket = io('http://localhost:3011');
 
@@ -57,7 +53,7 @@ export default class App extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const {loading, user} = nextProps.data;
+
   }
 
   componentDidMount() {
@@ -77,7 +73,7 @@ export default class App extends React.Component {
   render() {
     const { loading, projects} = this.props.data;
 
-    if(this.props.store.app.snackbar.created != this.state.snackbar.lastCreated){
+    if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
       this.state.snackbar.lastCreated = this.props.store.app.snackbar.created;
     }

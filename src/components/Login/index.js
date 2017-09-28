@@ -54,12 +54,12 @@ class Login extends Component {
       this.props.mutate({
         variables: form.values(),
       }).then(({data}) => {
-          this.props.store.app.setUser(JSON.stringify(data.userToken))
-          //this.props.history.push('/')
-          window.location.href = '/'
+        this.props.store.app.setUser(JSON.stringify(data.userToken))
+        //this.props.history.push('/')
+        window.location.href = '/'
       }).catch(error => {
-          let obj = JSON.parse(JSON.stringify(error))
-          form.invalidate(error.message);
+        //let obj = JSON.parse(JSON.stringify(error))
+        form.invalidate(error.message);
       });
     }
   }

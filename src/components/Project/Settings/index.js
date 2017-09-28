@@ -4,12 +4,8 @@ import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
-import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
-import PropTypes from 'prop-types';
-import Paper from 'material-ui/Paper';
 import { graphql, gql } from 'react-apollo';
-
 import CreateProject from '../../Create';
 
 @inject("store") @observer
@@ -49,6 +45,7 @@ export default class Settings extends React.Component {
       self.props.data.refetch();
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
+      console.log(obj)
     });  
   }
 

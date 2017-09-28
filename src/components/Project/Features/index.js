@@ -4,9 +4,7 @@ import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
-import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
-import PropTypes from 'prop-types';
 import { CircularProgress } from 'material-ui/Progress';
 import { graphql, gql } from 'react-apollo';
 
@@ -31,7 +29,6 @@ import { graphql, gql } from 'react-apollo';
 
 
 class InitPrivateProjectComponent extends React.Component {
-
   state = {
     open: false,
     message: null,
@@ -75,7 +72,7 @@ class InitPrivateProjectComponent extends React.Component {
             {this.props.rsaPublicKey}
           </Typography>
           <br/>
-         <Button 
+          <Button 
             onClick={this.copySSHKey.bind(this)}          
             dense color="primary">
             Copy Key
@@ -94,7 +91,7 @@ class InitPrivateProjectComponent extends React.Component {
 }
 
 class InitPublicProjectComponent extends React.Component {
-render() {
+  render() {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent className={styles.progress}>
@@ -110,20 +107,14 @@ render() {
 }
 
 class FeatureView extends React.Component {
-  
-  constructor(props){
-    super(props)
-  }
-
   handleDeploy(){
     console.log('handleDeploy', this.props)
-
   }
 
   render() {
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
+        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
               { this.props.feature.hash } - { this.props.feature.message }
@@ -134,8 +125,8 @@ class FeatureView extends React.Component {
           </CardContent>
           <CardActions style={{ float: 'right', paddingRight: 35 }}>
             <Button raised color="primary" 
-                    onClick={this.handleDeploy.bind(this)}
-                    className={this.props.showFullView == false ? styles.hide : '' }>
+              onClick={this.handleDeploy.bind(this)}
+              className={this.props.showFullView === false ? styles.hide : '' }>
               Deploy
             </Button>
           </CardActions>
@@ -157,7 +148,7 @@ export default class Features extends React.Component {
 
   componentDidMount(){    
     if(this.props.store){
-      if(this.props.store.ws.msg.channel == "projects/" + this.props.project.slug + "/GitSync"){
+      if(this.props.store.ws.msg.channel === "projects/" + this.props.project.slug + "/GitSync"){
         console.log(this.props.store.ws.msg.data)
       }          
     }
@@ -184,7 +175,7 @@ export default class Features extends React.Component {
               key={project.features[i].hash}
               feature={project.features[i]} 
               handleOnClick={() => this.setState({ activeFeatureKey: i })} 
-              showFullView={this.state.activeFeatureKey == i} />
+              showFullView={this.state.activeFeatureKey === i} />
           )}
           <br/>  
         </div>
@@ -214,9 +205,9 @@ export default class Features extends React.Component {
 
     if(this.props.project.features.length > 0) {
       defaultComponent = this.renderFeatureList(this.props.project);
-    } else if(this.props.project.gitProtocol == "SSH"){
+    } else if(this.props.project.gitProtocol === "SSH"){
         defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
-    } else if(this.props.project.gitProtocol == "HTTPS"){
+    } else if(this.props.project.gitProtocol === "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
 

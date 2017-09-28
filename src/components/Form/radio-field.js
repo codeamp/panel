@@ -4,13 +4,11 @@ import styles from './style.module.css';
 
 import Radio from 'material-ui/Radio';
 import Grid from 'material-ui/Grid';
-import FormControl from 'material-ui/Form/FormControl';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import { FormLabel } from 'material-ui/Form';
-import InputLabel from 'material-ui/Input/InputLabel';
 
 export default observer(({field}) => (
-  <div>
+  <div className={styles.root}>
     <Grid container spacing={12}>   
         {field.extra.map(option => (
             <Grid item xs={6}>    
@@ -18,7 +16,7 @@ export default observer(({field}) => (
                 {...field.bind()}
                 name={option}
                 value={option}
-                checked={option == field.value}
+                checked={option === field.value}
                 />
                 <FormLabel>{option}</FormLabel>
             </Grid>                

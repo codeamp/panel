@@ -4,20 +4,13 @@ import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
-import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
-
 import ForkIcon from 'react-icons/lib/fa/code-fork';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 
 @inject("store") @observer
 
 class ReleaseView extends React.Component {
-  
-  constructor(props){
-    super(props)
-  }
-
   componentDidMount(){
     console.log("HELLO THERE")
   }
@@ -25,7 +18,7 @@ class ReleaseView extends React.Component {
   render() {
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
+        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
               <ForkIcon />
@@ -38,7 +31,7 @@ class ReleaseView extends React.Component {
             </Typography>
           </CardContent>
           <CardActions style={{ float: 'right', paddingRight: 35 }}>
-            <Button raised color="primary" className={this.props.showFullView == false ? styles.hide : '' }>
+            <Button raised color="primary" className={this.props.showFullView === false ? styles.hide : '' }>
               Rollback
             </Button>
           </CardActions>
@@ -83,7 +76,7 @@ export default class Releases extends React.Component {
                 key={this.props.project.releases[i].id}
                 release={this.props.project.releases[i]} 
                 handleOnClick={() => this.setState({ activeFeatureKey: i })} 
-                showFullView={this.state.activeFeatureKey == i} />
+                showFullView={this.state.activeFeatureKey === i} />
             )}
           </Grid>          
         </Grid>        

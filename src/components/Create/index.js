@@ -8,8 +8,7 @@ import InputLabel from 'material-ui/Input/InputLabel';
 import Card, {CardContent, CardActions} from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import Radio, {RadioGroup} from 'material-ui/Radio';
-import Checkbox from 'material-ui/Checkbox';
-import { FormLabel, FormControl, FormControlLabel, FormHelperText, FormGroup } from 'material-ui/Form';
+import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
 import { graphql, gql } from 'react-apollo';
 
 @inject("store") @observer
@@ -74,12 +73,12 @@ export default class Create extends React.Component {
     let urlString = this.state.url
     let msg = ""
 
-    if(event.currentTarget.value == 'public'){
+    if(event.currentTarget.value === 'public'){
       urlString = "https://" + urlString.replace(':', '/').split("git@")[1]
       msg = "This is a valid HTTPS url."
     }
 
-    if(event.currentTarget.value == 'private'){
+    if(event.currentTarget.value === 'private'){
       urlString = "git@" + urlString.split('https://')[1].replace('/', ':')
       msg = "This is a valid SSH url."
     }
@@ -89,8 +88,8 @@ export default class Create extends React.Component {
 
   validateUrl(url){
 
-    let isHTTPS = /^https:\/\/[a-z,0-9,\.]+\/.+\.git$/.test(url)
-    let isSSH = /^git@[a-z,0-9,\.]+:.+.git$/.test(url)
+    let isHTTPS = /^https:\/\/[a-z,0-9,.]+\/.+\.git$/.test(url)
+    let isSSH = /^git@[a-z,0-9,.]+:.+.git$/.test(url)
 
     if (!isHTTPS && !isSSH) {
       console.log("ERROR")
