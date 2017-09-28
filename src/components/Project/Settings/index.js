@@ -41,7 +41,7 @@ export default class Settings extends React.Component {
     var self = this
     this.props.mutate({
       variables: { 
-        id: this.props.data.project.id,
+        id: this.props.project.id,
         gitUrl: newProjectState.url,
         gitProtocol: newProjectState.repoType
       }
@@ -53,7 +53,7 @@ export default class Settings extends React.Component {
   }
 
   render() {
-    const { project } = this.props.data
+    console.log("HELLO")
 
     return (
       <div className={styles.root}>
@@ -134,7 +134,7 @@ export default class Settings extends React.Component {
             <CreateProject title={"Update Project"} 
               type={"save changes"}
               onProjectCreate={this.updateProject.bind(this)} 
-              project={project} 
+              project={this.props.project} 
               loadLeftNavBar={false} />
           </Grid>                        
         </Grid>

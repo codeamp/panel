@@ -5,12 +5,12 @@
     "custom-react-scripts": "0.1.4"
   },
   "dependencies": {
-    "apollo-client": "^1.9.1",
+    "apollo-client": "^1.9.3",
     "apollo-fetch": "0.6.0",
     "css-loader": "^0.28.4",
     "director": "1.2.8",
     "lodash": "4.17.4",
-    "material-ui": "next",
+    "material-ui": "^1.0.0-beta.12",
     "material-ui-icons": "^1.0.0-beta.10",
     "mobx": "3.2.2",
     "mobx-react": "4.2.2",
@@ -18,10 +18,11 @@
     "react": "15.6.1",
     "react-apollo": "^1.4.14",
     "react-dom": "15.6.1",
+    "react-icons": "^2.2.5",
     "react-router-dom": "^4.1.2",
     "socket.io-client": "^2.0.3",
     "style-loader": "^0.18.2",
-    "validatorjs": "^3.13.3"
+    "validatorjs": "^3.13.5"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -8,12 +8,27 @@ import MobileStepper from 'material-ui/MobileStepper';
 import Grid from 'material-ui/Grid';
 import PropTypes from 'prop-types';
 import { CircularProgress } from 'material-ui/Progress';
+import { graphql, gql } from 'react-apollo';
 
-import Snackbar from 'material-ui/Snackbar';
-import IconButton from 'material-ui/IconButton';
-import CloseIcon from 'material-ui-icons/Close';
 
 @inject("store") @observer
+
+
+@graphql(gql`
+  mutation Mutation($featureId: String!) {
+    createRelease(feature: { id: $featureId }) {
+      headFeature {
+        message 
+      }
+      tailFeature  { 
+        message
+      }
+      state 
+      stateMessage 
+    }
+  }
+`)
+
 
 class InitPrivateProjectComponent extends React.Component {
 
@@ -35,7 +50,7 @@ class InitPrivateProjectComponent extends React.Component {
   };
 
   handleClick = () => {
-    this.setState({ open: true });
+    this.props.store.app.setSnackbar({msg: "SSH Key Copied."})
   };
 
   handleRequestClose = (event, reason) => {
@@ -48,7 +63,7 @@ class InitPrivateProjectComponent extends React.Component {
 
   render() {
     return (
-      <Card className={styles.card} raised={false}>
+      <Card className={styles.card} raised={false}>        
         <CardContent>
           <Typography type="headline" component="h3">
             Setup the Git Deploy Key
@@ -72,33 +87,7 @@ class InitPrivateProjectComponent extends React.Component {
               Click here to learn how to add deploy keys to Github.
             </a>
           </Typography>
-        </CardContent>
-
-        <div>
-          <Snackbar
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            open={this.state.open}
-            autoHideDuration={6000}
-            onRequestClose={this.handleRequestClose}
-            SnackbarContentProps={{
-              'aria-describedby': 'message-id',
-            }}
-            message={<span id="message-id">SSH Key Copied.</span>}
-            action={[
-              <IconButton
-                key="close"
-                aria-label="Close"
-                color="inherit"
-                onClick={this.handleRequestClose}
-              >
-                <CloseIcon />
-              </IconButton>,
-            ]}
-          />
-        </div>        
+        </CardContent>       
       </Card>      
     )
   }
@@ -126,9 +115,14 @@ class FeatureView extends React.Component {
     super(props)
   }
 
+  handleDeploy(){
+    console.log('handleDeploy', this.props)
+
+  }
+
   render() {
     return (
-      <Grid item xs={12} key={this.props.key} id={this.props.key} onClick={this.props.handleOnClick}>
+      <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
@@ -139,7 +133,9 @@ class FeatureView extends React.Component {
             </Typography>
           </CardContent>
           <CardActions style={{ float: 'right', paddingRight: 35 }}>
-            <Button raised color="primary" className={this.props.showFullView == false ? styles.hide : '' }>
+            <Button raised color="primary" 
+                    onClick={this.handleDeploy.bind(this)}
+                    className={this.props.showFullView == false ? styles.hide : '' }>
               Deploy
             </Button>
           </CardActions>
@@ -161,7 +157,7 @@ export default class Features extends React.Component {
 
   componentDidMount(){    
     if(this.props.store){
-      if(this.props.store.ws.msg.channel == "projects/" + this.props.data.project.slug + "/GitSync"){
+      if(this.props.store.ws.msg.channel == "projects/" + this.props.project.slug + "/GitSync"){
         console.log(this.props.store.ws.msg.data)
       }          
     }
@@ -185,7 +181,7 @@ export default class Features extends React.Component {
       <div>
         {[...Array(project.features.length)].map((x, i) =>
             <FeatureView
-              key={i}
+              key={project.features[i].hash}
               feature={project.features[i]} 
               handleOnClick={() => this.setState({ activeFeatureKey: i })} 
               showFullView={this.state.activeFeatureKey == i} />
@@ -210,18 +206,17 @@ export default class Features extends React.Component {
           // </Grid> 
 
   render() {
-    const { loading, project } = this.props.data
-
-    let defaultComponent = (<Typography>Loading...</Typography>)
-    if(loading){
+    if(!this.props.project){
       return null
     }
 
-    if(project.features.length > 0) {
-      defaultComponent = this.renderFeatureList(project);
-    } else if(project.gitProtocol == "SSH"){
-        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={project.rsaPublicKey}/>)
-    } else if(project.gitProtocol == "HTTPS"){
+    let defaultComponent = (<Typography>Loading...</Typography>)
+
+    if(this.props.project.features.length > 0) {
+      defaultComponent = this.renderFeatureList(this.props.project);
+    } else if(this.props.project.gitProtocol == "SSH"){
+        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
+    } else if(this.props.project.gitProtocol == "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
 
@@ -229,6 +224,10 @@ export default class Features extends React.Component {
       <div className={styles.root}>
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.feature}>
+            <Typography type="headline" component="h3">
+              Features
+            </Typography>            
+            <br/>
             {defaultComponent}
           </Grid>          
         </Grid>

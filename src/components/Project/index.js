@@ -6,10 +6,15 @@ import LogsIcon from 'material-ui-icons/ClearAll';
 import SettingsIcon from 'material-ui-icons/Settings';
 import FeaturesIcon from 'material-ui-icons/Input';
 import ReleasesIcon from 'material-ui-icons/Timeline';
-import ResourcesIcon from 'material-ui-icons/Widgets';
+import ServicesIcon from 'material-ui-icons/Widgets';
+import ExtensionsIcon from 'material-ui-icons/Extension';
+
 import ProjectFeatures from 'components/Project/Features';
 import ProjectReleases from 'components/Project/Releases';
 import ProjectSettings from 'components/Project/Settings';
+import ProjectServices from 'components/Project/Services';
+import ProjectExtensions from 'components/Project/Extensions';
+
 import { gql, graphql } from 'react-apollo';
 
 const query = gql`
@@ -21,6 +26,18 @@ const query = gql`
       rsaPublicKey
       gitProtocol
       gitUrl
+      services {
+        id
+        name
+        command
+        serviceSpec
+        count
+        oneShot
+        containerPorts {
+          port 
+          protocol 
+        }
+      }
       features {
         message
         user
@@ -28,6 +45,33 @@ const query = gql`
         parentHash
         ref
         created
+      }
+      releases {
+        id
+        state
+        stateMessage 
+        created               
+        user {
+          email
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref 
+          created
+        }
       }
     }
   }
@@ -52,31 +96,37 @@ export default class Project extends React.Component {
     this.props.store.app.leftNavItems = [
       {
         key: "10",
-        icon: <ResourcesIcon />,
-        name: "Resources",
-        slug: "/projects/"+this.props.match.params.slug+"/resources",
+        icon: <ServicesIcon />,
+        name: "Services",
+        slug: this.props.match.url + "/services",
       }, 
       {
         key: "20",
         icon: <FeaturesIcon />,
         name: "Features",
-        slug: "/projects/"+this.props.match.params.slug+"/features",
+        slug: this.props.match.url + "/features",
         count: 0,
       }, 
       {
         key: "30",
         icon: <ReleasesIcon />,
         name: "Releases",
-        slug: "/projects/"+this.props.match.params.slug+"/releases",
+        slug: this.props.match.url + "/releases",
       }, 
       {
         key: "40",
-        icon: <SettingsIcon />,
-        name: "Settings",
-        slug: "/projects/"+this.props.match.params.slug+"/settings",
-      }, 
+        icon: <ExtensionsIcon />,
+        name: "Extensions",
+        slug: this.props.match.url + "/extensions",
+      },       
       {
         key: "50",
+        icon: <SettingsIcon />,
+        name: "Settings",
+        slug: this.props.match.url + "/settings",
+      }, 
+      {
+        key: "60",
         icon: <LogsIcon />,
         name: "Logs", 
         slug: "/"
@@ -85,41 +135,69 @@ export default class Project extends React.Component {
   }
 
   componentDidMount() {
-    this.props.socket.on("projects/" + this.props.data.project.slug, (data) => {
+    this.props.socket.on("projects/" + this.props.data.variables.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
     })
 
-    this.props.socket.on("projects/" + this.props.data.project.slug + "/features", (data) => {
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/features", (data) => {
       clearTimeout(this.state.fetchDelay)
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch()
       }, 2000);
     });
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/services", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/services', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/services/new", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/services/new', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "A new service "+ data.name +" was created"})
+      }, 2000);
+    })
   }
 
   render() {
     const { loading, project } = this.props.data;
+    const { store } = this.props;
+    console.log(store)
 
     if(loading){
       return null;
     }
-
+    console.log(project)
     return (
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures data={this.props.data} />
+            <ProjectFeatures project={project} />
           )}/>
+          <Route exact path='/projects/:slug/services' render={(props) => (
+            <ProjectServices project={project} store={store} />
+          )}/>          
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures data={this.props.data} />
+            <ProjectFeatures project={project} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases data={this.props.data} />
+            <ProjectReleases project={project} />
           )}/>
-          <Route exact path='/projects/:slug/settings' render={(props) => (
-            <ProjectSettings data={this.props.data} />
+          <Route exact path='/projects/:slug/extensions' render={(props) => (
+            <ProjectExtensions project={project} />
           )}/>          
+          <Route exact path='/projects/:slug/settings' render={(props) => (
+            <ProjectSettings project={project} />
+          )}/>          
+          <Route exact path='/projects/:slug/logs' render={(props) => (
+            <ProjectSettings project={project} />
+          )}/>                    
         </Switch>
       </div>
     );
