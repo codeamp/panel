@@ -41,7 +41,7 @@ export default class Settings extends React.Component {
     var self = this
     this.props.mutate({
       variables: { 
-        id: this.props.data.project.id,
+        id: this.props.project.id,
         gitUrl: newProjectState.url,
         gitProtocol: newProjectState.repoType
       }

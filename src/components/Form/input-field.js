@@ -7,11 +7,11 @@ import InputLabel from 'material-ui/Input/InputLabel';
 import FormControl from 'material-ui/Form/FormControl';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 
-export default observer(({field}) => (
+export default observer(({field, fullWidth}) => (
   <div>
-    <FormControl fullWidth={true} className={styles.formControl} {...field.error ? {error: true} : {}}>
+    <FormControl fullWidth={fullWidth} {...field.error ? {error: true} : {}}>
       <InputLabel htmlFor={field.id}>{field.label}</InputLabel>
-      <Input {...field.bind()}/>
+      <Input type={field.type} {...field.bind()}/>
       <FormHelperText>{field.error}</FormHelperText>
     </FormControl>
   </div>

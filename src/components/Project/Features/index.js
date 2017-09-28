@@ -10,9 +10,6 @@ import PropTypes from 'prop-types';
 import { CircularProgress } from 'material-ui/Progress';
 import { graphql, gql } from 'react-apollo';
 
-import Snackbar from 'material-ui/Snackbar';
-import IconButton from 'material-ui/IconButton';
-import CloseIcon from 'material-ui-icons/Close';
 
 @inject("store") @observer
 
@@ -53,7 +50,7 @@ class InitPrivateProjectComponent extends React.Component {
   };
 
   handleClick = () => {
-    this.setState({ open: true });
+    this.props.store.app.setSnackbar({msg: "SSH Key Copied."})
   };
 
   handleRequestClose = (event, reason) => {
@@ -66,7 +63,7 @@ class InitPrivateProjectComponent extends React.Component {
 
   render() {
     return (
-      <Card className={styles.card} raised={false}>
+      <Card className={styles.card} raised={false}>        
         <CardContent>
           <Typography type="headline" component="h3">
             Setup the Git Deploy Key
@@ -90,33 +87,7 @@ class InitPrivateProjectComponent extends React.Component {
               Click here to learn how to add deploy keys to Github.
             </a>
           </Typography>
-        </CardContent>
-
-        <div>
-          <Snackbar
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            open={this.state.open}
-            autoHideDuration={6000}
-            onRequestClose={this.handleRequestClose}
-            SnackbarContentProps={{
-              'aria-describedby': 'message-id',
-            }}
-            message={<span id="message-id">SSH Key Copied.</span>}
-            action={[
-              <IconButton
-                key="close"
-                aria-label="Close"
-                color="inherit"
-                onClick={this.handleRequestClose}
-              >
-                <CloseIcon />
-              </IconButton>,
-            ]}
-          />
-        </div>        
+        </CardContent>       
       </Card>      
     )
   }
@@ -253,6 +224,10 @@ export default class Features extends React.Component {
       <div className={styles.root}>
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.feature}>
+            <Typography type="headline" component="h3">
+              Features
+            </Typography>            
+            <br/>
             {defaultComponent}
           </Grid>          
         </Grid>

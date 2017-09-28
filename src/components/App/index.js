@@ -14,7 +14,13 @@ import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
 import Project from 'components/Project';
 import Admin from 'components/Admin';
+import CreateDrawer from 'components/CreateDrawer';
+
 import Grid from 'material-ui/Grid';
+import Snackbar from 'material-ui/Snackbar';
+import IconButton from 'material-ui/IconButton';
+
+import CloseIcon from 'material-ui-icons/Close';
 
 const socket = io('http://localhost:3011');
 
@@ -39,6 +45,14 @@ export default class App extends React.Component {
     super(props)
     this.state = {
       redirectToLogin: false,
+      snackbar: {
+        open: false,
+        lastCreated: null,
+      },
+      drawer: {
+        open: false,
+        component: null,
+      },
     };
   }
 
@@ -52,8 +66,21 @@ export default class App extends React.Component {
     });
   }
 
+  handleRequestClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({ snackbar: { open: false, lastCreated: this.state.snackbar.lastCreated } });
+  };  
+
   render() {
     const { loading, projects} = this.props.data;
+
+    if(this.props.store.app.snackbar.created != this.state.snackbar.lastCreated){
+      this.state.snackbar.open = true;
+      this.state.snackbar.lastCreated = this.props.store.app.snackbar.created;
+    }
     
     if (loading) {
       return <div>Loading</div>;
@@ -86,6 +113,34 @@ export default class App extends React.Component {
               </div>
             </Grid>
           </Grid>
+
+          <Snackbar
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            open={this.state.snackbar.open}
+            autoHideDuration={6000}
+            onRequestClose={this.handleRequestClose}
+            SnackbarContentProps={{
+              'aria-describedby': 'message-id',
+            }}
+            message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
+            action={[
+              <IconButton
+                key="close"
+                aria-label="Close"
+                color="inherit"
+                onClick={this.handleRequestClose}
+              >
+                <CloseIcon />
+              </IconButton>,
+            ]}
+          />
+
+          <CreateDrawer
+            open={true}
+          />
         </div>
       );
     }

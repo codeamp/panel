@@ -24,7 +24,7 @@ class ReleaseView extends React.Component {
 
   render() {
     return (
-      <Grid item xs={12} onClick={this.props.handleOnClick} key={this.props.key}>
+      <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card className={this.props.showFullView == false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
@@ -72,18 +72,21 @@ export default class Releases extends React.Component {
   render() {
     return (
       <div className={styles.root}>
+        <Typography type="headline" component="h3">
+          Releases
+        </Typography>            
+        <br/>        
         <Grid container spacing={16}>
-          <div>
+          <Grid item xs={12} className={styles.feature}>
             {[...Array(this.props.project.releases.length)].map((x, i) =>
-                <ReleaseView
-                  key={this.props.project.releases[i].hash}
-                  release={this.props.project.releases[i]} 
-                  handleOnClick={() => this.setState({ activeFeatureKey: i })} 
-                  showFullView={this.state.activeFeatureKey == i} />
-              )}
-              <br/>  
-            </div>
-        </Grid>
+              <ReleaseView
+                key={this.props.project.releases[i].id}
+                release={this.props.project.releases[i]} 
+                handleOnClick={() => this.setState({ activeFeatureKey: i })} 
+                showFullView={this.state.activeFeatureKey == i} />
+            )}
+          </Grid>          
+        </Grid>        
       </div>
     );
   }
