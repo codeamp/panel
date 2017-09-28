@@ -1,0 +1,87 @@
+.services {
+    
+}
+
+.action {
+    float: right;
+}
+
+.serviceCard {
+    height: 100%;
+}
+
+.card {
+    height: 100%;
+    width: 90%;
+    margin: auto;
+    padding: 10px;
+}
+
+.addButton {
+    position: absolute;
+    bottom: 0px;
+}
+
+.appBar {
+    width: 100%;
+}
+
+.drawerPaper {
+    position: relative;
+    height: 100%;
+    min-width: 400;
+}    
+
+.list {
+    width: 40%;
+    flex: initial;
+    border: 1px solid black;    
+    box-shadow: 0 16px 24px 2px rgba(0,0,0,.14), 0 6px 30px 5px rgba(0,0,0,.12), 0 8px 10px -5px rgba(0,0,0,.2);
+}
+
+.listFull { 
+    width: auto;
+    flex: initial;
+}
+
+.buttonSpacing {
+    margin-right: 24px;
+}
+
+.createServiceBar {
+    padding-top: 70px;
+}
+
+.containerPortFormInput {
+    width: 100px;
+}
+
+.drawerBody {
+    flex-grow: 1;
+    margin-top: 10px;
+}
+
+.grid {
+    width: 100% !important;
+    margin: 0px !important;
+    padding: 24px;
+}
+
+.serviceViewHighlighted {
+    background-color: red;
+}
+
+.serviceView:hover {
+    background-color: #e5efff;
+}
+
+.containerPortsNum {
+    border: 1px solid black;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.serviceCount {
+    margin-right: 10px;
+    width: 30px;
+}

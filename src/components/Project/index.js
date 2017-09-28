@@ -163,12 +163,28 @@ export default class Project extends React.Component {
         this.props.store.app.setSnackbar({msg: "A new service "+ data.name +" was created"})
       }, 2000);
     })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/services/updated", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/services/updated', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was updated"})
+      }, 2000);
+    })  
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/services/deleted", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/services/deleted', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was deleted"})
+      }, 2000);
+    })        
   }
 
   render() {
     const { loading, project } = this.props.data;
     const { store } = this.props;
-    console.log(store)
 
     if(loading){
       return null;
