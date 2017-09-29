@@ -31,6 +31,10 @@ const socket = io('http://localhost:3011');
       name
       slug
     }
+    serviceSpecs {
+      id
+      name
+    }
   }
 `)
 
@@ -71,7 +75,7 @@ export default class App extends React.Component {
   };  
 
   render() {
-    const { loading, projects} = this.props.data;
+    const { loading, projects, serviceSpecs} = this.props.data;
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -99,8 +103,8 @@ export default class App extends React.Component {
                   <Route exact path='/create' render={(props) => (
                     <Create projects={projects} type={"create"} />
                     )} />
-                  <Route exact path='/admin' render={(props) => (
-                    <Admin projects={projects} />
+                  <Route path='/admin' render={(props) => (
+                    <Admin projects={projects} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
                     <Project socket={socket} {...props} />

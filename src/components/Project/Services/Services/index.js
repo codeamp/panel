@@ -7,7 +7,11 @@ import AppBar from 'material-ui/AppBar';
 import AddIcon from 'material-ui-icons/Add';
 import Drawer from 'material-ui/Drawer';
 import Toolbar from 'material-ui/Toolbar';
+import IconButton from 'material-ui/IconButton';
+import CloseIcon from 'material-ui-icons/Close';
 import Menu, { MenuItem } from 'material-ui/Menu';
+import Card, { CardContent } from 'material-ui/Card';
+import Input from 'material-ui/Input';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -15,18 +19,15 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 
-import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
+import InputField from 'components/Form/input-field';
+import RadioField from 'components/Form/radio-field';
 
 import { observer } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import { graphql, gql } from 'react-apollo';
-
-import ContainerPortForm from './ContainerPortForm';
-import Service from './Service';
-
 
 const inlineStyles = {
   addButton: {
@@ -111,7 +112,7 @@ export default class Services extends React.Component {
       anchorEl: null,
       addServiceMenuOpen: false,
       oneShot: false,
-      currentService: { index: -1 },
+      currentService: { id: -1 },
       loading: false,
       drawerText: 'Create',
       dialogOpen: false,
@@ -248,7 +249,9 @@ export default class Services extends React.Component {
 
   handleClick = event => {
     console.log(this.props)
-    this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
+    this.serviceForm.$('containerPorts').clear()
+    console.log("HANDLECLICK!")
+    this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget, currentService: { id: -1 }, drawerText: 'Create' });
   };
 
   handleRequestClose = value => {
@@ -322,10 +325,19 @@ export default class Services extends React.Component {
                 <Grid item xs={12}>
                 <div>
                     {this.serviceForm.$('containerPorts').map(port =>
-                        <ContainerPortForm
-                            field={port}
-                            key={port.id}
-                        />
+                      <Grid container spacing={24}>
+                        <Grid item xs={4}>
+                          <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />               
+                        </Grid>
+                        <Grid item xs={6}>                        
+                          <RadioField field={port.$('protocol')} />
+                        </Grid>
+                        <Grid item xs={1}>
+                          <IconButton>
+                            <CloseIcon onClick={port.onDel} />
+                          </IconButton>
+                        </Grid>
+                      </Grid>
                     )}
                 </div>
                 </Grid>
@@ -342,15 +354,39 @@ export default class Services extends React.Component {
         )
     }
 
+    let deleteButton = "";
+
+    if(this.state.currentService.id !== -1){
+      deleteButton = (
+        <Button 
+          disabled={this.state.loading}
+          color="accent" 
+          onClick={()=>this.setState({ dialogOpen: true })}>
+          Delete
+        </Button>        
+      );
+    }
+
     return (
       <div>                         
           {services.map(service => (
-              <Service
-                  editService={this.editService}
-                  key={service.id}
-                  id={service.id}
-                  highlighted={this.state.currentService.id === service.id}
-                  service={service} />
+            <Card 
+              className={(this.state.currentService.id === service.id) === true ? styles.serviceViewHighlighted : styles.serviceView} 
+              onClick={() => this.editService(service)}>
+              <CardContent>
+                <Typography type="title">
+                  {service.name}
+                </Typography>
+                <Grid container spacing={24}>
+                  <Grid item xs={1}>
+                    <Input disabled value={service.count + 'x'} className={styles.serviceCount} />
+                  </Grid>
+                  <Grid item xs={11}>
+                    <Input disabled value={service.command} className={styles.commandDisplay} />
+                  </Grid>                                
+                </Grid>
+              </CardContent>
+            </Card>                  
           ))}
           
           <Button fab aria-label="Add" type="submit" raised color="primary" 
@@ -412,12 +448,7 @@ export default class Services extends React.Component {
                             onClick={e => this.onSubmit(e)}>
                               {this.state.drawerText}
                         </Button>                               
-                        <Button 
-                          disabled={this.state.loading}
-                          color="accent" 
-                          onClick={()=>this.setState({ dialogOpen: true })}>
-                          Delete
-                        </Button>                                                                                                       
+                        { deleteButton }                                                                                                
                         <Button 
                           color="primary" 
                           onClick={this.handleToggleDrawer.bind(this)}>
