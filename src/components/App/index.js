@@ -69,25 +69,7 @@ export default class App extends React.Component {
   componentDidMount() {
     socket.on('projects', (data) => {
       this.props.data.refetch();
-    });
-
-    socket.on("serviceSpecs/new", (data) => {
-      console.log("serviceSpecs/new");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
-        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was created"})
-      }, 2000);
-    }) 
-    
-    socket.on("serviceSpecs/deleted", (data) => {
-      console.log("serviceSpecs/deleted");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
-        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was deleted"})
-      }, 2000);
-    })     
+    });        
   }
 
   handleRequestClose = (event, reason) => {
@@ -128,7 +110,7 @@ export default class App extends React.Component {
                     <Create projects={projects} type={"create"} />
                     )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
+                    <Admin data={this.props.data} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
                     <Project socket={socket} {...props} />

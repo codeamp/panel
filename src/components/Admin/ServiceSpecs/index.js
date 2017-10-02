@@ -75,6 +75,24 @@ mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, 
 }
 `, { name: "deleteServiceSpec" })
 
+@graphql(gql`
+mutation UpdateServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!, 
+  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
+    updateServiceSpec(serviceSpec:{ 
+    id: $id,
+    name: $name,
+    cpuRequest: $cpuRequest,
+    cpuLimit: $cpuLimit,
+    memoryRequest: $memoryRequest,
+    memoryLimit: $memoryLimit,
+    terminationGracePeriod: $terminationGracePeriod,
+    }) {
+        id
+        name
+    }
+}
+`, { name: "updateServiceSpec" })
+
 @inject("store") @observer
 
 export default class ServiceSpecs extends React.Component {
@@ -89,6 +107,38 @@ export default class ServiceSpecs extends React.Component {
       },
       drawerText: 'Create',
     }    
+  }
+
+  componentDidMount(){
+    this.props.socket.on("serviceSpecs/new", (data) => {
+      console.log("serviceSpecs/new");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.setState({ loading: false })    
+        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was created"})
+      }, 2000);
+    }) 
+    
+    this.props.socket.on("serviceSpecs/deleted", (data) => {
+      console.log("serviceSpecs/deleted");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();    
+        this.setState({ loading: false })    
+        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was deleted"})
+      }, 2000);
+    }) 
+    
+    this.props.socket.on("serviceSpecs/updated", (data) => {
+      console.log("serviceSpecs/updated");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.setState({ loading: false })    
+        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was updated"})
+      }, 2000);
+    })     
   }
 
   componentWillMount(){
@@ -154,7 +204,7 @@ export default class ServiceSpecs extends React.Component {
     }
     console.log(this.serviceSpecForm.values())
 
-    this.setState({ open: !this.state.open, dialogOpen: false })
+    this.setState({ open: !this.state.open, dialogOpen: false, currentServiceSpec: { id: -1 } })
   }  
 
   isSelected(id){
@@ -167,7 +217,7 @@ export default class ServiceSpecs extends React.Component {
     this.serviceSpecForm.$('cpuLimit').set(serviceSpec.cpuLimit);
     this.serviceSpecForm.$('memoryRequest').set(serviceSpec.memoryRequest);
     this.serviceSpecForm.$('memoryLimit').set(serviceSpec.memoryLimit);
-    this.serviceSpecForm.$('terminationGracePeriod').set(serviceSpec.memoryLimit);
+    this.serviceSpecForm.$('terminationGracePeriod').set(serviceSpec.terminationGracePeriod);
     this.serviceSpecForm.$('id').set(serviceSpec.id);
 
     console.log(this.serviceSpecForm)
@@ -181,6 +231,7 @@ export default class ServiceSpecs extends React.Component {
 
   onSuccess(form){
     console.log('onSuccess')
+    this.setState({ loading: true })
     var that = this
     switch(this.state.drawerText){
       case "Creating":
@@ -193,13 +244,20 @@ export default class ServiceSpecs extends React.Component {
         });
         break;
       case "Updating":
-        console.log("Updating!")
+        this.props.updateServiceSpec({
+          variables: form.values(),
+        }).then(({data}) => {
+          console.log(data)
+        }).catch(error => {
+          console.log(error)
+        });
         break;   
     }
   }
 
   handleDeleteServiceSpec() {
     console.log('handleDeleteServiceSpec')
+    this.setState({ loading: true })
     var that = this
     this.props.deleteServiceSpec({
       variables: this.serviceSpecForm.values(),
@@ -272,11 +330,14 @@ export default class ServiceSpecs extends React.Component {
                       CPU Limit
                     </TableCell>
                     <TableCell>
-                      Memory Request
+                      Memory Request (mb)
                     </TableCell>
                     <TableCell>
-                      Memory Limit
+                      Memory Limit (mb)
                     </TableCell>                                                                                  
+                    <TableCell>
+                      Timeout (s)
+                    </TableCell>                                                            
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -294,6 +355,7 @@ export default class ServiceSpecs extends React.Component {
                         <TableCell> { serviceSpec.cpuLimit} </TableCell>
                         <TableCell> { serviceSpec.memoryRequest}</TableCell>
                         <TableCell> { serviceSpec.memoryLimit}</TableCell>
+                        <TableCell> { serviceSpec.terminationGracePeriod}</TableCell>
                       </TableRow>
                     )
                   })}

@@ -33,7 +33,7 @@ export default class Admin extends React.Component {
       <div className={styles.root}>
         <Switch>
           <Route path='/admin/serviceSpecs' render={(props) => (
-            <ServiceSpecs serviceSpecs={serviceSpecs} />
+            <ServiceSpecs data={this.props.data} serviceSpecs={serviceSpecs} socket={this.props.socket} />
           )}/>         
         </Switch>
       </div>
