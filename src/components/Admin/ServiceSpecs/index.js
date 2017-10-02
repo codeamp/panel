@@ -360,10 +360,7 @@ export default class ServiceSpecs extends React.Component {
                     )
                   })}
                 </TableBody>
-              </Table>
             </Paper>
-          </Grid>
-        </Grid>
         <Button fab aria-label="Add" type="submit" raised color="primary" 
               style={inlineStyles.addButton}
               onClick={this.handleNewSpecClick.bind(this)}>
