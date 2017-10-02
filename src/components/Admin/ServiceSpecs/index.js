@@ -57,6 +57,24 @@ mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: Str
 }
 `, { name: "createServiceSpec" })
 
+@graphql(gql`
+mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!, 
+  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
+    deleteServiceSpec(serviceSpec:{ 
+    id: $id,
+    name: $name,
+    cpuRequest: $cpuRequest,
+    cpuLimit: $cpuLimit,
+    memoryRequest: $memoryRequest,
+    memoryLimit: $memoryLimit,
+    terminationGracePeriod: $terminationGracePeriod,
+    }) {
+        id
+        name
+    }
+}
+`, { name: "deleteServiceSpec" })
+
 @inject("store") @observer
 
 export default class ServiceSpecs extends React.Component {
@@ -82,7 +100,8 @@ export default class ServiceSpecs extends React.Component {
       'cpuLimit',
       'memoryRequest',
       'memoryLimit',
-      'terminationGracePeriod'
+      'terminationGracePeriod',
+      'id',
     ];
 
     const rules = {
@@ -91,7 +110,7 @@ export default class ServiceSpecs extends React.Component {
       'cpuLimit': 'required|string',
       'memoryRequest': 'required|string',
       'memoryLimit': 'required|string',
-      'terminationGracePeriod': 'required|string'
+      'terminationGracePeriod': 'required|string',
     };
 
     const labels = {
@@ -135,7 +154,7 @@ export default class ServiceSpecs extends React.Component {
     }
     console.log(this.serviceSpecForm.values())
 
-    this.setState({ open: !this.state.open })
+    this.setState({ open: !this.state.open, dialogOpen: false })
   }  
 
   isSelected(id){
@@ -149,6 +168,7 @@ export default class ServiceSpecs extends React.Component {
     this.serviceSpecForm.$('memoryRequest').set(serviceSpec.memoryRequest);
     this.serviceSpecForm.$('memoryLimit').set(serviceSpec.memoryLimit);
     this.serviceSpecForm.$('terminationGracePeriod').set(serviceSpec.memoryLimit);
+    this.serviceSpecForm.$('id').set(serviceSpec.id);
 
     console.log(this.serviceSpecForm)
 
@@ -161,12 +181,13 @@ export default class ServiceSpecs extends React.Component {
 
   onSuccess(form){
     console.log('onSuccess')
+    var that = this
     switch(this.state.drawerText){
       case "Creating":
         this.props.createServiceSpec({
           variables: form.values(),
         }).then(({data}) => {
-          console.log(data)
+          that.handleToggleDrawer()
         }).catch(error => {
           console.log(error)
         });
@@ -177,12 +198,13 @@ export default class ServiceSpecs extends React.Component {
     }
   }
 
-  handleDeleteServiceSpec(form) {
+  handleDeleteServiceSpec() {
     console.log('handleDeleteServiceSpec')
+    var that = this
     this.props.deleteServiceSpec({
       variables: this.serviceSpecForm.values(),
     }).then(({ data }) => {
-      console.log(data)
+      that.handleToggleDrawer()
     }).catch(error => {
       console.log(error)
     });

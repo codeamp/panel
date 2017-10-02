@@ -78,7 +78,16 @@ export default class App extends React.Component {
         this.props.data.refetch();        
         this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was created"})
       }, 2000);
-    })  
+    }) 
+    
+    socket.on("serviceSpecs/deleted", (data) => {
+      console.log("serviceSpecs/deleted");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was deleted"})
+      }, 2000);
+    })     
   }
 
   handleRequestClose = (event, reason) => {
