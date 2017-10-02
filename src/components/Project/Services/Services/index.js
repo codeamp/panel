@@ -6,8 +6,9 @@ import Button from 'material-ui/Button';
 import AppBar from 'material-ui/AppBar';
 import AddIcon from 'material-ui-icons/Add';
 import Drawer from 'material-ui/Drawer';
-import Toolbar from 'material-ui/Toolbar';
 import IconButton from 'material-ui/IconButton';
+import Paper from 'material-ui/Paper';
+import Toolbar from 'material-ui/Toolbar';
 import CloseIcon from 'material-ui-icons/Close';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Card, { CardContent } from 'material-ui/Card';
@@ -18,6 +19,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
@@ -116,6 +118,7 @@ export default class Services extends React.Component {
       loading: false,
       drawerText: 'Create',
       dialogOpen: false,
+      selected: null,
     }
   }
 
@@ -202,11 +205,15 @@ export default class Services extends React.Component {
     const plugins = { dvr: validatorjs };
 
     this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins });                
-  }
+  }  
 
   componentDidMount(){
     console.log("Resources")
   }
+
+  isSelected(id){
+    return this.state.selected == id
+  }  
 
   addService() {
     console.log("HELLO")
@@ -369,25 +376,63 @@ export default class Services extends React.Component {
 
     return (
       <div>                         
-          {services.map(service => (
-            <Card 
-              className={(this.state.currentService.id === service.id) === true ? styles.serviceViewHighlighted : styles.serviceView} 
-              onClick={() => this.editService(service)}>
-              <CardContent>
+          <Paper>
+            <Toolbar>
+              <div>
                 <Typography type="title">
-                  {service.name}
+                  Services
                 </Typography>
-                <Grid container spacing={24}>
-                  <Grid item xs={1}>
-                    <Input disabled value={service.count + 'x'} className={styles.serviceCount} />
-                  </Grid>
-                  <Grid item xs={11}>
-                    <Input disabled value={service.command} className={styles.commandDisplay} />
-                  </Grid>                                
-                </Grid>
-              </CardContent>
-            </Card>                  
-          ))}
+              </div>
+            </Toolbar>              
+            <Table bodyStyle={{overflow:'visible'}}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    Name
+                  </TableCell>
+                  <TableCell>
+                    Count
+                  </TableCell>                  
+                  <TableCell>
+                    Command
+                  </TableCell>
+                  <TableCell>
+                    One-shot
+                  </TableCell>
+                  <TableCell>
+                    Open Ports
+                  </TableCell>                               
+                  <TableCell>
+                    Service Spec
+                  </TableCell>                                                 
+                  <TableCell>
+                    Created
+                  </TableCell>                                                                                  
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {services.map(service => {
+                  const isSelected = this.isSelected(service.id);
+                  return (
+                    <TableRow 
+                      hover
+                      onClick={event => this.editService(service)}
+                      selected={isSelected}
+                      tabIndex={-1}
+                      key={service.id}>
+                      <TableCell> { service.name} </TableCell>
+                      <TableCell> { service.count} </TableCell>                      
+                      <TableCell> <Input value={ service.command} disabled fullWidth={true} /></TableCell>
+                      <TableCell> { service.oneShot ? "Yes" : "No" }</TableCell>
+                      <TableCell> { service.containerPorts.length}</TableCell>                      
+                      <TableCell> { service.serviceSpec}</TableCell>                      
+                      <TableCell> { service.created}</TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </Paper>
           
           <Button fab aria-label="Add" type="submit" raised color="primary" 
               style={inlineStyles.addButton}

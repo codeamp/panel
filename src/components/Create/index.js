@@ -187,6 +187,8 @@ export default class Create extends React.Component {
               {this.state.title}
             </Typography>
              {urlTextField}
+            <br/>
+            <br/>
             <FormControl
               className={styles.formControl}
               required>

@@ -11,6 +11,7 @@ import ServiceSpecs from './ServiceSpecs';
 @inject("store") @observer
 
 export default class Admin extends React.Component {
+
   componentWillMount() {
     console.log(this.props)
     this.props.store.app.leftNavItems = [
@@ -20,9 +21,8 @@ export default class Admin extends React.Component {
         name: "Service Specs",
         slug: this.props.match.url + "/serviceSpecs",
       }, 
-    ]; 
+    ];      
   }
-
 
   render() {
     console.log(this.props)

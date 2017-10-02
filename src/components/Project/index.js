@@ -37,6 +37,7 @@ const query = gql`
           port 
           protocol 
         }
+        created
       }
       features {
         message
@@ -179,7 +180,7 @@ export default class Project extends React.Component {
         this.props.data.refetch();        
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was deleted"})
       }, 2000);
-    })        
+    })         
   }
 
   render() {
