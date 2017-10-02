@@ -30,7 +30,10 @@ const query = gql`
         id
         name
         command
-        serviceSpec
+        serviceSpec {
+          id
+          name
+        }
         count
         oneShot
         containerPorts {
@@ -185,7 +188,7 @@ export default class Project extends React.Component {
 
   render() {
     const { loading, project } = this.props.data;
-    const { store } = this.props;
+    const { store, serviceSpecs } = this.props;
 
     if(loading){
       return null;
@@ -198,7 +201,7 @@ export default class Project extends React.Component {
             <ProjectFeatures project={project} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
-            <ProjectServices project={project} store={store} />
+            <ProjectServices project={project} store={store} serviceSpecs={serviceSpecs} />
           )}/>          
           <Route exact path='/projects/:slug/features' render={(props) => (
             <ProjectFeatures project={project} />

@@ -107,13 +107,13 @@ export default class App extends React.Component {
                     <Dashboard projects={projects} />
                     )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} type={"create"} />
+                    <Create projects={projects} type={"create"} {...props} />
                     )} />
                   <Route path='/admin' render={(props) => (
                     <Admin data={this.props.data} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} {...props} />
+                    <Project socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                 </Switch>
               </div>
