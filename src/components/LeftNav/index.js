@@ -22,7 +22,8 @@ import ServiceSpecIcon from 'material-ui-icons/Description';
 
 export default class LeftNav extends React.Component {
   state = {
-    open: false
+    open: false,
+    openProject: true,
   }
 
   handleClick = () => {
@@ -70,24 +71,27 @@ export default class LeftNav extends React.Component {
           </List>
           <Divider/>
           <List>
-          <ListItem>
+          <ListItem button onClick={() => this.setState({ openProject: !this.state.openProject })}>
             <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-          </ListItem>                      
-          {this.props.store.app.leftNavItems.map(nav =>
-          <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
-            <ListItem button>
-                {nav.icon && !nav.count && <ListItemIcon>
-                  {nav.icon}
-                </ListItemIcon>}
-                {nav.icon && nav.count > 0 &&  <ListItemIcon>
-                  <Badge className={styles.badge} badgeContent={4} color="primary">
-                    {nav.icon}
-                  </Badge>
-                </ListItemIcon>}
-                <ListItemText primary={nav.name} />
-            </ListItem>
-          </NavLink>
-          )}
+            {this.state.openProject ? <ExpandLess /> : <ExpandMore />}                
+          </ListItem>        
+          <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>            
+            {this.props.store.app.leftNavItems.map(nav =>
+              <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
+                <ListItem button>
+                    {nav.icon && !nav.count && <ListItemIcon>
+                      {nav.icon}
+                    </ListItemIcon>}
+                    {nav.icon && nav.count > 0 &&  <ListItemIcon>
+                      <Badge className={styles.badge} badgeContent={4} color="primary">
+                        {nav.icon}
+                      </Badge>
+                    </ListItemIcon>}
+                    <ListItemText primary={nav.name} />
+                </ListItem>
+              </NavLink>
+              )}
+          </Collapse>                
           </List>          
         </div>
       </Drawer>
