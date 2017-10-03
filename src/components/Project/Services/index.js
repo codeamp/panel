@@ -29,9 +29,7 @@ export default class ProjectServices extends React.Component {
 
   render() {
     const { value } = this.state;
-    const { project, store } = this.props;
-
-    console.log(project)
+    const { project, store, serviceSpecs } = this.props;
 
     return (
       <div className={styles.root}>
@@ -44,7 +42,7 @@ export default class ProjectServices extends React.Component {
                
         <Grid container spacing={24}>                                                            
           <Grid item sm={12}>                    
-            {value === 0 && <TabContainer> <Services project={project} store={store} /> </TabContainer>}
+            {value === 0 && <TabContainer> <Services serviceSpecs={serviceSpecs} project={project} store={store} /> </TabContainer>}
           </Grid>
           <Grid item sm={12}>
             {value === 1 && <TabContainer>{'Environment Variables'}</TabContainer>}

@@ -34,6 +34,11 @@ const socket = io('http://localhost:3011');
     serviceSpecs {
       id
       name
+      cpuRequest
+      cpuLimit
+      memoryRequest
+      memoryLimit
+      terminationGracePeriod
     }
   }
 `)
@@ -53,17 +58,18 @@ export default class App extends React.Component {
         open: false,
         component: null,
       },
+      fetchDelay: null,
     };
   }
 
   componentWillReceiveProps(nextProps) {
-
   }
 
   componentDidMount() {
     socket.on('projects', (data) => {
       this.props.data.refetch();
-    });
+    });        
+
   }
 
   handleRequestClose = (event, reason) => {
@@ -91,7 +97,7 @@ export default class App extends React.Component {
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav/>
+              <TopNav projects={projects} {...this.props} />
             </Grid>
             <Grid item xs={12} className={styles.center}>
               <LeftNav/>
@@ -101,13 +107,13 @@ export default class App extends React.Component {
                     <Dashboard projects={projects} />
                     )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} type={"create"} />
+                    <Create projects={projects} type={"create"} {...props} />
                     )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin projects={projects} serviceSpecs={serviceSpecs} {...props} />
+                    <Admin data={this.props.data} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} {...props} />
+                    <Project socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                 </Switch>
               </div>

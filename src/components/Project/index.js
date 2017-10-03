@@ -30,13 +30,17 @@ const query = gql`
         id
         name
         command
-        serviceSpec
+        serviceSpec {
+          id
+          name
+        }
         count
         oneShot
         containerPorts {
           port 
           protocol 
         }
+        created
       }
       features {
         message
@@ -135,6 +139,7 @@ export default class Project extends React.Component {
   }
 
   componentDidMount() {
+
     this.props.socket.on("projects/" + this.props.data.variables.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
@@ -179,17 +184,19 @@ export default class Project extends React.Component {
         this.props.data.refetch();        
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was deleted"})
       }, 2000);
-    })        
+    })         
   }
 
   render() {
     const { loading, project } = this.props.data;
-    const { store } = this.props;
+    const { store, serviceSpecs } = this.props;
 
     if(loading){
       return null;
     }
-    console.log(project)
+    
+    this.props.store.app.setProjectTitle(project.name);        
+
     return (
       <div className={styles.root}>
         <Switch>
@@ -197,7 +204,7 @@ export default class Project extends React.Component {
             <ProjectFeatures project={project} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
-            <ProjectServices project={project} store={store} />
+            <ProjectServices project={project} store={store} serviceSpecs={serviceSpecs} />
           )}/>          
           <Route exact path='/projects/:slug/features' render={(props) => (
             <ProjectFeatures project={project} />
