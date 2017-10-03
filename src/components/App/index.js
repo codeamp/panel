@@ -97,7 +97,7 @@ export default class App extends React.Component {
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} />
+              <TopNav projects={projects} {...this.props} />
             </Grid>
             <Grid item xs={12} className={styles.center}>
               <LeftNav/>

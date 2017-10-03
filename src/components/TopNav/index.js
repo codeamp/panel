@@ -1,16 +1,22 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
+
 import styles from './style.module.css';
+import autosuggest from './autosuggest.module.css';
+
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import IconButton from 'material-ui/IconButton';
-import MenuIcon from 'material-ui-icons/Menu';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
+import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+
+import StarIcon from 'material-ui-icons/Star';
+
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 
@@ -29,7 +35,7 @@ export default class TopNav extends React.Component {
 
   componentDidMount(){
     const originalSuggestions = this.props.projects.map(function(project){
-      return { label: project.name }
+      return { id: project.id, label: project.name, project: project }
     })
 
     this.setState({ originalSuggestions: originalSuggestions })
@@ -48,24 +54,6 @@ export default class TopNav extends React.Component {
     window.location.href = '/login';
   }
 
-  handleSuggestionsFetchRequested = ({ value }) => {
-    this.setState({
-      suggestions: this.getSuggestions(value),
-    });
-  };
-
-  handleSuggestionsClearRequested = () => {
-    this.setState({
-      suggestions: [],
-    });
-  };
-
-  handleChange = (event, { newValue }) => {
-    this.setState({
-      value: newValue,
-    });
-  };
-
   getSuggestionValue(suggestion) {
     return suggestion.label;
   }  
@@ -73,74 +61,47 @@ export default class TopNav extends React.Component {
   getSuggestions(value) {
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
-    let count = 0;
+
+    console.log(this.state.originalSuggestions)
   
-    return inputLength === 0
-      ? []
-      : this.state.originalSuggestions.filter(suggestion => {
-          const keep =
-            count < 5 && suggestion.label.toLowerCase().slice(0, inputLength) === inputValue;
-  
-          if (keep) {
-            count += 1;
-          }
-  
-          return keep;
-        });
-  }
-  
-  renderSuggestion(suggestion, { query, isHighlighted }) {
-    const matches = match(suggestion.label, query);
-    const parts = parse(suggestion.label, matches);
-  
-    return (
-      <MenuItem selected={isHighlighted} component="div">
-        <div>
-          {parts.map((part, index) => {
-            return part.highlight ? (
-              <span key={index} style={{ fontWeight: 300 }}>
-                {part.text}
-              </span>
-            ) : (
-              <strong key={index} style={{ fontWeight: 500 }}>
-                {part.text}
-              </strong>
-            );
-          })}
-        </div>
-      </MenuItem>
+    return inputLength === 0 ? [] : this.state.originalSuggestions.filter(lang =>
+      lang.label.toLowerCase().slice(0, inputLength) === inputValue
     );
   }
-  
 
-  renderInput(inputProps){
-    console.log('renderInput')
-    const { autoFocus, value, ref, ...other } = inputProps;
+  renderSuggestions(bookmarksOnly, suggestions){
+    if(bookmarksOnly){
+      console.log('bookmarksOnly!')
+      const bookmarks = this.props.projects.map(function(project){
+        return { id: project.id, label: project.name, project: project }
+      })      
+      this.setState({ suggestions: bookmarks, showSuggestions: true })
+    } else {
+      this.setState({ suggestions: suggestions, showSuggestions: true })
+    }
+  }
+
+  hideSuggestions(){
+    this.setState({ showSuggestions: false })
+  }
+
+  onSuggestionItemClick(suggestion){
+    console.log('onSuggestionItemClick')
+    console.log(suggestion)
+    this.props.history.push('/projects/' + suggestion.project.slug)
+    this.hideSuggestions()
+  }
+
+  onChange(e){
+    console.log(e.target.value);
+    const suggestions = this.getSuggestions(e.target.value)
+    console.log(suggestions)
+    this.renderSuggestions(false, suggestions)
+  }
     
-    return (
-        <TextField
-          autoFocus={autoFocus}
-          value={value}
-          inputRef={ref}
-          InputProps={{
-            ...other,
-          }}
-          style={{ width: 200 }}
-        />
-      );
-  }
-
-  renderSuggestionsContainer(options) {
-    const { containerProps, children } = options;
-    console.log(options)
-    return (
-      <Paper {...containerProps} square>
-        {children}
-      </Paper>
-    );
-  }
 
   render() {
+    var self = this
     return (
       <AppBar position="static" className={styles.appBar}>
         <Toolbar>
@@ -150,22 +111,34 @@ export default class TopNav extends React.Component {
                 CodeAmp
               </Typography>
             </Grid>
-            <Grid item xs={8} style={{ position: 'absolute', left: 200, width: '50%' }}>
-              <Autosuggest
-                renderInputComponent={this.renderInput}
-                suggestions={this.state.originalSuggestions}
-                onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-                onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
-                renderSuggestionsContainer={this.renderSuggestionsContainer}
-                getSuggestionValue={this.getSuggestionValue}
-                renderSuggestion={this.renderSuggestion}
-                inputProps={{
-                  autoFocus: true,
-                  placeholder: 'Search for a project...',
-                  value: this.state.value,
-                  onChange: this.handleChange,
-                }}
-              />    
+            <Grid item xs={8} style={{ position: 'absolute', left: '15%' }}>
+              <div>
+                <TextField
+                  autoFocus={false}
+                  value={this.state.projectQuery}
+                  onClick={()=>this.renderSuggestions(true)}
+                  onChange={this.onChange.bind(this)}
+                  placeholder="Search for a project or view your bookmarks"
+                  style={{ width: 800 }}
+                />            
+                <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>    
+                  {this.state.suggestions.map(function(suggestion){
+                    return (
+                      <Paper 
+                        key={suggestion.id} 
+                        className={styles.suggestion}
+                        square={true}>
+                        <ListItem onClick={()=>self.onSuggestionItemClick(suggestion)}>
+                          <ListItemText primary={suggestion.label} />
+                          {/* <ListItemIcon>
+                            <StarIcon />
+                          </ListItemIcon>                         */}
+                        </ListItem>                      
+                      </Paper>
+                    )
+                  })}
+                  </div>
+              </div>
             </Grid>
             <Grid item xs={2}>      
               <Chip 
