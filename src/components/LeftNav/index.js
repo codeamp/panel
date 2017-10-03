@@ -72,7 +72,7 @@ export default class LeftNav extends React.Component {
           <List>
           <ListItem>
             <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-          </ListItem>            
+          </ListItem>                      
           {this.props.store.app.leftNavItems.map(nav =>
           <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
             <ListItem button>

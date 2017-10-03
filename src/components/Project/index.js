@@ -187,11 +187,6 @@ export default class Project extends React.Component {
     })         
   }
 
-  componentWillUnmount() {
-    this.props.store.app.leftNavItems = [];
-    this.props.store.app.setProjectTitle('');
-  }  
-
   render() {
     const { loading, project } = this.props.data;
     const { store, serviceSpecs } = this.props;
