@@ -10,12 +10,25 @@ import DashboardIcon from 'material-ui-icons/Dashboard';
 import SupervisorAccountIcon from 'material-ui-icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
+import Collapse from 'material-ui/transitions/Collapse';
+
+import ExpandLess from 'material-ui-icons/ExpandLess';
+import ExpandMore from 'material-ui-icons/ExpandMore';
+import ServiceSpecIcon from 'material-ui-icons/Description';
 
 @withRouter
 @inject("store") @observer
 
 
 export default class LeftNav extends React.Component {
+  state = {
+    open: false
+  }
+
+  handleClick = () => {
+    this.setState({ open: !this.state.open });
+  };
+  
   render() {
     return (
       <Drawer type="persistent" open={true} className={styles.root}>
@@ -37,17 +50,29 @@ export default class LeftNav extends React.Component {
                 <ListItemText primary="Create" />
               </ListItem>
             </NavLink>
-            <NavLink to="/admin" exact activeClassName={styles.active}>
-              <ListItem button>
-                <ListItemIcon>
-                  <SupervisorAccountIcon />
-                </ListItemIcon>
-                <ListItemText primary="Admin" />
-              </ListItem>
-            </NavLink>
+            <ListItem button onClick={this.handleClick.bind(this)}>
+              <ListItemIcon>
+                <SupervisorAccountIcon />
+              </ListItemIcon>
+              <ListItemText primary="Admin" />
+              {this.state.open ? <ExpandLess /> : <ExpandMore />}                
+            </ListItem>
+            <Collapse in={this.state.open} transitionDuration="auto" unmountOnExit>            
+              <NavLink to="/admin/serviceSpecs" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <ServiceSpecIcon />
+                  </ListItemIcon>                  
+                  <ListItemText inset primary="Service Specs" />
+                </ListItem>
+              </NavLink>
+            </Collapse>            
           </List>
           <Divider/>
           <List>
+          <ListItem>
+            <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
+          </ListItem>            
           {this.props.store.app.leftNavItems.map(nav =>
           <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
             <ListItem button>
@@ -63,7 +88,7 @@ export default class LeftNav extends React.Component {
             </ListItem>
           </NavLink>
           )}
-          </List>
+          </List>          
         </div>
       </Drawer>
     );

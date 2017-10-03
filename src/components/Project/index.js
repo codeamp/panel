@@ -139,6 +139,7 @@ export default class Project extends React.Component {
   }
 
   componentDidMount() {
+
     this.props.socket.on("projects/" + this.props.data.variables.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
@@ -186,6 +187,11 @@ export default class Project extends React.Component {
     })         
   }
 
+  componentWillUnmount() {
+    this.props.store.app.leftNavItems = [];
+    this.props.store.app.setProjectTitle('');
+  }  
+
   render() {
     const { loading, project } = this.props.data;
     const { store, serviceSpecs } = this.props;
@@ -193,7 +199,9 @@ export default class Project extends React.Component {
     if(loading){
       return null;
     }
-    console.log(project)
+    
+    this.props.store.app.setProjectTitle(project.name);        
+
     return (
       <div className={styles.root}>
         <Switch>

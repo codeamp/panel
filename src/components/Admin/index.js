@@ -4,8 +4,6 @@ import { observer, inject } from 'mobx-react';
 import { Route, Switch } from "react-router-dom";
 import styles from './style.module.css';
 
-import ServiceSpecIcon from 'material-ui-icons/Description';
-
 import ServiceSpecs from './ServiceSpecs';
 
 @inject("store") @observer
@@ -13,15 +11,7 @@ import ServiceSpecs from './ServiceSpecs';
 export default class Admin extends React.Component {
 
   componentWillMount() {
-    console.log(this.props)
-    this.props.store.app.leftNavItems = [
-      {
-        key: "10",
-        icon: <ServiceSpecIcon />,
-        name: "Service Specs",
-        slug: this.props.match.url + "/serviceSpecs",
-      }, 
-    ];      
+    console.log(this.props)    
   }
 
   render() {

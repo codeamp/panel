@@ -34,9 +34,6 @@ export default class TopNav extends React.Component {
     return (
       <AppBar position="static" className={styles.appBar}>
         <Toolbar>
-          <IconButton color="contrast" aria-label="Menu">
-            <MenuIcon />
-          </IconButton>
           <Typography type="title" color="inherit" className={styles.flex}>
             CodeAmp
           </Typography>
