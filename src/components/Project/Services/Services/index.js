@@ -6,8 +6,9 @@ import Button from 'material-ui/Button';
 import AppBar from 'material-ui/AppBar';
 import AddIcon from 'material-ui-icons/Add';
 import Drawer from 'material-ui/Drawer';
-import Toolbar from 'material-ui/Toolbar';
 import IconButton from 'material-ui/IconButton';
+import Paper from 'material-ui/Paper';
+import Toolbar from 'material-ui/Toolbar';
 import CloseIcon from 'material-ui-icons/Close';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Card, { CardContent } from 'material-ui/Card';
@@ -18,6 +19,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
@@ -38,13 +40,13 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-  mutation CreateService ($projectId: String!, $command: String!, $name: String!, $spec: String!,
+  mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
       $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
       createService(service:{ 
       projectId: $projectId,
       command: $command,
       name: $name,
-      serviceSpec: $spec,
+      serviceSpecId: $serviceSpecId,
       count: $count,
       oneShot: $oneShot,
       containerPorts: $containerPorts
@@ -58,14 +60,14 @@ const inlineStyles = {
   }
 `, { name: "createService" })
 @graphql(gql`
-  mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $spec: String!,
+  mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
       $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
       updateService(service:{ 
       id: $id,
       projectId: $projectId,
       command: $command,
       name: $name,
-      serviceSpec: $spec,
+      serviceSpecId: $serviceSpecId,
       count: $count,
       oneShot: $oneShot,
       containerPorts: $containerPorts
@@ -80,14 +82,14 @@ const inlineStyles = {
 `, { name: "updateService" })
 
 @graphql(gql`
-mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $spec: String!,
+mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
     $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
     deleteService(service:{ 
     id: $id,
     projectId: $projectId,
     command: $command,
     name: $name,
-    serviceSpec: $spec,
+    serviceSpecId: $serviceSpecId,
     count: $count,
     oneShot: $oneShot,
     containerPorts: $containerPorts
@@ -116,6 +118,7 @@ export default class Services extends React.Component {
       loading: false,
       drawerText: 'Create',
       dialogOpen: false,
+      selected: null,
     }
   }
 
@@ -126,10 +129,20 @@ export default class Services extends React.Component {
   componentWillMount(){
     console.log('mounting services tab...')
 
+    const serviceSpecKeys = this.props.serviceSpecs.map(function(serviceSpec){
+      return serviceSpec.id
+    })
+    const serviceSpecDisplays = this.props.serviceSpecs.map(function(serviceSpec){
+      return { key: serviceSpec.id, value: serviceSpec.name }
+    })    
+
+
+    console.log(serviceSpecDisplays)
+
     const fields = [
       'id',
       'name',
-      'spec',
+      'serviceSpecId',
       'count',
       'command',
       'oneShot',
@@ -142,7 +155,7 @@ export default class Services extends React.Component {
 
     const rules = {
       'name': 'string|required',
-      'spec': 'string|required',
+      'serviceSpecId': 'string|required',
       'command': 'string|required',
       'count': 'numeric|required|min:0',
       'containerPorts[].port': 'numeric|required|between:1,65535',
@@ -151,7 +164,7 @@ export default class Services extends React.Component {
 
     const labels = {
       'name': 'Name',
-      'spec': 'Service Spec',
+      'serviceSpecId': 'Service Spec',
       'count': 'Count',
       'command': 'Command',
       'containerPorts': 'Container Ports',
@@ -161,11 +174,12 @@ export default class Services extends React.Component {
 
     const initials = {
       'name': '',
-      'spec': 'Uber Worker',
+      'serviceSpecId': serviceSpecKeys[0],
       'command': '',      
       'projectId': this.props.project.id,
       'oneShot': this.state.oneShot,
       'containerPorts[].protocol': 'TCP',
+      'count': 0,
     }
 
     const types = {
@@ -173,10 +187,13 @@ export default class Services extends React.Component {
       'containerPorts[].port': 'number',
     };
 
+    const keys = {
+      'serviceSpecId': serviceSpecKeys
+    };
+
     const extra = {
-      'spec': ['General-purpose', 'Console', 'General-purpose - L', 
-        'General-purpose - XL', 'Long running worker - XL', 'General-purpose - XXL', 'Uber Worker'],
-        'containerPorts[].protocol': ['TCP', 'UDP']
+      'serviceSpecId': serviceSpecDisplays,
+      'containerPorts[].protocol': ['TCP', 'UDP']
     };
 
     const $hooks = {
@@ -191,22 +208,35 @@ export default class Services extends React.Component {
       },
       onSuccess(instance){
         console.log('Form Values!', instance.values())
+      },
+      sync(instance){
+        console.log('sync', instance)
+      },
+      onChange(instance){
+        console.log(instance)
+        console.log(instance.values())
       }
     };
 
     const hooks = {
       'containerPorts': $hooks,
+      'serviceSpecId': $hooks,
       'containerPorts[]': $hooks,
     };
 
     const plugins = { dvr: validatorjs };
 
-    this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins });                
-  }
+    this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });                
+    console.log(this.serviceForm.$('serviceSpecId').value)
+  }  
 
   componentDidMount(){
     console.log("Resources")
   }
+
+  isSelected(id){
+    return this.state.selected == id
+  }  
 
   addService() {
     console.log("HELLO")
@@ -249,8 +279,9 @@ export default class Services extends React.Component {
 
   handleClick = event => {
     console.log(this.props)
-    this.serviceForm.$('containerPorts').clear()
     console.log("HANDLECLICK!")
+    this.serviceForm.$('containerPorts').set(new Array())    
+    console.log(this.serviceForm.values())
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget, currentService: { id: -1 }, drawerText: 'Create' });
   };
 
@@ -259,7 +290,11 @@ export default class Services extends React.Component {
     if(value === "one-shot"){
       oneShot = true;
     }
+
     this.serviceForm.clear()
+
+    this.serviceForm.$('containerPorts').set(new Array())
+    console.log(this.serviceForm.values())
 
     this.serviceForm.$('oneShot').set(oneShot);
 
@@ -271,7 +306,7 @@ export default class Services extends React.Component {
     this.serviceForm.$('name').set(service.name);
     this.serviceForm.$('count').set(service.count);
     this.serviceForm.$('command').set(service.command);
-    this.serviceForm.$('spec').set(service.serviceSpec);
+    this.serviceForm.$('serviceSpecId').set(service.serviceSpec.id);
     this.serviceForm.$('containerPorts').set(service.containerPorts);
     this.serviceForm.$('oneShot').set(service.oneShot);
     this.serviceForm.$('id').set(service.id);
@@ -369,25 +404,63 @@ export default class Services extends React.Component {
 
     return (
       <div>                         
-          {services.map(service => (
-            <Card 
-              className={(this.state.currentService.id === service.id) === true ? styles.serviceViewHighlighted : styles.serviceView} 
-              onClick={() => this.editService(service)}>
-              <CardContent>
+          <Paper className={styles.tablePaper}>
+            <Toolbar>
+              <div>
                 <Typography type="title">
-                  {service.name}
+                  Services
                 </Typography>
-                <Grid container spacing={24}>
-                  <Grid item xs={1}>
-                    <Input disabled value={service.count + 'x'} className={styles.serviceCount} />
-                  </Grid>
-                  <Grid item xs={11}>
-                    <Input disabled value={service.command} className={styles.commandDisplay} />
-                  </Grid>                                
-                </Grid>
-              </CardContent>
-            </Card>                  
-          ))}
+              </div>
+            </Toolbar>              
+            <Table bodyStyle={{ overflow: 'visible' }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    Name
+                  </TableCell>
+                  <TableCell>
+                    Count
+                  </TableCell>                  
+                  <TableCell>
+                    Command
+                  </TableCell>
+                  <TableCell>
+                    One-shot
+                  </TableCell>
+                  <TableCell>
+                    Open Ports
+                  </TableCell>                               
+                  <TableCell>
+                    Service Spec
+                  </TableCell>                                                 
+                  <TableCell>
+                    Created
+                  </TableCell>                                                                                  
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {services.map(service => {
+                  const isSelected = this.isSelected(service.id);
+                  return (
+                    <TableRow 
+                      hover
+                      onClick={event => this.editService(service)}
+                      selected={isSelected}
+                      tabIndex={-1}
+                      key={service.id}>
+                      <TableCell> { service.name} </TableCell>
+                      <TableCell> { service.count} </TableCell>                      
+                      <TableCell> <Input value={ service.command} disabled fullWidth={true} /></TableCell>
+                      <TableCell> { service.oneShot ? "Yes" : "No" }</TableCell>
+                      <TableCell> { service.containerPorts.length}</TableCell>                      
+                      <TableCell> { service.serviceSpec.name}</TableCell>                      
+                      <TableCell> { service.created}</TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </Paper>
           
           <Button fab aria-label="Add" type="submit" raised color="primary" 
               style={inlineStyles.addButton}
@@ -434,7 +507,7 @@ export default class Services extends React.Component {
                         <InputField field={this.serviceForm.$('count')}/>                                                          
                       </Grid>
                       <Grid item xs={9}>
-                        <SelectField field={this.serviceForm.$('spec')} />
+                        <SelectField field={this.serviceForm.$('serviceSpecId')} />
                       </Grid>
                       <Grid item xs={12}>
                         { addContainerPorts }

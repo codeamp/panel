@@ -1,8 +1,9 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
-import Typography from 'material-ui/Typography';
 
+import Typography from 'material-ui/Typography';
+import Grid from 'material-ui/Grid';
 import Input from 'material-ui/Input';
 import InputLabel from 'material-ui/Input/InputLabel';
 import Card, {CardContent, CardActions} from 'material-ui/Card';
@@ -138,7 +139,7 @@ export default class Create extends React.Component {
     this.props.mutate({
       variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked  }
     }).then(({data}) => {
-
+      self.props.history.push('/projects/' + data.createProject.slug)
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
       console.log(obj)
@@ -158,6 +159,7 @@ export default class Create extends React.Component {
   }
 
   render() {
+    console.log(this.props)
     let urlTextField = (
       <FormControl className={styles.formControl}>
         <InputLabel htmlFor="name-simple">Git Url</InputLabel>
@@ -183,45 +185,53 @@ export default class Create extends React.Component {
       <div className={styles.root}>
         <Card className={styles.card}>
           <CardContent>
-            <Typography type="subheading" className={styles.title}>
-              {this.state.title}
-            </Typography>
-             {urlTextField}
-            <FormControl
-              className={styles.formControl}
-              required>
-              <FormLabel>
-                Repository Type
-              </FormLabel>
-              <RadioGroup
-                aria-label="repoType"
-                name="repoType"
-                value={this.state.value}
-                onChange={this.handleRepoTypeChange.bind(this)}
-              >
-                <FormControlLabel disabled={!this.state.urlIsValid} value="public" control={<Radio checked={this.state.repoType === 'public'} />} label="Public" />
-                <FormControlLabel disabled={!this.state.urlIsValid} value="private" control={<Radio checked={this.state.repoType === 'private'} />} label="Private" />
-              </RadioGroup>
+            <Grid container spacing={24}>
+              <Grid item xs={12}>
+                <Typography type="subheading" className={styles.title}>
+                  {this.state.title}
+                </Typography>
+              </Grid>
 
+              <Grid item xs={12}>
+                {urlTextField}
+              </Grid>
+              
+              <Grid item xs={12}>
+                <FormControl
+                  className={styles.formControl}
+                  required>
+                  <FormLabel>
+                    Repository Type
+                  </FormLabel>
+                  <RadioGroup
+                    aria-label="repoType"
+                    name="repoType"
+                    value={this.state.value}
+                    onChange={this.handleRepoTypeChange.bind(this)}
+                  >
+                    <FormControlLabel disabled={!this.state.urlIsValid} value="public" control={<Radio checked={this.state.repoType === 'public'} />} label="Public" />
+                    <FormControlLabel disabled={!this.state.urlIsValid} value="private" control={<Radio checked={this.state.repoType === 'private'} />} label="Private" />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
 
-            </FormControl>
-
-            <FormControl
-              className={styles.formControl}
-              required>
-              <FormLabel>
-                Project Type
-              </FormLabel>
-            <RadioGroup
-                aria-label="projectType"
-                name="projectType"
-                value={this.state.value}
-              >
-                <FormControlLabel value="docker" control={<Radio checked={this.state.projectType === 'docker'} />} label="Docker" />
-              </RadioGroup>
-            </FormControl>
-
-
+              <Grid item xsx={12}>
+                <FormControl
+                  className={styles.formControl}
+                  required>
+                  <FormLabel>
+                    Project Type
+                  </FormLabel>
+                <RadioGroup
+                    aria-label="projectType"
+                    name="projectType"
+                    value={this.state.value}
+                  >
+                    <FormControlLabel value="docker" control={<Radio checked={this.state.projectType === 'docker'} />} label="Docker" />
+                  </RadioGroup>
+                </FormControl>
+              </Grid>
+            </Grid>
           </CardContent>
           <CardActions>
             <Button

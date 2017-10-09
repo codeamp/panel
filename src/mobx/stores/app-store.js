@@ -7,6 +7,8 @@ class AppStore {
       title: 'CodeAmp Panel',
       user: null,
       leftNavItems: [],
+      leftNavProjectTitle: '',
+      bookmarks: [],
       ws: {
         channel: null,
         data: null,
@@ -23,15 +25,19 @@ class AppStore {
   });
 
   setNavProjects = action(projects => {
-    this.leftNavItems = []
+    this.bookmarks = []
     map(projects, (project)=>{
-      this.leftNavItems.push({
+      this.bookmarks.push({
         key: project.id,
         name: project.name,
         slug: "/projects/"+project.slug,
       })
     });
   });
+
+  setProjectTitle = action(title => {
+    this.leftNavProjectTitle = title;
+  })
 
   setSnackbar = action(params => {
     console.log(params)

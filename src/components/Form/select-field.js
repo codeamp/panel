@@ -9,23 +9,28 @@ import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
-export default observer(({field }) => (
-  <div>
-    <FormControl>
-        <InputLabel>{field.label}</InputLabel>
-        <Select
-            {...field.bind()}
-            value={field.value}
-            className={styles.selectField}
-            input={<Input id={field.id} {...field.bind()} />}
-        >
-            {field.extra.map(option => (
-                <MenuItem key={option} value={option}>
-                    {option}
-                </MenuItem>
-            ))}
-        </Select>
-        <FormHelperText> {field.helperText} </FormHelperText>
-    </FormControl>
-  </div>
-));
+export default observer(({field }) => {
+  console.log(field)
+  console.log(field.value)
+
+  return (
+    <div>
+        <FormControl>
+            <InputLabel>{field.label}</InputLabel>
+            <Select
+                {...field.bind()}
+                value={field.value}
+                className={styles.selectField}
+                input={<Input id={field.key} />}
+            >
+                {field.extra.map(option => (
+                    <MenuItem value={option.key}>
+                        {option.value}
+                    </MenuItem>
+                ))}
+            </Select>
+            <FormHelperText> {field.helperText} </FormHelperText>
+        </FormControl>
+    </div>
+  )
+});

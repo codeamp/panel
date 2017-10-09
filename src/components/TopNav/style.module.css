@@ -7,5 +7,19 @@
 }
 
 .appBar {
-  z-index: 1000;
+}
+
+.suggestion{ 
+  z-index: 100;
+  border-radius: 0px;
+}
+
+.suggestion:hover{
+  background-color: lightsteelblue;
+}
+
+
+.showNone {
+  visibility: hidden;
+  display: none;
 }

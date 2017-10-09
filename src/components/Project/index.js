@@ -26,17 +26,45 @@ const query = gql`
       rsaPublicKey
       gitProtocol
       gitUrl
+      environmentVariables {
+        id
+        key
+        value
+        user {
+          id
+          email
+        }
+        type
+        created
+        version
+        versions {
+          id
+          key
+          value
+          user {
+            id
+            email
+          }
+          type
+          created
+          version
+        }
+      }
       services {
         id
         name
         command
-        serviceSpec
+        serviceSpec {
+          id
+          name
+        }
         count
         oneShot
         containerPorts {
           port 
           protocol 
         }
+        created
       }
       features {
         message
@@ -77,6 +105,25 @@ const query = gql`
   }
 `
 
+// @graphql(gql`
+// query EnvironmentVariablesWithAllVersions($key: String!, $projectId: String!){
+//   environmentVariablesWithAllVersions(environmentVariable:{
+//     key: $key,
+//     projectId: $projectId,
+//   }) {
+//     id
+//     key
+//     value
+//     creator {
+//       id
+//       email
+//     }
+//     version
+//   }
+// }
+// `)
+
+
 @graphql(query, {
   options: (props) => ({
     variables: {
@@ -84,6 +131,8 @@ const query = gql`
     }
   })
 })
+
+
 
 @inject("store") @observer
 
@@ -135,6 +184,7 @@ export default class Project extends React.Component {
   }
 
   componentDidMount() {
+
     this.props.socket.on("projects/" + this.props.data.variables.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
@@ -172,6 +222,7 @@ export default class Project extends React.Component {
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was updated"})
       }, 2000);
     })  
+
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/services/deleted", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/services/deleted', data);
       clearTimeout(this.state.fetchDelay);
@@ -179,17 +230,38 @@ export default class Project extends React.Component {
         this.props.data.refetch();        
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was deleted"})
       }, 2000);
+    })         
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/created", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/created', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
+      }, 2000);
+    })    
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/updated", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/updated', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
+      }, 2000);
     })        
   }
 
   render() {
     const { loading, project } = this.props.data;
-    const { store } = this.props;
+    console.log(this.props)
+    const { store, serviceSpecs, user } = this.props;
 
     if(loading){
       return null;
     }
-    console.log(project)
+    
+    this.props.store.app.setProjectTitle(project.name);        
+
     return (
       <div className={styles.root}>
         <Switch>
@@ -197,7 +269,7 @@ export default class Project extends React.Component {
             <ProjectFeatures project={project} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
-            <ProjectServices project={project} store={store} />
+            <ProjectServices user={user} project={project} store={store} serviceSpecs={serviceSpecs} />
           )}/>          
           <Route exact path='/projects/:slug/features' render={(props) => (
             <ProjectFeatures project={project} />
