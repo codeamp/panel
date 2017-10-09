@@ -31,6 +31,18 @@ export default class LeftNav extends React.Component {
   };
   
   render() {
+
+    let projectTitleItem = ""
+    if(this.props.store.app.leftNavProjectTitle !== ''){
+      projectTitleItem = (
+        <ListItem button onClick={() => this.setState({ openProject: !this.state.openProject })}>
+          <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
+          {this.state.openProject ? <ExpandLess /> : <ExpandMore />}                
+        </ListItem>              
+      )      
+    }
+
+
     return (
       <Drawer type="persistent" open={true} className={styles.root}>
         <div className={styles.drawer}>
@@ -43,6 +55,7 @@ export default class LeftNav extends React.Component {
                 <ListItemText primary="Dashboard" />
               </ListItem>
             </NavLink>
+
             <NavLink to="/create" exact activeClassName={styles.active}>
               <ListItem button>
                 <ListItemIcon>
@@ -51,6 +64,7 @@ export default class LeftNav extends React.Component {
                 <ListItemText primary="Create" />
               </ListItem>
             </NavLink>
+
             <ListItem button onClick={this.handleClick.bind(this)}>
               <ListItemIcon>
                 <SupervisorAccountIcon />
@@ -71,10 +85,7 @@ export default class LeftNav extends React.Component {
           </List>
           <Divider/>
           <List>
-          <ListItem button onClick={() => this.setState({ openProject: !this.state.openProject })}>
-            <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-            {this.state.openProject ? <ExpandLess /> : <ExpandMore />}                
-          </ListItem>        
+          { projectTitleItem }
           <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>            
             {this.props.store.app.leftNavItems.map(nav =>
               <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>

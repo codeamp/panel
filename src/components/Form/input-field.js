@@ -11,7 +11,7 @@ export default observer(({field, fullWidth}) => (
   <div className={styles.root}>
     <FormControl fullWidth={fullWidth} {...field.error ? {error: true} : {}}>
       <InputLabel htmlFor={field.id}>{field.label}</InputLabel>
-      <Input type={field.type} {...field.bind()}/>
+      <Input type={field.type} {...field.bind()} />
       <FormHelperText>{field.error}</FormHelperText>
     </FormControl>
   </div>

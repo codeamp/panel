@@ -81,7 +81,7 @@ export default class App extends React.Component {
   };  
 
   render() {
-    const { loading, projects, serviceSpecs} = this.props.data;
+    const { loading, projects, serviceSpecs, user } = this.props.data;
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -113,7 +113,7 @@ export default class App extends React.Component {
                     <Admin data={this.props.data} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} serviceSpecs={serviceSpecs} {...props} />
+                    <Project socket={socket} user={user} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                 </Switch>
               </div>

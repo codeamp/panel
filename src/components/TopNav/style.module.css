@@ -21,4 +21,5 @@
 
 .showNone {
   visibility: hidden;
+  display: none;
 }

@@ -291,7 +291,7 @@ export default class Services extends React.Component {
       oneShot = true;
     }
 
-    this.serviceForm.reset()
+    this.serviceForm.clear()
 
     this.serviceForm.$('containerPorts').set(new Array())
     console.log(this.serviceForm.values())
@@ -404,7 +404,7 @@ export default class Services extends React.Component {
 
     return (
       <div>                         
-          <Paper>
+          <Paper className={styles.tablePaper}>
             <Toolbar>
               <div>
                 <Typography type="title">
@@ -412,7 +412,7 @@ export default class Services extends React.Component {
                 </Typography>
               </div>
             </Toolbar>              
-            <Table>
+            <Table bodyStyle={{ overflow: 'visible' }}>
               <TableHead>
                 <TableRow>
                   <TableCell>
