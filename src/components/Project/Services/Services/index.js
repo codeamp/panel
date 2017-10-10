@@ -262,7 +262,7 @@ export default class Services extends React.Component {
   }    
 
   handleClick = event => {
-    this.serviceForm.$('containerPorts').set(new Array())    
+    this.serviceForm.$('containerPorts').set(new Array())
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget, currentService: { id: -1 }, drawerText: 'Create' });
   };
 

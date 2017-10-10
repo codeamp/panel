@@ -8,6 +8,7 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
+import Input from 'material-ui/Input';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -15,7 +16,6 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import Menu, { MenuItem } from 'material-ui/Menu';
-import { grey } from 'material-ui/colors';
 
 import InputField from 'components/Form/input-field';
 import TextareaField from 'components/Form/textarea-field';
@@ -401,12 +401,17 @@ export default class EnvironmentVariables extends React.Component {
 
                     {this.envVarForm.$('type').value === 'normal' &&
                       <Grid item xs={12}>
-                        <Grid item xs={5}>  
+                        <Grid item xs={6}>  
                           <InputField field={this.envVarForm.$('key')} fullWidth={true} />
                         </Grid>
-                        <Grid item xs={5}>
+                        <Grid item xs={6}>
                           <InputField field={this.envVarForm.$('value')} fullWidth={true} />
                         </Grid>            
+                        {this.state.currentEnvVarVersion.id !== -1 &&
+                          <Grid item xs={6}>
+                            <Input value={this.state.currentEnvVarVersion.value} fullWidth={true} disabled />
+                          </Grid>                                  
+                        }                        
                       </Grid>                    
                     }
 
@@ -418,24 +423,24 @@ export default class EnvironmentVariables extends React.Component {
                         <br/>
                         <Grid item xs={5}>
                           <TextareaField field={this.envVarForm.$('value')} />
-                        </Grid>            
+                        </Grid>          
+                        {this.state.currentEnvVarVersion.id !== -1 &&
+                          <Grid item xs={6}>
+                            <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
+                              {this.state.currentEnvVarVersion.value}
+                            </textarea>
+                          </Grid>                                  
+                        }
                       </Grid>                    
                     }                    
 
                     {this.state.currentEnvVarVersion.id !== -1 &&
                       <Grid item xs={12}>
-                        <Grid item xs={12} style={{ maxHeight: 200, width: '100%', overflow: 'scroll', border: '1px solid black', padding: 5, marginBottom: 10, background: grey[100] }}>
-                          <Typography type="body2">
-                            {this.state.currentEnvVarVersion.value}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Button color="default" 
-                            disabled={this.state.currentEnvVarVersion.value === this.envVarForm.$('value').value}
-                            raised onClick={this.replaceEnvVarValue.bind(this)}>
-                            Use It
-                          </Button>
-                        </Grid>
+                        <Button color="default" 
+                          disabled={this.state.currentEnvVarVersion.value === this.envVarForm.$('value').value}
+                          raised onClick={this.replaceEnvVarValue.bind(this)}>
+                          Use It
+                        </Button>
                       </Grid>
                     }
 
@@ -489,9 +494,6 @@ export default class EnvironmentVariables extends React.Component {
                                   selected={isSelected}
                                   tabIndex={-1}
                                   onClick={() => self.selectEnvVarVersionId(envVar)}
-                                  style={{ 
-                                    height: isSelected ? 100 : 50
-                                  }}
                                 key={envVar.id}>
                                 <TableCell>
                                   {envVar.version}
