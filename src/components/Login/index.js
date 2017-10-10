@@ -78,12 +78,12 @@ class Login extends Component {
       <div className={styles.root}>
         <Grid container justify="center">
           <Grid item xs={4}>
-            <Card className="container">
-              <CardHeader title="Login"/>
+            <Card className={styles.container}>
+              <CardHeader title="CodeAmp Login"/>
               <form onSubmit={form.onSubmit}>
                 <CardContent>
-                  <InputField field={form.$('email')}/>
-                  <InputField field={form.$('password')} />
+                  <InputField field={form.$('email')} fullWidth={true} />
+                  <InputField field={form.$('password')} fullWidth={true} />
                 </CardContent>
                 <CardActions>
                   <Button type="submit" onClick={e => form.onSubmit(e, { onSuccess: this.onSuccess, onError: this.onError })}>Submit</Button>

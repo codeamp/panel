@@ -7,6 +7,7 @@ import { observer } from 'mobx-react';
 import styles from './style.module.css';
 
 import Services from './Services';
+import EnvironmentVariables from './EnvironmentVariables';
 
 
 function TabContainer(props) {
@@ -29,9 +30,7 @@ export default class ProjectServices extends React.Component {
 
   render() {
     const { value } = this.state;
-    const { project, store } = this.props;
-
-    console.log(project)
+    const { project, store, serviceSpecs, user } = this.props;
 
     return (
       <div className={styles.root}>
@@ -44,10 +43,10 @@ export default class ProjectServices extends React.Component {
                
         <Grid container spacing={24}>                                                            
           <Grid item sm={12}>                    
-            {value === 0 && <TabContainer> <Services project={project} store={store} /> </TabContainer>}
+            {value === 0 && <TabContainer> <Services serviceSpecs={serviceSpecs} project={project} store={store} /> </TabContainer>}
           </Grid>
           <Grid item sm={12}>
-            {value === 1 && <TabContainer>{'Environment Variables'}</TabContainer>}
+            {value === 1 && <TabContainer><EnvironmentVariables project={project} store={store} user={user} /></TabContainer>}
           </Grid>
         </Grid>            
       </div>

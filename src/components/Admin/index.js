@@ -4,8 +4,6 @@ import { observer, inject } from 'mobx-react';
 import { Route, Switch } from "react-router-dom";
 import styles from './style.module.css';
 
-import ServiceSpecIcon from 'material-ui-icons/Description';
-
 import ServiceSpecs from './ServiceSpecs';
 
 @inject("store") @observer
@@ -33,7 +31,7 @@ export default class Admin extends React.Component {
       <div className={styles.root}>
         <Switch>
           <Route path='/admin/serviceSpecs' render={(props) => (
-            <ServiceSpecs serviceSpecs={serviceSpecs} />
+            <ServiceSpecs data={this.props.data} serviceSpecs={serviceSpecs} socket={this.props.socket} />
           )}/>         
         </Switch>
       </div>
