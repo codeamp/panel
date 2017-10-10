@@ -199,7 +199,6 @@ export default class EnvironmentVariables extends React.Component {
     this.envVarForm.$('type').set(envVar.type)
     this.envVarForm.$('id').set(envVar.id)
     this.envVarForm.$('key').set('disabled', true)
-
     this.setState({ open: true, currentEnvVar: envVar, currentEnvVarVersion: DEFAULT_ENV_VAR, drawerText: "Update" })
   }
 
@@ -223,7 +222,6 @@ export default class EnvironmentVariables extends React.Component {
 
   onSuccess(form){
     this.envVarForm.$('key').set('disabled', false)
-
     if(this.state.drawerText === "Creating"){
       this.props.createEnvironmentVariable({
         variables: form.values(),
@@ -321,7 +319,6 @@ export default class EnvironmentVariables extends React.Component {
                   Creator
                 </TableCell>                                                
                 <TableCell>
-                  Last Modified At
                 </TableCell>                                                                
                 <TableCell>
                   Version
@@ -398,7 +395,6 @@ export default class EnvironmentVariables extends React.Component {
               <form>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
-
                     {this.envVarForm.$('type').value === 'normal' &&
                       <Grid item xs={12}>
                         <Grid item xs={6}>  
@@ -443,7 +439,6 @@ export default class EnvironmentVariables extends React.Component {
                         </Button>
                       </Grid>
                     }
-
                     <Grid item xs={12}>
                       <Button color="primary" 
                           className={styles.buttonSpacing}

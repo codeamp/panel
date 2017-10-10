@@ -133,6 +133,16 @@ export default class Services extends React.Component {
       return { key: serviceSpec.id, value: serviceSpec.name }
     })    
 
+    const serviceSpecKeys = this.props.serviceSpecs.map(function(serviceSpec){
+      return serviceSpec.id
+    })
+    const serviceSpecDisplays = this.props.serviceSpecs.map(function(serviceSpec){
+      return { key: serviceSpec.id, value: serviceSpec.name }
+    })    
+
+
+    console.log(serviceSpecDisplays)
+
     const fields = [
       'id',
       'name',
@@ -224,6 +234,10 @@ export default class Services extends React.Component {
 
   isSelected(id){
     return this.state.selected === id
+  }  
+
+  isSelected(id){
+    return this.state.selected == id
   }  
 
   addService() {

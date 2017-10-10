@@ -10,10 +10,6 @@ import ServiceSpecs from './ServiceSpecs';
 
 export default class Admin extends React.Component {
 
-  componentWillMount() {
-    console.log(this.props)    
-  }
-
   render() {
     console.log(this.props)
     const { serviceSpecs } = this.props;

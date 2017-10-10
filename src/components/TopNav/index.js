@@ -6,7 +6,6 @@ import styles from './style.module.css';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
-
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';

@@ -17,9 +17,7 @@ import Dialog, {
 
 import AddIcon from 'material-ui-icons/Add';
 
-
 import InputField from 'components/Form/input-field';
-
 
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
@@ -182,7 +180,7 @@ export default class ServiceSpecs extends React.Component {
     const extra = {
 
     };
-
+    
     const hooks = {
 
     };
