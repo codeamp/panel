@@ -67,6 +67,7 @@ const query = gql`
         created
       }
       features {
+        id
         message
         user
         hash
@@ -248,7 +249,16 @@ export default class Project extends React.Component {
         this.props.data.refetch();        
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
       }, 2000);
-    })        
+    })      
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/deleted", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/deleted', data);
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();        
+        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was deleted."})
+      }, 2000);
+    })            
   }
 
   render() {
@@ -266,13 +276,13 @@ export default class Project extends React.Component {
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures project={project} />
+            <ProjectFeatures project={project} store={store} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
             <ProjectServices user={user} project={project} store={store} serviceSpecs={serviceSpecs} />
           )}/>          
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures project={project} />
+            <ProjectFeatures project={project} store={store} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
             <ProjectReleases project={project} />

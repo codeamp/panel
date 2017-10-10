@@ -4,8 +4,12 @@ import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
+import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
 import { CircularProgress } from 'material-ui/Progress';
+
+import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
+
 import { graphql, gql } from 'react-apollo';
 
 
@@ -114,16 +118,26 @@ class FeatureView extends React.Component {
   render() {
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
+        <div 
+          style={{ visibility: 'hidden', display: 'none' }}
+          id={"git-hash-" + this.props.feature.id}>
+            {this.props.feature.hash}
+        </div>            
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
-            <Typography className={styles.featureCommitMsg}>
-              { this.props.feature.hash } - { this.props.feature.message }
+            <Typography component="body1" style={{ fontSize: 14 }}>
+              <b> { this.props.feature.message } </b>
             </Typography>
-            <Typography component="p" className={styles.featureAuthor}>
-              by <b> { this.props.feature.user } </b> - { this.props.feature.created } 
+            <Typography component="body2" style={{ fontSize: 12 }}>
+              { this.props.feature.user } created on { new Date(this.props.feature.created).toDateString() } at { new Date(this.props.feature.created).toTimeString() }
             </Typography>
           </CardContent>
-          <CardActions style={{ float: 'right', paddingRight: 35 }}>
+          <CardActions style={{ position: "absolute", right: 10, top: 10 }}>
+          <IconButton raised color="primary" 
+              onClick={() => this.props.copyGitHash(this.props.feature.id)}
+              className={this.props.showFullView === false ? styles.hide : '' }>
+              <CopyGitHashIcon />
+            </IconButton>          
             <Button raised color="primary" 
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
@@ -146,14 +160,6 @@ export default class Features extends React.Component {
     };       
   }
 
-  componentDidMount(){    
-    if(this.props.store){
-      if(this.props.store.ws.msg.channel === "projects/" + this.props.project.slug + "/GitSync"){
-        console.log(this.props.store.ws.msg.data)
-      }          
-    }
-  }
-
   handleNext = () => {
     this.setState({
       activeStep: this.state.activeStep + 1,
@@ -166,12 +172,27 @@ export default class Features extends React.Component {
     });
   };
 
+  copyGitHash(featureId){
+    var gitHash = document.querySelector('#git-hash-' + featureId);
+    var range = document.createRange();
+    range.selectNode(gitHash);
+    window.getSelection().addRange(range);
+
+    var successful = document.execCommand('copy')
+    console.log(this.props)
+    if(successful){
+      this.props.store.app.setSnackbar({msg: "Git hash copied."});
+    }    
+  }
+  
+
   renderFeatureList = (project) => {
 
     return (
       <div>
         {[...Array(project.features.length)].map((x, i) =>
             <FeatureView
+              copyGitHash={this.copyGitHash.bind(this)}
               key={project.features[i].hash}
               feature={project.features[i]} 
               handleOnClick={() => this.setState({ activeFeatureKey: i })} 
@@ -200,6 +221,8 @@ export default class Features extends React.Component {
     if(!this.props.project){
       return null
     }
+
+    console.log(this.props)
 
     let defaultComponent = (<Typography>Loading...</Typography>)
 

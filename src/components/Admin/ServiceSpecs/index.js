@@ -1,6 +1,5 @@
 import React from 'react';
 
-import  Card, { CardContent } from 'material-ui/Card';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
@@ -18,9 +17,7 @@ import Dialog, {
 
 import AddIcon from 'material-ui-icons/Add';
 
-import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
-import RadioField from 'components/Form/radio-field';
 
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
@@ -183,11 +180,7 @@ export default class ServiceSpecs extends React.Component {
     const extra = {
 
     };
-
-    const $hooks = {
-
-    };
-
+    
     const hooks = {
 
     };
@@ -199,7 +192,7 @@ export default class ServiceSpecs extends React.Component {
 
   handleToggleDrawer(){
     console.log(this.state.open, this.serviceSpecForm.values())
-    if(this.state.open == true){
+    if(this.state.open === true){
       this.serviceSpecForm.clear()
     }
     console.log(this.serviceSpecForm.values())
@@ -208,7 +201,7 @@ export default class ServiceSpecs extends React.Component {
   }  
 
   isSelected(id){
-    return this.state.selected == id
+    return this.state.selected === id
   }
   handleClick(e, serviceSpec){
     console.log(serviceSpec)
@@ -360,7 +353,10 @@ export default class ServiceSpecs extends React.Component {
                     )
                   })}
                 </TableBody>
+              </Table>
             </Paper>
+          </Grid>
+        </Grid>
         <Button fab aria-label="Add" type="submit" raised color="primary" 
               style={inlineStyles.addButton}
               onClick={this.handleNewSpecClick.bind(this)}>

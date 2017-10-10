@@ -10,18 +10,6 @@ import ServiceSpecs from './ServiceSpecs';
 
 export default class Admin extends React.Component {
 
-  componentWillMount() {
-    console.log(this.props)
-    this.props.store.app.leftNavItems = [
-      {
-        key: "10",
-        icon: <ServiceSpecIcon />,
-        name: "Service Specs",
-        slug: this.props.match.url + "/serviceSpecs",
-      }, 
-    ];      
-  }
-
   render() {
     console.log(this.props)
     const { serviceSpecs } = this.props;

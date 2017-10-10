@@ -2,25 +2,16 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 
 import styles from './style.module.css';
-import autosuggest from './autosuggest.module.css';
 
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
-import IconButton from 'material-ui/IconButton';
 import Chip from 'material-ui/Chip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
-
-import StarIcon from 'material-ui-icons/Star';
-
-import match from 'autosuggest-highlight/match';
-import parse from 'autosuggest-highlight/parse';
-
-import Autosuggest from 'react-autosuggest';
+import { ListItem, ListItemText } from 'material-ui/List';
 
 @inject("store") @observer
 

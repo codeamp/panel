@@ -11,7 +11,6 @@ import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
 import CloseIcon from 'material-ui-icons/Close';
 import Menu, { MenuItem } from 'material-ui/Menu';
-import Card, { CardContent } from 'material-ui/Card';
 import Input from 'material-ui/Input';
 import Dialog, {
   DialogActions,
@@ -127,7 +126,12 @@ export default class Services extends React.Component {
   }
 
   componentWillMount(){
-    console.log('mounting services tab...')
+    const serviceSpecKeys = this.props.serviceSpecs.map(function(serviceSpec){
+      return serviceSpec.id
+    })
+    const serviceSpecDisplays = this.props.serviceSpecs.map(function(serviceSpec){
+      return { key: serviceSpec.id, value: serviceSpec.name }
+    })    
 
     const serviceSpecKeys = this.props.serviceSpecs.map(function(serviceSpec){
       return serviceSpec.id
@@ -213,7 +217,6 @@ export default class Services extends React.Component {
         console.log('sync', instance)
       },
       onChange(instance){
-        console.log(instance)
         console.log(instance.values())
       }
     };
@@ -227,12 +230,11 @@ export default class Services extends React.Component {
     const plugins = { dvr: validatorjs };
 
     this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });                
-    console.log(this.serviceForm.$('serviceSpecId').value)
   }  
 
-  componentDidMount(){
-    console.log("Resources")
-  }
+  isSelected(id){
+    return this.state.selected === id
+  }  
 
   isSelected(id){
     return this.state.selected == id
@@ -243,7 +245,6 @@ export default class Services extends React.Component {
   }
 
   onSuccess(form) {
-    console.log(form.values())
     let values = form.values();
     if(values.id !== ""){      
       this.props.updateService({
@@ -265,9 +266,6 @@ export default class Services extends React.Component {
   }
 
   onError(form) {
-    // get all form errors
-    console.log('All form errors', form.errors());
-    // invalidate the form with a custom error message
     let drawerText = "Update"
     if(this.state.drawerText === "Creating"){
       drawerText = "Create"
@@ -278,10 +276,7 @@ export default class Services extends React.Component {
   }    
 
   handleClick = event => {
-    console.log(this.props)
-    console.log("HANDLECLICK!")
-    this.serviceForm.$('containerPorts').set(new Array())    
-    console.log(this.serviceForm.values())
+    this.serviceForm.$('containerPorts').set(new Array())
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget, currentService: { id: -1 }, drawerText: 'Create' });
   };
 
@@ -292,17 +287,13 @@ export default class Services extends React.Component {
     }
 
     this.serviceForm.clear()
-
     this.serviceForm.$('containerPorts').set(new Array())
-    console.log(this.serviceForm.values())
-
     this.serviceForm.$('oneShot').set(oneShot);
 
     this.setState({ addServiceMenuOpen: false, oneShot: oneShot, open: true });
   };
 
   editService = service => {
-    console.log(service)
     this.serviceForm.$('name').set(service.name);
     this.serviceForm.$('count').set(service.count);
     this.serviceForm.$('command').set(service.command);
@@ -335,18 +326,14 @@ export default class Services extends React.Component {
     }).catch(error => {
       console.log(error)
     });
-    console.log('handleDeleteService');
   }
 
   render() {
     const { services } = this.props.project;
 
-    console.log(this.props.project);
-
     this.serviceForm.$('projectId').set(this.props.project.id);
 
     let addContainerPorts = ""
-    console.log(this.state.oneShot);
     if(this.state.oneShot === false){
         addContainerPorts = (
             <div>

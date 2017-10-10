@@ -52,6 +52,9 @@
     padding-top: 70px;
 }
 
+.selectedEnvVar { 
+    height: 100px;
+}
 .containerPortFormInput {
     width: 100px;
 }
@@ -92,4 +95,9 @@
 
 .tablePaper {
     overflow: auto;
+}
+
+.hide {
+    display: none;
+    visibility: hidden;
 }
