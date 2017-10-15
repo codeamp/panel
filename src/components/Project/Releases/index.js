@@ -44,6 +44,7 @@ class ReleaseView extends React.Component {
 export default class Releases extends React.Component {
   state = {
     activeStep: 0,
+    showCurrentReleaseFullView: false,
   };
 
   handleNext = () => {
@@ -65,11 +66,27 @@ export default class Releases extends React.Component {
   render() {
     return (
       <div className={styles.root}>
-        <Typography type="headline" component="h3">
-          Releases
-        </Typography>            
-        <br/>        
         <Grid container spacing={16}>
+          <Grid item xs={12} className={styles.title}>
+            <Typography type="subheading">
+              <b> Current Release </b>
+            </Typography>                      
+          </Grid>
+          <Grid item xs={12} className={styles.feature}>
+            <ReleaseView 
+            key={this.props.project.currentRelease.id}
+            release={this.props.project.currentRelease}
+            handleOnClick={() => this.setState({ showCurrentReleaseFullView: !this.state.showCurrentReleaseFullView })}
+            showFullView={this.state.showCurrentReleaseFullView}
+            />
+          </Grid>
+        </Grid>
+        <Grid container spacing={16}>
+          <Grid item xs={12} className={styles.title}>
+            <Typography type="subheading">
+              <b> Releases </b>
+            </Typography>                      
+          </Grid>        
           <Grid item xs={12} className={styles.feature}>
             {[...Array(this.props.project.releases.length)].map((x, i) =>
               <ReleaseView

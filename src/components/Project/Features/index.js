@@ -13,25 +13,6 @@ import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql, gql } from 'react-apollo';
 
 
-@inject("store") @observer
-
-
-@graphql(gql`
-  mutation Mutation($featureId: String!) {
-    createRelease(feature: { id: $featureId }) {
-      headFeature {
-        message 
-      }
-      tailFeature  { 
-        message
-      }
-      state 
-      stateMessage 
-    }
-  }
-`)
-
-
 class InitPrivateProjectComponent extends React.Component {
   state = {
     open: false,
@@ -111,8 +92,16 @@ class InitPublicProjectComponent extends React.Component {
 }
 
 class FeatureView extends React.Component {
+  
   handleDeploy(){
     console.log('handleDeploy', this.props)
+    this.props.createRelease({
+      variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id },
+    }).then(({data}) => {
+      console.log(data)
+    }).catch(error => {
+      console.log(error)
+    });    
   }
 
   render() {
@@ -149,6 +138,24 @@ class FeatureView extends React.Component {
     );
   }
 }
+
+@inject("store") @observer
+
+
+@graphql(gql`
+  mutation Mutation($headFeatureId: String!, $projectId: String!) {
+    createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId }) {
+      headFeature {
+        message 
+      }
+      tailFeature  { 
+        message
+      }
+      state 
+      stateMessage 
+    }
+  }
+`, { name: "createRelease" })
 
 export default class Features extends React.Component {
 
@@ -187,17 +194,30 @@ export default class Features extends React.Component {
   
 
   renderFeatureList = (project) => {
+    var self = this
 
     return (
       <div>
-        {[...Array(project.features.length)].map((x, i) =>
-            <FeatureView
-              copyGitHash={this.copyGitHash.bind(this)}
-              key={project.features[i].hash}
-              feature={project.features[i]} 
-              handleOnClick={() => this.setState({ activeFeatureKey: i })} 
-              showFullView={this.state.activeFeatureKey === i} />
-          )}
+        {project.features.map(function(feature, idx) {
+            let featureView = (
+              <FeatureView
+              copyGitHash={self.copyGitHash.bind(self)}
+              key={feature.hash}
+              createRelease={self.props.createRelease.bind(self)}
+              feature={feature} 
+              project={project}
+              handleOnClick={() => self.setState({ activeFeatureKey: idx })} 
+              showFullView={self.state.activeFeatureKey === idx} />              
+            )
+            console.log(project.currentRelease.tailFeature.created > feature.created)
+            console.log(new Date(project.currentRelease.tailFeature.created).getTime())
+            console.log(new Date(feature.created).getTime())
+            if( project.currentRelease.state !== "" && new Date(project.currentRelease.tailFeature.created).getTime() > new Date(feature.created).getTime() ){
+                  featureView = ""
+            }
+
+            return featureView
+        })}
           <br/>  
         </div>
       ) 

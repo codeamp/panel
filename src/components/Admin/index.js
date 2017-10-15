@@ -5,6 +5,7 @@ import { Route, Switch } from "react-router-dom";
 import styles from './style.module.css';
 
 import ServiceSpecs from './ServiceSpecs';
+import Extensions from './Extensions';
 
 @inject("store") @observer
 
@@ -12,15 +13,18 @@ export default class Admin extends React.Component {
 
   render() {
     console.log(this.props)
-    const { serviceSpecs } = this.props;
-    console.log(serviceSpecs)
+    const { serviceSpecs, extensions } = this.props;
 
     return (
       <div className={styles.root}>
         <Switch>
           <Route path='/admin/serviceSpecs' render={(props) => (
-            <ServiceSpecs data={this.props.data} serviceSpecs={serviceSpecs} socket={this.props.socket} />
+              <ServiceSpecs data={this.props.data} serviceSpecs={serviceSpecs} socket={this.props.socket} />
           )}/>         
+
+          <Route path='/admin/extensionSpecs' render={(props) => (
+            <Extensions data={this.props.data} extensions={extensions} socket={this.props.socket} />
+          )}/> 
         </Switch>
       </div>
     );

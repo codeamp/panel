@@ -26,6 +26,33 @@ const query = gql`
       rsaPublicKey
       gitProtocol
       gitUrl
+      currentRelease {
+        id
+        state
+        stateMessage 
+        created               
+        user {
+          email
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref 
+          created
+        }
+      }
       environmentVariables {
         id
         key

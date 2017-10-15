@@ -1,0 +1,28 @@
+.serviceSpecView:hover {
+    background-color: #e5efff;
+}
+
+.drawer {
+    width: 40%;
+}
+
+.createServiceBar {
+    padding-top: 70px;
+}
+
+
+.drawerBody {
+    flex-grow: 1;
+    margin-top: 10px;
+}
+
+
+.grid {
+    width: 100% !important;
+    margin: 0px !important;
+    padding: 24px;
+}
+
+.buttonSpacing {
+    margin-right: 24px;
+}
