@@ -15,6 +15,7 @@ import Collapse from 'material-ui/transitions/Collapse';
 import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import ServiceSpecIcon from 'material-ui-icons/Description';
+import ExtensionIcon from 'material-ui-icons/Extension';
 
 @withRouter
 @inject("store") @observer
@@ -79,6 +80,14 @@ export default class LeftNav extends React.Component {
                     <ServiceSpecIcon />
                   </ListItemIcon>                  
                   <ListItemText inset primary="Service Specs" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/admin/extensionSpecs" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <ExtensionIcon />
+                  </ListItemIcon>                  
+                  <ListItemText inset primary="Extension Specs" />
                 </ListItem>
               </NavLink>
             </Collapse>            
