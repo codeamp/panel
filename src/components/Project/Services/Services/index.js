@@ -229,10 +229,6 @@ export default class Services extends React.Component {
     return this.state.selected === id
   }  
 
-  isSelected(id){
-    return this.state.selected == id
-  }  
-
   addService() {
     console.log("HELLO")
   }

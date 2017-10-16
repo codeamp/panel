@@ -38,8 +38,8 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-mutation CreateExtension ($name: String!, $type: String!, $formSpec: String!, $component: String!) {
-    createExtension(extension:{ 
+mutation CreateExtensionSpec ($name: String!, $type: String!, $formSpec: String!, $component: String!) {
+    createExtensionSpec(extensionSpec:{ 
     name: $name,
     type: $type,
     formSpec: $formSpec,
@@ -49,12 +49,12 @@ mutation CreateExtension ($name: String!, $type: String!, $formSpec: String!, $c
         name
     }
 }
-`, { name: "createExtension" })
+`, { name: "createExtensionSpec" })
 
 
 @graphql(gql`
-mutation UpdateExtension ($id: String, $name: String!,  $type: String!, $formSpec: String!, $component: String!) {
-    updateExtension(extension:{ 
+mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $formSpec: String!, $component: String!) {
+    updateExtensionSpec(extensionSpec:{ 
     id: $id,
     name: $name,
     type: $type,
@@ -65,7 +65,19 @@ mutation UpdateExtension ($id: String, $name: String!,  $type: String!, $formSpe
         name
     }
 }
-`, { name: "updateExtension" })
+`, { name: "updateExtensionSpec" })
+
+
+@graphql(gql`
+mutation DeleteExtensionSpec ($id: String) {
+    deleteExtensionSpec(extensionSpec:{ 
+    id: $id,
+    }) {
+        id
+        name
+    }
+}
+`, { name: "deleteExtensionSpec" })
 
 
 
@@ -86,16 +98,40 @@ export default class Extensions extends React.Component {
   }
 
   componentDidMount(){
-    this.props.socket.on("extensions/new", (data) => {
+    this.props.socket.on("extensionSpecs/new", (data) => {
       console.log("extensions/new");
+      console.log(data)
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
-        this.setState({ loading: false })    
-        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was created"})
+        this.props.data.refetch();
+        this.setState({ loading: false, drawerText: 'Create' })
+        this.props.store.app.setSnackbar({msg: "Extension spec "+ data.name +" was created"})
       }, 2000);
-    }) 
-    
+    });
+
+    this.props.socket.on("extensionSpecs/updated", (data) => {
+      console.log("extensions/updated");
+      console.log(data)
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.setState({ loading: false, drawerText: 'Update' })
+        this.props.store.app.setSnackbar({msg: "Extension spec "+ data.name +" was updated."})
+      }, 2000);
+    });
+
+    this.props.socket.on("extensionSpecs/deleted", (data) => {
+      console.log("extensions/deleted");
+      console.log(data)
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.setState({ loading: false })
+        this.props.store.app.setSnackbar({msg: "Extension spec "+ data.name +" was deleted"})
+      }, 2000);
+    });
+
+
   }
 
   componentWillMount(){
@@ -185,7 +221,7 @@ export default class Extensions extends React.Component {
     var that = this
     switch(this.state.drawerText){
       case "Creating":
-        this.props.createExtension({
+        this.props.createExtensionSpec({
           variables: form.values(),
         }).then(({data}) => {
           that.handleToggleDrawer()
@@ -194,7 +230,7 @@ export default class Extensions extends React.Component {
         });
         break;
       case "Updating":
-        this.props.updateExtension({
+        this.props.updateExtensionSpec({
           variables: form.values(),
         }).then(({data}) => {
           console.log(data)
@@ -209,7 +245,7 @@ export default class Extensions extends React.Component {
     console.log('handleDeleteExtension')
     this.setState({ loading: true })
     var that = this
-    this.props.deleteExtension({
+    this.props.deleteExtensionSpec({
       variables: this.extensionForm.values(),
     }).then(({ data }) => {
       that.handleToggleDrawer()
@@ -239,7 +275,7 @@ export default class Extensions extends React.Component {
   }
 
   render() {
-    const { extensions } = this.props;
+    const { extensionSpecs } = this.props;
 
 
     let deleteButton = "";
@@ -282,7 +318,7 @@ export default class Extensions extends React.Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {extensions.map(extension => {
+                  {extensionSpecs.map(extension => {
                     const isSelected = this.isSelected(extension.id);
                     return (
                       <TableRow 

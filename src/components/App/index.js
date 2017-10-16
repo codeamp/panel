@@ -40,7 +40,7 @@ const socket = io('http://localhost:3011');
       memoryLimit
       terminationGracePeriod
     }
-    extensions {
+    extensionSpecs {
       id
       name
       component
@@ -88,7 +88,7 @@ export default class App extends React.Component {
   };  
 
   render() {
-    const { loading, projects, serviceSpecs, user, extensions } = this.props.data;
+    const { loading, projects, serviceSpecs, user, extensionSpecs } = this.props.data;
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -117,7 +117,7 @@ export default class App extends React.Component {
                     <Create projects={projects} type={"create"} {...props} />
                     )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin data={this.props.data} extensions={extensions} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
+                    <Admin data={this.props.data} extensionSpecs={extensionSpecs} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
                     <Project socket={socket} user={user} serviceSpecs={serviceSpecs} {...props} />
