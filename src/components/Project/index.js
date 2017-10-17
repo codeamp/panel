@@ -29,8 +29,8 @@ const query = gql`
       currentRelease {
         id
         state
-        stateMessage 
-        created               
+        stateMessage
+        created
         user {
           email
         }
@@ -49,7 +49,7 @@ const query = gql`
           user
           hash
           parentHash
-          ref 
+          ref
           created
         }
       }
@@ -88,8 +88,8 @@ const query = gql`
         count
         oneShot
         containerPorts {
-          port 
-          protocol 
+          port
+          protocol
         }
         created
       }
@@ -105,8 +105,8 @@ const query = gql`
       releases {
         id
         state
-        stateMessage 
-        created               
+        stateMessage
+        created
         user {
           email
         }
@@ -125,9 +125,20 @@ const query = gql`
           user
           hash
           parentHash
-          ref 
+          ref
           created
         }
+      }
+      extensions {
+        id
+        extensionSpec {
+          id
+          name
+          type
+        }
+        state
+        artifacts
+        created
       }
     }
   }
@@ -290,8 +301,7 @@ export default class Project extends React.Component {
 
   render() {
     const { loading, project } = this.props.data;
-    console.log(this.props)
-    const { store, serviceSpecs, user } = this.props;
+    const { store, serviceSpecs, extensionSpecs, user } = this.props;
 
     if(loading){
       return null;
@@ -315,7 +325,7 @@ export default class Project extends React.Component {
             <ProjectReleases project={project} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions project={project} />
+            <ProjectExtensions project={project} extensionSpecs={extensionSpecs} />
           )}/>          
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings project={project} />
