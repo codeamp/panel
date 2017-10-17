@@ -1,0 +1,23 @@
+.extensionSpecCard {
+  width: 450px;
+}
+
+
+.createServiceBar {
+    padding-top: 70px;
+}
+
+
+.drawer {
+    width: 40%;
+}
+
+.drawerBody {
+    flex-grow: 1;
+    padding: 35px;
+}
+
+
+.rightPad {
+  margin-right: 10px;
+}

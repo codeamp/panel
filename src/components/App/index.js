@@ -120,7 +120,7 @@ export default class App extends React.Component {
                     <Admin data={this.props.data} extensionSpecs={extensionSpecs} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} user={user} serviceSpecs={serviceSpecs} {...props} />
+                    <Project socket={socket} user={user} serviceSpecs={serviceSpecs} extensionSpecs={extensionSpecs} {...props} />
                     )} />
                 </Switch>
               </div>

@@ -29,8 +29,8 @@ const query = gql`
       currentRelease {
         id
         state
-        stateMessage 
-        created               
+        stateMessage
+        created
         user {
           email
         }
@@ -49,7 +49,7 @@ const query = gql`
           user
           hash
           parentHash
-          ref 
+          ref
           created
         }
       }
@@ -88,8 +88,8 @@ const query = gql`
         count
         oneShot
         containerPorts {
-          port 
-          protocol 
+          port
+          protocol
         }
         created
       }
@@ -105,8 +105,8 @@ const query = gql`
       releases {
         id
         state
-        stateMessage 
-        created               
+        stateMessage
+        created
         user {
           email
         }
@@ -125,9 +125,21 @@ const query = gql`
           user
           hash
           parentHash
-          ref 
+          ref
           created
         }
+      }
+      extensions {
+        id
+        extensionSpec {
+          id
+          name
+          type
+        }
+        state
+        artifacts
+				formSpecValues
+        created
       }
     }
   }
@@ -246,52 +258,59 @@ export default class Project extends React.Component {
       console.log('projects/' + this.props.data.variables.slug + '/services/updated', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was updated"})
       }, 2000);
-    })  
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/services/deleted", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/services/deleted', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was deleted"})
       }, 2000);
-    })         
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/created", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/created', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
       }, 2000);
-    })    
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/updated", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/updated', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
       }, 2000);
-    })      
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/deleted", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/deleted', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was deleted."})
       }, 2000);
-    })            
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/created", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/created', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.key +" was created."})
+      }, 2000);
+    })
   }
 
   render() {
     const { loading, project } = this.props.data;
-    console.log(this.props)
-    const { store, serviceSpecs, user } = this.props;
+    const { store, serviceSpecs, extensionSpecs, user } = this.props;
 
     if(loading){
       return null;
@@ -315,7 +334,7 @@ export default class Project extends React.Component {
             <ProjectReleases project={project} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions project={project} />
+            <ProjectExtensions project={project} extensionSpecs={extensionSpecs} />
           )}/>          
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings project={project} />
