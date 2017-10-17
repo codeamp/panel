@@ -138,6 +138,7 @@ const query = gql`
         }
         state
         artifacts
+				formSpecValues
         created
       }
     }
@@ -257,46 +258,54 @@ export default class Project extends React.Component {
       console.log('projects/' + this.props.data.variables.slug + '/services/updated', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was updated"})
       }, 2000);
-    })  
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/services/deleted", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/services/deleted', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Service "+ data.name +" was deleted"})
       }, 2000);
-    })         
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/created", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/created', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
       }, 2000);
-    })    
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/updated", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/updated', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
       }, 2000);
-    })      
+    })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/environmentVariables/deleted", (data) => {
       console.log('projects/' + this.props.data.variables.slug + '/environmentVariables/deleted', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was deleted."})
       }, 2000);
-    })            
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/created", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/created', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.key +" was created."})
+      }, 2000);
+    })
   }
 
   render() {
