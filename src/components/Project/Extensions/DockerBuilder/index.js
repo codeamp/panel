@@ -1,5 +1,4 @@
 import React from 'react';
-import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
 import Dialog, {
@@ -20,7 +19,7 @@ import { graphql, gql } from 'react-apollo';
 
 @graphql(gql`
 mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: String!) {
-    createExtension(extension:{ 
+    createExtension(extension:{
       projectId: $projectId,
       extensionSpecId: $extensionSpecId,
       formSpecValues: $formSpecValues,

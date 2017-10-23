@@ -41,7 +41,7 @@ const inlineStyles = {
 @graphql(gql`
   mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
       $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
-      createService(service:{ 
+      createService(service:{
       projectId: $projectId,
       command: $command,
       name: $name,
@@ -61,7 +61,7 @@ const inlineStyles = {
 @graphql(gql`
   mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
       $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
-      updateService(service:{ 
+      updateService(service:{
       id: $id,
       projectId: $projectId,
       command: $command,
@@ -83,7 +83,7 @@ const inlineStyles = {
 @graphql(gql`
 mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
     $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
-    deleteService(service:{ 
+    deleteService(service:{
     id: $id,
     projectId: $projectId,
     command: $command,
@@ -131,7 +131,7 @@ export default class Services extends React.Component {
     })
     const serviceSpecDisplays = this.props.serviceSpecs.map(function(serviceSpec){
       return { key: serviceSpec.id, value: serviceSpec.name }
-    })    
+    })
 
 
     console.log(serviceSpecDisplays)
@@ -172,7 +172,7 @@ export default class Services extends React.Component {
     const initials = {
       'name': '',
       'serviceSpecId': serviceSpecKeys[0],
-      'command': '',      
+      'command': '',
       'projectId': this.props.project.id,
       'oneShot': this.state.oneShot,
       'containerPorts[].protocol': 'TCP',
@@ -199,7 +199,7 @@ export default class Services extends React.Component {
       },
       onDel(instance) {
         console.log('-> onDel HOOK', instance.path || 'form');
-      },    
+      },
       onSubmit(instance){
         console.log('-> onSubmit HOOK', instance.path || 'form');
       },
@@ -222,12 +222,12 @@ export default class Services extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });                
-  }  
+    this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
+  }
 
   isSelected(id){
     return this.state.selected === id
-  }  
+  }
 
   addService() {
     console.log("HELLO")
@@ -235,14 +235,14 @@ export default class Services extends React.Component {
 
   onSuccess(form) {
     let values = form.values();
-    if(values.id !== ""){      
+    if(values.id !== ""){
       this.props.updateService({
         variables: form.values(),
       }).then(({data}) => {
         console.log(data)
       }).catch(error => {
         console.log(error)
-      });      
+      });
     } else {
       this.props.createService({
         variables: form.values(),
@@ -262,7 +262,7 @@ export default class Services extends React.Component {
 
     this.setState({ loading: false, drawerText: drawerText})
     form.invalidate('This is a generic error message!');
-  }    
+  }
 
   handleClick = event => {
     this.serviceForm.$('containerPorts').set(new Array())
@@ -303,7 +303,7 @@ export default class Services extends React.Component {
       drawerText = 'Updating'
     }
     this.setState({ drawerText: drawerText, loading: true})
-    this.serviceForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })    
+    this.serviceForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   handleDeleteService() {
@@ -319,6 +319,7 @@ export default class Services extends React.Component {
 
   render() {
     const { services } = this.props.project;
+    console.log(services)
 
     this.serviceForm.$('projectId').set(this.props.project.id);
 
@@ -332,15 +333,15 @@ export default class Services extends React.Component {
                 <Typography type="subheading"> Container Ports </Typography>
                 </Grid>
                 }
-                { this.serviceForm.$('containerPorts').value.length > 0 &&                
+                { this.serviceForm.$('containerPorts').value.length > 0 &&
                 <Grid item xs={12}>
                 <div>
                     {this.serviceForm.$('containerPorts').map(port =>
                       <Grid container spacing={24}>
                         <Grid item xs={4}>
-                          <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />               
+                          <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
                         </Grid>
-                        <Grid item xs={6}>                        
+                        <Grid item xs={6}>
                           <RadioField field={port.$('protocol')} />
                         </Grid>
                         <Grid item xs={1}>
@@ -353,8 +354,8 @@ export default class Services extends React.Component {
                 </div>
                 </Grid>
                 }
-    
-    
+
+
                 <Grid item xs={12}>
                 <Button raised type="secondary" onClick={this.serviceForm.$('containerPorts').onAdd}>
                     Add container port
@@ -369,17 +370,17 @@ export default class Services extends React.Component {
 
     if(this.state.currentService.id !== -1){
       deleteButton = (
-        <Button 
+        <Button
           disabled={this.state.loading}
-          color="accent" 
+          color="accent"
           onClick={()=>this.setState({ dialogOpen: true })}>
           Delete
-        </Button>        
+        </Button>
       );
     }
 
     return (
-      <div>                         
+      <div>
           <Paper className={styles.tablePaper}>
             <Toolbar>
               <div>
@@ -387,7 +388,7 @@ export default class Services extends React.Component {
                   Services
                 </Typography>
               </div>
-            </Toolbar>              
+            </Toolbar>
             <Table bodyStyle={{ overflow: 'visible' }}>
               <TableHead>
                 <TableRow>
@@ -396,7 +397,7 @@ export default class Services extends React.Component {
                   </TableCell>
                   <TableCell>
                     Count
-                  </TableCell>                  
+                  </TableCell>
                   <TableCell>
                     Command
                   </TableCell>
@@ -405,31 +406,31 @@ export default class Services extends React.Component {
                   </TableCell>
                   <TableCell>
                     Open Ports
-                  </TableCell>                               
+                  </TableCell>
                   <TableCell>
                     Service Spec
-                  </TableCell>                                                 
+                  </TableCell>
                   <TableCell>
                     Created
-                  </TableCell>                                                                                  
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {services.map(service => {
                   const isSelected = this.isSelected(service.id);
                   return (
-                    <TableRow 
+                    <TableRow
                       hover
                       onClick={event => this.editService(service)}
                       selected={isSelected}
                       tabIndex={-1}
                       key={service.id}>
                       <TableCell> { service.name} </TableCell>
-                      <TableCell> { service.count} </TableCell>                      
+                      <TableCell> { service.count} </TableCell>
                       <TableCell> <Input value={ service.command} disabled fullWidth={true} /></TableCell>
                       <TableCell> { service.oneShot ? "Yes" : "No" }</TableCell>
-                      <TableCell> { service.containerPorts.length}</TableCell>                      
-                      <TableCell> { service.serviceSpec.name}</TableCell>                      
+                      <TableCell> { service.containerPorts.length}</TableCell>
+                      <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { service.created}</TableCell>
                     </TableRow>
                   )
@@ -437,22 +438,22 @@ export default class Services extends React.Component {
               </TableBody>
             </Table>
           </Paper>
-          
-          <Button fab aria-label="Add" type="submit" raised color="primary" 
+
+          <Button fab aria-label="Add" type="submit" raised color="primary"
               style={inlineStyles.addButton}
               onClick={this.handleClick.bind(this)}>
               <AddIcon />
-          </Button>   
-          
+          </Button>
+
           <Menu
               id="simple-menu"
               anchorEl={this.state.anchorEl}
               open={this.state.addServiceMenuOpen}
               onRequestClose={this.handleRequestClose}
           >
-              <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>                    
-              <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>                    
-          </Menu> 
+              <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>
+              <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>
+          </Menu>
 
           <Drawer
               type="persistent"
@@ -462,13 +463,13 @@ export default class Services extends React.Component {
               }}
               open={this.state.open}
           >
-              <div tabIndex={0} className={styles.createServiceBar}>                    
+              <div tabIndex={0} className={styles.createServiceBar}>
                 <AppBar position="static" color="default">
                     <Toolbar>
                     <Typography type="title" color="inherit">
                         {this.state.drawerText} Service
                     </Typography>
-                    </Toolbar>                        
+                    </Toolbar>
                 </AppBar>
                 <form onSubmit={this.serviceForm.onSubmit}>
                   <div className={styles.drawerBody}>
@@ -477,10 +478,10 @@ export default class Services extends React.Component {
                         <InputField field={this.serviceForm.$('name')} fullWidth={true} />
                       </Grid>
                       <Grid item xs={12}>
-                        <InputField field={this.serviceForm.$('command')} fullWidth={true}/>                      
-                      </Grid>                                
+                        <InputField field={this.serviceForm.$('command')} fullWidth={true}/>
+                      </Grid>
                       <Grid item xs={3}>
-                        <InputField field={this.serviceForm.$('count')}/>                                                          
+                        <InputField field={this.serviceForm.$('count')}/>
                       </Grid>
                       <Grid item xs={9}>
                         <SelectField field={this.serviceForm.$('serviceSpecId')} />
@@ -489,26 +490,26 @@ export default class Services extends React.Component {
                         { addContainerPorts }
                       </Grid>
                       <Grid item xs={12}>
-                        <Button color="primary" 
+                        <Button color="primary"
                             className={styles.buttonSpacing}
                             disabled={this.state.loading}
-                            type="submit" 
-                            raised 
+                            type="submit"
+                            raised
                             onClick={e => this.onSubmit(e)}>
                               {this.state.drawerText}
-                        </Button>                               
-                        { deleteButton }                                                                                                
-                        <Button 
-                          color="primary" 
+                        </Button>
+                        { deleteButton }
+                        <Button
+                          color="primary"
                           onClick={this.handleToggleDrawer.bind(this)}>
                           Cancel
-                        </Button>                                                       
-                      </Grid>                
-                    </Grid>                          
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </div>
                 </form>
               </div>
-          </Drawer>            
+          </Drawer>
 
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
             <DialogTitle>{"Ae you sure you want to delete " + this.state.currentService.name + "?"}</DialogTitle>
@@ -526,8 +527,8 @@ export default class Services extends React.Component {
                 Confirm
               </Button>
             </DialogActions>
-          </Dialog>                                                                                                            
-      </div>            
+          </Dialog>
+      </div>
     )
   }
 }

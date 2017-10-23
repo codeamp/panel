@@ -7,17 +7,10 @@ import Toolbar from 'material-ui/Toolbar';
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
+import { CircularProgress } from 'material-ui/Progress';
 
-import InputField from 'components/Form/input-field';
+import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import DockerBuilder from './DockerBuilder';
 
@@ -71,7 +64,7 @@ export default class Extensions extends React.Component {
       drawerText: 'Edit',
       addedExtensionsDrawer: addedExtensionsDrawer,
       availableExtensionsDrawer: availableExtensionsDrawer,
-      currentExtension: extension 
+      currentExtension: extension
     })
   }
 
@@ -106,7 +99,7 @@ export default class Extensions extends React.Component {
 
 		switch(extensionSpec.component){
 		case "DockerBuilderView":
-			form = (<DockerBuilder 
+			form = (<DockerBuilder
 								project={this.props.project}
 								extensionSpec={extensionSpec}
 								handleClose={this.handleCloseAvailableExtensionsDrawer.bind(this)}
@@ -176,8 +169,12 @@ export default class Extensions extends React.Component {
                 <TableBody>
                   {project.extensions.map(extension => {
                     const isSelected = this.isAddedExtensionSelected(extension.id);
+										let stateIcon = <CircularProgress size={25} />
+										if(extension.state === "complete"){
+											stateIcon = <ExtensionStateCompleteIcon />
+										}
                     return (
-                      <TableRow 
+                      <TableRow
                         hover
                         onClick={event => this.handleAddedExtensionClick(event, extension)}
                         selected={isSelected}
@@ -185,7 +182,7 @@ export default class Extensions extends React.Component {
                         key={extension.id}>
                         <TableCell> { extension.extensionSpec.name } </TableCell>
                         <TableCell> { new Date(extension.created).toDateString() }</TableCell>
-                        <TableCell> { extension.state } </TableCell>
+                        <TableCell> { stateIcon } </TableCell>
                         <TableCell> { extension.artifacts }</TableCell>
                       </TableRow>
                     )
@@ -227,7 +224,7 @@ export default class Extensions extends React.Component {
                     if(!ignore){
                       const isSelected = this.isAvailableExtensionSelected(extensionSpec.id);
                       return (
-                        <TableRow 
+                        <TableRow
                           hover
                           onClick={event => this.handleAvailableExtensionClick(event, extensionSpec)}
                           selected={isSelected}

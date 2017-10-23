@@ -56,6 +56,11 @@
     width: 100px;
 }
 
+.addRuleBtn {
+    paddingLeft: 35px;
+}
+
+
 .drawerBody {
     flex-grow: 1;
     margin-top: 10px;
