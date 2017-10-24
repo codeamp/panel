@@ -11,6 +11,8 @@ import { CircularProgress } from 'material-ui/Progress';
 
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 
+import { graphql, gql } from 'react-apollo';
+
 import styles from './style.module.css';
 import DockerBuilder from './DockerBuilder';
 
@@ -25,6 +27,20 @@ const DEFAULT_EXTENSION = {
 const DEFAULT_EXTENSION_SPEC = {
   id: -1,
 }
+
+@graphql(gql`
+mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+    createExtension(extension:{
+      projectId: $projectId,
+      extensionSpecId: $extensionSpecId,
+      formSpecValues: $formSpecValues,
+    }) {
+        id
+    }
+}
+`, { name: "createExtension" })
+
+
 
 export default class Extensions extends React.Component {
 
@@ -102,6 +118,7 @@ export default class Extensions extends React.Component {
 			form = (<DockerBuilder
 								project={this.props.project}
 								extensionSpec={extensionSpec}
+                                createExtension={this.props.createExtension}
 								handleClose={this.handleCloseAvailableExtensionsDrawer.bind(this)}
 								viewType="edit" />)
 		}
@@ -173,6 +190,13 @@ export default class Extensions extends React.Component {
 										if(extension.state === "complete"){
 											stateIcon = <ExtensionStateCompleteIcon />
 										}
+
+                    const convertedArtifactsMap = extension.artifacts.map(function(kv) {
+                        var obj = {}
+                        obj[kv['key']] = kv.value
+                        return obj
+                    })
+
                     return (
                       <TableRow
                         hover
@@ -183,7 +207,9 @@ export default class Extensions extends React.Component {
                         <TableCell> { extension.extensionSpec.name } </TableCell>
                         <TableCell> { new Date(extension.created).toDateString() }</TableCell>
                         <TableCell> { stateIcon } </TableCell>
-                        <TableCell> { extension.artifacts }</TableCell>
+                        <TableCell>
+                            { JSON.stringify(convertedArtifactsMap) }
+                        </TableCell>
                       </TableRow>
                     )
                   })}

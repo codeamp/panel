@@ -305,15 +305,15 @@ export default class Project extends React.Component {
       console.log('projects/' + this.props.data.variables.slug + '/extensions/created', data);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Extension "+ data.key +" was created."})
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was added to your project."})
       }, 2000);
     })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/initCompleted", (data) => {
-      console.log('projects/' + this.props.data.variables.slug + '/extensions/created', data);
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/completed', data);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Extension "+ data.key +" was created."})
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was completed."})
       }, 2000);
     })
   }

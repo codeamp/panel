@@ -15,45 +15,31 @@ import MobxReactForm from 'mobx-react-form';
 
 import styles from './style.module.css';
 
-import { graphql, gql } from 'react-apollo';
-
-@graphql(gql`
-mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: String!) {
-    createExtension(extension:{
-      projectId: $projectId,
-      extensionSpecId: $extensionSpecId,
-      formSpecValues: $formSpecValues,
-    }) {
-        id
-    }
-}
-`, { name: "createExtension" })
-
-
-
 export default class DockerBuilder extends React.Component {
 
   constructor(props){
     super(props)
     this.state = {
       dialogOpen: false,
+      addButtonDisabled: false,
+      buttonText: 'Add',
     }
   }
 
   componentWillMount(){
     const fields = [
-      'registry',
-      'imageName',
+      'hostname',
+      'credentials',
     ];
 
     const rules = {
-      'registry': 'required|string',
-      'imageName': 'required|string',
+      'hostname': 'required|string',
+      'credentials': 'required|string',
     };
 
     const labels = {
-      'registry': 'Registry URL',
-      'imageName': 'Image Name',
+      'hostname': 'Registry URL',
+      'credentials': 'Credentials',
     };
 
     const initials = {};
@@ -72,31 +58,39 @@ export default class DockerBuilder extends React.Component {
 
   onSuccess(form){
     console.log('onSuccessAddExtension')
-    console.log(form)
-    let stringFormValues = JSON.stringify(form.values())
 
-		console.log(form.values())
+    let formSpecValues = form.values()
+
+    const convertedFormSpecValues = Object.keys(formSpecValues).map(function(key, index) {
+        return {
+            'key': key,
+            'value': formSpecValues[key]
+        }
+    })
+
 
     this.props.createExtension({
       variables: {
         'projectId': this.props.project.id,
         'extensionSpecId': this.props.extensionSpec.id,
-        'formSpecValues': stringFormValues,
+        'formSpecValues': convertedFormSpecValues,
       }
     }).then(({ data }) => {
       console.log(data)
     }).catch(error => {
+      this.setState({ addButtonDisabled: false, buttonText: 'Add' })
       console.log(error)
     })
   }
 
   onError(form){
     console.log('onErrorAddExtension')
-    console.log(form)
   }
 
   onAdd(extension, event){
     console.log('handleAddExtension', extension)
+    this.setState({ addButtonDisabled: true, buttonText: 'Adding'})
+
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
     }
@@ -114,19 +108,21 @@ export default class DockerBuilder extends React.Component {
           <form onSubmit={(e) => e.preventDefault()}>
             <Grid container spacing={24}>
               <Grid item xs={12}>
-                <InputField field={this.form.$('registry')} />
+                <InputField field={this.form.$('hostname')} />
               </Grid>
               <Grid item xs={12}>
-                <InputField field={this.form.$('imageName')} />
+                <InputField field={this.form.$('credentials')} />
               </Grid>
             </Grid>
             <Grid item xs={12}>
               <Button raised color="primary" className={styles.rightPad}
                 onClick={this.onAdd.bind(this)}
+                disabled={this.state.addButtonDisabled}
               >
-                add
+                {this.state.buttonText}
               </Button>
               <Button color="primary"
+                className={styles.paddingLeft}
                 onClick={this.props.handleClose}
               >
                 cancel
