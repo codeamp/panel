@@ -70,9 +70,13 @@ mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $for
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String) {
+mutation DeleteExtensionSpec ($id: String, $name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
     id: $id,
+    name: $name,
+    type: $type,
+    formSpec: $formSpec,
+    component: $component,
     }) {
         id
         name
