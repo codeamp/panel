@@ -1,6 +1,8 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
+import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
+import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Paper from 'material-ui/Paper';
 import Dialog, {
@@ -75,7 +77,7 @@ export default class DockerBuilder extends React.Component {
         this.form.$('hostname').set(obj['hostname'])
         this.form.$('credentials').set(obj['credentials'])
 
-        this.setState({ buttonText: "Update", extension: this.props.extension })
+        this.setState({ buttonText: "Update", extension: this.props.extension, extensionSpec: this.props.extensionSpec })
     } else if(this.props.viewType === "edit"){
         this.setState({ buttonText: "Add", extensionSpec: this.props.extensionSpec })
     }
@@ -99,20 +101,37 @@ export default class DockerBuilder extends React.Component {
         }
     })
 
-
-    this.props.createExtension({
-      variables: {
-        'projectId': this.props.project.id,
-        'extensionSpecId': this.state.extensionSpec.id,
-        'formSpecValues': convertedFormSpecValues,
-      }
-    }).then(({ data }) => {
-      console.log(data)
-    }).catch(error => {
-      this.setState({ addButtonDisabled: false, buttonText: 'Add' })
-      console.log(error)
-    })
+    if(this.props.viewType === 'edit'){
+        this.props.createExtension({
+          variables: {
+            'projectId': this.props.project.id,
+            'extensionSpecId': this.state.extensionSpec.id,
+            'formSpecValues': convertedFormSpecValues,
+          }
+        }).then(({ data }) => {
+          console.log(data)
+        }).catch(error => {
+          this.setState({ addButtonDisabled: false, buttonText: 'Add' })
+          console.log(error)
+        })
+    } else if(this.props.viewType === 'read'){
+        console.log(this.state.extension)
+        this.props.updateExtension({
+          variables: {
+            'id': this.state.extension.id,
+            'projectId': this.props.project.id,
+            'extensionSpecId': this.state.extensionSpec.id,
+            'formSpecValues': convertedFormSpecValues,
+          }
+        }).then(({ data }) => {
+          console.log(data)
+        }).catch(error => {
+          this.setState({ addButtonDisabled: false, buttonText: 'Add' })
+          console.log(error)
+        })
+    }
   }
+
 
   onError(form){
     console.log('onErrorAddExtension')
@@ -120,7 +139,11 @@ export default class DockerBuilder extends React.Component {
 
   onAdd(extension, event){
     console.log('handleAddExtension', extension)
-    this.setState({ addButtonDisabled: true, buttonText: 'Adding'})
+    let buttonText = "Adding"
+    if(this.props.viewType === "read"){
+        buttonText = "Updating"
+    }
+    this.setState({ addButtonDisabled: true, buttonText: buttonText})
 
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
@@ -198,26 +221,40 @@ export default class DockerBuilder extends React.Component {
               </Grid>
             </Grid>
             <Grid item xs={12}>
-                <Paper className={styles.artifacts}>
-                    <Typography type="subheading">
-                        Artifacts
-                    </Typography>
-                    <Grid container>
-                    {this.state.extension.artifacts.map(artifact=> {
-                        return (
-                          <Grid item xs={12}>
-                            <Input
-                                className={styles.rightPadding}
-                                value={artifact.key}
-                                disabled />
-
-                            <Input
-                                value={artifact.value}
-                                disabled />
-                          </Grid>
-                        )
-                    })}
-                  </Grid>
+                <Paper>
+                    <Toolbar>
+                        <div>
+                            <Typography type="title">
+                                Artifacts
+                            </Typography>
+                        </div>
+                    </Toolbar>
+                    <Table bodyStyle={{ overflow: 'visible' }}>
+                        <TableHead>
+                            <TableRow>
+                                    <TableCell>
+                                        Key
+                                    </TableCell>
+                                    <TableCell>
+                                        Value
+                                    </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                        {this.state.extension.artifacts.map(artifact=> {
+                            return (
+                                <TableRow>
+                                    <TableCell>
+                                      {artifact.key}
+                                    </TableCell>
+                                    <TableCell>
+                                      {artifact.value}
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                        </TableBody>
+                    </Table>
                 </Paper>
             </Grid>
             <Grid item xs={12}>

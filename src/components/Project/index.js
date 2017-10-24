@@ -147,25 +147,6 @@ const query = gql`
   }
 `
 
-// @graphql(gql`
-// query EnvironmentVariablesWithAllVersions($key: String!, $projectId: String!){
-//   environmentVariablesWithAllVersions(environmentVariable:{
-//     key: $key,
-//     projectId: $projectId,
-//   }) {
-//     id
-//     key
-//     value
-//     creator {
-//       id
-//       email
-//     }
-//     version
-//   }
-// }
-// `)
-
-
 @graphql(query, {
   options: (props) => ({
     variables: {
@@ -310,10 +291,18 @@ export default class Project extends React.Component {
     })
 
     this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/initCompleted", (data) => {
-      console.log('projects/' + this.props.data.variables.slug + '/extensions/completed', data);
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/initCompleted', data);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was completed."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/updated", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/updated', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was updated."})
       }, 2000);
     })
   }

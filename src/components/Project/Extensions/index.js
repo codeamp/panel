@@ -40,6 +40,20 @@ mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formS
 }
 `, { name: "createExtension" })
 
+@graphql(gql`
+mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+    updateExtension(extension:{
+      id: $id,
+      projectId: $projectId,
+      extensionSpecId: $extensionSpecId,
+      formSpecValues: $formSpecValues,
+    }) {
+        id
+    }
+}
+`, { name: "updateExtension" })
+
+
 
 
 export default class Extensions extends React.Component {
