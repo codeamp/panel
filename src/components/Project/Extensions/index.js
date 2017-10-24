@@ -84,6 +84,17 @@ export default class Extensions extends React.Component {
     })
   }
 
+  handleCloseAddedExtensionsDrawer(){
+    let addedExtensionsDrawer = this.state.addedExtensionsDrawer
+    addedExtensionsDrawer.open = false
+
+    this.setState({
+      addedExtensionsDrawer: addedExtensionsDrawer
+    })
+  }
+
+
+
   handleAvailableExtensionClick(event, extension){
     let availableExtensionsDrawer = this.state.availableExtensionsDrawer
     availableExtensionsDrawer.currentExtensionSpec = extension
@@ -137,6 +148,23 @@ export default class Extensions extends React.Component {
 		)
   }
 
+  renderAddedExtensionView(extension){
+      console.log(extension)
+      let view = (<div></div>);
+
+      if(extension.id !== -1){
+          view = (
+            <DockerBuilder
+                project={this.props.project}
+                extensionSpec={extension.extensionSpec}
+                extension={extension}
+                updateExtension={this.props.updateExtension}
+                handleClose={this.handleCloseAddedExtensionsDrawer.bind(this)}
+                viewType="read" />)
+      }
+      return view
+  }
+
 
   render() {
     const { project, extensionSpecs } = this.props;
@@ -178,24 +206,15 @@ export default class Extensions extends React.Component {
                     <TableCell>
                       State
                     </TableCell>
-                    <TableCell>
-                      Artifacts
-                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {project.extensions.map(extension => {
                     const isSelected = this.isAddedExtensionSelected(extension.id);
-										let stateIcon = <CircularProgress size={25} />
-										if(extension.state === "complete"){
-											stateIcon = <ExtensionStateCompleteIcon />
-										}
-
-                    const convertedArtifactsMap = extension.artifacts.map(function(kv) {
-                        var obj = {}
-                        obj[kv['key']] = kv.value
-                        return obj
-                    })
+                    let stateIcon = <CircularProgress size={25} />
+                    if(extension.state === "complete"){
+                        stateIcon = <ExtensionStateCompleteIcon />
+                    }
 
                     return (
                       <TableRow
@@ -207,9 +226,6 @@ export default class Extensions extends React.Component {
                         <TableCell> { extension.extensionSpec.name } </TableCell>
                         <TableCell> { new Date(extension.created).toDateString() }</TableCell>
                         <TableCell> { stateIcon } </TableCell>
-                        <TableCell>
-                            { JSON.stringify(convertedArtifactsMap) }
-                        </TableCell>
                       </TableRow>
                     )
                   })}
@@ -294,18 +310,9 @@ export default class Extensions extends React.Component {
                       Type: { this.state.addedExtensionsDrawer.currentExtension.extensionSpec.type}
                     </Typography>
                   </Grid>
-									<Grid>
-										{this.renderFormSpecValues(this.state.addedExtensionsDrawer.currentExtension)}
-									</Grid>
-									<Grid item xs={12}>
-										<Button color="accent" raised className={styles.rightPad}>
-											Disable
-										</Button>
-										{ addedExtensionsDeleteButton }
-                    <Button color="primary">
-                      Cancel
-                    </Button>
-									</Grid>
+                  <Grid item xs={12}>
+                    {this.renderAddedExtensionView(this.state.addedExtensionsDrawer.currentExtension)}
+                  </Grid>
                 </Grid>
               </div>
             </div>
