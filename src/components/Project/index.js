@@ -137,32 +137,15 @@ const query = gql`
           type
         }
         state
-        artifacts
-				formSpecValues
+        artifacts {
+          key
+          value
+        }
         created
       }
     }
   }
 `
-
-// @graphql(gql`
-// query EnvironmentVariablesWithAllVersions($key: String!, $projectId: String!){
-//   environmentVariablesWithAllVersions(environmentVariable:{
-//     key: $key,
-//     projectId: $projectId,
-//   }) {
-//     id
-//     key
-//     value
-//     creator {
-//       id
-//       email
-//     }
-//     version
-//   }
-// }
-// `)
-
 
 @graphql(query, {
   options: (props) => ({
@@ -188,39 +171,39 @@ export default class Project extends React.Component {
         icon: <ServicesIcon />,
         name: "Services",
         slug: this.props.match.url + "/services",
-      }, 
+      },
       {
         key: "20",
         icon: <FeaturesIcon />,
         name: "Features",
         slug: this.props.match.url + "/features",
         count: 0,
-      }, 
+      },
       {
         key: "30",
         icon: <ReleasesIcon />,
         name: "Releases",
         slug: this.props.match.url + "/releases",
-      }, 
+      },
       {
         key: "40",
         icon: <ExtensionsIcon />,
         name: "Extensions",
         slug: this.props.match.url + "/extensions",
-      },       
+      },
       {
         key: "50",
         icon: <SettingsIcon />,
         name: "Settings",
         slug: this.props.match.url + "/settings",
-      }, 
+      },
       {
         key: "60",
         icon: <LogsIcon />,
-        name: "Logs", 
+        name: "Logs",
         slug: "/"
-      } 
-    ]; 
+      }
+    ];
   }
 
   componentDidMount() {
@@ -249,7 +232,7 @@ export default class Project extends React.Component {
       console.log('projects/' + this.props.data.variables.slug + '/services/new', data);
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
+        this.props.data.refetch();
         this.props.store.app.setSnackbar({msg: "A new service "+ data.name +" was created"})
       }, 2000);
     })
@@ -303,7 +286,23 @@ export default class Project extends React.Component {
       console.log('projects/' + this.props.data.variables.slug + '/extensions/created', data);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Extension "+ data.key +" was created."})
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was added to your project."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/initCompleted", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/initCompleted', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was completed."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/updated", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/updated', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was updated."})
       }, 2000);
     })
   }
@@ -315,8 +314,8 @@ export default class Project extends React.Component {
     if(loading){
       return null;
     }
-    
-    this.props.store.app.setProjectTitle(project.name);        
+
+    this.props.store.app.setProjectTitle(project.name);
 
     return (
       <div className={styles.root}>
@@ -326,7 +325,7 @@ export default class Project extends React.Component {
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
             <ProjectServices user={user} project={project} store={store} serviceSpecs={serviceSpecs} />
-          )}/>          
+          )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
             <ProjectFeatures project={project} store={store} />
           )}/>
@@ -335,13 +334,13 @@ export default class Project extends React.Component {
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
             <ProjectExtensions project={project} extensionSpecs={extensionSpecs} />
-          )}/>          
+          )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings project={project} />
-          )}/>          
+          )}/>
           <Route exact path='/projects/:slug/logs' render={(props) => (
             <ProjectSettings project={project} />
-          )}/>                    
+          )}/>
         </Switch>
       </div>
     );

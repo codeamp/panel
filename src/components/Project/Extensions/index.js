@@ -7,21 +7,14 @@ import Toolbar from 'material-ui/Toolbar';
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
+import { CircularProgress } from 'material-ui/Progress';
 
-import InputField from 'components/Form/input-field';
-
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
-import styles from './style.module.css';
+import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 
 import { graphql, gql } from 'react-apollo';
 
+import styles from './style.module.css';
+import DockerBuilder from './DockerBuilder';
 
 const DEFAULT_EXTENSION = {
   id: -1,
@@ -35,10 +28,9 @@ const DEFAULT_EXTENSION_SPEC = {
   id: -1,
 }
 
-
 @graphql(gql`
-mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: String!) {
-    createExtension(extension:{ 
+mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+    createExtension(extension:{
       projectId: $projectId,
       extensionSpecId: $extensionSpecId,
       formSpecValues: $formSpecValues,
@@ -47,6 +39,21 @@ mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formS
     }
 }
 `, { name: "createExtension" })
+
+@graphql(gql`
+mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+    updateExtension(extension:{
+      id: $id,
+      projectId: $projectId,
+      extensionSpecId: $extensionSpecId,
+      formSpecValues: $formSpecValues,
+    }) {
+        id
+    }
+}
+`, { name: "updateExtension" })
+
+
 
 
 export default class Extensions extends React.Component {
@@ -87,9 +94,20 @@ export default class Extensions extends React.Component {
       drawerText: 'Edit',
       addedExtensionsDrawer: addedExtensionsDrawer,
       availableExtensionsDrawer: availableExtensionsDrawer,
-      currentExtension: extension 
+      currentExtension: extension
     })
   }
+
+  handleCloseAddedExtensionsDrawer(){
+    let addedExtensionsDrawer = this.state.addedExtensionsDrawer
+    addedExtensionsDrawer.open = false
+
+    this.setState({
+      addedExtensionsDrawer: addedExtensionsDrawer
+    })
+  }
+
+
 
   handleAvailableExtensionClick(event, extension){
     let availableExtensionsDrawer = this.state.availableExtensionsDrawer
@@ -116,84 +134,19 @@ export default class Extensions extends React.Component {
     })
   }
 
-  handleDeleteExtension(extension){
-    console.log('handleDeleteExtension', extension)
-  }
-
-  onSuccessAddExtension(form){
-    console.log('onSuccessAddExtension')
-    console.log(form)
-    let stringFormValues = JSON.stringify(form.values())
-
-    this.props.createExtension({
-      variables: {
-        'projectId': this.props.project.id,
-        'extensionSpecId': this.state.availableExtensionsDrawer.currentExtensionSpec.id,
-        'formSpecValues': stringFormValues,
-      }
-    }).then(({ data }) => {
-      console.log(data)
-    }).catch(error => {
-      console.log(error)
-    })
-  }
-
-  onErrorAddExtension(form){
-    console.log('onErrorAddExtension')
-    console.log(form)
-  }
-
-  handleAddExtension(extension, event){
-    console.log('handleAddExtension', extension)
-    if(this.availableExtensionsForm){
-      this.availableExtensionsForm.onSubmit(event, { onSuccess: this.onSuccessAddExtension.bind(this), onError: this.onErrorAddExtension.bind(this) })
-    }
-  }
-
   renderFormSpecFromExtensionSpec(extensionSpec){
     console.log('renderFormSpecFromExtensionSpec', extensionSpec)
+		let form = (<div></div>)
 
-    let form = (
-      <div>
-      </div>
-    );
-
-    if(extensionSpec.id !== -1 ){
-      let testExtension = JSON.parse(extensionSpec.formSpec)
-
-      let plugins = {
-        dvr: validatorjs,
-      }
-
-      let fields= testExtension['fields']
-      let rules = testExtension['rules']
-      let labels = testExtension['labels']
-
-      console.log(rules)
-
-      this.availableExtensionsForm = new MobxReactForm({ fields, rules, labels, plugins })
-
-      console.log(this.availableExtensionsForm)
-      var self = this;
-      form = (
-        <div>
-          <form>
-            <Typography>
-              {testExtension.fields.map(function(field){
-                console.log(field)
-                if(field !== 'projectId' && field !== 'extensionSpecId'){
-                   return (
-                     <InputField field={self.availableExtensionsForm.$(field)} />
-                   )
-                }
-								return (<div></div>)
-              })}
-            </Typography>
-          </form>
-        </div>
-      )
-    }
-
+		switch(extensionSpec.component){
+		case "DockerBuilderView":
+			form = (<DockerBuilder
+								project={this.props.project}
+								extensionSpec={extensionSpec}
+                                createExtension={this.props.createExtension}
+								handleClose={this.handleCloseAvailableExtensionsDrawer.bind(this)}
+								viewType="edit" />)
+		}
     return form
   }
 
@@ -207,6 +160,23 @@ export default class Extensions extends React.Component {
 				{formSpecValues}
 			</Typography>
 		)
+  }
+
+  renderAddedExtensionView(extension){
+      console.log(extension)
+      let view = (<div></div>);
+
+      if(extension.id !== -1){
+          view = (
+            <DockerBuilder
+                project={this.props.project}
+                extensionSpec={extension.extensionSpec}
+                extension={extension}
+                updateExtension={this.props.updateExtension}
+                handleClose={this.handleCloseAddedExtensionsDrawer.bind(this)}
+                viewType="read" />)
+      }
+      return view
   }
 
 
@@ -250,16 +220,18 @@ export default class Extensions extends React.Component {
                     <TableCell>
                       State
                     </TableCell>
-                    <TableCell>
-                      Artifacts
-                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {project.extensions.map(extension => {
                     const isSelected = this.isAddedExtensionSelected(extension.id);
+                    let stateIcon = <CircularProgress size={25} />
+                    if(extension.state === "complete"){
+                        stateIcon = <ExtensionStateCompleteIcon />
+                    }
+
                     return (
-                      <TableRow 
+                      <TableRow
                         hover
                         onClick={event => this.handleAddedExtensionClick(event, extension)}
                         selected={isSelected}
@@ -267,8 +239,7 @@ export default class Extensions extends React.Component {
                         key={extension.id}>
                         <TableCell> { extension.extensionSpec.name } </TableCell>
                         <TableCell> { new Date(extension.created).toDateString() }</TableCell>
-                        <TableCell> { extension.state } </TableCell>
-                        <TableCell> { extension.artifacts }</TableCell>
+                        <TableCell> { stateIcon } </TableCell>
                       </TableRow>
                     )
                   })}
@@ -309,7 +280,7 @@ export default class Extensions extends React.Component {
                     if(!ignore){
                       const isSelected = this.isAvailableExtensionSelected(extensionSpec.id);
                       return (
-                        <TableRow 
+                        <TableRow
                           hover
                           onClick={event => this.handleAvailableExtensionClick(event, extensionSpec)}
                           selected={isSelected}
@@ -353,18 +324,9 @@ export default class Extensions extends React.Component {
                       Type: { this.state.addedExtensionsDrawer.currentExtension.extensionSpec.type}
                     </Typography>
                   </Grid>
-									<Grid>
-										{this.renderFormSpecValues(this.state.addedExtensionsDrawer.currentExtension)}
-									</Grid>
-									<Grid item xs={12}>
-										<Button color="accent" raised className={styles.rightPad}>
-											Disable
-										</Button>
-										{ addedExtensionsDeleteButton }
-                    <Button color="primary">
-                      Cancel
-                    </Button>
-									</Grid>
+                  <Grid item xs={12}>
+                    {this.renderAddedExtensionView(this.state.addedExtensionsDrawer.currentExtension)}
+                  </Grid>
                 </Grid>
               </div>
             </div>
@@ -401,42 +363,10 @@ export default class Extensions extends React.Component {
                   <Grid item xs={12}>
                     {this.renderFormSpecFromExtensionSpec(this.state.availableExtensionsDrawer.currentExtensionSpec)}
                   </Grid>
-                  <Grid item xs={12}>
-                    <Button raised color="primary" className={styles.rightPad}
-                      onClick={(event) => this.handleAddExtension(this.state.availableExtensionsDrawer.currentExtensionSpec, event)}
-                    >
-                      add
-                    </Button>
-                    <Button color="primary"
-                      onClick={this.handleCloseAvailableExtensionsDrawer.bind(this)}
-                    >
-                      cancel
-                    </Button>
-                  </Grid>
                 </Grid>
               </div>
             </div>
         </Drawer>
-
-
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Ae you sure you want to delete " + this.state.addedExtensionsDrawer.currentExtension.extensionSpec.name + "?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              This will remove the service spec and all instances in which it is being used in any existing services.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleDeleteExtension.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>                                                                                                
-
-
       </div>
     )
   }

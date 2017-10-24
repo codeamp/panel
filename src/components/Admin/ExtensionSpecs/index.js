@@ -8,6 +8,7 @@ import Toolbar from 'material-ui/Toolbar';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
+import IconButton from 'material-ui/IconButton';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -16,10 +17,10 @@ import Dialog, {
 } from 'material-ui/Dialog';
 
 import AddIcon from 'material-ui-icons/Add';
+import CloseIcon from 'material-ui-icons/Close';
 
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
-import TextareaField from 'components/Form/textarea-field';
 
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
@@ -38,8 +39,8 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $type: String!, $formSpec: String!, $component: String!) {
-    createExtensionSpec(extensionSpec:{ 
+mutation CreateExtensionSpec ($name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
+    createExtensionSpec(extensionSpec:{
     name: $name,
     type: $type,
     formSpec: $formSpec,
@@ -53,8 +54,8 @@ mutation CreateExtensionSpec ($name: String!, $type: String!, $formSpec: String!
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $formSpec: String!, $component: String!) {
-    updateExtensionSpec(extensionSpec:{ 
+mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
+    updateExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
     type: $type,
@@ -69,9 +70,13 @@ mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $for
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String) {
-    deleteExtensionSpec(extensionSpec:{ 
+mutation DeleteExtensionSpec ($id: String, $name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
+    deleteExtensionSpec(extensionSpec:{
     id: $id,
+    name: $name,
+    type: $type,
+    formSpec: $formSpec,
+    component: $component,
     }) {
         id
         name
@@ -90,11 +95,11 @@ export default class Extensions extends React.Component {
     this.state = {
       selected: null,
       open: false,
-      currentExtension: { 
+      currentExtension: {
         id: -1,
       },
       drawerText: 'Create',
-    }    
+    }
   }
 
   componentDidMount(){
@@ -142,13 +147,17 @@ export default class Extensions extends React.Component {
       'name',
       'type',
       'formSpec',
+      'formSpec[]',
+      'formSpec[].key',
+      'formSpec[].value',
       'component',
     ];
 
     const rules = {
       'name': 'required|string',
       'type': 'required',
-      'formSpec': 'required|string',
+      'formSpec[].key': 'required|string',
+      'formSpec[].value': 'required|string',
       'component': 'required|string',
     };
 
@@ -156,6 +165,8 @@ export default class Extensions extends React.Component {
       'name': 'Name',
       'type': 'Type',
       'formSpec': "Form Specification",
+      'formSpec[].key': 'Key',
+      'formSpec[].value': 'Value',
       'component': 'Component Name',
     };
 
@@ -175,7 +186,7 @@ export default class Extensions extends React.Component {
         value: 'Workflow',
       }]
     };
-    
+
     const hooks = {
 
     };
@@ -193,20 +204,20 @@ export default class Extensions extends React.Component {
     console.log(this.extensionForm.values())
 
     this.setState({ open: !this.state.open, dialogOpen: false, currentExtension: { id: -1 } })
-  }  
+  }
 
   isSelected(id){
     return this.state.selected === id
   }
   handleClick(e, extension){
-    console.log(extension)
     this.extensionForm.$('id').set(extension.id)
     this.extensionForm.$('name').set(extension.name)
-    this.extensionForm.$('formSpec').set(extension.formSpec)
+    this.extensionForm.update({ formSpec: extension.formSpec })
     this.extensionForm.$('component').set(extension.component)
     this.extensionForm.$('type').set(extension.type)
 
-    console.log(this.extensionForm)
+    console.log(extension.formSpec)
+    console.log(this.extensionForm.$('formSpec').value)
 
     this.setState({ selected: extension.id, open: true, currentExtension: extension, drawerText: 'Update' })
   }
@@ -237,7 +248,7 @@ export default class Extensions extends React.Component {
         }).catch(error => {
           console.log(error)
         });
-        break;   
+        break;
     }
   }
 
@@ -265,29 +276,31 @@ export default class Extensions extends React.Component {
       case "Create":
         drawerText = "Creating"
         break;
-      case "Update": 
+      case "Update":
         drawerText = "Updating"
         break;
     }
 
     this.setState({ drawerText: drawerText })
-    this.extensionForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })    
+    this.extensionForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   render() {
     const { extensionSpecs } = this.props;
+
+    console.log(extensionSpecs)
 
 
     let deleteButton = "";
 
     if(this.state.currentExtension.id !== -1){
       deleteButton = (
-        <Button 
+        <Button
           disabled={this.state.loading}
-          color="accent" 
+          color="accent"
           onClick={()=>this.setState({ dialogOpen: true })}>
           Delete
-        </Button>        
+        </Button>
       );
     }
 
@@ -302,7 +315,7 @@ export default class Extensions extends React.Component {
                     Extension Specs
                   </Typography>
                 </div>
-              </Toolbar>              
+              </Toolbar>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -321,7 +334,7 @@ export default class Extensions extends React.Component {
                   {extensionSpecs.map(extension => {
                     const isSelected = this.isSelected(extension.id);
                     return (
-                      <TableRow 
+                      <TableRow
                         hover
                         onClick={event => this.handleClick(event, extension)}
                         selected={isSelected}
@@ -338,11 +351,11 @@ export default class Extensions extends React.Component {
             </Paper>
           </Grid>
         </Grid>
-        <Button fab aria-label="Add" type="submit" raised color="primary" 
+        <Button fab aria-label="Add" type="submit" raised color="primary"
               style={inlineStyles.addButton}
               onClick={this.handleNewExtensionClick.bind(this)}>
               <AddIcon />
-        </Button>           
+        </Button>
         <Drawer
           type="persistent"
           anchor="right"
@@ -371,25 +384,48 @@ export default class Extensions extends React.Component {
                     <InputField field={this.extensionForm.$('component')} fullWith={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextareaField field={this.extensionForm.$('formSpec')} fullWidth={true} />
+                    <Typography type="subheading"> Form Specification Rules </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <Button color="primary" 
+                    {this.extensionForm.$('formSpec').map(function(kv){
+                        console.log(kv)
+                        return (
+                        <Grid container spacing={24}>
+                            <Grid item xs={4}>
+                                <InputField field={kv.$('key')} fullWidth={false} className={styles.containerPortFormInput} />
+                            </Grid>
+                            <Grid item xs={5}>
+                                <InputField field={kv.$('value')} fullWidth={false} className={styles.containerPortFormInput} />
+                            </Grid>
+                            <Grid item xs={1}>
+                            <IconButton>
+                                <CloseIcon onClick={kv.onDel} />
+                            </IconButton>
+                            </Grid>
+                        </Grid>
+                        )
+                    })}
+                    <Button raised color="secondary" onClick={this.extensionForm.$('formSpec').onAdd}>
+                      Add rule
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button color="primary"
                         className={styles.buttonSpacing}
                         disabled={this.state.loading}
-                        type="submit" 
-                        raised 
+                        type="submit"
+                        raised
                         onClick={this.onSubmit.bind(this)}>
                           {this.state.drawerText}
-                    </Button>   
-                    { deleteButton }                                                                                                                            
-                    <Button 
-                      color="primary" 
+                    </Button>
+                    { deleteButton }
+                    <Button
+                      color="accent"
                       onClick={this.handleToggleDrawer.bind(this)}>
                       Cancel
-                    </Button>                                                       
-                  </Grid>                
-                </Grid>     
+                    </Button>
+                  </Grid>
+                </Grid>
               </form>
             </div>
         </Drawer>
@@ -409,7 +445,7 @@ export default class Extensions extends React.Component {
               Confirm
             </Button>
           </DialogActions>
-        </Dialog>                                                                                                
+        </Dialog>
 
       </div>
     );

@@ -19,17 +19,18 @@ export default class TopNav extends React.Component {
   state = {
     anchorEl: undefined,
     open: false,
-    originalSuggestions: [],    
+    originalSuggestions: [],
     suggestions: [],
     value: ''
   };
 
   componentDidMount(){
-    const originalSuggestions = this.props.projects.map(function(project){
-      return { id: project.id, label: project.name, project: project }
-    })
-
-    this.setState({ originalSuggestions: originalSuggestions })
+    if(this.props.projects){
+        const originalSuggestions = this.props.projects.map(function(project){
+            return { id: project.id, label: project.name, project: project }
+        })
+        this.setState({ originalSuggestions: originalSuggestions })
+    }
   }
 
   handleClick = event => {
@@ -47,14 +48,14 @@ export default class TopNav extends React.Component {
 
   getSuggestionValue(suggestion) {
     return suggestion.label;
-  }  
+  }
 
   getSuggestions(value) {
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
     console.log(this.state.originalSuggestions)
-  
+
     return inputLength === 0 ? [] : this.state.originalSuggestions.filter(lang =>
       lang.label.toLowerCase().slice(0, inputLength) === inputValue
     );
@@ -65,7 +66,7 @@ export default class TopNav extends React.Component {
       console.log('bookmarksOnly!')
       const bookmarks = this.props.projects.map(function(project){
         return { id: project.id, label: project.name, project: project }
-      })      
+      })
       this.setState({ suggestions: bookmarks, showSuggestions: true })
     } else {
       this.setState({ suggestions: suggestions, showSuggestions: true })
@@ -89,7 +90,7 @@ export default class TopNav extends React.Component {
     console.log(suggestions)
     this.renderSuggestions(false, suggestions)
   }
-    
+
 
   render() {
     var self = this
@@ -111,12 +112,12 @@ export default class TopNav extends React.Component {
                   onChange={this.onChange.bind(this)}
                   placeholder="Search for a project or view your bookmarks"
                   style={{ width: 800 }}
-                />            
-                <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>    
+                />
+                <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
                   {this.state.suggestions.map(function(suggestion){
                     return (
-                      <Paper 
-                        key={suggestion.id} 
+                      <Paper
+                        key={suggestion.id}
                         className={styles.suggestion}
                         square={true}>
                         <ListItem onClick={()=>self.onSuggestionItemClick(suggestion)}>
@@ -124,17 +125,17 @@ export default class TopNav extends React.Component {
                           {/* <ListItemIcon>
                             <StarIcon />
                           </ListItemIcon>                         */}
-                        </ListItem>                      
+                        </ListItem>
                       </Paper>
                     )
                   })}
                   </div>
               </div>
             </Grid>
-            <Grid item xs={2}>      
-              <Chip 
-                label="saso@checkr.com" 
-                onClick={this.handleClick} 
+            <Grid item xs={2}>
+              <Chip
+                label="saso@checkr.com"
+                onClick={this.handleClick}
                 aria-owns={this.state.open ? 'simple-menu' : null}
                 aria-haspopup="true"
               />

@@ -44,7 +44,10 @@ const socket = io('http://localhost:3011');
       id
       name
       component
-      formSpec
+      formSpec {
+        key
+        value
+      }
       type
     }
   }
@@ -75,7 +78,7 @@ export default class App extends React.Component {
   componentDidMount() {
     socket.on('projects', (data) => {
       this.props.data.refetch();
-    });        
+    });
 
   }
 
@@ -85,7 +88,7 @@ export default class App extends React.Component {
     }
 
     this.setState({ snackbar: { open: false, lastCreated: this.state.snackbar.lastCreated } });
-  };  
+  };
 
   render() {
     const { loading, projects, serviceSpecs, user, extensionSpecs } = this.props.data;
@@ -94,12 +97,12 @@ export default class App extends React.Component {
       this.state.snackbar.open = true;
       this.state.snackbar.lastCreated = this.props.store.app.snackbar.created;
     }
-    
+
     if (loading) {
       return <div>Loading</div>;
     } else if (this.state.redirectToLogin) {
     return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
-    } else { 
+    } else {
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
