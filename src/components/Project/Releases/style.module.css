@@ -2,6 +2,28 @@
     
 }
 
+.drawer {
+    width: 40%;
+}
+
+.extensionReleaseView {
+    padding: 20px;
+}
+
+.createServiceBar {
+    padding-top: 70px;
+}
+
+
+.drawerBody {
+    flex-grow: 1;
+    margin-top: 10px;
+}
+
+.grid {
+    padding: 25px;
+}
+
 
 .codeSnippet {
     max-width: 100%;

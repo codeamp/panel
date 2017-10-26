@@ -110,6 +110,20 @@ const query = gql`
         user {
           email
         }
+        releaseExtensions {
+            id
+            extension {
+                extensionSpec {
+                    name
+                }
+            }
+            state
+            stateMessage
+            logs {
+                id
+                msg
+            }
+        }
         headFeature {
           id
           message
@@ -305,11 +319,30 @@ export default class Project extends React.Component {
         this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was updated."})
       }, 2000);
     })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/created", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/created', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "A release was created."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/extensionComplete", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/extensionComplete', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "DockerBuild finished running for release currently being built."})
+      }, 2000);
+    })
+
+
+
   }
 
   render() {
-    const { loading, project } = this.props.data;
-    const { store, serviceSpecs, extensionSpecs, user } = this.props;
+    const { loading, project, variables } = this.props.data;
+    const { store, socket, serviceSpecs, extensionSpecs, user } = this.props;
 
     if(loading){
       return null;
@@ -330,7 +363,7 @@ export default class Project extends React.Component {
             <ProjectFeatures project={project} store={store} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases project={project} />
+            <ProjectReleases project={project} socket={socket} variables={variables} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
             <ProjectExtensions project={project} extensionSpecs={extensionSpecs} />
