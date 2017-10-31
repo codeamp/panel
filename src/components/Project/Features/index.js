@@ -17,7 +17,7 @@ class InitPrivateProjectComponent extends React.Component {
   state = {
     open: false,
     message: null,
-  };  
+  };
 
   copySSHKey(){
     var sshKey = document.querySelector('#ssh-key');
@@ -41,36 +41,36 @@ class InitPrivateProjectComponent extends React.Component {
     }
 
     this.setState({ open: false });
-  };  
+  };
 
   render() {
     return (
-      <Card className={styles.card} raised={false}>        
+      <Card className={styles.card} raised={false}>
         <CardContent>
           <Typography type="headline" component="h3">
             Setup the Git Deploy Key
           </Typography>
           <br/>
-          <Typography 
+          <Typography
             id="ssh-key"
             component="p" className={styles.codeSnippet}>
             {this.props.rsaPublicKey}
           </Typography>
           <br/>
-          <Button 
-            onClick={this.copySSHKey.bind(this)}          
+          <Button
+            onClick={this.copySSHKey.bind(this)}
             dense color="primary">
             Copy Key
-          </Button>     
-          <br/>        
-          <br/>        
+          </Button>
+          <br/>
+          <br/>
           <Typography type="body1">
             <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
               Click here to learn how to add deploy keys to Github.
             </a>
           </Typography>
-        </CardContent>       
-      </Card>      
+        </CardContent>
+      </Card>
     )
   }
 }
@@ -86,32 +86,41 @@ class InitPublicProjectComponent extends React.Component {
           <br/>
           <CircularProgress size={50} />
         </CardContent>
-      </Card>        
+      </Card>
     )
   }
 }
 
 class FeatureView extends React.Component {
-  
+
+  constructor(props){
+      super(props)
+      this.state = {
+        disableDeployBtn: false,
+        text: 'Deploy',
+      }
+  }
+
   handleDeploy(){
     console.log('handleDeploy', this.props)
+    this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id },
     }).then(({data}) => {
       console.log(data)
     }).catch(error => {
       console.log(error)
-    });    
+    });
   }
 
   render() {
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <div 
+        <div
           style={{ visibility: 'hidden', display: 'none' }}
           id={"git-hash-" + this.props.feature.id}>
             {this.props.feature.hash}
-        </div>            
+        </div>
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography component="body1" style={{ fontSize: 14 }}>
@@ -122,19 +131,20 @@ class FeatureView extends React.Component {
             </Typography>
           </CardContent>
           <CardActions style={{ position: "absolute", right: 10, top: 10 }}>
-          <IconButton raised color="primary" 
+          <IconButton raised color="primary"
               onClick={() => this.props.copyGitHash(this.props.feature.id)}
               className={this.props.showFullView === false ? styles.hide : '' }>
               <CopyGitHashIcon />
-            </IconButton>          
-            <Button raised color="primary" 
+            </IconButton>
+            <Button raised color="primary"
+              disabled={this.state.disabledDeployBtn}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
-              Deploy
+              { this.state.text }
             </Button>
           </CardActions>
         </Card>
-      </Grid>      
+      </Grid>
     );
   }
 }
@@ -146,25 +156,25 @@ class FeatureView extends React.Component {
   mutation Mutation($headFeatureId: String!, $projectId: String!) {
     createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId }) {
       headFeature {
-        message 
-      }
-      tailFeature  { 
         message
       }
-      state 
-      stateMessage 
+      tailFeature  {
+        message
+      }
+      state
+      stateMessage
     }
   }
 `, { name: "createRelease" })
 
 export default class Features extends React.Component {
 
-  constructor(props){ 
+  constructor(props){
     super(props)
     this.state = {
       activeStep: 0,
       activeFeatureKey: -1,
-    };       
+    };
   }
 
   handleNext = () => {
@@ -189,9 +199,9 @@ export default class Features extends React.Component {
     console.log(this.props)
     if(successful){
       this.props.store.app.setSnackbar({msg: "Git hash copied."});
-    }    
+    }
   }
-  
+
 
   renderFeatureList = (project) => {
     var self = this
@@ -204,23 +214,22 @@ export default class Features extends React.Component {
               copyGitHash={self.copyGitHash.bind(self)}
               key={feature.hash}
               createRelease={self.props.createRelease.bind(self)}
-              feature={feature} 
+              feature={feature}
               project={project}
-              handleOnClick={() => self.setState({ activeFeatureKey: idx })} 
-              showFullView={self.state.activeFeatureKey === idx} />              
+              handleOnClick={() => self.setState({ activeFeatureKey: idx })}
+              showFullView={self.state.activeFeatureKey === idx} />
             )
-            console.log(project.currentRelease.tailFeature.created > feature.created)
-            console.log(new Date(project.currentRelease.tailFeature.created).getTime())
+            console.log(new Date(project.currentRelease.headFeature.created).getTime())
             console.log(new Date(feature.created).getTime())
-            if( project.currentRelease.state !== "" && new Date(project.currentRelease.tailFeature.created).getTime() > new Date(feature.created).getTime() ){
+            if(project.currentRelease.state !== "" && new Date(project.currentRelease.headFeature.created).getTime() > new Date(feature.created).getTime() || project.currentRelease.headFeature.message === feature.message){
                   featureView = ""
             }
 
             return featureView
         })}
-          <br/>  
+          <br/>
         </div>
-      ) 
+      )
   }
 
           //   <Grid item xs={12}>
@@ -235,7 +244,7 @@ export default class Features extends React.Component {
           //     disableBack={this.state.activeStep === 0}
           //     disableNext={this.state.activeStep === 5}
           //   />
-          // </Grid> 
+          // </Grid>
 
   render() {
     if(!this.props.project){
@@ -260,10 +269,10 @@ export default class Features extends React.Component {
           <Grid item xs={12} className={styles.feature}>
             <Typography type="headline" component="h3">
               Features
-            </Typography>            
+            </Typography>
             <br/>
             {defaultComponent}
-          </Grid>          
+          </Grid>
         </Grid>
       </div>
     );

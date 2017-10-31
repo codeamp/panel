@@ -16,6 +16,7 @@ import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import { withTheme } from 'material-ui/styles';
 
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
+import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
 
 const inlineStyles = {
     extensionLogs: {
@@ -65,6 +66,12 @@ class ReleaseView extends React.Component {
   }
 
   render() {
+    let releaseStateIcon = <CircularProgress size={25} />
+    if(this.props.release.state === "complete"){
+        releaseStateIcon = <ReleaseStateCompleteIcon color={'green'} />
+    }
+
+
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
@@ -73,17 +80,23 @@ class ReleaseView extends React.Component {
               <ForkIcon />
               { this.props.release.headFeature.hash }
               <DoubleRightIcon />
-              { this.props.release.tailFeature.hash } - { this.props.release.headFeature.message}
+              { this.props.release.tailFeature.hash }
+            </Typography>
+            <br/>
+            <Typography>
+              { this.props.release.headFeature.message}
             </Typography>
             <Typography component="p" className={styles.featureAuthor}>
-              by <b> { this.props.release.headFeature.user } </b> - { this.props.release.created }
+              by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toString() }
             </Typography>
+            <br/>
+            <Grid item xs={12}>
+                {releaseStateIcon}
+				<Typography type="subheading">
+					{this.props.release.releaseExtensions.filter(re => re.state === "complete").length} / {this.props.release.releaseExtensions.length}
+				</Typography>
+            </Grid>
           </CardContent>
-          <CardActions style={{ float: 'right', paddingRight: 35 }}>
-            <Button raised color="primary" className={this.props.showFullView === false ? styles.hide : '' }>
-              Rollback
-            </Button>
-          </CardActions>
         </Card>
       </Grid>
     );
@@ -94,8 +107,9 @@ export default class Releases extends React.Component {
   state = {
     activeStep: 0,
     showCurrentReleaseFullView: false,
-    currentRelease: DEFAULT_RELEASE,
+    currentRelease: 0,
     dockerBuilderLogs: "No logs yet...",
+    deployAction: '',
   };
 
   handleNext = () => {
@@ -114,26 +128,32 @@ export default class Releases extends React.Component {
     console.log(this.props.project);
   };
 
-  handleToggleDrawer(release){
-    console.log('handleToggleDrawer')
-    console.log(release)
-    this.setState({ open: !this.state.open, dialogOpen: false, currentRelease: release})
-  }
+  handleToggleDrawer(releaseIdx){
+    console.log('handleToggleDrawer', releaseIdx)
+    let deployAction = 'Rollback'
+    if(releaseIdx === 0 && this.props.project.releases[0].state === "complete"){
+        deployAction = 'Redeploy'
+    }
 
-  componentDidMount(){
-    var self = this
-this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + this.state.currentRelease+"log", (data) => {
-      console.log('projects/' + this.props.variables.slug + '/releases/log', data);
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-          self.setState({ dockerBuilderLogs: self.state.dockerBuilderLogs + '\n\n\n' + data.log})
-      }, 2000);
-    })
-
-
+    if(releaseIdx === -1){
+        for(var i = 0; i < this.props.project.releases.length; i++){
+            let release = this.props.project.releases[i]
+            console.log(release, i, release.state === "complete")
+            deployAction = 'Redeploy'
+            if(release.state === "complete"){
+                releaseIdx = i;
+                break;
+            }
+        }
+    }
+    console.log(releaseIdx)
+    this.setState({ open: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
   }
 
   render() {
+
+    const { project } = this.props;
+    console.log(this.props)
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
@@ -143,12 +163,13 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
             </Typography>
           </Grid>
           <Grid item xs={12} className={styles.feature}>
+          {project.currentRelease.id !== "00000000-0000-0000-0000-000000000000" &&
             <ReleaseView
-            key={this.props.project.currentRelease.id}
-            release={this.props.project.currentRelease}
-            handleOnClick={() => this.setState({ showCurrentReleaseFullView: !this.state.showCurrentReleaseFullView })}
+            key={project.currentRelease.id}
+            release={project.currentRelease}
+            handleOnClick={() => this.handleToggleDrawer(-1)}
             showFullView={this.state.showCurrentReleaseFullView}
-            />
+            />}
           </Grid>
         </Grid>
         <Grid container spacing={16}>
@@ -158,11 +179,11 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
             </Typography>
           </Grid>
           <Grid item xs={12} className={styles.feature}>
-            {[...Array(this.props.project.releases.length)].map((x, i) =>
+            {[...Array(project.releases.length)].map((x, i) =>
               <ReleaseView
-                key={this.props.project.releases[i].id}
-                release={this.props.project.releases[i]}
-                handleOnClick={() => this.handleToggleDrawer(this.props.project.releases[i])}
+                key={project.releases[i].id}
+                release={project.releases[i]}
+                handleOnClick={() => this.handleToggleDrawer(i)}
                 showFullView={this.state.activeFeatureKey === i} />
             )}
           </Grid>
@@ -187,10 +208,10 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
               <Grid container spacing={24} className={styles.grid}>
                 <Grid item xs={12}>
                     <Typography type="body2">
-                    <b> head </b> : { this.state.currentRelease.headFeature.hash }
+                    <b> head </b> : {project.releases !== undefined && project.releases.length > 0 && project.releases[this.state.currentRelease].headFeature.hash }
                     </Typography>
                     <Typography type="body2">
-                    <b> tail </b> : { this.state.currentRelease.tailFeature.hash }
+                    <b> tail </b> : {project.releases !== undefined && project.releases.length > 0 && project.releases[this.state.currentRelease].tailFeature.hash }
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
@@ -198,7 +219,7 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
                       <Toolbar>
                         <div>
                           <Typography type="title">
-                            Extension Statuses
+                            Extensions
                           </Typography>
                         </div>
                       </Toolbar>
@@ -209,16 +230,17 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
                               Name
                             </TableCell>
                             <TableCell>
-                              Status
+                              State
                             </TableCell>
                             <TableCell>
-                              Info
+                              State Message
                             </TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {this.state.currentRelease.releaseExtensions.map(re => {
+                          {project.releases !== undefined && this.props.project.releases.length > 0 && this.props.project.releases[this.state.currentRelease].releaseExtensions.map(re => {
                             let stateIcon = <CircularProgress size={25} />
+                            console.log(re)
                             if(re.state === "complete"){
                                 stateIcon = <ExtensionStateCompleteIcon />
                             }
@@ -229,7 +251,9 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
                                 key={re.id}>
                                 <TableCell> { re.extension.extensionSpec.name } </TableCell>
                                 <TableCell> { stateIcon } </TableCell>
-                                <TableCell> </TableCell>
+                                <TableCell>
+                                    {re.stateMessage}
+                                </TableCell>
                               </TableRow>
                             )
                           })}
@@ -237,31 +261,20 @@ this.props.socket.on("projects/" + this.props.variables.slug + "/releases/" + th
                       </Table>
                     </Paper>
                 </Grid>
-
-                {this.state.currentRelease.releaseExtensions.map(function(re){
-                    return (
-                        <Grid item xs={12}>
-                            <Paper classes={{
-                                root: styles.extensionReleaseView
-                            }}>
-                                <Typography type="subheading">
-                                  { re.extension.extensionSpec.name }
-                                </Typography>
-                                <Grid item xs={12}>
-                                    <Paper style={inlineStyles.extensionLogs}>
-                                        {re.logs.map(function(log){
-                                            return (
-                                                <div>
-                                                    { log.msg }
-                                                </div>
-                                            )
-                                        })}
-                                    </Paper>
-                                </Grid>
-                           </Paper>
-                        </Grid>
-                    )
-                })}
+                <Grid item xs={12}>
+                    <Button
+                      raised
+                      disabled={project.releases.length > 0 && project.releases[this.state.currentRelease].state !== "complete"}
+                      color="primary"
+                      onClick={()=>this.setState({ open: false }) }>
+                      { this.state.deployAction }
+                    </Button>
+                    <Button
+                      color="primary"
+                      onClick={()=>this.setState({ open: false }) }>
+                      Exit Panel
+                    </Button>
+                </Grid>
               </Grid>
             </div>
         </Drawer>

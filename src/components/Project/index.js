@@ -30,6 +30,16 @@ const query = gql`
         id
         state
         stateMessage
+        releaseExtensions {
+            id
+            extension {
+                extensionSpec {
+                    name
+                }
+            }
+            state
+            stateMessage
+        }
         created
         user {
           email
@@ -119,10 +129,6 @@ const query = gql`
             }
             state
             stateMessage
-            logs {
-                id
-                msg
-            }
         }
         headFeature {
           id
@@ -151,6 +157,10 @@ const query = gql`
           type
         }
         state
+        formSpecValues {
+          key
+          value
+        }
         artifacts {
           key
           value
@@ -274,7 +284,7 @@ export default class Project extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
+        // this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
       }, 2000);
     })
 
@@ -283,7 +293,7 @@ export default class Project extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
+        // this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
       }, 2000);
     })
 
@@ -324,19 +334,40 @@ export default class Project extends React.Component {
       console.log('projects/' + this.props.data.variables.slug + '/releases/created', data);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
+        console.log('release created')
+        this.props.history.push('/projects/' + this.props.data.variables.slug + '/releases')
         this.props.store.app.setSnackbar({msg: "A release was created."})
       }, 2000);
     })
 
-    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/extensionComplete", (data) => {
-      console.log('projects/' + this.props.data.variables.slug + '/releases/extensionComplete', data);
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/log", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/log', data);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "DockerBuild finished running for release currently being built."})
+        console.log('release created')
+        // this.props.store.app.setSnackbar({msg: "A release was created."})
       }, 2000);
     })
 
 
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/releaseExtensionComplete", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/extensionComplete', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        console.log('dockerbuild finished running')
+        // this.props.store.app.setSnackbar({msg: "DockerBuild finished running for release currently being built."})
+      }, 2000);
+    })
+
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/completed", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/completed', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        console.log('release finished running')
+        // this.props.store.app.setSnackbar({msg: "DockerBuild finished running for release currently being built."})
+      }, 2000);
+    })
 
   }
 

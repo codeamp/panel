@@ -41,6 +41,7 @@ class AppStore {
 
   setSnackbar = action(params => {
     console.log(params)
+    console.log("HELLO")
     this.snackbar.created = new Date();
     this.snackbar.msg = params.msg;
   })

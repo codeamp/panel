@@ -72,9 +72,6 @@ export default class App extends React.Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-  }
-
   componentDidMount() {
     socket.on('projects', (data) => {
       this.props.data.refetch();

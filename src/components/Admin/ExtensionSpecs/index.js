@@ -171,7 +171,7 @@ export default class Extensions extends React.Component {
     };
 
     const initials = {
-      'type': 'Database'
+      'type': 'Workflow'
     };
 
     const types = {
@@ -179,11 +179,14 @@ export default class Extensions extends React.Component {
 
     const extra = {
       'type': [{
-        key: 'Database',
-        value: 'Database',
-      }, {
         key: 'Workflow',
         value: 'Workflow',
+      }, {
+        key: 'Notification',
+        value: 'Notification',
+      }, {
+        key: 'Once',
+        value: 'Once',
       }]
     };
 
@@ -199,7 +202,7 @@ export default class Extensions extends React.Component {
   handleToggleDrawer(){
     console.log(this.state.open, this.extensionForm.values())
     if(this.state.open === true){
-      this.extensionForm.reset()
+      this.extensionForm.clear()
     }
     console.log(this.extensionForm.values())
 
