@@ -102,12 +102,15 @@ class FeatureView extends React.Component {
   }
 
   handleDeploy(){
+    var self = this
     console.log('handleDeploy', this.props)
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id },
     }).then(({data}) => {
       console.log(data)
+      console.log('GOING to', self.props)
+      self.props.history.push(self.props.match.url + '/releases')
     }).catch(error => {
       console.log(error)
     });
@@ -137,7 +140,7 @@ class FeatureView extends React.Component {
               <CopyGitHashIcon />
             </IconButton>
             <Button raised color="primary"
-              disabled={this.state.disabledDeployBtn}
+              disabled={this.state.disabledDeployBtn || this.props.project.extensions.length == 0}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
               { this.state.text }
@@ -177,6 +180,15 @@ export default class Features extends React.Component {
     };
   }
 
+  componentWillMount(){
+    console.log("MOUNTING")
+    this.props.data.refetch()
+  }
+
+  shouldComponentUpdate(){
+      return true
+  }
+
   handleNext = () => {
     this.setState({
       activeStep: this.state.activeStep + 1,
@@ -211,6 +223,7 @@ export default class Features extends React.Component {
         {project.features.map(function(feature, idx) {
             let featureView = (
               <FeatureView
+              {...self.props}
               copyGitHash={self.copyGitHash.bind(self)}
               key={feature.hash}
               createRelease={self.props.createRelease.bind(self)}

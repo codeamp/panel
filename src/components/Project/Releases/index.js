@@ -124,8 +124,12 @@ export default class Releases extends React.Component {
     });
   };
 
+  shouldComponentUpdate(){
+      return true
+  }
   componentWillMount() {
     console.log(this.props.project);
+    this.props.data.refetch()
   };
 
   handleToggleDrawer(releaseIdx){
@@ -233,7 +237,10 @@ export default class Releases extends React.Component {
                               State
                             </TableCell>
                             <TableCell>
-                              State Message
+                              Message
+                            </TableCell>
+                            <TableCell>
+                              Type
                             </TableCell>
                           </TableRow>
                         </TableHead>
@@ -253,6 +260,9 @@ export default class Releases extends React.Component {
                                 <TableCell> { stateIcon } </TableCell>
                                 <TableCell>
                                     {re.stateMessage}
+                                </TableCell>
+                                <TableCell>
+                                    {re.type}
                                 </TableCell>
                               </TableRow>
                             )

@@ -43,12 +43,49 @@ const socket = io('http://localhost:3011');
     extensionSpecs {
       id
       name
+      key
       component
       formSpec {
         key
         value
       }
+      environmentVariables {
+          id
+      }
+    }
+    environments {
+        id
+        name
+    }
+    environmentVariables {
+      id
+      key
+      value
+      created
+      project {
+          id
+      }
+      user {
+          id
+          email
+      }
       type
+      version
+      versions {
+          id
+          key
+          value
+          created
+          project {
+              id
+          }
+          user {
+              id
+              email
+          }
+          type
+          version
+      }
     }
   }
 `)
@@ -73,10 +110,27 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
+    socket.on('reconnect_failed', () => {
+        console.log('reconnect_failed')
+    });
+
+    socket.on('reconnect', () => {
+        this.props.data.refetch()
+        this.props.store.app.setConnectionHeader({ msg: "", type: "SUCCESS" })
+    });
+
+
+    socket.on('reconnecting', () => {
+        this.props.store.app.setConnectionHeader({ msg: "Attempting to reconnect to server...", type: "FAIL" })
+    });
     socket.on('projects', (data) => {
       this.props.data.refetch();
     });
 
+    socket.on('projectExists', (data) => {
+      this.props.store.app.setSnackbar({msg: "Project already exists. Try a different repository.."})
+      this.props.history.push('/create')
+    });
   }
 
   handleRequestClose = (event, reason) => {
@@ -88,7 +142,9 @@ export default class App extends React.Component {
   };
 
   render() {
-    const { loading, projects, serviceSpecs, user, extensionSpecs } = this.props.data;
+    const { loading, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
+
+    console.log(this.props.data)
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -117,10 +173,21 @@ export default class App extends React.Component {
                     <Create projects={projects} type={"create"} {...props} />
                     )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin data={this.props.data} extensionSpecs={extensionSpecs} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
+                    <Admin data={this.props.data}
+                        extensionSpecs={extensionSpecs}
+                        projects={projects}
+                        socket={socket}
+                        serviceSpecs={serviceSpecs}
+                        environments={environments}
+                        environmentVariables={environmentVariables}
+                        {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} user={user} serviceSpecs={serviceSpecs} extensionSpecs={extensionSpecs} {...props} />
+                    <Project socket={socket}
+                        user={user}
+                        serviceSpecs={serviceSpecs}
+                        extensionSpecs={extensionSpecs}
+                        {...props} />
                     )} />
                 </Switch>
               </div>

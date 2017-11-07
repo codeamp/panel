@@ -16,6 +16,8 @@ import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import ServiceSpecIcon from 'material-ui-icons/Description';
 import ExtensionIcon from 'material-ui-icons/Extension';
+import EnvironmentVariableIcon from 'material-ui-icons/VpnKey';
+import EnvironmentIcon from 'material-ui-icons/Public';
 
 @withRouter
 @inject("store") @observer
@@ -30,7 +32,7 @@ export default class LeftNav extends React.Component {
   handleClick = () => {
     this.setState({ open: !this.state.open });
   };
-  
+
   render() {
 
     let projectTitleItem = ""
@@ -38,9 +40,9 @@ export default class LeftNav extends React.Component {
       projectTitleItem = (
         <ListItem button onClick={() => this.setState({ openProject: !this.state.openProject })}>
           <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-          {this.state.openProject ? <ExpandLess /> : <ExpandMore />}                
-        </ListItem>              
-      )      
+          {this.state.openProject ? <ExpandLess /> : <ExpandMore />}
+        </ListItem>
+      )
     }
 
 
@@ -71,14 +73,30 @@ export default class LeftNav extends React.Component {
                 <SupervisorAccountIcon />
               </ListItemIcon>
               <ListItemText primary="Admin" />
-              {this.state.open ? <ExpandLess /> : <ExpandMore />}                
+              {this.state.open ? <ExpandLess /> : <ExpandMore />}
             </ListItem>
-            <Collapse in={this.state.open} transitionDuration="auto" unmountOnExit>            
+            <Collapse in={this.state.open} transitionDuration="auto" unmountOnExit>
+              <NavLink to="/admin/environments" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <EnvironmentIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Environments" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/admin/envVars" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <EnvironmentVariableIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Environment Variables" />
+                </ListItem>
+              </NavLink>
               <NavLink to="/admin/serviceSpecs" exact activeClassName={styles.active}>
                 <ListItem button>
                   <ListItemIcon>
                     <ServiceSpecIcon />
-                  </ListItemIcon>                  
+                  </ListItemIcon>
                   <ListItemText inset primary="Service Specs" />
                 </ListItem>
               </NavLink>
@@ -86,16 +104,16 @@ export default class LeftNav extends React.Component {
                 <ListItem button>
                   <ListItemIcon>
                     <ExtensionIcon />
-                  </ListItemIcon>                  
+                  </ListItemIcon>
                   <ListItemText inset primary="Extension Specs" />
                 </ListItem>
               </NavLink>
-            </Collapse>            
+            </Collapse>
           </List>
           <Divider/>
           <List>
           { projectTitleItem }
-          <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>            
+          <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>
             {this.props.store.app.leftNavItems.map(nav =>
               <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
                 <ListItem button>
@@ -111,8 +129,8 @@ export default class LeftNav extends React.Component {
                 </ListItem>
               </NavLink>
               )}
-          </Collapse>                
-          </List>          
+          </Collapse>
+          </List>
         </div>
       </Drawer>
     );

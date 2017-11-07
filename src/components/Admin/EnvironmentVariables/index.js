@@ -38,9 +38,8 @@ const inlineStyles = {
 const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
-  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!) {
+  mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!) {
       createEnvironmentVariable(environmentVariable:{
-      projectId: $projectId,
       key: $key,
       value: $value,
       type: $type,
@@ -52,10 +51,6 @@ const DEFAULT_ENV_VAR = 0
             id
             email
           }
-          project {
-            id
-            name
-          }
           version
           created
       }
@@ -63,7 +58,7 @@ const DEFAULT_ENV_VAR = 0
 `, { name: "createEnvironmentVariable" })
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!) {
+mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!) {
     updateEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
@@ -75,10 +70,6 @@ mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!
         user {
           id
           email
-        }
-        project {
-          id
-          name
         }
         version
         created
@@ -99,10 +90,6 @@ mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!
         user {
           id
           email
-        }
-        project {
-          id
-          name
         }
         version
         created
@@ -126,10 +113,40 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
+  componentDidMount(){
+    this.props.socket.on("environmentVariables/new", (data) => {
+      console.log("environmentVariables/new");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.setState({ loading: false })
+      }, 2000);
+    })
+
+    this.props.socket.on("environmentVariables/deleted", (data) => {
+      console.log("environmentVariables/deleted");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.setState({ loading: false })
+      }, 2000);
+    })
+
+    this.props.socket.on("environmentVariables/updated", (data) => {
+      console.log("environmentVariables/updated");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.setState({ loading: false })
+      }, 2000);
+    })
+  }
+
   componentWillMount(){
+    const initials = {}
+
     const fields = [
       'id',
-      'projectId',
       'key',
       'value',
       'created',
@@ -138,8 +155,8 @@ export default class EnvironmentVariables extends React.Component {
     ];
 
     const rules = {
-    'key': 'string|required',
-    'value': 'string|required',
+        'key': 'string|required',
+        'value': 'string|required',
     };
 
     const labels = {
@@ -147,11 +164,6 @@ export default class EnvironmentVariables extends React.Component {
       'value': 'Value',
       'version': 'Version',
     };
-
-    const initials = {
-      'projectId': this.props.project.id,
-    }
-
     const types = {
     };
 
@@ -197,15 +209,20 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onClick(envVarIdx){
-    const envVar = this.props.project.environmentVariables[envVarIdx]
-    if(envVar !== undefined){
-        this.envVarForm.$('key').set(envVar.key)
-        this.envVarForm.$('key').set('disabled', true)
-        this.envVarForm.$('value').set(envVar.value)
-        this.envVarForm.$('type').set(envVar.type)
-        this.envVarForm.$('id').set(envVar.id)
-        this.setState({ open: true, currentEnvVar: envVarIdx, currentEnvVarVersion: envVarIdx, drawerText: "Update" })
-    }
+      console.log('onClick')
+      const envVar = this.props.environmentVariables[envVarIdx]
+      if(envVar !== undefined){
+          this.envVarForm.$('key').set(envVar.key)
+          this.envVarForm.$('key').set('disabled', true)
+          this.envVarForm.$('value').set(envVar.value)
+          this.envVarForm.$('type').set(envVar.type)
+          this.envVarForm.$('id').set(envVar.id)
+          this.setState({ open: true, currentEnvVar: envVarIdx, currentEnvVarVersion: envVarIdx, drawerText: "Update" })
+      }
+      this.setState({
+          open: true,
+          drawerText: 'Update',
+      })
   }
 
   onError(form){
@@ -219,13 +236,12 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   replaceEnvVarValue(){
-    this.envVarForm.$('value').set(this.props.project.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value);
+      this.envVarForm.$('value').set(this.props.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value);
   }
 
   onSuccess(form){
 
 
-    form.$('projectId').set(this.props.project.id)
     console.log(form.values())
 
     this.envVarForm.$('key').set('disabled', false)
@@ -272,11 +288,6 @@ export default class EnvironmentVariables extends React.Component {
   };
 
   isEnvVarVersionIdSelected(envVarId){
-    if(this.props.project.environmentVariables[this.state.currentEnvVar].versions !== undefined &&
-       this.props.project.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion]
-        ){
-        return this.props.project.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id === envVarId;
-    }
     return false
   }
 
@@ -289,7 +300,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   handleDeleteEnvVar(){
-    this.props.deleteEnvironmentVariable({
+    this.props.deleteAdminEnvironmentVariable({
       variables: this.envVarForm.values(),
     }).then(({data}) => {
       console.log(data)
@@ -305,16 +316,12 @@ export default class EnvironmentVariables extends React.Component {
 
   render() {
 
-    const { environmentVariables } = this.props.project;
+    const { environmentVariables } = this.props;
 
     if(this.state.refreshCurrentForm){
         this.onClick(this.state.currentEnvVar)
         this.setState({ refreshCurrentForm: false })
     }
-
-    console.log(this.props.project)
-    console.log(environmentVariables)
-    console.log(environmentVariables[this.state.currentEnvVar])
 
     let deleteButton = "";
 
@@ -554,7 +561,7 @@ export default class EnvironmentVariables extends React.Component {
               <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.state.currentEnvVar].key + "?"}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  {"This will delete the environment variable and all its versions associated with" + this.props.project.name + "."}
+                  {"This will delete the environment variable and all its versions associated with ."}
                 </DialogContentText>
               </DialogContent>
               <DialogActions>

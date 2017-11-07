@@ -17,6 +17,10 @@ class AppStore {
         created: null,
         msg: null,
       },
+      url: '',
+      connectionHeader: {
+          msg: "",
+      },
     });
   }
 
@@ -35,13 +39,16 @@ class AppStore {
     });
   });
 
+  setUrl = action(url => {
+      console.log('setUrl', url)
+      this.url = url
+  })
+
   setProjectTitle = action(title => {
     this.leftNavProjectTitle = title;
   })
 
   setSnackbar = action(params => {
-    console.log(params)
-    console.log("HELLO")
     this.snackbar.created = new Date();
     this.snackbar.msg = params.msg;
   })
@@ -50,6 +57,10 @@ class AppStore {
     let { localStorage } = window
     this.user = user
     localStorage.setItem('user', user);
+  });
+
+  setConnectionHeader = action(params => {
+    this.connectionHeader.msg = params.msg;
   });
 
 
