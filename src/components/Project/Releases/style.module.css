@@ -2,6 +2,43 @@
     
 }
 
+.releaseExtensionStatus {
+    display: inline-block;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.releaseExtensionCardView {
+    padding: 10px;
+}
+
+.drawer {
+    width: 40%;
+}
+
+.extensionReleaseView {
+    padding: 20px;
+}
+
+.createServiceBar {
+    padding-top: 70px;
+}
+
+.releaseViewIcon {
+    width: 30px;
+    height: 30px;
+}
+
+
+.drawerBody {
+    flex-grow: 1;
+    margin-top: 10px;
+}
+
+.grid {
+    padding: 25px;
+}
+
 
 .codeSnippet {
     max-width: 100%;

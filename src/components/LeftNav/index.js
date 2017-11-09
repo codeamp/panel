@@ -11,11 +11,19 @@ import SupervisorAccountIcon from 'material-ui-icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
 import Collapse from 'material-ui/transitions/Collapse';
+import { FormControl } from 'material-ui/Form';
+import Input, { InputLabel } from 'material-ui/Input';
+import Select from 'material-ui/Select';
+import { MenuItem } from 'material-ui/Menu';
+
+
 
 import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import ServiceSpecIcon from 'material-ui-icons/Description';
 import ExtensionIcon from 'material-ui-icons/Extension';
+import EnvironmentVariableIcon from 'material-ui-icons/VpnKey';
+import EnvironmentIcon from 'material-ui-icons/Public';
 
 @withRouter
 @inject("store") @observer
@@ -30,19 +38,24 @@ export default class LeftNav extends React.Component {
   handleClick = () => {
     this.setState({ open: !this.state.open });
   };
-  
+
+  handleEnvChange(e){
+	console.log('handleEnvChange', e.target.value)
+	this.props.store.app.setCurrentEnv({ id: e.target.value })
+  }
+
   render() {
+	const { environments } = this.props;
 
     let projectTitleItem = ""
     if(this.props.store.app.leftNavProjectTitle !== ''){
       projectTitleItem = (
         <ListItem button onClick={() => this.setState({ openProject: !this.state.openProject })}>
           <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-          {this.state.openProject ? <ExpandLess /> : <ExpandMore />}                
-        </ListItem>              
-      )      
+          {this.state.openProject ? <ExpandLess /> : <ExpandMore />}
+        </ListItem>
+      )
     }
-
 
     return (
       <Drawer type="persistent" open={true} className={styles.root}>
@@ -71,14 +84,30 @@ export default class LeftNav extends React.Component {
                 <SupervisorAccountIcon />
               </ListItemIcon>
               <ListItemText primary="Admin" />
-              {this.state.open ? <ExpandLess /> : <ExpandMore />}                
+              {this.state.open ? <ExpandLess /> : <ExpandMore />}
             </ListItem>
-            <Collapse in={this.state.open} transitionDuration="auto" unmountOnExit>            
+            <Collapse in={this.state.open} transitionDuration="auto" unmountOnExit>
+              <NavLink to="/admin/environments" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <EnvironmentIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Environments" />
+                </ListItem>
+              </NavLink>
+              <NavLink to="/admin/envVars" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <EnvironmentVariableIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Environment Variables" />
+                </ListItem>
+              </NavLink>
               <NavLink to="/admin/serviceSpecs" exact activeClassName={styles.active}>
                 <ListItem button>
                   <ListItemIcon>
                     <ServiceSpecIcon />
-                  </ListItemIcon>                  
+                  </ListItemIcon>
                   <ListItemText inset primary="Service Specs" />
                 </ListItem>
               </NavLink>
@@ -86,16 +115,16 @@ export default class LeftNav extends React.Component {
                 <ListItem button>
                   <ListItemIcon>
                     <ExtensionIcon />
-                  </ListItemIcon>                  
+                  </ListItemIcon>
                   <ListItemText inset primary="Extension Specs" />
                 </ListItem>
               </NavLink>
-            </Collapse>            
+            </Collapse>
           </List>
           <Divider/>
           <List>
           { projectTitleItem }
-          <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>            
+          <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>
             {this.props.store.app.leftNavItems.map(nav =>
               <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
                 <ListItem button>
@@ -111,8 +140,31 @@ export default class LeftNav extends React.Component {
                 </ListItem>
               </NavLink>
               )}
-          </Collapse>                
-          </List>          
+          </Collapse>
+		  {this.props.store.app.leftNavProjectTitle !== '' &&
+			<ListItem>
+				<FormControl>
+				  <InputLabel>Current Env</InputLabel>
+				  <Select
+					classes={{
+						select: styles.currentEnv,
+						root: styles.currentEnv,
+					}}
+					style={{ width: 200 }}
+					value={this.props.store.app.currentEnvironment.id}
+					onChange={this.handleEnvChange.bind(this)}
+					input={<Input fullWidth={true} />}
+				  >
+					{environments.map(function(env){
+						return (
+						  <MenuItem value={env.id}>{env.name}</MenuItem>
+						)
+					})}
+				  </Select>
+				</FormControl>
+			</ListItem>
+		  }
+          </List>
         </div>
       </Drawer>
     );

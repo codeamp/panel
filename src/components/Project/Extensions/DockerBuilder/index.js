@@ -43,6 +43,14 @@ export default class DockerBuilder extends React.Component {
   }
 
   componentWillMount(){
+    this.setupForm()
+  }
+
+  componentWillReceiveProps(nextProps){
+    console.log(nextProps)
+  }
+
+  setupForm(){
     const fields = [
       'hostname',
       'credentials',
@@ -66,13 +74,15 @@ export default class DockerBuilder extends React.Component {
 
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks, plugins })
 
+
     // reflect viewType in state props
     if(this.props.viewType === "read"){
         console.log(this.props.extension)
         let obj = {}
-        this.props.extension.artifacts.map(function(kv) {
+        this.props.extension.formSpecValues.map(function(kv) {
             obj[kv['key']] = kv.value
         })
+
 
         this.form.$('hostname').set(obj['hostname'])
         this.form.$('credentials').set(obj['credentials'])
@@ -81,7 +91,6 @@ export default class DockerBuilder extends React.Component {
     } else if(this.props.viewType === "edit"){
         this.setState({ buttonText: "Add", extensionSpec: this.props.extensionSpec })
     }
-
   }
 
 
@@ -100,6 +109,8 @@ export default class DockerBuilder extends React.Component {
             'value': formSpecValues[key]
         }
     })
+
+    console.log(formSpecValues)
 
     if(this.props.viewType === 'edit'){
         this.props.createExtension({

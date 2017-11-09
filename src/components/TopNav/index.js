@@ -12,6 +12,7 @@ import TextField from 'material-ui/TextField';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
+import { LinearProgress } from 'material-ui/Progress';
 
 @inject("store") @observer
 
@@ -91,10 +92,13 @@ export default class TopNav extends React.Component {
     this.renderSuggestions(false, suggestions)
   }
 
-
   render() {
     var self = this
+    const { store, user } = this.props
+
+
     return (
+    <div>
       <AppBar position="static" className={styles.appBar}>
         <Toolbar>
           <Grid container>
@@ -134,7 +138,7 @@ export default class TopNav extends React.Component {
             </Grid>
             <Grid item xs={2}>
               <Chip
-                label="saso@checkr.com"
+                label={user.email}
                 onClick={this.handleClick}
                 aria-owns={this.state.open ? 'simple-menu' : null}
                 aria-haspopup="true"
@@ -152,6 +156,29 @@ export default class TopNav extends React.Component {
           </Menu>
         </Toolbar>
       </AppBar>
+
+      {store.app.connectionHeader.msg !== "" &&
+          <AppBar position="absolute" color="default">
+            <Toolbar>
+                <Grid container>
+                    <Grid item xs={1}>
+                    <Typography type="body1">
+                        <a href={window.location.href}>
+                        try refreshing
+                        </a>
+                    </Typography>
+                    </Grid>
+                    <Grid item xs={11} className={styles.center}>
+                        <Typography>
+                            { store.app.connectionHeader.msg }
+                        </Typography>
+                    </Grid>
+                </Grid>
+            </Toolbar>
+            <LinearProgress color="accent" />
+          </AppBar>
+      }
+    </div>
     );
   }
 }

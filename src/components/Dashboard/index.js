@@ -21,22 +21,17 @@ export default class Dashboard extends React.Component {
   };
 
   componentWillMount() {
-    this.props.store.app.setNavProjects(this.props.projects) 
+    this.props.store.app.setNavProjects(this.props.projects)
   }
 
   componentWillReact() {
     const { projects } = this.props.data;
-    this.props.store.app.setNavProjects(projects) 
+    this.props.store.app.setNavProjects(projects)
   }
 
   render() {
     return (
       <div className={styles.root}>
-        <Link to="/login">
-          <Button raised>
-            Login
-          </Button>
-        </Link>
       </div>
     );
   }

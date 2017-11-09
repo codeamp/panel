@@ -38,9 +38,9 @@ const inlineStyles = {
 
 
 @graphql(gql`
-mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: String!, 
+mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: String!,
   $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
-    createServiceSpec(serviceSpec:{ 
+    createServiceSpec(serviceSpec:{
     name: $name,
     cpuRequest: $cpuRequest,
     cpuLimit: $cpuLimit,
@@ -55,9 +55,9 @@ mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: Str
 `, { name: "createServiceSpec" })
 
 @graphql(gql`
-mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!, 
+mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!,
   $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
-    deleteServiceSpec(serviceSpec:{ 
+    deleteServiceSpec(serviceSpec:{
     id: $id,
     name: $name,
     cpuRequest: $cpuRequest,
@@ -73,9 +73,9 @@ mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, 
 `, { name: "deleteServiceSpec" })
 
 @graphql(gql`
-mutation UpdateServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!, 
+mutation UpdateServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!,
   $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
-    updateServiceSpec(serviceSpec:{ 
+    updateServiceSpec(serviceSpec:{
     id: $id,
     name: $name,
     cpuRequest: $cpuRequest,
@@ -99,11 +99,11 @@ export default class ServiceSpecs extends React.Component {
     this.state = {
       selected: null,
       open: false,
-      currentServiceSpec: { 
+      currentServiceSpec: {
         id: -1,
       },
       drawerText: 'Create',
-    }    
+    }
   }
 
   componentDidMount(){
@@ -111,31 +111,31 @@ export default class ServiceSpecs extends React.Component {
       console.log("serviceSpecs/new");
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
-        this.setState({ loading: false })    
+        this.props.data.refetch();
+        this.setState({ loading: false })
         this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was created"})
       }, 2000);
-    }) 
-    
+    })
+
     this.props.socket.on("serviceSpecs/deleted", (data) => {
       console.log("serviceSpecs/deleted");
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();    
-        this.setState({ loading: false })    
+        this.props.data.refetch();
+        this.setState({ loading: false })
         this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was deleted"})
       }, 2000);
-    }) 
-    
+    })
+
     this.props.socket.on("serviceSpecs/updated", (data) => {
       console.log("serviceSpecs/updated");
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();        
-        this.setState({ loading: false })    
+        this.props.data.refetch();
+        this.setState({ loading: false })
         this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was updated"})
       }, 2000);
-    })     
+    })
   }
 
   componentWillMount(){
@@ -162,11 +162,11 @@ export default class ServiceSpecs extends React.Component {
 
     const labels = {
       'name': 'Name',
-      'cpuRequest': 'CPU Request',
-      'cpuLimit': 'CPU Limit',
-      'memoryRequest': 'Memory Request',
-      'memoryLimit': 'Memory Limit',
-      'terminationGracePeriod': 'Termination Grace Period',
+      'cpuRequest': 'CPU Request (millicpus)',
+      'cpuLimit': 'CPU Limit (millicpus)',
+      'memoryRequest': 'Memory Request (gb)',
+      'memoryLimit': 'Memory Limit (gb)',
+      'terminationGracePeriod': 'Termination Grace Period (seconds)',
     };
 
     const initials = {
@@ -180,7 +180,7 @@ export default class ServiceSpecs extends React.Component {
     const extra = {
 
     };
-    
+
     const hooks = {
 
     };
@@ -198,7 +198,7 @@ export default class ServiceSpecs extends React.Component {
     console.log(this.serviceSpecForm.values())
 
     this.setState({ open: !this.state.open, dialogOpen: false, currentServiceSpec: { id: -1 } })
-  }  
+  }
 
   isSelected(id){
     return this.state.selected === id
@@ -244,7 +244,7 @@ export default class ServiceSpecs extends React.Component {
         }).catch(error => {
           console.log(error)
         });
-        break;   
+        break;
     }
   }
 
@@ -272,13 +272,13 @@ export default class ServiceSpecs extends React.Component {
       case "Create":
         drawerText = "Creating"
         break;
-      case "Update": 
+      case "Update":
         drawerText = "Updating"
         break;
     }
 
     this.setState({ drawerText: drawerText })
-    this.serviceSpecForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })    
+    this.serviceSpecForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   render() {
@@ -289,12 +289,12 @@ export default class ServiceSpecs extends React.Component {
 
     if(this.state.currentServiceSpec.id !== -1){
       deleteButton = (
-        <Button 
+        <Button
           disabled={this.state.loading}
-          color="accent" 
+          color="accent"
           onClick={()=>this.setState({ dialogOpen: true })}>
           Delete
-        </Button>        
+        </Button>
       );
     }
 
@@ -309,7 +309,7 @@ export default class ServiceSpecs extends React.Component {
                     Service Specs
                   </Typography>
                 </div>
-              </Toolbar>              
+              </Toolbar>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -327,17 +327,17 @@ export default class ServiceSpecs extends React.Component {
                     </TableCell>
                     <TableCell>
                       Memory Limit (mb)
-                    </TableCell>                                                                                  
+                    </TableCell>
                     <TableCell>
                       Timeout (s)
-                    </TableCell>                                                            
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {serviceSpecs.map(serviceSpec => {
                     const isSelected = this.isSelected(serviceSpec.id);
                     return (
-                      <TableRow 
+                      <TableRow
                         hover
                         onClick={event => this.handleClick(event, serviceSpec)}
                         selected={isSelected}
@@ -357,11 +357,11 @@ export default class ServiceSpecs extends React.Component {
             </Paper>
           </Grid>
         </Grid>
-        <Button fab aria-label="Add" type="submit" raised color="primary" 
+        <Button fab aria-label="Add" type="submit" raised color="primary"
               style={inlineStyles.addButton}
               onClick={this.handleNewSpecClick.bind(this)}>
               <AddIcon />
-        </Button>           
+        </Button>
         <Drawer
           type="persistent"
           anchor="right"
@@ -384,42 +384,42 @@ export default class ServiceSpecs extends React.Component {
                     <Typography type="body1">
                       Requests and Limits are measured in megabytes.
                     </Typography>
-                  </Grid>                  
+                  </Grid>
                   <Grid item xs={12}>
                     <InputField field={this.serviceSpecForm.$('name')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('cpuRequest')} fullWidth={true} />                      
-                  </Grid>                                
+                    <InputField field={this.serviceSpecForm.$('cpuRequest')} fullWidth={true} />
+                  </Grid>
                   <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('cpuLimit')} fullWidth={true} />                                                          
+                    <InputField field={this.serviceSpecForm.$('cpuLimit')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
                     <InputField field={this.serviceSpecForm.$('memoryRequest')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
                     <InputField field={this.serviceSpecForm.$('memoryLimit')} fullWidth={true} />
-                  </Grid>                  
+                  </Grid>
                   <Grid item xs={6}>
                     <InputField field={this.serviceSpecForm.$('terminationGracePeriod')} fullWidth={true} />
-                  </Grid>                                    
+                  </Grid>
                   <Grid item xs={12}>
-                    <Button color="primary" 
+                    <Button color="primary"
                         className={styles.buttonSpacing}
                         disabled={this.state.loading}
-                        type="submit" 
-                        raised 
+                        type="submit"
+                        raised
                         onClick={this.onSubmit.bind(this)}>
                           {this.state.drawerText}
-                    </Button>   
-                    { deleteButton }                                                                                                                            
-                    <Button 
-                      color="primary" 
+                    </Button>
+                    { deleteButton }
+                    <Button
+                      color="primary"
                       onClick={this.handleToggleDrawer.bind(this)}>
                       Cancel
-                    </Button>                                                       
-                  </Grid>                
-                </Grid>     
+                    </Button>
+                  </Grid>
+                </Grid>
               </form>
             </div>
         </Drawer>
@@ -439,7 +439,7 @@ export default class ServiceSpecs extends React.Component {
               Confirm
             </Button>
           </DialogActions>
-        </Dialog>                                                                                                
+        </Dialog>
 
       </div>
     );

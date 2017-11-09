@@ -9,16 +9,14 @@ import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
-export default observer(({field }) => {
-  console.log(field)
-  console.log(field.value)
-
-  return (
+export default observer(({field, autoWidth, varType }) => {
+  let selectView = (
     <div>
         <FormControl>
             <InputLabel>{field.label}</InputLabel>
             <Select
                 {...field.bind()}
+                autoWidth={autoWidth}
                 value={field.value}
                 className={styles.selectField}
                 input={<Input id={field.key} />}
@@ -33,4 +31,35 @@ export default observer(({field }) => {
         </FormControl>
     </div>
   )
+
+  if(varType === "environmentVariable"){
+      console.log(field.value)
+      selectView =  (
+        <div>
+            <FormControl>
+                <InputLabel>{field.label}</InputLabel>
+                <Select
+                    {...field.bind()}
+                    autoWidth={autoWidth}
+                    value={field.value}
+                    className={styles.selectField}
+                    input={<Input id={field.key} />}
+                >
+                    {field.extra.map(function(option){
+                        console.log(option)
+                        return (
+                            <MenuItem value={option.id}>
+                                {option.environment.name} : {option.key}={option.value} ({option.type})
+                            </MenuItem>
+                        )
+                    })}
+                </Select>
+                <FormHelperText> {field.helperText} </FormHelperText>
+            </FormControl>
+        </div>
+      )
+
+
+  }
+  return selectView
 });

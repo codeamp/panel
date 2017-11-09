@@ -17,6 +17,13 @@ class AppStore {
         created: null,
         msg: null,
       },
+      url: '',
+      connectionHeader: {
+          msg: "",
+      },
+      currentEnvironment: {
+		  id: '',
+	  },
     });
   }
 
@@ -35,12 +42,16 @@ class AppStore {
     });
   });
 
+  setUrl = action(url => {
+      console.log('setUrl', url)
+      this.url = url
+  })
+
   setProjectTitle = action(title => {
     this.leftNavProjectTitle = title;
   })
 
   setSnackbar = action(params => {
-    console.log(params)
     this.snackbar.created = new Date();
     this.snackbar.msg = params.msg;
   })
@@ -51,7 +62,13 @@ class AppStore {
     localStorage.setItem('user', user);
   });
 
+  setConnectionHeader = action(params => {
+    this.connectionHeader.msg = params.msg;
+  });
 
+  setCurrentEnv = action(params => {
+	this.currentEnvironment.id = params.id
+  })
 }
 
 export default AppStore;

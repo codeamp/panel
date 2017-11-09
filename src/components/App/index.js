@@ -43,12 +43,102 @@ const socket = io('http://localhost:3011');
     extensionSpecs {
       id
       name
+      key
+      type
       component
       formSpec {
         key
         value
       }
+      environmentVariables {
+          id
+		  key
+  		  value
+		  created
+		  scope
+		  project {
+		    id
+		  }
+		  user {
+			id
+			email
+		  }
+		  type
+		  version
+		  environment {
+			  id
+			  name
+			  created
+		  }
+		  versions {
+			  id
+			  key
+			  value
+			  created
+			  scope
+			  project {
+				  id
+			  }
+			  user {
+				  id
+				  email
+			  }
+			  type
+			  version
+			  environment {
+				  id
+				  name
+				  created
+			  }
+		  }
+      }
+    }
+    environments {
+        id
+        name
+        created
+    }
+    environmentVariables {
+      id
+      key
+      value
+      created
+      scope
+      project {
+          id
+      }
+      user {
+          id
+          email
+      }
       type
+      version
+      environment {
+          id
+          name
+          created
+      }
+      versions {
+          id
+          key
+          value
+          created
+          scope
+          project {
+              id
+          }
+          user {
+              id
+              email
+          }
+          type
+          version
+          environment {
+              id
+              name
+              created
+          }
+      }
     }
   }
 `)
@@ -72,14 +162,28 @@ export default class App extends React.Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-  }
-
   componentDidMount() {
+    socket.on('reconnect_failed', () => {
+        console.log('reconnect_failed')
+    });
+
+    socket.on('reconnect', () => {
+        this.props.data.refetch()
+        this.props.store.app.setConnectionHeader({ msg: "", type: "SUCCESS" })
+    });
+
+
+    socket.on('reconnecting', () => {
+        this.props.store.app.setConnectionHeader({ msg: "Attempting to reconnect to server...", type: "FAIL" })
+    });
     socket.on('projects', (data) => {
       this.props.data.refetch();
     });
 
+    socket.on('projectExists', (data) => {
+      this.props.store.app.setSnackbar({msg: "Project already exists. Try a different repository.."})
+      this.props.history.push('/create')
+    });
   }
 
   handleRequestClose = (event, reason) => {
@@ -91,7 +195,8 @@ export default class App extends React.Component {
   };
 
   render() {
-    const { loading, projects, serviceSpecs, user, extensionSpecs } = this.props.data;
+    const { loading, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
+
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -103,14 +208,18 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
     return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
+	  if(this.props.store.app.currentEnvironment.id === '' && environments.length > 0){
+	    this.props.store.app.setCurrentEnv({ id : environments[0].id })
+	  }
+
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} {...this.props} />
+              <TopNav projects={projects} user={user} {...this.props} />
             </Grid>
             <Grid item xs={12} className={styles.center}>
-              <LeftNav/>
+              <LeftNav environments={environments} />
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
@@ -120,10 +229,21 @@ export default class App extends React.Component {
                     <Create projects={projects} type={"create"} {...props} />
                     )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin data={this.props.data} extensionSpecs={extensionSpecs} projects={projects} socket={socket} serviceSpecs={serviceSpecs} {...props} />
+                    <Admin data={this.props.data}
+                        extensionSpecs={extensionSpecs}
+                        projects={projects}
+                        socket={socket}
+                        serviceSpecs={serviceSpecs}
+                        environments={environments}
+                        environmentVariables={environmentVariables}
+                        {...props} />
                     )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} user={user} serviceSpecs={serviceSpecs} extensionSpecs={extensionSpecs} {...props} />
+                    <Project socket={socket}
+                        user={user}
+                        serviceSpecs={serviceSpecs}
+                        extensionSpecs={extensionSpecs}
+                        {...props} />
                     )} />
                 </Switch>
               </div>

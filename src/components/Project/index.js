@@ -30,6 +30,16 @@ const query = gql`
         id
         state
         stateMessage
+        releaseExtensions {
+            id
+            extension {
+                extensionSpec {
+                    name
+                }
+            }
+            state
+            stateMessage
+        }
         created
         user {
           email
@@ -110,6 +120,17 @@ const query = gql`
         user {
           email
         }
+        releaseExtensions {
+            id
+            extension {
+                extensionSpec {
+                    name
+                }
+            }
+            type
+            state
+            stateMessage
+        }
         headFeature {
           id
           message
@@ -137,6 +158,10 @@ const query = gql`
           type
         }
         state
+        formSpecValues {
+          key
+          value
+        }
         artifacts {
           key
           value
@@ -162,9 +187,11 @@ const query = gql`
 export default class Project extends React.Component {
   state = {
     fetchDelay: null,
+    url: this.props.match.url,
   };
 
   componentWillMount() {
+    console.log(this.props)
     this.props.store.app.leftNavItems = [
       {
         key: "10",
@@ -204,6 +231,7 @@ export default class Project extends React.Component {
         slug: "/"
       }
     ];
+    this.props.data.refetch()
   }
 
   componentDidMount() {
@@ -260,7 +288,7 @@ export default class Project extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
+        // this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was created."})
       }, 2000);
     })
 
@@ -269,7 +297,7 @@ export default class Project extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
+        // this.props.store.app.setSnackbar({msg: "Environment variable "+ data.key +" was updated."})
       }, 2000);
     })
 
@@ -305,35 +333,156 @@ export default class Project extends React.Component {
         this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name +" was updated."})
       }, 2000);
     })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/extensions/deleted", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/extensions/deleted', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Extension "+ data.extensionSpec.name + " was deleted."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/created", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/created', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        console.log('release created')
+        // this.props.history.push('/projects/' + this.props.data.variables.slug + '/releases')
+        // this.props.store.app.setSnackbar({msg: "A release was created."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/log", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/log', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        console.log('release created')
+        // this.props.store.app.setSnackbar({msg: "A release was created."})
+      }, 2000);
+    })
+
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/releaseExtensionComplete", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/extensionComplete', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+      }, 2000);
+    })
+
+
+    this.props.socket.on("projects/" + this.props.data.variables.slug + "/releases/completed", (data) => {
+      console.log('projects/' + this.props.data.variables.slug + '/releases/completed', data);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        // this.props.store.app.setSnackbar({msg: "DockerBuild finished running for release currently being built."})
+      }, 2000);
+    })
+
+  }
+
+  componentWillUpdate(nextProps){
+      this.props.store.app.setUrl(nextProps.match.url)
+  }
+
+  shouldComponentUpdate(nextProps){
+      this.props.store.app.leftNavItems = [
+      {
+          key: "10",
+          icon: <ServicesIcon />,
+          name: "Services",
+          slug: nextProps.match.url + "/services",
+      },
+      {
+          key: "20",
+          icon: <FeaturesIcon />,
+          name: "Features",
+          slug: nextProps.match.url + "/features",
+          count: 0,
+      },
+      {
+          key: "30",
+          icon: <ReleasesIcon />,
+          name: "Releases",
+          slug: nextProps.match.url + "/releases",
+      },
+      {
+          key: "40",
+          icon: <ExtensionsIcon />,
+          name: "Extensions",
+          slug: nextProps.match.url + "/extensions",
+      },
+      {
+          key: "50",
+          icon: <SettingsIcon />,
+          name: "Settings",
+          slug: nextProps.match.url + "/settings",
+      },
+      {
+          key: "60",
+          icon: <LogsIcon />,
+          name: "Logs",
+          slug: "/"
+      }
+    ];
+
+    this.props.socket.on("projects/" + nextProps.data.variables.slug + "/releases/created", (data) => {
+      console.log('projects/' + nextProps.data.variables.slug + '/releases/created', data);
+      this.state.fetchDelay = setTimeout(() => {
+        nextProps.data.refetch();
+        console.log('release created')
+        // nextProps.history.push('/projects/' + nextProps.data.variables.slug + '/releases')
+        // nextProps.store.app.setSnackbar({msg: "A release was created."})
+      }, 2000);
+    })
+
+    this.props.socket.on("projects/" + nextProps.data.variables.slug + "/releases/log", (data) => {
+      console.log('projects/' + nextProps.data.variables.slug + '/releases/log', data);
+      this.state.fetchDelay = setTimeout(() => {
+        nextProps.data.refetch();
+        console.log('release created')
+        // this.props.store.app.setSnackbar({msg: "A release was created."})
+      }, 2000);
+    })
+
+
+    this.props.socket.on("projects/" + nextProps.data.variables.slug + "/releases/releaseExtensionComplete", (data) => {
+      console.log('projects/' + nextProps.data.variables.slug + '/releases/extensionComplete', data);
+      this.state.fetchDelay = setTimeout(() => {
+        nextProps.data.refetch();
+      }, 2000);
+    })
+
+
+      return true
   }
 
   render() {
-    const { loading, project } = this.props.data;
-    const { store, serviceSpecs, extensionSpecs, user } = this.props;
+    const { loading, project, variables } = this.props.data;
+    const { store, socket, serviceSpecs, extensionSpecs, user } = this.props;
 
     if(loading){
       return null;
     }
+    this.props.store.app.setProjectTitle(project.name)
 
-    this.props.store.app.setProjectTitle(project.name);
 
     return (
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures project={project} store={store} />
+            <ProjectFeatures project={project} store={store} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
             <ProjectServices user={user} project={project} store={store} serviceSpecs={serviceSpecs} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures project={project} store={store} />
+            <ProjectFeatures project={project} store={store} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases project={project} />
+            <ProjectReleases project={project} socket={socket} variables={variables} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions project={project} extensionSpecs={extensionSpecs} />
+            <ProjectExtensions project={project} extensionSpecs={extensionSpecs} store={this.props.store} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings project={project} />

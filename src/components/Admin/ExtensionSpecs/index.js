@@ -39,11 +39,13 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
+mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
+    key: $key,
     type: $type,
     formSpec: $formSpec,
+    environmentVariables: $environmentVariables,
     component: $component,
     }) {
         id
@@ -54,12 +56,14 @@ mutation CreateExtensionSpec ($name: String!, $type: String!, $formSpec: [KeyVal
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
+mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     updateExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
+    key: $key,
     type: $type,
     formSpec: $formSpec,
+    environmentVariables: $environmentVariables,
     component: $component,
     }) {
         id
@@ -70,12 +74,14 @@ mutation UpdateExtensionSpec ($id: String, $name: String!,  $type: String!, $for
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $component: String!) {
+mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
+    key: $key,
     type: $type,
     formSpec: $formSpec,
+    environmentVariables: $environmentVariables,
     component: $component,
     }) {
         id
@@ -142,19 +148,32 @@ export default class Extensions extends React.Component {
   componentWillMount(){
     console.log(this.props);
 
+    const environmentVariables = this.props.environmentVariables.filter(function(envVar){
+        console.log(envVar)
+        if(envVar.scope === "extension"){
+            return true
+        }
+        return false
+    })
+
     const fields = [
       'id',
       'name',
+      'key',
       'type',
       'formSpec',
       'formSpec[]',
       'formSpec[].key',
       'formSpec[].value',
+      'environmentVariables',
+      'environmentVariables[]',
+      'environmentVariables[].envVar',
       'component',
     ];
 
     const rules = {
       'name': 'required|string',
+      'key': 'required|string',
       'type': 'required',
       'formSpec[].key': 'required|string',
       'formSpec[].value': 'required|string',
@@ -163,15 +182,20 @@ export default class Extensions extends React.Component {
 
     const labels = {
       'name': 'Name',
+      'key': 'Key',
       'type': 'Type',
       'formSpec': "Form Specification",
       'formSpec[].key': 'Key',
       'formSpec[].value': 'Value',
+      'environmentVariables[].envVar': 'Env. Var',
       'component': 'Component Name',
     };
 
+    console.log(this.props.environmentVariables)
+
     const initials = {
-      'type': 'Database'
+      'type': 'Workflow',
+      'environmentVariables': environmentVariables.length > 0 ? environmentVariables[0].id : "",
     };
 
     const types = {
@@ -179,27 +203,36 @@ export default class Extensions extends React.Component {
 
     const extra = {
       'type': [{
-        key: 'Database',
-        value: 'Database',
+        key: 'deployment',
+        value: 'Deployment',
       }, {
-        key: 'Workflow',
+        key: 'workflow',
         value: 'Workflow',
-      }]
+      }, {
+        key: 'notification',
+        value: 'Notification',
+      }, {
+        key: 'once',
+        value: 'Once',
+      }],
+      'environmentVariables[].envVar': environmentVariables,
     };
 
     const hooks = {
-
     };
+
+    const handlers = {
+    }
 
     const plugins = { dvr: validatorjs };
 
-    this.extensionForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
+    this.extensionForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
 
   handleToggleDrawer(){
     console.log(this.state.open, this.extensionForm.values())
     if(this.state.open === true){
-      this.extensionForm.reset()
+      this.extensionForm.clear()
     }
     console.log(this.extensionForm.values())
 
@@ -209,16 +242,26 @@ export default class Extensions extends React.Component {
   isSelected(id){
     return this.state.selected === id
   }
+
   handleClick(e, extension){
+    console.log(extension)
+	const envVars = extension.environmentVariables.map(function(envVar){
+		return {
+			'envVar': envVar.id,
+		}
+	})
+
+	console.log(envVars)
+
     this.extensionForm.$('id').set(extension.id)
     this.extensionForm.$('name').set(extension.name)
+    this.extensionForm.$('key').set(extension.key)
     this.extensionForm.update({ formSpec: extension.formSpec })
     this.extensionForm.$('component').set(extension.component)
     this.extensionForm.$('type').set(extension.type)
+	this.extensionForm.update({ environmentVariables: envVars})
 
-    console.log(extension.formSpec)
-    console.log(this.extensionForm.$('formSpec').value)
-
+	console.log(this.extensionForm.values())
     this.setState({ selected: extension.id, open: true, currentExtension: extension, drawerText: 'Update' })
   }
 
@@ -228,6 +271,7 @@ export default class Extensions extends React.Component {
 
   onSuccess(form){
     console.log('onSuccess')
+    console.log(form.values())
     this.setState({ loading: true })
     var that = this
     switch(this.state.drawerText){
@@ -288,9 +332,6 @@ export default class Extensions extends React.Component {
   render() {
     const { extensionSpecs } = this.props;
 
-    console.log(extensionSpecs)
-
-
     let deleteButton = "";
 
     if(this.state.currentExtension.id !== -1){
@@ -303,6 +344,8 @@ export default class Extensions extends React.Component {
         </Button>
       );
     }
+
+    var self = this
 
     return (
       <div className={styles.root}>
@@ -378,7 +421,10 @@ export default class Extensions extends React.Component {
                     <InputField field={this.extensionForm.$('name')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.extensionForm.$('type')} fullWidth={true} />
+                    <InputField field={this.extensionForm.$('key')} fullWidth={true} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <SelectField field={this.extensionForm.$('type')} autoWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
                     <InputField field={this.extensionForm.$('component')} fullWith={true} />
@@ -407,6 +453,29 @@ export default class Extensions extends React.Component {
                     })}
                     <Button raised color="secondary" onClick={this.extensionForm.$('formSpec').onAdd}>
                       Add rule
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography type="subheading"> Environment Variables </Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    {this.extensionForm.$('environmentVariables').map(function(kv){
+                        console.log(kv)
+                        return (
+                        <Grid container spacing={24}>
+                            <Grid item xs={10}>
+                                <SelectField field={kv.$('envVar')} autoWidth={true} varType="environmentVariable" />
+                            </Grid>
+                            <Grid item xs={2}>
+                            <IconButton>
+                                <CloseIcon onClick={kv.onDel} />
+                            </IconButton>
+                            </Grid>
+                        </Grid>
+                        )
+                    })}
+                    <Button raised color="secondary" onClick={this.extensionForm.$('environmentVariables').onAdd}>
+                      Add env var
                     </Button>
                   </Grid>
                   <Grid item xs={12}>
