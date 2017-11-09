@@ -46,7 +46,7 @@ export default class DockerBuilder extends React.Component {
     this.setupForm()
   }
 
-  componentWillRecieveProps(nextProps){
+  componentWillReceiveProps(nextProps){
     console.log(nextProps)
   }
 

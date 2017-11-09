@@ -19,6 +19,7 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 
 import InputField from 'components/Form/input-field';
 import TextareaField from 'components/Form/textarea-field';
+import SelectField from 'components/Form/select-field';
 
 import AddIcon from 'material-ui-icons/Add';
 
@@ -38,11 +39,13 @@ const inlineStyles = {
 const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
-  mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!) {
+  mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $environmentId: String) {
       createEnvironmentVariable(environmentVariable:{
       key: $key,
       value: $value,
       type: $type,
+      scope: $scope,
+      environmentId: $environmentId,
       }) {
           id
           key
@@ -58,11 +61,14 @@ const DEFAULT_ENV_VAR = 0
 `, { name: "createEnvironmentVariable" })
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!) {
+mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
     updateEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
+    type: $type,
+    scope: $scope,
+    environmentId: $environmentId,
     }) {
         id
         key
@@ -78,11 +84,14 @@ mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!)
 `, { name: "updateEnvironmentVariable" })
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!) {
+mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
     deleteEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
+	type: $type,
+    scope: $scope,
+    environmentId: $environmentId,
     }) {
         id
         key
@@ -114,12 +123,12 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   componentDidMount(){
-    this.props.socket.on("environmentVariables/new", (data) => {
-      console.log("environmentVariables/new");
+    this.props.socket.on("environmentVariables/created", (data) => {
+      console.log("environmentVariables/created");
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.setState({ loading: false })
+        this.setState({ loading: false, open: false })
       }, 2000);
     })
 
@@ -128,7 +137,7 @@ export default class EnvironmentVariables extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.setState({ loading: false })
+        this.setState({ loading: false, open: false })
       }, 2000);
     })
 
@@ -137,13 +146,16 @@ export default class EnvironmentVariables extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.setState({ loading: false })
+        this.setState({ loading: false, open: false })
       }, 2000);
     })
   }
 
   componentWillMount(){
-    const initials = {}
+
+    const environments = this.props.environments.map(function(environment){
+        return { key: environment.id, value: environment.name }
+    })
 
     const fields = [
       'id',
@@ -152,7 +164,14 @@ export default class EnvironmentVariables extends React.Component {
       'created',
       'version',
       'type',
+      'scope',
+      'environmentId',
+      'projectId',
     ];
+
+    const initials = {
+        'projectId': '',
+    }
 
     const rules = {
         'key': 'string|required',
@@ -162,6 +181,8 @@ export default class EnvironmentVariables extends React.Component {
     const labels = {
       'key': 'Key',
       'value': 'Value',
+      'scope': 'Scope',
+      'environmentId': 'Environment',
       'version': 'Version',
     };
     const types = {
@@ -175,7 +196,9 @@ export default class EnvironmentVariables extends React.Component {
     }
 
     const extra = {
-      'type': [{key: 'Build', value: 'Build'}, {key: 'Normal', value: 'Normal' },{key: 'File', value: 'File'}]
+      'type': [{key: 'build', value: 'Build'}, {key: 'normal', value: 'Normal' },{key: 'file', value: 'File'}],
+      'scope': [{key: 'extension', value: 'Extension'}, {key: 'global', value: 'Global'}],
+      'environmentId': environments,
     };
 
     const hooks = {
@@ -210,14 +233,25 @@ export default class EnvironmentVariables extends React.Component {
 
   onClick(envVarIdx){
       console.log('onClick')
-      const envVar = this.props.environmentVariables[envVarIdx]
+	  const environmentVariables = this.props.environmentVariables.filter(function(envVar){
+		  if(envVar.scope === "project"){
+			  return false
+		  }
+		  return true
+	  })
+
+
+      const envVar = environmentVariables[envVarIdx]
+
       if(envVar !== undefined){
           this.envVarForm.$('key').set(envVar.key)
           this.envVarForm.$('key').set('disabled', true)
           this.envVarForm.$('value').set(envVar.value)
           this.envVarForm.$('type').set(envVar.type)
+          this.envVarForm.$('environmentId').set(envVar.environment.id)
+          this.envVarForm.$('scope').set(envVar.scope)
           this.envVarForm.$('id').set(envVar.id)
-          this.setState({ open: true, currentEnvVar: envVarIdx, currentEnvVarVersion: envVarIdx, drawerText: "Update" })
+          this.setState({ open: true, currentEnvVar: envVarIdx, drawerText: "Update" })
       }
       this.setState({
           open: true,
@@ -252,7 +286,7 @@ export default class EnvironmentVariables extends React.Component {
       }).then(({data}) => {
         console.log(data)
         setTimeout(function(){
-            self.setState({ drawerText: "Update", loading: false })
+            self.setState({ drawerText: "Update", loading: false, open: false })
         }, 2500)
       }).catch(error => {
         console.log(error)
@@ -264,7 +298,7 @@ export default class EnvironmentVariables extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         setTimeout(function(){
-            self.setState({ drawerText: "Update", loading: false })
+            self.setState({ drawerText: "Update", loading: false, open: false })
         }, 2000)
         console.log(data)
       }).catch(error => {
@@ -300,7 +334,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   handleDeleteEnvVar(){
-    this.props.deleteAdminEnvironmentVariable({
+    this.props.deleteEnvironmentVariable({
       variables: this.envVarForm.values(),
     }).then(({data}) => {
       console.log(data)
@@ -316,7 +350,13 @@ export default class EnvironmentVariables extends React.Component {
 
   render() {
 
-    const { environmentVariables } = this.props;
+    let { environmentVariables } = this.props;
+	environmentVariables = environmentVariables.filter(function(envVar){
+		if(envVar.scope === "project"){
+			return false
+		}
+		return true
+	})
 
     if(this.state.refreshCurrentForm){
         this.onClick(this.state.currentEnvVar)
@@ -360,6 +400,12 @@ export default class EnvironmentVariables extends React.Component {
                   Type
                 </TableCell>
                 <TableCell>
+                  Scope
+                </TableCell>
+                <TableCell>
+                  Environment
+                </TableCell>
+                <TableCell>
                   Creator
                 </TableCell>
                 <TableCell>
@@ -383,6 +429,14 @@ export default class EnvironmentVariables extends React.Component {
 
                     <TableCell>
                       {envVar.type}
+                    </TableCell>
+
+                    <TableCell>
+                      {envVar.scope}
+                    </TableCell>
+
+                    <TableCell>
+                      {envVar.environment.name}
                     </TableCell>
 
                     <TableCell>
@@ -439,6 +493,12 @@ export default class EnvironmentVariables extends React.Component {
               <form>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
+                    <Grid item xs={12}>
+                      <SelectField field={this.envVarForm.$('scope')} autoWidth={true} />
+                    </Grid>
+				    <Grid item xs={12}>
+				      <SelectField field={this.envVarForm.$('environmentId')} autoWidth={true} />
+				    </Grid>
                     {this.envVarForm.$('type').value === 'normal' &&
                       <Grid item xs={12}>
                         <Grid item xs={6}>
@@ -486,7 +546,7 @@ export default class EnvironmentVariables extends React.Component {
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}
-                          disabled={this.state.loading || environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && this.envVarForm.$('value').value === environmentVariables[this.state.currentEnvVar].value}
+                          disabled={this.state.loading}
                           type="submit"
                           raised
                           onClick={e => this.onSubmit(e)}>
@@ -521,6 +581,12 @@ export default class EnvironmentVariables extends React.Component {
                                 <TableCell>
                                   Created At
                                 </TableCell>
+                                <TableCell>
+                                  Scope
+                                </TableCell>
+                                <TableCell>
+                                  Environment
+                                </TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
@@ -542,6 +608,12 @@ export default class EnvironmentVariables extends React.Component {
                                 </TableCell>
                                 <TableCell>
                                   {new Date(envVar.created).toString()}
+                                </TableCell>
+                                <TableCell>
+                                  {envVar.scope}
+                                </TableCell>
+                                <TableCell>
+                                  {envVar.environment.name}
                                 </TableCell>
                               </TableRow>
                               )

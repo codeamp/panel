@@ -162,11 +162,11 @@ export default class ServiceSpecs extends React.Component {
 
     const labels = {
       'name': 'Name',
-      'cpuRequest': 'CPU Request',
-      'cpuLimit': 'CPU Limit',
-      'memoryRequest': 'Memory Request',
-      'memoryLimit': 'Memory Limit',
-      'terminationGracePeriod': 'Termination Grace Period',
+      'cpuRequest': 'CPU Request (millicpus)',
+      'cpuLimit': 'CPU Limit (millicpus)',
+      'memoryRequest': 'Memory Request (gb)',
+      'memoryLimit': 'Memory Limit (gb)',
+      'terminationGracePeriod': 'Termination Grace Period (seconds)',
     };
 
     const initials = {

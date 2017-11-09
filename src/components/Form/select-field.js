@@ -49,7 +49,7 @@ export default observer(({field, autoWidth, varType }) => {
                         console.log(option)
                         return (
                             <MenuItem value={option.id}>
-                                {option.key}={option.value} ({option.type})
+                                {option.environment.name} : {option.key}={option.value} ({option.type})
                             </MenuItem>
                         )
                     })}

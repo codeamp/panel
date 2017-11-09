@@ -14,7 +14,6 @@ import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 
-
 @inject("store") @observer
 
 export default class TopNav extends React.Component {
@@ -93,10 +92,9 @@ export default class TopNav extends React.Component {
     this.renderSuggestions(false, suggestions)
   }
 
-
   render() {
     var self = this
-    const { store } = this.props
+    const { store, user } = this.props
 
 
     return (
@@ -140,7 +138,7 @@ export default class TopNav extends React.Component {
             </Grid>
             <Grid item xs={2}>
               <Chip
-                label="saso@checkr.com"
+                label={user.email}
                 onClick={this.handleClick}
                 aria-owns={this.state.open ? 'simple-menu' : null}
                 aria-haspopup="true"
@@ -158,6 +156,7 @@ export default class TopNav extends React.Component {
           </Menu>
         </Toolbar>
       </AppBar>
+
       {store.app.connectionHeader.msg !== "" &&
           <AppBar position="absolute" color="default">
             <Toolbar>

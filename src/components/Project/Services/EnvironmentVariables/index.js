@@ -38,12 +38,14 @@ const inlineStyles = {
 const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
-  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!) {
+  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!, $scope: String!, $environmentId: String) {
       createEnvironmentVariable(environmentVariable:{
       projectId: $projectId,
       key: $key,
       value: $value,
       type: $type,
+      scope: $scope,
+      environmentId: $environmentId,
       }) {
           id
           key
@@ -63,11 +65,14 @@ const DEFAULT_ENV_VAR = 0
 `, { name: "createEnvironmentVariable" })
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!) {
+mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
     updateEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
+	type: $type,
+    scope: $scope,
+    environmentId: $environmentId,
     }) {
         id
         key
@@ -87,11 +92,14 @@ mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!
 `, { name: "updateEnvironmentVariable" })
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!) {
+mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
     deleteEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
+	type: $type,
+    scope: $scope,
+    environmentId: $environmentId,
     }) {
         id
         key
@@ -135,6 +143,8 @@ export default class EnvironmentVariables extends React.Component {
       'created',
       'version',
       'type',
+      'scope',
+      'environmentId',
     ];
 
     const rules = {
@@ -149,7 +159,6 @@ export default class EnvironmentVariables extends React.Component {
     };
 
     const initials = {
-      'projectId': this.props.project.id,
     }
 
     const types = {
@@ -204,7 +213,7 @@ export default class EnvironmentVariables extends React.Component {
         this.envVarForm.$('value').set(envVar.value)
         this.envVarForm.$('type').set(envVar.type)
         this.envVarForm.$('id').set(envVar.id)
-        this.setState({ open: true, currentEnvVar: envVarIdx, currentEnvVarVersion: envVarIdx, drawerText: "Update" })
+        this.setState({ open: true, currentEnvVar: envVarIdx,  drawerText: "Update" })
     }
   }
 
@@ -226,6 +235,7 @@ export default class EnvironmentVariables extends React.Component {
 
 
     form.$('projectId').set(this.props.project.id)
+    form.$('scope').set('project')
     console.log(form.values())
 
     this.envVarForm.$('key').set('disabled', false)

@@ -25,7 +25,10 @@ export default class Admin extends React.Component {
           )}/>
 
           <Route path='/admin/envVars' render={(props) => (
-              <EnvironmentVariables data={this.props.data} environmentVariables={environmentVariables} socket={this.props.socket} />
+              <EnvironmentVariables data={this.props.data}
+                environmentVariables={environmentVariables}
+                environments={environments}
+                socket={this.props.socket} />
           )} />
 
           <Route path='/admin/extensionSpecs' render={(props) => (
@@ -33,7 +36,7 @@ export default class Admin extends React.Component {
           )}/>
 
           <Route path='/admin/environments' render={(props) => (
-            <Environments data={this.props.data} environments={environments} socket={this.props.socket} />
+            <Environments data={this.props.data} environments={environments} environmentVariables={environmentVariables} socket={this.props.socket} {...this.props} />
           )}/>
         </Switch>
       </div>

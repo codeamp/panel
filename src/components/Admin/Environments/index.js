@@ -93,7 +93,8 @@ export default class Environments extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.setState({ loading: false })
+        this.setState({ loading: false, open: false })
+        this.props.store.app.setSnackbar({msg: "Environment " + data.name + " created."})
       }, 2000);
     })
 
@@ -102,7 +103,8 @@ export default class Environments extends React.Component {
       clearTimeout(this.state.fetchDelay);
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
-        this.setState({ loading: false })
+        this.setState({ loading: false, open: false })
+        this.props.store.app.setSnackbar({msg: "Environment " + data.name + " deleted."})
       }, 2000);
     })
 
@@ -112,6 +114,8 @@ export default class Environments extends React.Component {
       this.state.fetchDelay = setTimeout(() => {
         this.props.data.refetch();
         this.setState({ loading: false })
+        this.props.store.app.setSnackbar({msg: "Environment " + data.name + " updated."})
+        console.log(data)
       }, 2000);
     })
   }
@@ -269,7 +273,7 @@ export default class Environments extends React.Component {
 
   render() {
 
-    const { environments } = this.props;
+    const { environments, environmentVariables } = this.props;
 
     if(this.state.refreshCurrentForm){
         this.onClick(this.state.currentEnv)
@@ -313,12 +317,19 @@ export default class Environments extends React.Component {
                   Created
                 </TableCell>
                 <TableCell>
-                  Projects
+                  Env. Vars
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {environments.map(function(env, idx){
+				let numEnvVars = 0
+			    environmentVariables.forEach(function(envVar){
+					if(envVar.environment.id === env.id){
+						numEnvVars += 1
+					}
+				})
+
                 return (
                   <TableRow
                     hover
@@ -330,11 +341,11 @@ export default class Environments extends React.Component {
                     </TableCell>
 
                     <TableCell>
-                      {env.created}
+                      {new Date(env.created).toString()}
                     </TableCell>
 
                     <TableCell>
-                      0
+                      {numEnvVars}
                     </TableCell>
                   </TableRow>
                 )
@@ -391,6 +402,7 @@ export default class Environments extends React.Component {
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}
+                          disabled={this.state.loading}
                           type="submit"
                           raised
                           onClick={e => this.onSubmit(e)}>

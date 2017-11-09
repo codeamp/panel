@@ -39,13 +39,13 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $envVarSpecs: [String!]!, $component: String!) {
+mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
     key: $key,
     type: $type,
     formSpec: $formSpec,
-    envVarSpecs: $envVarSpecs,
+    environmentVariables: $environmentVariables,
     component: $component,
     }) {
         id
@@ -56,13 +56,14 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $fo
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $envVarSpecs: [String!]!, $component: String!) {
+mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     updateExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
+    key: $key,
     type: $type,
     formSpec: $formSpec,
-    envVarSpecs: $envVarSpecs,
+    environmentVariables: $environmentVariables,
     component: $component,
     }) {
         id
@@ -73,13 +74,14 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $type: String!, $form
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $type: String!, $formSpec: [KeyValueInput!]!, $envVarSpecs: [String!]!, $component: String!) {
+mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
+    key: $key,
     type: $type,
     formSpec: $formSpec,
-    envVarSpecs: $envVarSpecs,
+    environmentVariables: $environmentVariables,
     component: $component,
     }) {
         id
@@ -146,6 +148,14 @@ export default class Extensions extends React.Component {
   componentWillMount(){
     console.log(this.props);
 
+    const environmentVariables = this.props.environmentVariables.filter(function(envVar){
+        console.log(envVar)
+        if(envVar.scope === "extension"){
+            return true
+        }
+        return false
+    })
+
     const fields = [
       'id',
       'name',
@@ -155,9 +165,9 @@ export default class Extensions extends React.Component {
       'formSpec[]',
       'formSpec[].key',
       'formSpec[].value',
-      'envVarSpecs',
-      'envVarSpecs[]',
-      'envVarSpecs[].envVar',
+      'environmentVariables',
+      'environmentVariables[]',
+      'environmentVariables[].envVar',
       'component',
     ];
 
@@ -177,7 +187,7 @@ export default class Extensions extends React.Component {
       'formSpec': "Form Specification",
       'formSpec[].key': 'Key',
       'formSpec[].value': 'Value',
-      'envVarSpecs[].envVar': 'Env. Var',
+      'environmentVariables[].envVar': 'Env. Var',
       'component': 'Component Name',
     };
 
@@ -185,7 +195,7 @@ export default class Extensions extends React.Component {
 
     const initials = {
       'type': 'Workflow',
-      'envVarSpecs': this.props.environmentVariables.length > 0 ? this.props.environmentVariables[0].id : "",
+      'environmentVariables': environmentVariables.length > 0 ? environmentVariables[0].id : "",
     };
 
     const types = {
@@ -205,7 +215,7 @@ export default class Extensions extends React.Component {
         key: 'once',
         value: 'Once',
       }],
-      'envVarSpecs[].envVar': this.props.environmentVariables,
+      'environmentVariables[].envVar': environmentVariables,
     };
 
     const hooks = {
@@ -234,17 +244,24 @@ export default class Extensions extends React.Component {
   }
 
   handleClick(e, extension){
+    console.log(extension)
+	const envVars = extension.environmentVariables.map(function(envVar){
+		return {
+			'envVar': envVar.id,
+		}
+	})
+
+	console.log(envVars)
+
     this.extensionForm.$('id').set(extension.id)
     this.extensionForm.$('name').set(extension.name)
     this.extensionForm.$('key').set(extension.key)
     this.extensionForm.update({ formSpec: extension.formSpec })
-    this.extensionForm.update({ envVarSpecs: extension.envVarSpecs })
     this.extensionForm.$('component').set(extension.component)
     this.extensionForm.$('type').set(extension.type)
+	this.extensionForm.update({ environmentVariables: envVars})
 
-    console.log(extension.formSpec)
-    console.log(this.extensionForm.$('formSpec').value)
-
+	console.log(this.extensionForm.values())
     this.setState({ selected: extension.id, open: true, currentExtension: extension, drawerText: 'Update' })
   }
 
@@ -442,7 +459,7 @@ export default class Extensions extends React.Component {
                     <Typography type="subheading"> Environment Variables </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    {this.extensionForm.$('envVarSpecs').map(function(kv){
+                    {this.extensionForm.$('environmentVariables').map(function(kv){
                         console.log(kv)
                         return (
                         <Grid container spacing={24}>
@@ -457,7 +474,7 @@ export default class Extensions extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="secondary" onClick={this.extensionForm.$('envVarSpecs').onAdd}>
+                    <Button raised color="secondary" onClick={this.extensionForm.$('environmentVariables').onAdd}>
                       Add env var
                     </Button>
                   </Grid>

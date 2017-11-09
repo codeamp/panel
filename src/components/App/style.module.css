@@ -19,3 +19,7 @@
   padding: 16px 16px;
   overflow: scroll;
 }
+
+.currentEnv {
+ width: 150px;
+}

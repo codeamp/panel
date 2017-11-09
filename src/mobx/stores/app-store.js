@@ -21,6 +21,9 @@ class AppStore {
       connectionHeader: {
           msg: "",
       },
+      currentEnvironment: {
+		  id: '',
+	  },
     });
   }
 
@@ -63,7 +66,9 @@ class AppStore {
     this.connectionHeader.msg = params.msg;
   });
 
-
+  setCurrentEnv = action(params => {
+	this.currentEnvironment.id = params.id
+  })
 }
 
 export default AppStore;

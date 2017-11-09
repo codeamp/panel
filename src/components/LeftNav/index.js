@@ -11,6 +11,12 @@ import SupervisorAccountIcon from 'material-ui-icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
 import Collapse from 'material-ui/transitions/Collapse';
+import { FormControl } from 'material-ui/Form';
+import Input, { InputLabel } from 'material-ui/Input';
+import Select from 'material-ui/Select';
+import { MenuItem } from 'material-ui/Menu';
+
+
 
 import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
@@ -33,7 +39,13 @@ export default class LeftNav extends React.Component {
     this.setState({ open: !this.state.open });
   };
 
+  handleEnvChange(e){
+	console.log('handleEnvChange', e.target.value)
+	this.props.store.app.setCurrentEnv({ id: e.target.value })
+  }
+
   render() {
+	const { environments } = this.props;
 
     let projectTitleItem = ""
     if(this.props.store.app.leftNavProjectTitle !== ''){
@@ -44,7 +56,6 @@ export default class LeftNav extends React.Component {
         </ListItem>
       )
     }
-
 
     return (
       <Drawer type="persistent" open={true} className={styles.root}>
@@ -130,6 +141,29 @@ export default class LeftNav extends React.Component {
               </NavLink>
               )}
           </Collapse>
+		  {this.props.store.app.leftNavProjectTitle !== '' &&
+			<ListItem>
+				<FormControl>
+				  <InputLabel>Current Env</InputLabel>
+				  <Select
+					classes={{
+						select: styles.currentEnv,
+						root: styles.currentEnv,
+					}}
+					style={{ width: 200 }}
+					value={this.props.store.app.currentEnvironment.id}
+					onChange={this.handleEnvChange.bind(this)}
+					input={<Input fullWidth={true} />}
+				  >
+					{environments.map(function(env){
+						return (
+						  <MenuItem value={env.id}>{env.name}</MenuItem>
+						)
+					})}
+				  </Select>
+				</FormControl>
+			</ListItem>
+		  }
           </List>
         </div>
       </Drawer>

@@ -44,6 +44,7 @@ const socket = io('http://localhost:3011');
       id
       name
       key
+      type
       component
       formSpec {
         key
@@ -51,17 +52,58 @@ const socket = io('http://localhost:3011');
       }
       environmentVariables {
           id
+		  key
+  		  value
+		  created
+		  scope
+		  project {
+		    id
+		  }
+		  user {
+			id
+			email
+		  }
+		  type
+		  version
+		  environment {
+			  id
+			  name
+			  created
+		  }
+		  versions {
+			  id
+			  key
+			  value
+			  created
+			  scope
+			  project {
+				  id
+			  }
+			  user {
+				  id
+				  email
+			  }
+			  type
+			  version
+			  environment {
+				  id
+				  name
+				  created
+			  }
+		  }
       }
     }
     environments {
         id
         name
+        created
     }
     environmentVariables {
       id
       key
       value
       created
+      scope
       project {
           id
       }
@@ -71,11 +113,17 @@ const socket = io('http://localhost:3011');
       }
       type
       version
+      environment {
+          id
+          name
+          created
+      }
       versions {
           id
           key
           value
           created
+          scope
           project {
               id
           }
@@ -85,6 +133,11 @@ const socket = io('http://localhost:3011');
           }
           type
           version
+          environment {
+              id
+              name
+              created
+          }
       }
     }
   }
@@ -144,7 +197,6 @@ export default class App extends React.Component {
   render() {
     const { loading, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
 
-    console.log(this.props.data)
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -156,14 +208,18 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
     return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
+	  if(this.props.store.app.currentEnvironment.id === '' && environments.length > 0){
+	    this.props.store.app.setCurrentEnv({ id : environments[0].id })
+	  }
+
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} {...this.props} />
+              <TopNav projects={projects} user={user} {...this.props} />
             </Grid>
             <Grid item xs={12} className={styles.center}>
-              <LeftNav/>
+              <LeftNav environments={environments} />
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
