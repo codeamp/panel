@@ -34,7 +34,7 @@ ReactDOM.render(
       <Provider store={store}>
         <MuiThemeProvider theme={theme}>
           <Switch>
-            <Route exact path='/login' component={Login} />
+            <Route path='/login' component={Login} />
             <Route path='/' component={App} />
           </Switch>
         </MuiThemeProvider>

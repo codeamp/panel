@@ -13,8 +13,8 @@ export default (GRAPHQL_URI = 'http://localhost:3011/query') => {
       }
 
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.token) {
-        req.options.headers.Authorization = 'Bearer ' + user.token;
+      if (user.id_token) {
+        req.options.headers.Authorization = 'Bearer ' + user.id_token;
       }
       next();
     },

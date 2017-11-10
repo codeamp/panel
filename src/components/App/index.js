@@ -204,13 +204,13 @@ export default class App extends React.Component {
     }
 
     if (loading) {
-      return <div>Loading</div>;
+      return <div>Loading...</div>;
     } else if (this.state.redirectToLogin) {
-    return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
+      return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-	  if(this.props.store.app.currentEnvironment.id === '' && environments.length > 0){
-	    this.props.store.app.setCurrentEnv({ id : environments[0].id })
-	  }
+      if(this.props.store.app.currentEnvironment.id === '' && environments.length > 0){
+        this.props.store.app.setCurrentEnv({ id : environments[0].id })
+      }
 
       return (
         <div className={styles.root}>
