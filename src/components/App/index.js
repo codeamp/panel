@@ -195,8 +195,26 @@ export default class App extends React.Component {
   };
 
   render() {
-    const { loading, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
+    let { loading, error, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
 
+    if(!user){
+        user = {}
+    }
+    if(!projects){
+        projects = []
+    }
+    if(!serviceSpecs){
+        serviceSpecs = []
+    }
+    if(!extensionSpecs){
+        extensionSpecs = []
+    }
+    if(!environmentVariables){
+        environmentVariables = []
+    }
+    if(!environments){
+        environments = []
+    }
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -208,7 +226,7 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
     return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-	  if(this.props.store.app.currentEnvironment.id === '' && environments.length > 0){
+	  if(this.props.store.app.currentEnvironment.id === '' && this.props.data.environments && environments.length > 0){
 	    this.props.store.app.setCurrentEnv({ id : environments[0].id })
 	  }
 
