@@ -1,99 +1,93 @@
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
-import MobxReactForm from 'mobx-react-form';
-import validatorjs from 'validatorjs';
-import Button from 'material-ui/Button';
-import InputField from 'components/Form/input-field';
-import styles from './style.module.css';
-import Grid from 'material-ui/Grid';
-import Card, { CardActions, CardContent, CardHeader } from 'material-ui/Card';
-import { graphql, gql } from 'react-apollo';
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import Oidc from 'oidc-client'
 
-const fields = [{
-  type: 'email',
-  name: 'email',
-  label: 'Email',
-  placeholder: 'Insert Email',
-  rules: 'required|email|string|between:5,25',
-}, {
-  type: 'password',
-  name: 'password',
-  label: 'Password',
-  placeholder: 'Insert Password',
-  rules: 'required|string|between:5,25',
-}];
+var settings = {
+  authority: 'http://localhost:5556/dex',
+  client_id: 'example-app',
+  redirect_uri: 'http://localhost:3010/login/callback',
+  post_logout_redirect_uri: 'http://localhost:3010/logout',
+  response_type: 'id_token token',
+  scope: 'openid email groups',
+  filterProtocolClaims: true,
+  loadUserInfo: false
+};
 
-@graphql(gql`
-  mutation Mutation($email: String!, $password: String!) {
-    userToken(email: $email, password: $password) {
-      id
-      email
-      token 
-    }
-  }
-`)
+var userManger = new Oidc.UserManager(settings);
+
+userManger.events.addAccessTokenExpiring(function () {
+  console.log("token expiring");
+});
+
+userManger.events.addAccessTokenExpired(function () {
+  console.log("token expired");
+});
+
+userManger.events.addSilentRenewError(function (e) {
+  console.log("silent renew error", e.message);
+});
+
+userManger.events.addUserUnloaded(function (e) {
+  console.log("user unloaded");
+});
 
 @inject("store") @observer
-
-class Login extends Component {
-  constructor(props) {
-    super(props);
-    this.onSuccess = this.onSuccess.bind(this);
-    this.onError = this.onError.bind(this);
-  }
-
-  form = null;
-
+class Dex extends Component {
   componentWillMount() {
-    const plugins = { dvr: validatorjs };
-    this.form = new MobxReactForm({ fields }, { plugins });
-  }
-
-  onSuccess(form) {
-    if (!form.$('email').error && !form.$('password').error) {
-      this.props.mutate({
-        variables: form.values(),
-      }).then(({data}) => {
-        this.props.store.app.setUser(JSON.stringify(data.userToken))
-        //this.props.history.push('/')
-        window.location.href = '/'
-      }).catch(error => {
-        //let obj = JSON.parse(JSON.stringify(error))
-        form.invalidate(error.message);
+    userManger.clearStaleState(null).then(() => {
+      let args: any = {};
+      userManger.signinRedirect(args).then(function() {
+        console.log("signinRedirect done");
+      }).catch(function(err) {
+        console.log(err);
       });
-    }
-  }
-
-  onError(form) {
-    // get all form errors
-    console.log('All form errors', form.errors());
-    // invalidate the form with a custom error message
-    form.invalidate('This is a generic error message!');
+    });
   }
 
   render() {
-    const form = this.form;
-
     return (
-      <div className={styles.root}>
-        <Grid container justify="center">
-          <Grid item xs={4}>
-            <Card className={styles.container}>
-              <CardHeader title="CodeAmp Login"/>
-              <form onSubmit={form.onSubmit}>
-                <CardContent>
-                  <InputField field={form.$('email')} fullWidth={true} />
-                  <InputField field={form.$('password')} fullWidth={true} />
-                </CardContent>
-                <CardActions>
-                  <Button type="submit" onClick={e => form.onSubmit(e, { onSuccess: this.onSuccess, onError: this.onError })}>Submit</Button>
-                </CardActions>
-              </form>
-            </Card>
-          </Grid>
-        </Grid>
-      </div>
-      );
+      <div>
+        <button onClick={this.startSigninMainWindow.bind(this)}>Signin</button>
+      </div> 
+    );
+  }
+}
+
+@inject("store") @observer
+class Callback extends Component {
+  componentWillMount() {
+    userManger.events.addUserLoaded((user) => {
+      this.props.store.app.setUser(JSON.stringify(user))
+    });
+
+    userManger.signinRedirectCallback().then(function(user) {
+      window.location.href = '/'
+    }).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  render() {
+    return null;
+  }
+}
+
+@inject("store") @observer
+class Login extends Component {
+  render() {
+    return (
+      <div>
+        <Switch>
+          <Route exact path='/login' render={(props) => (
+            <Dex/>
+          )} />
+          <Route exact path='/login/callback' render={(props) => (
+            <Callback/>
+          )} />
+        </Switch>
+      </div> 
+    );
   }
 }
 
