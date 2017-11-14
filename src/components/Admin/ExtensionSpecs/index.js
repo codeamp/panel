@@ -27,7 +27,8 @@ import styles from './style.module.css';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 
-import { graphql, gql } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
 
 const inlineStyles = {

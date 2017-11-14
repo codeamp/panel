@@ -5,7 +5,8 @@ import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
-import { graphql, gql } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import CreateProject from '../../Create';
 
 @inject("store") @observer
@@ -50,8 +51,6 @@ export default class Settings extends React.Component {
   }
 
   render() {
-    console.log("HELLO")
-
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>

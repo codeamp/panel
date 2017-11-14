@@ -15,7 +15,8 @@ import ProjectSettings from 'components/Project/Settings';
 import ProjectServices from 'components/Project/Services';
 import ProjectExtensions from 'components/Project/Extensions';
 
-import { gql, graphql } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
 const query = gql`
   query Project($slug: String!){
@@ -191,7 +192,6 @@ export default class Project extends React.Component {
   };
 
   componentWillMount() {
-    console.log(this.props)
     this.props.store.app.leftNavItems = [
       {
         key: "10",
@@ -235,7 +235,6 @@ export default class Project extends React.Component {
   }
 
   componentDidMount() {
-
     this.props.socket.on("projects/" + this.props.data.variables.slug, (data) => {
       clearTimeout(this.state.fetchDelay)
       this.props.data.refetch()
@@ -453,18 +452,18 @@ export default class Project extends React.Component {
     })
 
 
-      return true
+    return true
   }
 
   render() {
-    const { loading, project, variables } = this.props.data;
+    const { loading, project, variables, errors, error } = this.props.data;
     const { store, socket, serviceSpecs, extensionSpecs, user } = this.props;
 
     if(loading){
       return null;
     }
-    this.props.store.app.setProjectTitle(project.name)
 
+    this.props.store.app.setProjectTitle(project.name)
 
     return (
       <div className={styles.root}>

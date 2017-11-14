@@ -10,7 +10,8 @@ import { CircularProgress } from 'material-ui/Progress';
 
 import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 
-import { graphql, gql } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
 
 class InitPrivateProjectComponent extends React.Component {
@@ -103,13 +104,10 @@ class FeatureView extends React.Component {
 
   handleDeploy(){
     var self = this
-    console.log('handleDeploy', this.props)
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id },
     }).then(({data}) => {
-      console.log(data)
-      console.log('GOING to', self.props)
       self.props.history.push(self.props.match.url + '/releases')
     }).catch(error => {
       console.log(error)
@@ -134,7 +132,7 @@ class FeatureView extends React.Component {
             </Typography>
           </CardContent>
           <CardActions style={{ position: "absolute", right: 10, top: 10 }}>
-          <IconButton raised color="primary"
+          <IconButton color="primary"
               onClick={() => this.props.copyGitHash(this.props.feature.id)}
               className={this.props.showFullView === false ? styles.hide : '' }>
               <CopyGitHashIcon />
@@ -181,7 +179,6 @@ export default class Features extends React.Component {
   }
 
   componentWillMount(){
-    console.log("MOUNTING")
     this.props.data.refetch()
   }
 
@@ -208,7 +205,6 @@ export default class Features extends React.Component {
     window.getSelection().addRange(range);
 
     var successful = document.execCommand('copy')
-    console.log(this.props)
     if(successful){
       this.props.store.app.setSnackbar({msg: "Git hash copied."});
     }
@@ -232,9 +228,7 @@ export default class Features extends React.Component {
               handleOnClick={() => self.setState({ activeFeatureKey: idx })}
               showFullView={self.state.activeFeatureKey === idx} />
             )
-            console.log(new Date(project.currentRelease.headFeature.created).getTime())
-            console.log(new Date(feature.created).getTime())
-            if(project.currentRelease.state !== "" && new Date(project.currentRelease.headFeature.created).getTime() > new Date(feature.created).getTime() || project.currentRelease.headFeature.message === feature.message){
+            if(project.currentRelease && project.currentRelease.state !== "" && new Date(project.currentRelease.headFeature.created).getTime() > new Date(feature.created).getTime() || (project.currentRelease && project.currentRelease.headFeature.message === feature.message)){
                   featureView = ""
             }
 
@@ -245,26 +239,10 @@ export default class Features extends React.Component {
       )
   }
 
-          //   <Grid item xs={12}>
-          //   <MobileStepper
-          //     type="text"
-          //     steps={6}
-          //     position="static"
-          //     activeStep={this.state.activeStep}
-          //     className={styles.mobileStepper}
-          //     onBack={this.handleBack}
-          //     onNext={this.handleNext}
-          //     disableBack={this.state.activeStep === 0}
-          //     disableNext={this.state.activeStep === 5}
-          //   />
-          // </Grid>
-
   render() {
     if(!this.props.project){
       return null
     }
-
-    console.log(this.props)
 
     let defaultComponent = (<Typography>Loading...</Typography>)
 

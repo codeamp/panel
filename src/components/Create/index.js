@@ -10,10 +10,10 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import Radio, {RadioGroup} from 'material-ui/Radio';
 import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
-import { graphql, gql } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
 @inject("store") @observer
-
 
 @graphql(gql`
   mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!) {
@@ -215,7 +215,7 @@ export default class Create extends React.Component {
                 </FormControl>
               </Grid>
 
-              <Grid item xsx={12}>
+              <Grid item xs={12}>
                 <FormControl
                   className={styles.formControl}
                   required>

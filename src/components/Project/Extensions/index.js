@@ -18,7 +18,8 @@ import Dialog, {
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import InputField from 'components/Form/input-field';
 
-import { graphql, gql } from 'react-apollo';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 
