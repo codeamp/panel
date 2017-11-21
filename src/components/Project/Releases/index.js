@@ -167,7 +167,7 @@ export default class Releases extends React.Component {
             </Typography>
           </Grid>
           <Grid item xs={12} className={styles.feature}>
-          {project.currentRelease.id !== "00000000-0000-0000-0000-000000000000" &&
+          {project.currentRelease != null &&
             <ReleaseView
             key={project.currentRelease.id}
             release={project.currentRelease}

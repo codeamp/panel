@@ -323,10 +323,10 @@ export default class ServiceSpecs extends React.Component {
                       CPU Limit
                     </TableCell>
                     <TableCell>
-                      Memory Request (mb)
+                      Memory Request (gb)
                     </TableCell>
                     <TableCell>
-                      Memory Limit (mb)
+                      Memory Limit (gb)
                     </TableCell>
                     <TableCell>
                       Timeout (s)

@@ -118,6 +118,7 @@ export default class DockerBuilder extends React.Component {
             'projectId': this.props.project.id,
             'extensionSpecId': this.state.extensionSpec.id,
             'formSpecValues': convertedFormSpecValues,
+            'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
           console.log(data)
@@ -133,6 +134,7 @@ export default class DockerBuilder extends React.Component {
             'projectId': this.props.project.id,
             'extensionSpecId': this.state.extensionSpec.id,
             'formSpecValues': convertedFormSpecValues,
+            'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
           console.log(data)

@@ -16,8 +16,8 @@ import gql from 'graphql-tag';
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!) {
-    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked}) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean! $environmentId: String!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentId: $environmentId }) {
       id
       name
       slug
@@ -137,7 +137,7 @@ export default class Create extends React.Component {
     // Post to graphql
     var self = this
     this.props.mutate({
-      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked  }
+      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentId: this.props.store.app.currentEnvironment.id  }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)
     }).catch(error => {

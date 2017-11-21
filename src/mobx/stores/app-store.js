@@ -22,8 +22,8 @@ class AppStore {
           msg: "",
       },
       currentEnvironment: {
-		  id: '',
-	  },
+		    id: '',
+	    },
     });
   }
 
