@@ -43,7 +43,6 @@ class AppStore {
   });
 
   setUrl = action(url => {
-      console.log('setUrl', url)
       this.url = url
   })
 

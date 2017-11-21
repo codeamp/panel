@@ -347,8 +347,6 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   selectEnvVarVersionId(envVarIdx){
-    console.log(this.props.environmentVariables[0])
-    console.log('envVarIdx', envVarIdx)
     this.envVarForm.$('environmentId').set(this.props.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].environment.id)
     this.envVarForm.$('scope').set(this.props.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].scope)    
     this.setState({ currentEnvVarVersion: envVarIdx })

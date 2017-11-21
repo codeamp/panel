@@ -38,7 +38,6 @@ class Dex extends Component {
     userManger.clearStaleState(null).then(() => {
       let args: any = {};
       userManger.signinRedirect(args).then(function() {
-        console.log("signinRedirect done");
       }).catch(function(err) {
         console.log(err);
       });

@@ -200,8 +200,6 @@ export default class Extensions extends React.Component {
             }
         })
     }
-    
-    console.log(this.props.store.app.currentEnvironment.id)
 
     this.props.createExtension({
       variables: {
@@ -229,8 +227,6 @@ export default class Extensions extends React.Component {
     availableExtensionsDrawer.btnText = 'adding'
 
     this.setState({ availableExtensionsDrawer: availableExtensionsDrawer })
-
-    console.log(this.props.store.app.currentEnvironment.id)
 
     if(this.availableExtensionsForm){
       this.availableExtensionsForm.onSubmit(event, { onSuccess: this.onSuccessAddExtension.bind(this), onError: this.onErrorAddExtension.bind(this) })

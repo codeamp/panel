@@ -322,13 +322,7 @@ export default class EnvironmentVariables extends React.Component {
         this.onClick(this.state.currentEnvVar)
         this.setState({ refreshCurrentForm: false })
     }
-
-    console.log(this.props.store.app.currentEnvironment.id)
-
-    console.log(this.props.project)
-    console.log(environmentVariables)
-    console.log(environmentVariables[this.state.currentEnvVar])
-
+    
     let deleteButton = "";
 
     if(environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].id !== -1){

@@ -195,7 +195,6 @@ export default class App extends React.Component {
   };
 
   handleEnvChange(e){
-    console.log('props handleEnvChange ', e.target.value)
     let environments = this.props.data.environments
     let name = ""
 

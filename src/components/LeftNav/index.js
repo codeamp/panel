@@ -44,8 +44,6 @@ export default class LeftNav extends React.Component {
 
   render() {
   const { environments, handleEnvChange } = this.props;
-  
-  console.log(handleEnvChange, this.props)
 
     let projectTitleItem = ""
     if(this.props.store.app.leftNavProjectTitle !== ''){
