@@ -41,7 +41,7 @@ const inlineStyles = {
 
 @graphql(gql`
   mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-      $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
+      $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
       createService(service:{
       projectId: $projectId,
       command: $command,
@@ -49,7 +49,8 @@ const inlineStyles = {
       serviceSpecId: $serviceSpecId,
       count: $count,
       oneShot: $oneShot,
-      containerPorts: $containerPorts
+      containerPorts: $containerPorts,
+      environmentId: $environmentId,
       }) {
           id
           containerPorts {
@@ -61,7 +62,7 @@ const inlineStyles = {
 `, { name: "createService" })
 @graphql(gql`
   mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-      $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
+      $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
       updateService(service:{
       id: $id,
       projectId: $projectId,
@@ -70,7 +71,8 @@ const inlineStyles = {
       serviceSpecId: $serviceSpecId,
       count: $count,
       oneShot: $oneShot,
-      containerPorts: $containerPorts
+      containerPorts: $containerPorts,
+      environmentId: $environmentId,
       }) {
           id
           containerPorts {
@@ -83,7 +85,7 @@ const inlineStyles = {
 
 @graphql(gql`
 mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!]) {
+    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
     deleteService(service:{
     id: $id,
     projectId: $projectId,
@@ -92,7 +94,8 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
     serviceSpecId: $serviceSpecId,
     count: $count,
     oneShot: $oneShot,
-    containerPorts: $containerPorts
+    containerPorts: $containerPorts,
+    environmentId: $environmentId,
     }) {
         id
         containerPorts {
@@ -149,6 +152,7 @@ export default class Services extends React.Component {
       'containerPorts[]',
       'containerPorts[].port',
       'containerPorts[].protocol',
+      'environmentId',
     ];
 
     const rules = {
@@ -235,6 +239,9 @@ export default class Services extends React.Component {
   }
 
   onSuccess(form) {
+
+    form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
+
     let values = form.values();
     if(values.id !== ""){
       this.props.updateService({

@@ -39,11 +39,12 @@ const DEFAULT_EXTENSION_SPEC = {
 }
 
 @graphql(gql`
-mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
     createExtension(extension:{
       projectId: $projectId,
       extensionSpecId: $extensionSpecId,
       formSpecValues: $formSpecValues,
+      environmentId: $environmentId,
     }) {
         id
     }
@@ -51,12 +52,13 @@ mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formS
 `, { name: "createExtension" })
 
 @graphql(gql`
-mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
     updateExtension(extension:{
       id: $id,
       projectId: $projectId,
       extensionSpecId: $extensionSpecId,
       formSpecValues: $formSpecValues,
+      environmentId: $environmentId,
     }) {
         id
     }
@@ -64,12 +66,13 @@ mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: St
 `, { name: "updateExtension" })
 
 @graphql(gql`
-mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!) {
+mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
     deleteExtension(extension:{
       id: $id,
       projectId: $projectId,
       extensionSpecId: $extensionSpecId,
       formSpecValues: $formSpecValues,
+      environmentId: $environmentId,
     }) {
         id
     }
@@ -187,10 +190,7 @@ export default class Extensions extends React.Component {
   }
 
   onSuccessAddExtension(form){
-    console.log('onSuccessAddExtension')
-    console.log("HELLLLLOOOOOO")
-    console.log(form)
-	var self = this
+    var self = this
     let convertedFormSpecValues = []
     if(this.availableExtensionsForm !== null){
         convertedFormSpecValues = Object.keys(this.availableExtensionsForm.values()).map(function(key, index) {
@@ -206,6 +206,7 @@ export default class Extensions extends React.Component {
         'projectId': this.props.project.id,
         'extensionSpecId': this.state.availableExtensionsDrawer.currentExtensionSpec.id,
         'formSpecValues': convertedFormSpecValues,
+        'environmentId': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
       console.log(data)
@@ -235,6 +236,7 @@ export default class Extensions extends React.Component {
             'projectId': this.props.project.id,
             'extensionSpecId': this.state.availableExtensionsDrawer.currentExtensionSpec.id,
             'formSpecValues': [],
+            'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
           console.log(data)
@@ -262,6 +264,7 @@ export default class Extensions extends React.Component {
             form = (<DockerBuilder
                         project={this.props.project}
                         extensionSpec={extensionSpec}
+                        store={this.props.store}
                         createExtension={this.props.createExtension}
                         handleClose={this.handleCloseAvailableExtensionsDrawer.bind(this)}
                         viewType="edit" />)
@@ -345,6 +348,7 @@ export default class Extensions extends React.Component {
                         project={this.props.project}
                         extensionSpec={extension.extensionSpec}
                         extension={extension}
+                        store={this.props.store}
                         updateExtension={this.props.updateExtension}
                         handleClose={this.handleCloseAddedExtensionsDrawer.bind(this)}
                         viewType="read" />)
@@ -406,6 +410,7 @@ export default class Extensions extends React.Component {
           'projectId': this.props.project.id,
           'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
           'formSpecValues': this.state.addedExtensionsDrawer.currentExtension.formSpec,
+          'environmentId': this.props.store.app.currentEnvironment.id,
       }
       console.log(variables)
 
@@ -415,6 +420,7 @@ export default class Extensions extends React.Component {
               'projectId': this.props.project.id,
               'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
               'formSpecValues': new Array(),
+              'environmentId': this.props.store.app.currentEnvironment.id,
           }
       }).then(({ data }) => {
           console.log(data)

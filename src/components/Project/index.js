@@ -19,8 +19,8 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 const query = gql`
-  query Project($slug: String!){
-    project(slug: $slug) {
+  query Project($slug: String, $environmentId: String){
+    project(slug: $slug, environmentId: $environmentId) {
       id
       name
       slug
@@ -176,7 +176,8 @@ const query = gql`
 @graphql(query, {
   options: (props) => ({
     variables: {
-      slug: props.match.params.slug
+      slug: props.match.params.slug,
+      environmentId: props.envId,
     }
   })
 })
@@ -381,6 +382,7 @@ export default class Project extends React.Component {
 
   componentWillUpdate(nextProps){
       this.props.store.app.setUrl(nextProps.match.url)
+      this.props.data.refetch()
   }
 
   shouldComponentUpdate(nextProps){
@@ -462,7 +464,6 @@ export default class Project extends React.Component {
     if(loading){
       return null;
     }
-
     this.props.store.app.setProjectTitle(project.name)
 
     return (

@@ -62,7 +62,6 @@ const DEFAULT_RELEASE = {
 
 class ReleaseView extends React.Component {
   componentDidMount(){
-    console.log("HELLO THERE")
   }
 
   render() {
@@ -128,12 +127,10 @@ export default class Releases extends React.Component {
       return true
   }
   componentWillMount() {
-    console.log(this.props.project);
     this.props.data.refetch()
   };
 
   handleToggleDrawer(releaseIdx){
-    console.log('handleToggleDrawer', releaseIdx)
     let deployAction = 'Rollback'
     if(releaseIdx === 0 && this.props.project.releases[0].state === "complete"){
         deployAction = 'Redeploy'
@@ -142,7 +139,6 @@ export default class Releases extends React.Component {
     if(releaseIdx === -1){
         for(var i = 0; i < this.props.project.releases.length; i++){
             let release = this.props.project.releases[i]
-            console.log(release, i, release.state === "complete")
             deployAction = 'Redeploy'
             if(release.state === "complete"){
                 releaseIdx = i;
@@ -150,14 +146,12 @@ export default class Releases extends React.Component {
             }
         }
     }
-    console.log(releaseIdx)
     this.setState({ open: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
   }
 
   render() {
 
     const { project } = this.props;
-    console.log(this.props)
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
@@ -167,7 +161,7 @@ export default class Releases extends React.Component {
             </Typography>
           </Grid>
           <Grid item xs={12} className={styles.feature}>
-          {project.currentRelease.id !== "00000000-0000-0000-0000-000000000000" &&
+          {project.currentRelease != null &&
             <ReleaseView
             key={project.currentRelease.id}
             release={project.currentRelease}
@@ -247,7 +241,6 @@ export default class Releases extends React.Component {
                         <TableBody>
                           {project.releases !== undefined && this.props.project.releases.length > 0 && this.props.project.releases[this.state.currentRelease].releaseExtensions.map(re => {
                             let stateIcon = <CircularProgress size={25} />
-                            console.log(re)
                             if(re.state === "complete"){
                                 stateIcon = <ExtensionStateCompleteIcon />
                             }

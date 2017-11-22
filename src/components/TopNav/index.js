@@ -55,8 +55,6 @@ export default class TopNav extends React.Component {
     const inputValue = value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
-    console.log(this.state.originalSuggestions)
-
     return inputLength === 0 ? [] : this.state.originalSuggestions.filter(lang =>
       lang.label.toLowerCase().slice(0, inputLength) === inputValue
     );
@@ -64,7 +62,6 @@ export default class TopNav extends React.Component {
 
   renderSuggestions(bookmarksOnly, suggestions){
     if(bookmarksOnly){
-      console.log('bookmarksOnly!')
       const bookmarks = this.props.projects.map(function(project){
         return { id: project.id, label: project.name, project: project }
       })
@@ -79,16 +76,12 @@ export default class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
-    console.log('onSuggestionItemClick')
-    console.log(suggestion)
     this.props.history.push('/projects/' + suggestion.project.slug)
     this.hideSuggestions()
   }
 
   onChange(e){
-    console.log(e.target.value);
     const suggestions = this.getSuggestions(e.target.value)
-    console.log(suggestions)
     this.renderSuggestions(false, suggestions)
   }
 

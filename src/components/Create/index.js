@@ -16,8 +16,8 @@ import gql from 'graphql-tag';
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!) {
-    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked}) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean! $environmentId: String!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentId: $environmentId }) {
       id
       name
       slug
@@ -93,7 +93,6 @@ export default class Create extends React.Component {
     let isSSH = /^git@[a-z,0-9,.]+:.+.git$/.test(url)
 
     if (!isHTTPS && !isSSH) {
-      console.log("ERROR")
       this.setState({ 
         urlIsValid: false, 
         url: url, 
@@ -137,12 +136,11 @@ export default class Create extends React.Component {
     // Post to graphql
     var self = this
     this.props.mutate({
-      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked  }
+      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentId: this.props.store.app.currentEnvironment.id  }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
-      console.log(obj)
       if(Object.keys(obj).length > 0 && obj.constructor === Object){
         self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
       }
@@ -150,7 +148,6 @@ export default class Create extends React.Component {
   }  
 
   onProjectCreate(event){
-    console.log('onProjectCreate', event)
     if(this.props.onProjectCreate != null){
       this.props.onProjectCreate(this.state)
     } else {
@@ -159,7 +156,6 @@ export default class Create extends React.Component {
   }
 
   render() {
-    console.log(this.props)
     let urlTextField = (
       <FormControl className={styles.formControl}>
         <InputLabel htmlFor="name-simple">Git Url</InputLabel>

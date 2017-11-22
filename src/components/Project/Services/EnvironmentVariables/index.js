@@ -39,7 +39,7 @@ const inlineStyles = {
 const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
-  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!, $scope: String!, $environmentId: String) {
+  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!, $scope: String!, $environmentId: String!) {
       createEnvironmentVariable(environmentVariable:{
       projectId: $projectId,
       key: $key,
@@ -66,7 +66,7 @@ const DEFAULT_ENV_VAR = 0
 `, { name: "createEnvironmentVariable" })
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
+mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
     updateEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
@@ -76,7 +76,6 @@ mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!
     environmentId: $environmentId,
     }) {
         id
-        key
         value
         user {
           id
@@ -93,12 +92,12 @@ mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!
 `, { name: "updateEnvironmentVariable" })
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
+mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
     deleteEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
-	type: $type,
+	  type: $type,
     scope: $scope,
     environmentId: $environmentId,
     }) {
@@ -234,10 +233,11 @@ export default class EnvironmentVariables extends React.Component {
 
   onSuccess(form){
 
-
     form.$('projectId').set(this.props.project.id)
+    form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
     form.$('scope').set('project')
-    console.log(form.values())
+    
+    console.log('final request', form.values())
 
     this.envVarForm.$('key').set('disabled', false)
     var self = this
@@ -322,11 +322,7 @@ export default class EnvironmentVariables extends React.Component {
         this.onClick(this.state.currentEnvVar)
         this.setState({ refreshCurrentForm: false })
     }
-
-    console.log(this.props.project)
-    console.log(environmentVariables)
-    console.log(environmentVariables[this.state.currentEnvVar])
-
+    
     let deleteButton = "";
 
     if(environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].id !== -1){

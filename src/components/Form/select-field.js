@@ -33,7 +33,6 @@ export default observer(({field, autoWidth, varType }) => {
   )
 
   if(varType === "environmentVariable"){
-      console.log(field.value)
       selectView =  (
         <div>
             <FormControl>
@@ -46,7 +45,6 @@ export default observer(({field, autoWidth, varType }) => {
                     input={<Input id={field.key} />}
                 >
                     {field.extra.map(function(option){
-                        console.log(option)
                         return (
                             <MenuItem value={option.id}>
                                 {option.environment.name} : {option.key}={option.value} ({option.type})

@@ -106,7 +106,7 @@ class FeatureView extends React.Component {
     var self = this
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
-      variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id },
+      variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id, environmentId: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
       self.props.history.push(self.props.match.url + '/releases')
     }).catch(error => {
@@ -154,8 +154,8 @@ class FeatureView extends React.Component {
 
 
 @graphql(gql`
-  mutation Mutation($headFeatureId: String!, $projectId: String!) {
-    createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId }) {
+  mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
+    createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
       headFeature {
         message
       }

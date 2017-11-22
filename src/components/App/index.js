@@ -194,6 +194,21 @@ export default class App extends React.Component {
     this.setState({ snackbar: { open: false, lastCreated: this.state.snackbar.lastCreated } });
   };
 
+  handleEnvChange(e){
+    let environments = this.props.data.environments
+    let name = ""
+
+    environments.forEach(function(env){
+      if(env.id === e.target.value){
+        name = env.name
+        return
+      }
+    })
+
+    this.props.store.app.setCurrentEnv({ id: e.target.value })
+    this.props.store.app.setSnackbar({ msg: "Environment switched to " + name})
+  }
+
   render() {
     let { loading, error, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
 
@@ -228,70 +243,75 @@ export default class App extends React.Component {
     } else {
 	  if(this.props.store.app.currentEnvironment.id === '' && this.props.data.environments && environments.length > 0){
 	    this.props.store.app.setCurrentEnv({ id : environments[0].id })
-	  }
+    }
+    var self = this
 
-      return (
-        <div className={styles.root}>
-          <Grid container spacing={0}>
-            <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} user={user} {...this.props} />
-            </Grid>
-            <Grid item xs={12} className={styles.center}>
-              <LeftNav environments={environments} />
-              <div className={styles.children}>
-                <Switch>
-                  <Route exact path='/' render={(props) => (
-                    <Dashboard projects={projects} />
-                    )} />
-                  <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} type={"create"} {...props} />
-                    )} />
-                  <Route path='/admin' render={(props) => (
-                    <Admin data={this.props.data}
-                        extensionSpecs={extensionSpecs}
-                        projects={projects}
-                        socket={socket}
-                        serviceSpecs={serviceSpecs}
-                        environments={environments}
-                        environmentVariables={environmentVariables}
-                        {...props} />
-                    )} />
-                  <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket}
-                        user={user}
-                        serviceSpecs={serviceSpecs}
-                        extensionSpecs={extensionSpecs}
-                        {...props} />
-                    )} />
-                </Switch>
-              </div>
-            </Grid>
+
+    return (
+      <div className={styles.root}>
+        <Grid container spacing={0}>
+          <Grid item xs={12} className={styles.top}>
+            <TopNav projects={projects} user={user} {...this.props} />
           </Grid>
+          <Grid item xs={12} className={styles.center}>
+            <LeftNav 
+              handleEnvChange={this.handleEnvChange.bind(this)}
+              environments={environments} />
+            <div className={styles.children}>
+              <Switch>
+                <Route exact path='/' render={(props) => (
+                  <Dashboard projects={projects} />
+                  )} />
+                <Route exact path='/create' render={(props) => (
+                  <Create projects={projects} type={"create"} {...props} />
+                  )} />
+                <Route path='/admin' render={(props) => (
+                  <Admin data={this.props.data}
+                      extensionSpecs={extensionSpecs}
+                      projects={projects}
+                      socket={socket}
+                      serviceSpecs={serviceSpecs}
+                      environments={environments}
+                      environmentVariables={environmentVariables}
+                      {...props} />
+                  )} />
+                <Route path='/projects/:slug' render={(props) => (
+                  <Project socket={socket}
+                      user={user}
+                      envId={self.props.store.app.currentEnvironment.id}
+                      serviceSpecs={serviceSpecs}
+                      extensionSpecs={extensionSpecs}
+                      {...props} />
+                  )} />
+              </Switch>
+            </div>
+          </Grid>
+        </Grid>
 
-          <Snackbar
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            open={this.state.snackbar.open}
-            autoHideDuration={6000}
-            onRequestClose={this.handleRequestClose}
-            SnackbarContentProps={{
-              'aria-describedby': 'message-id',
-            }}
-            message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
-            action={[
-              <IconButton
-                key="close"
-                aria-label="Close"
-                color="inherit"
-                onClick={this.handleRequestClose}
-              >
-                <CloseIcon />
-              </IconButton>,
-            ]}
-          />
-        </div>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          open={this.state.snackbar.open}
+          autoHideDuration={6000}
+          onRequestClose={this.handleRequestClose}
+          SnackbarContentProps={{
+            'aria-describedby': 'message-id',
+          }}
+          message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
+          action={[
+            <IconButton
+              key="close"
+              aria-label="Close"
+              color="inherit"
+              onClick={this.handleRequestClose}
+            >
+              <CloseIcon />
+            </IconButton>,
+          ]}
+        />
+      </div>
       );
     }
   }

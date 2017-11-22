@@ -40,7 +40,7 @@ const inlineStyles = {
 const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
-  mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $environmentId: String) {
+  mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $environmentId: String!) {
       createEnvironmentVariable(environmentVariable:{
       key: $key,
       value: $value,
@@ -61,8 +61,9 @@ const DEFAULT_ENV_VAR = 0
   }
 `, { name: "createEnvironmentVariable" })
 
+
 @graphql(gql`
-mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
+mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
     updateEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
@@ -85,7 +86,7 @@ mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!,
 `, { name: "updateEnvironmentVariable" })
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String) {
+mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
     deleteEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
@@ -233,7 +234,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onClick(envVarIdx){
-      console.log('onClick')
+    console.log('onClick')
 	  const environmentVariables = this.props.environmentVariables.filter(function(envVar){
 		  if(envVar.scope === "project"){
 			  return false
@@ -242,22 +243,22 @@ export default class EnvironmentVariables extends React.Component {
 	  })
 
 
-      const envVar = environmentVariables[envVarIdx]
+    const envVar = environmentVariables[envVarIdx]
 
-      if(envVar !== undefined){
-          this.envVarForm.$('key').set(envVar.key)
-          this.envVarForm.$('key').set('disabled', true)
-          this.envVarForm.$('value').set(envVar.value)
-          this.envVarForm.$('type').set(envVar.type)
-          this.envVarForm.$('environmentId').set(envVar.environment.id)
-          this.envVarForm.$('scope').set(envVar.scope)
-          this.envVarForm.$('id').set(envVar.id)
-          this.setState({ open: true, currentEnvVar: envVarIdx, drawerText: "Update" })
-      }
-      this.setState({
-          open: true,
-          drawerText: 'Update',
-      })
+    if(envVar !== undefined){
+        this.envVarForm.$('key').set(envVar.key)
+        this.envVarForm.$('key').set('disabled', true)
+        this.envVarForm.$('value').set(envVar.value)
+        this.envVarForm.$('type').set(envVar.type)
+        this.envVarForm.$('environmentId').set(envVar.environment.id)
+        this.envVarForm.$('scope').set(envVar.scope)
+        this.envVarForm.$('id').set(envVar.id)
+        this.setState({ open: true, currentEnvVar: envVarIdx, drawerText: "Update" })
+    }
+    this.setState({
+        open: true,
+        drawerText: 'Update',
+    })
   }
 
   onError(form){
@@ -346,6 +347,8 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   selectEnvVarVersionId(envVarIdx){
+    this.envVarForm.$('environmentId').set(this.props.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].environment.id)
+    this.envVarForm.$('scope').set(this.props.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].scope)    
     this.setState({ currentEnvVarVersion: envVarIdx })
   }
 

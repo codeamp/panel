@@ -25,6 +25,9 @@ import ExtensionIcon from 'material-ui-icons/Extension';
 import EnvironmentVariableIcon from 'material-ui-icons/VpnKey';
 import EnvironmentIcon from 'material-ui-icons/Public';
 
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+
 @withRouter
 @inject("store") @observer
 
@@ -39,13 +42,8 @@ export default class LeftNav extends React.Component {
     this.setState({ open: !this.state.open });
   };
 
-  handleEnvChange(e){
-	console.log('handleEnvChange', e.target.value)
-	this.props.store.app.setCurrentEnv({ id: e.target.value })
-  }
-
   render() {
-	const { environments } = this.props;
+  const { environments, handleEnvChange } = this.props;
 
     let projectTitleItem = ""
     if(this.props.store.app.leftNavProjectTitle !== ''){
@@ -141,29 +139,29 @@ export default class LeftNav extends React.Component {
               </NavLink>
               )}
           </Collapse>
-		  {this.props.store.app.leftNavProjectTitle !== '' &&
-			<ListItem>
-				<FormControl>
-				  <InputLabel>Current Env</InputLabel>
-				  <Select
-					classes={{
-						select: styles.currentEnv,
-						root: styles.currentEnv,
-					}}
-					style={{ width: 200 }}
-					value={this.props.store.app.currentEnvironment.id}
-					onChange={this.handleEnvChange.bind(this)}
-					input={<Input fullWidth={true} />}
-				  >
-					{environments.map(function(env){
-						return (
-						  <MenuItem value={env.id}>{env.name}</MenuItem>
-						)
-					})}
-				  </Select>
-				</FormControl>
-			</ListItem>
-		  }
+      {this.props.store.app.leftNavProjectTitle !== '' &&
+      <ListItem>
+        <FormControl>
+          <InputLabel>Current Env</InputLabel>
+          <Select
+          classes={{
+            select: styles.currentEnv,
+            root: styles.currentEnv,
+          }}
+          style={{ width: 200 }}
+          value={this.props.store.app.currentEnvironment.id}
+          onChange={handleEnvChange}
+          input={<Input fullWidth={true} />}
+          >
+          {environments.map(function(env){
+            return (
+              <MenuItem value={env.id}>{env.name}</MenuItem>
+            )
+          })}
+          </Select>
+        </FormControl>
+      </ListItem>
+      }
           </List>
         </div>
       </Drawer>

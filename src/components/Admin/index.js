@@ -14,7 +14,6 @@ import Environments from './Environments';
 export default class Admin extends React.Component {
 
   render() {
-    console.log(this.props)
     const { serviceSpecs, extensionSpecs, environmentVariables, environments } = this.props;
 
     return (
