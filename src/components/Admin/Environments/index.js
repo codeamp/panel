@@ -86,6 +86,39 @@ export default class Environments extends React.Component {
     }
   }
 
+<<<<<<< HEAD
+=======
+  componentDidMount(){
+    this.props.socket.on("environments/new", (data) => {
+      console.log("environments/new");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Environment " + data.name + " created."})
+      }, 2000);
+    })
+
+    this.props.socket.on("environments/deleted", (data) => {
+      console.log("environments/deleted");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Environment " + data.name + " deleted."})
+      }, 2000);
+    })
+
+    this.props.socket.on("environments/updated", (data) => {
+      console.log("environments/updated");
+      clearTimeout(this.state.fetchDelay);
+      this.state.fetchDelay = setTimeout(() => {
+        this.props.data.refetch();
+        this.props.store.app.setSnackbar({msg: "Environment " + data.name + " updated."})
+        console.log(data)
+      }, 2000);
+    })
+  }
+
+>>>>>>> changes
   componentWillMount(){
     const initials = {}
     const fields = [
@@ -160,9 +193,23 @@ export default class Environments extends React.Component {
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false })
   }
 
+<<<<<<< HEAD
   handleDelete(){
     this.props.deleteEnvironment({
       variables: this.form.values(),
+=======
+  isSelected(id){
+    return this.state.selected === id;
+  }
+
+  handleToggleDrawer(){
+    this.setState({ open: !this.state.open, currentEnvVersion: DEFAULT_ENV_VAR, currentEnv: DEFAULT_ENV_VAR })
+  }
+
+  handleDeleteEnvVar(){
+    this.props.deleteEnvironment({
+      variables: this.envForm.values(),
+>>>>>>> changes
     }).then(({data}) => {
       this.props.data.refetch()
       this.closeDrawer()
