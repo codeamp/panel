@@ -18,8 +18,10 @@
 }
 
 .addButton {
-    position: absolute;
-    bottom: 0px;
+    position: absolute !important;
+    bottom: 0px !important;
+    bottom: 25px !important;
+    right: 25px !important;
 }
 
 .appBar {
@@ -101,3 +103,4 @@
     display: none;
     visibility: hidden;
 }
+

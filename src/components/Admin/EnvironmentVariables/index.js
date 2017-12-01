@@ -40,6 +40,57 @@ const inlineStyles = {
 const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
+  query {
+    environments {
+      id
+      name
+      created
+    }
+    environmentVariables {
+      id
+      key
+      value
+      created
+      scope
+      project {
+        id
+      }
+      user {
+        id
+        email
+      }
+      type
+      version
+      environment {
+        id
+        name
+        created
+      }
+      versions {
+        id
+        key
+        value
+        created
+        scope
+        project {
+          id
+        }
+        user {
+          id
+          email
+        }
+        type
+        version
+        environment {
+          id
+          name
+          created
+        }
+      }
+    }
+  }
+`)
+@graphql(gql`
   mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $environmentId: String!) {
       createEnvironmentVariable(environmentVariable:{
       key: $key,
@@ -154,11 +205,6 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   componentWillMount(){
-
-    const environments = this.props.environments.map(function(environment){
-        return { key: environment.id, value: environment.name }
-    })
-
     const fields = [
       'id',
       'key',
@@ -200,7 +246,7 @@ export default class EnvironmentVariables extends React.Component {
     const extra = {
       'type': [{key: 'build', value: 'Build'}, {key: 'normal', value: 'Normal' },{key: 'file', value: 'File'}],
       'scope': [{key: 'extension', value: 'Extension'}, {key: 'global', value: 'Global'}],
-      'environmentId': environments,
+      'environmentId': [],
     };
 
     const hooks = {
@@ -235,7 +281,7 @@ export default class EnvironmentVariables extends React.Component {
 
   onClick(envVarIdx){
     console.log('onClick')
-	  const environmentVariables = this.props.environmentVariables.filter(function(envVar){
+	  const environmentVariables = this.props.data.environmentVariables.filter(function(envVar){
 		  if(envVar.scope === "project"){
 			  return false
 		  }
@@ -272,14 +318,10 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   replaceEnvVarValue(){
-      this.envVarForm.$('value').set(this.props.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value);
+      this.envVarForm.$('value').set(this.props.data.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value);
   }
 
   onSuccess(form){
-
-
-    console.log(form.values())
-
     this.envVarForm.$('key').set('disabled', false)
     var self = this
     if(this.state.drawerText === "Creating"){
@@ -310,10 +352,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
-      console.log('cwrp')
-      console.log(this.state.currentEnvVar)
       this.setState({ refreshCurrentForm: true })
-      console.log(nextProps)
   }
 
   handleRequestClose = value => {
@@ -347,14 +386,17 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   selectEnvVarVersionId(envVarIdx){
-    this.envVarForm.$('environmentId').set(this.props.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].environment.id)
-    this.envVarForm.$('scope').set(this.props.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].scope)    
+    this.envVarForm.$('environmentId').set(this.props.data.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].environment.id)
+    this.envVarForm.$('scope').set(this.props.data.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].scope)    
     this.setState({ currentEnvVarVersion: envVarIdx })
   }
 
   render() {
+    let { loading, environmentVariables } = this.props.data;
 
-    let { environmentVariables } = this.props;
+    if(loading){
+      return null;
+    }
 	environmentVariables = environmentVariables.filter(function(envVar){
 		if(envVar.scope === "project"){
 			return false
@@ -381,8 +423,6 @@ export default class EnvironmentVariables extends React.Component {
     }
 
     var self = this;
-    console.log(environmentVariables)
-    console.log(this.state.currentEnvVarVersion)
 
     return (
       <div>
@@ -479,176 +519,176 @@ export default class EnvironmentVariables extends React.Component {
         </Menu>
 
         <Drawer
-            type="persistent"
-            anchor="right"
-            classes={{
-            paper: styles.list,
-            }}
-            open={this.state.open}
+          type="persistent"
+          anchor="right"
+          classes={{
+          paper: styles.list,
+          }}
+          open={this.state.open}
         >
-            <div tabIndex={0} className={styles.createServiceBar}>
-              <AppBar position="static" color="default">
-                  <Toolbar>
-                  <Typography type="title" color="inherit">
-                      {this.state.drawerText} Environment Variable
-                  </Typography>
-                  </Toolbar>
-              </AppBar>
-              <form>
-                <div className={styles.drawerBody}>
-                  <Grid container spacing={24} className={styles.grid}>
-                    <Grid item xs={12}>
-                      <SelectField field={this.envVarForm.$('scope')} autoWidth={true} />
+          <div tabIndex={0} className={styles.createServiceBar}>
+            <AppBar position="static" color="default">
+              <Toolbar>
+                <Typography type="title" color="inherit">
+                  {this.state.drawerText} Environment Variable
+                </Typography>
+              </Toolbar>
+            </AppBar>
+            <form>
+              <div className={styles.drawerBody}>
+                <Grid container spacing={24} className={styles.grid}>
+                  <Grid item xs={12}>
+                    <SelectField field={this.envVarForm.$('scope')} autoWidth={true} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <SelectField field={this.envVarForm.$('environmentId')} autoWidth={true} />
+                  </Grid>
+                  {this.envVarForm.$('type').value === 'normal' &&
+                  <Grid item xs={12}>
+                    <Grid item xs={6}>
+                      <InputField field={this.envVarForm.$('key')} fullWidth={true} />
                     </Grid>
-				    <Grid item xs={12}>
-				      <SelectField field={this.envVarForm.$('environmentId')} autoWidth={true} />
-				    </Grid>
-                    {this.envVarForm.$('type').value === 'normal' &&
-                      <Grid item xs={12}>
-                        <Grid item xs={6}>
-                          <InputField field={this.envVarForm.$('key')} fullWidth={true} />
-                        </Grid>
-                        <Grid item xs={6}>
-                          <InputField field={this.envVarForm.$('value')} fullWidth={true} />
-                        </Grid>
-                        {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
-                          <Grid item xs={6}>
-                            <Input value={environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value} fullWidth={true} disabled />
-                          </Grid>
-                        }
-                      </Grid>
-                    }
-
-                    {this.envVarForm.$('type').value === 'file' &&
-                      <Grid item xs={12}>
-                        <Grid item xs={5}>
-                          <InputField field={this.envVarForm.$('key')} fullWidth={true} />
-                        </Grid>
-                        <br/>
-                        <Grid item xs={5}>
-                          <TextareaField field={this.envVarForm.$('value')} />
-                        </Grid>
-                        {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
-                          <Grid item xs={6}>
-                            <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
-                              {environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value}
-                            </textarea>
-                          </Grid>
-                        }
-                      </Grid>
-                    }
-
-                    {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion] && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
-                      <Grid item xs={12}>
-                        <Button color="default"
-                          disabled={environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value === this.envVarForm.$('value').value}
-                          raised onClick={this.replaceEnvVarValue.bind(this)}>
-                          Use It
-                        </Button>
-                      </Grid>
-                    }
-                    <Grid item xs={12}>
-                      <Button color="primary"
-                          className={styles.buttonSpacing}
-                          disabled={this.state.loading}
-                          type="submit"
-                          raised
-                          onClick={e => this.onSubmit(e)}>
-                            {this.state.drawerText}
-                      </Button>
-                      { deleteButton }
-                      <Button
-                        color="primary"
-                        onClick={this.handleToggleDrawer.bind(this)}>
-                        Cancel
-                      </Button>
+                    <Grid item xs={6}>
+                      <InputField field={this.envVarForm.$('value')} fullWidth={true} />
                     </Grid>
-                    {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].id !== -1 &&
-                      <Grid item xs={12}>
-                          <Paper className={styles.tablePaper}>
-                          <Toolbar>
-                            <div>
-                              <Typography type="title">
-                                Version History
-                              </Typography>
-                            </div>
-                          </Toolbar>
-                          <Table bodyStyle={{ overflow: 'visible' }}>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>
-                                  Version
-                                </TableCell>
-                                <TableCell>
-                                  Creator
-                                </TableCell>
-                                <TableCell>
-                                  Created At
-                                </TableCell>
-                                <TableCell>
-                                  Scope
-                                </TableCell>
-                                <TableCell>
-                                  Environment
-                                </TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            {environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions.map(function(envVar, idx){
-                              const isSelected = self.isEnvVarVersionIdSelected(envVar.id);
-
-                              return (
-                                <TableRow
-                                  hover
-                                  selected={isSelected}
-                                  tabIndex={-1}
-                                  onClick={() => self.selectEnvVarVersionId(idx)}
-                                key={envVar.id}>
-                                <TableCell>
-                                  {envVar.version}
-                                </TableCell>
-                                <TableCell>
-                                  {envVar.user.email}
-                                </TableCell>
-                                <TableCell>
-                                  {new Date(envVar.created).toString()}
-                                </TableCell>
-                                <TableCell>
-                                  {envVar.scope}
-                                </TableCell>
-                                <TableCell>
-                                  {envVar.environment.name}
-                                </TableCell>
-                              </TableRow>
-                              )
-                            })}
-                            </TableBody>
-                          </Table>
-                        </Paper>
-                      </Grid>
+                    {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
+                    <Grid item xs={6}>
+                      <Input value={environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value} fullWidth={true} disabled />
+                    </Grid>
                     }
                   </Grid>
-                </div>
-              </form>
-            </div>
+                  }
+
+                  {this.envVarForm.$('type').value === 'file' &&
+                  <Grid item xs={12}>
+                    <Grid item xs={5}>
+                      <InputField field={this.envVarForm.$('key')} fullWidth={true} />
+                    </Grid>
+                    <br/>
+                    <Grid item xs={5}>
+                      <TextareaField field={this.envVarForm.$('value')} />
+                    </Grid>
+                    {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
+                    <Grid item xs={6}>
+                      <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
+                        {environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value}
+                      </textarea>
+                    </Grid>
+                    }
+                  </Grid>
+                  }
+
+                  {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion] && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
+                  <Grid item xs={12}>
+                    <Button color="default"
+                      disabled={environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value === this.envVarForm.$('value').value}
+                      raised onClick={this.replaceEnvVarValue.bind(this)}>
+                      Use It
+                    </Button>
+                  </Grid>
+                  }
+                  <Grid item xs={12}>
+                    <Button color="primary"
+                      className={styles.buttonSpacing}
+                      disabled={this.state.loading}
+                      type="submit"
+                      raised
+                      onClick={e => this.onSubmit(e)}>
+                      {this.state.drawerText}
+                    </Button>
+                    { deleteButton }
+                    <Button
+                      color="primary"
+                      onClick={this.handleToggleDrawer.bind(this)}>
+                      Cancel
+                    </Button>
+                  </Grid>
+                  {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].id !== -1 &&
+                  <Grid item xs={12}>
+                    <Paper className={styles.tablePaper}>
+                      <Toolbar>
+                        <div>
+                          <Typography type="title">
+                            Version History
+                          </Typography>
+                        </div>
+                      </Toolbar>
+                      <Table bodyStyle={{ overflow: 'visible' }}>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>
+                              Version
+                            </TableCell>
+                            <TableCell>
+                              Creator
+                            </TableCell>
+                            <TableCell>
+                              Created At
+                            </TableCell>
+                            <TableCell>
+                              Scope
+                            </TableCell>
+                            <TableCell>
+                              Environment
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions.map(function(envVar, idx){
+                          const isSelected = self.isEnvVarVersionIdSelected(envVar.id);
+
+                          return (
+                          <TableRow
+                            hover
+                            selected={isSelected}
+                            tabIndex={-1}
+                            onClick={() => self.selectEnvVarVersionId(idx)}
+                            key={envVar.id}>
+                            <TableCell>
+                              {envVar.version}
+                            </TableCell>
+                            <TableCell>
+                              {envVar.user.email}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(envVar.created).toString()}
+                            </TableCell>
+                            <TableCell>
+                              {envVar.scope}
+                            </TableCell>
+                            <TableCell>
+                              {envVar.environment.name}
+                            </TableCell>
+                          </TableRow>
+                          )
+                          })}
+                        </TableBody>
+                      </Table>
+                    </Paper>
+                  </Grid>
+                  }
+                </Grid>
+              </div>
+            </form>
+          </div>
         </Drawer>
         {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] &&
-            <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-              <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.state.currentEnvVar].key + "?"}</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  {"This will delete the environment variable and all its versions associated with ."}
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                  Cancel
-                </Button>
-                <Button onClick={this.handleDeleteEnvVar.bind(this)} color="accent">
-                  Confirm
-                </Button>
-              </DialogActions>
-            </Dialog>
+        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+          <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.state.currentEnvVar].key + "?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {"This will delete the environment variable and all its versions associated with ."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={this.handleDeleteEnvVar.bind(this)} color="accent">
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
         }
       </div>
     )
