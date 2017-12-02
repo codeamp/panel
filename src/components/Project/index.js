@@ -99,6 +99,7 @@ const query = gql`
         count
         oneShot
         containerPorts {
+          id
           port
           protocol
         }

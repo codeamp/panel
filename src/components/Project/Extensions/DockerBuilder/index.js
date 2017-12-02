@@ -203,7 +203,7 @@ export default class DockerBuilder extends React.Component {
           <DialogTitle>{"Ae you sure you want to delete " + this.state.extensionSpec.name + "?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              This will remove the service spec and all instances in which it is being used in any existing services.
+              This will remove the extension.
             </DialogContentText>
           </DialogContent>
           <DialogActions>

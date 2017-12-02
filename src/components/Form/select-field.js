@@ -9,7 +9,20 @@ import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
-export default observer(({field, autoWidth, varType }) => {
+export default observer(({field, autoWidth, varType, extraKey, parentIdx }) => {
+  let options = field.extra
+
+  let idx= ''
+  if(parentIdx != null){
+      idx = parentIdx
+  }
+
+  console.log(idx, extraKey, idx !== '' && extraKey != null)
+  if(idx !== '' && extraKey != null){   
+    options = field.state.extra()[idx][extraKey]
+    console.log(field.state.extra(), idx, extraKey)
+  }  
+
   let selectView = (
     <div>
         <FormControl>
@@ -21,11 +34,18 @@ export default observer(({field, autoWidth, varType }) => {
                 className={styles.selectField}
                 input={<Input id={field.key} />}
             >
-                {field.extra.map(option => (
-                    <MenuItem value={option.key}>
-                        {option.value}
-                    </MenuItem>
-                ))}
+                {options.map(function(option){
+                    let optionKey = option.key
+                    if(idx !== ""){
+                        optionKey = option.key + ':' + idx
+                    }
+                    return (
+                        <MenuItem value={optionKey}>
+                            {option.value}
+                        </MenuItem>
+                    )
+                }
+            )}
             </Select>
             <FormHelperText> {field.helperText} </FormHelperText>
         </FormControl>
@@ -45,8 +65,12 @@ export default observer(({field, autoWidth, varType }) => {
                     input={<Input id={field.key} />}
                 >
                     {field.extra.map(function(option){
+                        let optionKey = option.id
+                        if(idx !== ""){
+                            optionKey = option.id + ':' + idx
+                        }                        
                         return (
-                            <MenuItem value={option.id}>
+                            <MenuItem value={optionKey}>
                                 {option.environment.name} : {option.key}={option.value} ({option.type})
                             </MenuItem>
                         )
