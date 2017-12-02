@@ -234,10 +234,6 @@ export default class Services extends React.Component {
     return this.state.selected === id
   }
 
-  addService() {
-    console.log("HELLO")
-  }
-
   onSuccess(form) {
 
     form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
@@ -343,7 +339,7 @@ export default class Services extends React.Component {
                 }
                 { this.serviceForm.$('containerPorts').value.length > 0 &&
                 <Grid item xs={12}>
-                <div>
+                <div> 
                     {this.serviceForm.$('containerPorts').map(port =>
                       <Grid container spacing={24}>
                         <Grid item xs={4}>
