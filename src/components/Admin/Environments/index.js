@@ -26,6 +26,7 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
+<<<<<<< HEAD
 @graphql(gql`
          query {
            environments {
@@ -35,6 +36,31 @@ import gql from 'graphql-tag';
            }
          }
          `)
+=======
+const inlineStyles = {
+  addButton: {
+    position: 'absolute',
+    bottom: 25,
+    right: 25,
+  }
+}
+
+@graphql(gql`
+    query { 
+      environments {
+        id
+        name
+        created
+      }
+      environmentVariables {
+        id
+        environment {
+          id
+        }
+      }
+    }
+`)
+>>>>>>> Changes for TopNav
 
 @graphql(gql`
          mutation CreateEnvironment($name: String!) {
@@ -76,6 +102,7 @@ export default class Environments extends React.Component {
   constructor(props){
     super(props)
     this.state = {
+<<<<<<< HEAD
       saving: false,
       open: false,
     }
@@ -110,37 +137,38 @@ export default class Environments extends React.Component {
     })
   }
 
+=======
+      currentEnv: 0,
+      loading: false,
+      open: false,
+      currentEnvVersion: 0,
+      refreshCurrentForm: false,
+    }
+  }
+
+>>>>>>> Changes for TopNav
   componentWillMount(){
     const initials = {}
-
     const fields = [
       'id',
       'name',
       'created',
     ];
-
     const rules = {
         'name': 'string|required',
     };
-
     const labels = {
       'name': 'Name',
     };
     const types = {
     };
-
     const keys = {
     };
-
     const disabled = {
       'name': false
     }
-
     const extra = {}
-
-    const hooks = {
-    };
-
+    const hooks = {};
     const plugins = { dvr: validatorjs };
 
     this.envForm = new MobxReactForm({ 
@@ -162,6 +190,10 @@ export default class Environments extends React.Component {
   }
 
   onClick(envVarIdx){
+<<<<<<< HEAD
+=======
+      console.log('onClick')
+>>>>>>> Changes for TopNav
       const envVar = this.props.data.environments[envVarIdx]
       if(envVar !== undefined){
           this.envForm.$('name').set(envVar.name)
@@ -178,11 +210,19 @@ export default class Environments extends React.Component {
     this.setState({ saving: false, drawerText: "Create" })
   }
 
+<<<<<<< HEAD
   replaceEnvVarValue(){
       this.envForm.$('value').set(this.props.data.environments[this.state.currentEnv].versions[this.state.currentEnvVersion].value);
   }
 
   onSuccess(form) {
+=======
+  onSuccess(form){
+
+
+    console.log(form.values())
+
+>>>>>>> Changes for TopNav
     var self = this
     if(this.state.drawerText === "Creating"){
       this.props.createEnvironment({
@@ -209,13 +249,27 @@ export default class Environments extends React.Component {
     }
   }
 
+<<<<<<< HEAD
+=======
+  componentWillReceiveProps(nextProps){
+    console.log('cwrp')
+    console.log(this.state.currentEnv)
+    this.setState({ refreshCurrentForm: true })
+    console.log(nextProps)
+  }
+
+>>>>>>> Changes for TopNav
   openDrawer = value => {
     this.envForm.clear()
     this.setState({ open: true });
   };
 
   handleToggleDrawer(){
+<<<<<<< HEAD
     this.setState({ open: !this.state.open })
+=======
+    this.setState({ open: !this.state.open, currentEnvVersion: 0, currentEnv: 0 })
+>>>>>>> Changes for TopNav
   }
 
   handleDeleteEnvVar(){
@@ -236,11 +290,46 @@ export default class Environments extends React.Component {
   render() {
     const { loading, environments } = this.props.data;
 
+<<<<<<< HEAD
     if (loading) {
       return null;
     }
 
     var self = this;
+=======
+    console.log(this.props)
+
+    const { loading, environments, environmentVariables } = this.props.data;
+
+    if(loading){
+      return (
+        <div>
+          Loading ...
+        </div>
+      )
+    }
+
+    if(this.state.refreshCurrentForm){
+        this.onClick(this.state.currentEnv)
+        this.setState({ refreshCurrentForm: false })
+    }
+
+    let deleteButton = "";
+
+    if(environments.length > 0){
+      deleteButton = (
+        <Button
+          disabled={this.state.loading || environments[this.state.currentEnv].type === "Extension Generated"}
+          color="accent"
+          onClick={()=>this.setState({ dialogOpen: true })}>
+          Delete
+        </Button>
+      );
+    }
+
+    var self = this;
+
+>>>>>>> Changes for TopNav
     return (
       <div>
         <Paper className={styles.tablePaper}>
@@ -264,6 +353,16 @@ export default class Environments extends React.Component {
             </TableHead>
             <TableBody>
               {environments.map(function(env, idx){
+<<<<<<< HEAD
+=======
+                let numEnvVars = 0
+                  environmentVariables.forEach(function(envVar){
+                  if(envVar.environment.id === env.id){
+                    numEnvVars += 1
+                  }
+                })
+
+>>>>>>> Changes for TopNav
                 return (
                   <TableRow
                     hover
@@ -297,6 +396,7 @@ export default class Environments extends React.Component {
           }}
           open={this.state.open}
         >
+<<<<<<< HEAD
           <div tabIndex={0} className={styles.createServiceBar}>
             <AppBar position="static" color="default">
               <Toolbar>
@@ -311,6 +411,39 @@ export default class Environments extends React.Component {
                   <Grid item xs={12}>
                     <Grid item xs={6}>
                       <InputField field={this.envForm.$('name')} fullWidth={true} />
+=======
+            <div tabIndex={0} className={styles.createServiceBar}>
+              <AppBar position="static" color="default">
+                  <Toolbar>
+                  <Typography type="title" color="inherit">
+                      {this.state.drawerText} Environment
+                  </Typography>
+                  </Toolbar>
+              </AppBar>
+              <form>
+                <div className={styles.drawerBody}>
+                  <Grid container spacing={24} className={styles.grid}>
+                      <Grid item xs={12}>
+                        <Grid item xs={6}>
+                          <InputField field={this.envForm.$('name')} fullWidth={true} />
+                        </Grid>
+                      </Grid>
+                    <Grid item xs={12}>
+                      <Button color="primary"
+                          className={styles.buttonSpacing}
+                          disabled={this.state.loading}
+                          type="submit"
+                          raised
+                          onClick={e => this.onSubmit(e)}>
+                            {this.state.drawerText}
+                      </Button>
+                      { deleteButton }
+                      <Button
+                        color="primary"
+                        onClick={this.handleToggleDrawer.bind(this)}>
+                        Cancel
+                      </Button>
+>>>>>>> Changes for TopNav
                     </Grid>
                   </Grid>
                   <Grid item xs={12}>
