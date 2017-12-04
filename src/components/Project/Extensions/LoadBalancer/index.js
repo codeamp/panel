@@ -226,43 +226,43 @@ export default class LoadBalancer extends React.Component {
     const convertedFormSpecValues = Object.keys(formSpecValues).map(function(key, index) {
         return {
             'key': key,
-            'value': formSpecValues[key]
+            'value': JSON.stringify(formSpecValues[key])
         }
     })
 
-    console.log(convertedFormSpecValues)
+    console.log(convertedFormSpecValues, this.props.project.id, this.props.extensionSpec.id, this.props.store.app.currentEnvironment.id)
 
-    // if(this.props.viewType === 'edit'){
-    //     this.props.createExtension({
-    //       variables: {
-    //         'projectId': this.props.project.id,
-    //         'extensionSpecId': this.state.extensionSpec.id,
-    //         'formSpecValues': convertedFormSpecValues,
-    //         'environmentId': this.props.store.app.currentEnvironment.id,
-    //       }
-    //     }).then(({ data }) => {
-    //       console.log(data)
-    //     }).catch(error => {
-    //       this.setState({ addButtonDisabled: false, buttonText: 'Add' })
-    //       console.log(error)
-    //     })
-    // } else if(this.props.viewType === 'read'){
-    //     console.log(this.state.extension)
-    //     this.props.updateExtension({
-    //       variables: {
-    //         'id': this.state.extension.id,
-    //         'projectId': this.props.project.id,
-    //         'extensionSpecId': this.state.extensionSpec.id,
-    //         'formSpecValues': convertedFormSpecValues,
-    //         'environmentId': this.props.store.app.currentEnvironment.id,
-    //       }
-    //     }).then(({ data }) => {
-    //       console.log(data)
-    //     }).catch(error => {
-    //       this.setState({ addButtonDisabled: false, buttonText: 'Add' })
-    //       console.log(error)
-    //     })
-    // }
+    if(this.props.viewType === 'edit'){
+        this.props.createExtension({
+          variables: {
+            'projectId': this.props.project.id,
+            'extensionSpecId': this.props.extensionSpec.id,
+            'formSpecValues': convertedFormSpecValues,
+            'environmentId': this.props.store.app.currentEnvironment.id,
+          }
+        }).then(({ data }) => {
+          console.log(data)
+        }).catch(error => {
+          this.setState({ addButtonDisabled: false, buttonText: 'Add' })
+          console.log(error)
+        })
+    } else if(this.props.viewType === 'read'){
+        console.log(this.state.extension)
+        this.props.updateExtension({
+          variables: {
+            'id': this.state.extension.id,
+            'projectId': this.props.project.id,
+            'extensionSpecId': this.props.extensionSpec.id,
+            'formSpecValues': convertedFormSpecValues,
+            'environmentId': this.props.store.app.currentEnvironment.id,
+          }
+        }).then(({ data }) => {
+          console.log(data)
+        }).catch(error => {
+          this.setState({ addButtonDisabled: false, buttonText: 'Add' })
+          console.log(error)
+        })
+    }
   }
 
 

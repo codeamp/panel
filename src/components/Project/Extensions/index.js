@@ -227,7 +227,7 @@ export default class Extensions extends React.Component {
   handleAddExtension(extension, event){
     console.log('handleAddExtension', extension)
     let availableExtensionsDrawer = this.state.availableExtensionsDrawer
-    availableExtensionsDrawer.btnDisabled = true
+    // availableExtensionsDrawer.btnDisabled = true
     availableExtensionsDrawer.btnText = 'adding'
 
     this.setState({ availableExtensionsDrawer: availableExtensionsDrawer })
