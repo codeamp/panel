@@ -20,6 +20,7 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import TextareaField from 'components/Form/textarea-field';
 import SelectField from 'components/Form/select-field';
+import EnvVarSelectField from 'components/Form/envvar-select-field';
 
 import AddIcon from 'material-ui-icons/Add';
 
@@ -37,7 +38,6 @@ const inlineStyles = {
     right: 25,
   }
 }
-const DEFAULT_ENV_VAR = 0
 
 @graphql(gql`
   query {
@@ -165,48 +165,16 @@ export default class EnvironmentVariables extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      currentEnvVar: DEFAULT_ENV_VAR,
-      drawerText: "Create",
       addEnvVarMenuOpen: false,
-      loading: false,
-      open: false,
-      currentEnvVarVersion: DEFAULT_ENV_VAR,
-      refreshCurrentForm: false,
+      saving: false,
+      drawerOpen: false,
     }
-  }
-
-  componentDidMount(){
-    this.props.socket.on("environmentVariables/created", (data) => {
-      console.log("environmentVariables/created");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false, open: false })
-      }, 2000);
-    })
-
-    this.props.socket.on("environmentVariables/deleted", (data) => {
-      console.log("environmentVariables/deleted");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false, open: false })
-      }, 2000);
-    })
-
-    this.props.socket.on("environmentVariables/updated", (data) => {
-      console.log("environmentVariables/updated");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false, open: false })
-      }, 2000);
-    })
   }
 
   componentWillMount(){
     const fields = [
       'id',
+      'index',
       'key',
       'value',
       'created',
@@ -215,17 +183,17 @@ export default class EnvironmentVariables extends React.Component {
       'scope',
       'environmentId',
       'projectId',
+      'selectedVersionIndex',
     ];
-
     const initials = {
         'projectId': '',
+        'selectedVersionIndex': '',
+        'index': '',
     }
-
     const rules = {
-        'key': 'string|required',
-        'value': 'string|required',
+      'key': 'string|required',
+      'value': 'string|required',
     };
-
     const labels = {
       'key': 'Key',
       'value': 'Value',
@@ -233,12 +201,8 @@ export default class EnvironmentVariables extends React.Component {
       'environmentId': 'Environment',
       'version': 'Version',
     };
-    const types = {
-    };
-
-    const keys = {
-    };
-
+    const types = {};
+    const keys = {};
     const disabled = {
       'key': false
     }
@@ -248,182 +212,143 @@ export default class EnvironmentVariables extends React.Component {
       'scope': [{key: 'extension', value: 'Extension'}, {key: 'global', value: 'Global'}],
       'environmentId': [],
     };
-
-    const hooks = {
-    };
-
+    const hooks = {};
     const plugins = { dvr: validatorjs };
-
-    this.envVarForm = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
+    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   }
 
   handleAddClick(event){
-    this.setState({ addEnvVarMenuOpen: true, anchorEl: event.currentTarget, currentService: { id: -1 }, drawerText: 'Create' });
+    this.setState({ addEnvVarMenuOpen: true, anchorEl: event.currentTarget });
   }
 
   onSubmit(e) {
-    let drawerText = ""
-    if(this.state.drawerText === "Create"){
-      drawerText = "Creating"
-    }
-    if(this.state.drawerText === "Update"){
-      drawerText = "Updating"
-    }
-
-    this.setState({ loading: true, drawerText: drawerText })
-
-    this.envVarForm.$('key').set('disabled', false)
-
-    console.log(this.envVarForm.values())
-
-    this.envVarForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+    this.setState({ saving: true })
+    this.form.$('key').set('disabled', false)
+    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   onClick(envVarIdx){
-    console.log('onClick')
 	  const environmentVariables = this.props.data.environmentVariables.filter(function(envVar){
 		  if(envVar.scope === "project"){
 			  return false
 		  }
 		  return true
 	  })
-
-
     const envVar = environmentVariables[envVarIdx]
-
     if(envVar !== undefined){
-        this.envVarForm.$('key').set(envVar.key)
-        this.envVarForm.$('key').set('disabled', true)
-        this.envVarForm.$('value').set(envVar.value)
-        this.envVarForm.$('type').set(envVar.type)
-        this.envVarForm.$('environmentId').set(envVar.environment.id)
-        this.envVarForm.$('scope').set(envVar.scope)
-        this.envVarForm.$('id').set(envVar.id)
-        this.setState({ open: true, currentEnvVar: envVarIdx, drawerText: "Update" })
+        this.form.$('key').set(envVar.key)
+        this.form.$('key').set('disabled', true)
+        this.form.$('value').set(envVar.value)
+        this.form.$('type').set(envVar.type)
+        this.form.$('environmentId').set(envVar.environment.id)
+        this.form.$('scope').set(envVar.scope)
+        this.form.$('id').set(envVar.id)
+        this.form.$('index').set(envVarIdx)
+
+        this.setState({ drawerOpen: true })
     }
-    this.setState({
-        open: true,
-        drawerText: 'Update',
-    })
+    this.setState({ drawerOpen: true })
   }
 
+  onClickVersion(versionIndex){
+    this.form.$('selectedVersionIndex').set(versionIndex)
+    this.form.$('scope').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIndex].scope)    
+  }  
+
   onError(form){
-    let drawerText = ""
-
-    if(this.state.drawerText === "Creating"){
-      drawerText = "Create"
-    }
-
-    this.setState({ loading: false, drawerText: drawerText })
+    // TODO
+    return
   }
 
   replaceEnvVarValue(){
-      this.envVarForm.$('value').set(this.props.data.environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value);
+    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value);
   }
 
   onSuccess(form){
-    this.envVarForm.$('key').set('disabled', false)
+    this.form.$('key').set('disabled', false)
     var self = this
-    if(this.state.drawerText === "Creating"){
+    if(this.form.values()['id'] === ""){
       this.props.createEnvironmentVariable({
         variables: form.values(),
       }).then(({data}) => {
-        console.log(data)
-        setTimeout(function(){
-            self.setState({ drawerText: "Update", loading: false, open: false })
-        }, 2500)
-      }).catch(error => {
-        console.log(error)
+        this.props.data.refetch()
+        this.form.$('key').set('disabled', false)
+        this.closeDrawer()
       });
-    }
-
-    if(this.state.drawerText === "Updating"){
+    } else {
       this.props.updateEnvironmentVariable({
         variables: form.values(),
       }).then(({data}) => {
-        setTimeout(function(){
-            self.setState({ drawerText: "Update", loading: false, open: false })
-        }, 2000)
-        console.log(data)
-      }).catch(error => {
-        console.log(error)
+        this.props.data.refetch()
+        this.form.$('key').set('disabled', true)
+        this.closeDrawer()
       });
     }
   }
 
-  componentWillReceiveProps(nextProps){
-      this.setState({ refreshCurrentForm: true })
-  }
-
   handleRequestClose = value => {
-    this.envVarForm.clear()
-    this.envVarForm.$('type').set(value);
-    this.envVarForm.$('key').set('disabled', false)
-    this.setState({ addEnvVarMenuOpen: false, open: true, currentEnvVar: -1});
-  };
-
-  isEnvVarVersionIdSelected(envVarId){
-    return false
+    this.form.reset()
+    this.form.$('type').set(value);
+    this.form.$('key').set('disabled', false)
+    this.openDrawer()
   }
 
-  isSelected(id){
-    return this.state.selected === id;
+  openDrawer(){
+    this.form.showErrors(false)
+    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false });
   }
 
-  handleToggleDrawer(){
-    this.setState({ open: !this.state.open, currentEnvVarVersion: DEFAULT_ENV_VAR, currentEnvVar: DEFAULT_ENV_VAR })
+  closeDrawer(){
+    this.form.reset()
+    this.setState({ drawerOpen: false, saving: false, dialogOpen: false })
   }
 
   handleDeleteEnvVar(){
-    this.props.deleteEnvironmentVariable({
-      variables: this.envVarForm.values(),
-    }).then(({data}) => {
-      console.log(data)
-    }).catch(error => {
-      console.log(error)
-    });
-    this.setState({ dialogOpen: false })
-  }
-
-  selectEnvVarVersionId(envVarIdx){
-    this.envVarForm.$('environmentId').set(this.props.data.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].environment.id)
-    this.envVarForm.$('scope').set(this.props.data.environmentVariables[this.state.currentEnvVar].versions[envVarIdx].scope)    
-    this.setState({ currentEnvVarVersion: envVarIdx })
+    if(this.form.values()['id'] !== ''){
+      this.props.deleteEnvironmentVariable({
+        variables: this.form.values(),
+      }).then(({data}) => {
+        this.props.data.refetch()
+      });
+      this.setState({ dialogOpen: false })
+    }
   }
 
   render() {
-    let { loading, environmentVariables } = this.props.data;
+    let { loading, environmentVariables, environments } = this.props.data;
+    var self = this;    
 
     if(loading){
       return null;
     }
-	environmentVariables = environmentVariables.filter(function(envVar){
-		if(envVar.scope === "project"){
-			return false
-		}
-		return true
-	})
-
-    if(this.state.refreshCurrentForm){
-        this.onClick(this.state.currentEnvVar)
-        this.setState({ refreshCurrentForm: false })
-    }
+    environmentVariables = environmentVariables.filter(function(envVar){
+      if(envVar.scope === "project"){
+        return false
+      }
+      return true
+    })
+    const tmpEnvironments = environments.map(function(env){
+      return {
+        key: env.id,
+        value: env.name,
+      }
+    })
+    this.form.state.extra({
+      environmentId: tmpEnvironments,
+    })
 
     let deleteButton = "";
 
     if(environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].id !== -1){
       deleteButton = (
         <Button
-          disabled={this.state.loading || environmentVariables[this.state.currentEnvVar].type === "Extension Generated"}
+          disabled={this.state.loading}
           color="accent"
           onClick={()=>this.setState({ dialogOpen: true })}>
           Delete
         </Button>
       );
     }
-
-    var self = this;
-
     return (
       <div>
         <Paper className={styles.tablePaper}>
@@ -434,7 +359,7 @@ export default class EnvironmentVariables extends React.Component {
               </Typography>
             </div>
           </Toolbar>
-          <Table bodyStyle={{ overflow: 'visible' }}>
+          <Table>
             <TableHead>
               <TableRow>
                 <TableCell>
@@ -524,13 +449,13 @@ export default class EnvironmentVariables extends React.Component {
           classes={{
           paper: styles.list,
           }}
-          open={this.state.open}
+          open={this.state.drawerOpen}
         >
           <div tabIndex={0} className={styles.createServiceBar}>
             <AppBar position="static" color="default">
               <Toolbar>
                 <Typography type="title" color="inherit">
-                  {this.state.drawerText} Environment Variable
+                  Environment Variable
                 </Typography>
               </Toolbar>
             </AppBar>
@@ -538,143 +463,160 @@ export default class EnvironmentVariables extends React.Component {
               <div className={styles.drawerBody}>
                 <Grid container spacing={24} className={styles.grid}>
                   <Grid item xs={12}>
-                    <SelectField field={this.envVarForm.$('scope')} autoWidth={true} />
+                    <SelectField field={this.form.$('scope')} autoWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.envVarForm.$('environmentId')} autoWidth={true} />
+                    <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' />
                   </Grid>
-                  {this.envVarForm.$('type').value === 'normal' &&
-                  <Grid item xs={12}>
-                    <Grid item xs={6}>
-                      <InputField field={this.envVarForm.$('key')} fullWidth={true} />
+
+                  {(this.form.$('type').value === 'normal' || this.form.$('type').value === 'build-arg') &&
+                    <Grid item xs={12}>
+                      <Grid item xs={6}>
+                        <InputField field={this.form.$('key')} fullWidth={true} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <InputField field={this.form.$('value')} fullWidth={true} />
+                      </Grid>
+                      {this.form.values()['index'] !== '' &&
+                      environmentVariables[this.form.values()['index']] != null && 
+                      environmentVariables[this.form.values()['index']].versions.length > 0 &&
+                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
+                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value !== this.form.$('value').value &&
+                        <Grid item xs={6}>
+                          <Input value={environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value} fullWidth={true} disabled />
+                        </Grid>
+                      }
                     </Grid>
-                    <Grid item xs={6}>
-                      <InputField field={this.envVarForm.$('value')} fullWidth={true} />
-                    </Grid>
-                    {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
-                    <Grid item xs={6}>
-                      <Input value={environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value} fullWidth={true} disabled />
-                    </Grid>
-                    }
-                  </Grid>
                   }
 
-                  {this.envVarForm.$('type').value === 'file' &&
-                  <Grid item xs={12}>
-                    <Grid item xs={5}>
-                      <InputField field={this.envVarForm.$('key')} fullWidth={true} />
+                  {this.form.$('type').value === 'file' &&
+                    <Grid item xs={12}>
+                      <Grid item xs={5}>
+                        <InputField field={this.form.$('key')} fullWidth={true} />
+                      </Grid>
+                      <br/>
+                      <Grid item xs={5}>
+                        <TextareaField field={this.form.$('value')} />
+                      </Grid>                    
+                      {this.form.values()['index'] !== '' &&
+                      environmentVariables[this.form.values()['index']] != null && 
+                      environmentVariables[this.form.values()['index']].versions.length > 0 &&
+                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
+                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value !== this.form.$('value').value &&                      
+                        <Grid item xs={6}>
+                          <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
+                            {environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value}
+                          </textarea>
+                        </Grid>
+                      }
                     </Grid>
+                  }
+                  
+                  {environmentVariables[this.form.values()['index']] != null && 
+                   environmentVariables[this.form.values()['index']].versions.length > 0 &&
+                    <Grid item xs={12}>
+                      <Button color="default"
+                        disabled={this.form.values()['selectedVersionIndex'] === '' || 
+                          environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value === this.form.$('value').value ||
+                          environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value ===  environmentVariables[this.form.values()['index']].value}
+                        raised onClick={this.replaceEnvVarValue.bind(this)}>
+                        Use It
+                      </Button>
+                    </Grid>
+                    }
+                    
                     <br/>
-                    <Grid item xs={5}>
-                      <TextareaField field={this.envVarForm.$('value')} />
+ 
+                    <Grid item xs={12}>
+                      <Button color="primary"
+                        className={styles.buttonSpacing}
+                        disabled={this.state.loading}
+                        type="submit"
+                        raised
+                        onClick={e => this.onSubmit(e)}>
+                        Save
+                      </Button>
+                      { deleteButton }
+                      <Button
+                        color="primary"
+                        onClick={this.closeDrawer.bind(this)}>
+                        Cancel
+                      </Button>
                     </Grid>
-                    {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
-                    <Grid item xs={6}>
-                      <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
-                        {environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value}
-                      </textarea>
+
+                    <br/>
+                    {environmentVariables[this.form.values()['index']] != null && 
+                     environmentVariables[this.form.values()['index']].versions.length > 0 &&
+                     <div>
+                    <Grid item xs={12}>
+                      <Paper className={styles.tablePaper}>
+                        <Toolbar>
+                          <div>
+                            <Typography type="title">
+                              Version History
+                            </Typography>
+                          </div>
+                        </Toolbar>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>
+                                Version
+                              </TableCell>
+                              <TableCell>
+                                Creator
+                              </TableCell>
+                              <TableCell>
+                                Created At
+                              </TableCell>
+                              <TableCell>
+                                Scope
+                              </TableCell>
+                              <TableCell>
+                                Environment
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                             {environmentVariables[this.form.values()['index']].versions.map(function(envVar, idx){
+                              return (
+                                <TableRow
+                                  hover
+                                  tabIndex={-1}
+                                  onClick={() => self.onClickVersion(idx)}
+                                  key={envVar.id}>
+                                  <TableCell>
+                                    {envVar.version}
+                                  </TableCell>
+                                  <TableCell>
+                                    {envVar.user.email}
+                                  </TableCell>
+                                  <TableCell>
+                                    {new Date(envVar.created).toString()}
+                                  </TableCell>
+                                  <TableCell>
+                                    {envVar.scope}
+                                  </TableCell>
+                                  <TableCell>
+                                    {envVar.environment.name}
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            })}
+                          </TableBody>
+                        </Table>
+                      </Paper>
                     </Grid>
-                    }
-                  </Grid>
-                  }
-
-                  {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion] && environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].id !== -1 &&
-                  <Grid item xs={12}>
-                    <Button color="default"
-                      disabled={environmentVariables[this.state.currentEnvVar].versions[this.state.currentEnvVarVersion].value === this.envVarForm.$('value').value}
-                      raised onClick={this.replaceEnvVarValue.bind(this)}>
-                      Use It
-                    </Button>
-                  </Grid>
-                  }
-                  <Grid item xs={12}>
-                    <Button color="primary"
-                      className={styles.buttonSpacing}
-                      disabled={this.state.loading}
-                      type="submit"
-                      raised
-                      onClick={e => this.onSubmit(e)}>
-                      {this.state.drawerText}
-                    </Button>
-                    { deleteButton }
-                    <Button
-                      color="primary"
-                      onClick={this.handleToggleDrawer.bind(this)}>
-                      Cancel
-                    </Button>
-                  </Grid>
-                  {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].id !== -1 &&
-                  <Grid item xs={12}>
-                    <Paper className={styles.tablePaper}>
-                      <Toolbar>
-                        <div>
-                          <Typography type="title">
-                            Version History
-                          </Typography>
-                        </div>
-                      </Toolbar>
-                      <Table bodyStyle={{ overflow: 'visible' }}>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
-                              Version
-                            </TableCell>
-                            <TableCell>
-                              Creator
-                            </TableCell>
-                            <TableCell>
-                              Created At
-                            </TableCell>
-                            <TableCell>
-                              Scope
-                            </TableCell>
-                            <TableCell>
-                              Environment
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {environmentVariables[this.state.currentEnvVar] && environmentVariables[this.state.currentEnvVar].versions.map(function(envVar, idx){
-                          const isSelected = self.isEnvVarVersionIdSelected(envVar.id);
-
-                          return (
-                          <TableRow
-                            hover
-                            selected={isSelected}
-                            tabIndex={-1}
-                            onClick={() => self.selectEnvVarVersionId(idx)}
-                            key={envVar.id}>
-                            <TableCell>
-                              {envVar.version}
-                            </TableCell>
-                            <TableCell>
-                              {envVar.user.email}
-                            </TableCell>
-                            <TableCell>
-                              {new Date(envVar.created).toString()}
-                            </TableCell>
-                            <TableCell>
-                              {envVar.scope}
-                            </TableCell>
-                            <TableCell>
-                              {envVar.environment.name}
-                            </TableCell>
-                          </TableRow>
-                          )
-                          })}
-                        </TableBody>
-                      </Table>
-                    </Paper>
-                  </Grid>
+                  </div>
                   }
                 </Grid>
               </div>
             </form>
           </div>
         </Drawer>
-        {environmentVariables.length > 0 && environmentVariables[this.state.currentEnvVar] &&
+        {environmentVariables.length > 0 && environmentVariables[this.form.values()['index']] &&
         <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.state.currentEnvVar].key + "?"}</DialogTitle>
+          <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.form.values()['index']].key + "?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
               {"This will delete the environment variable and all its versions associated with ."}

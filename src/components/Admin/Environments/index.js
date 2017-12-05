@@ -123,9 +123,10 @@ export default class Environments extends React.Component {
   }  
 
   onClick(envIdx){
+
     this.form.clear()
 
-    if(envIdx){
+    if(envIdx >= 0){
       this.form.$('name').set(this.props.data.environments[envIdx].name)
       this.form.$('id').set(this.props.data.environments[envIdx].id)
       this.openDrawer()
@@ -280,7 +281,7 @@ export default class Environments extends React.Component {
               </form>
             </div>
         </Drawer>
-        
+
         <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
           <DialogTitle>{"Are you sure you want to delete " + this.form.values()['name'] + "?"}</DialogTitle>
           <DialogContent>
