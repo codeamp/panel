@@ -366,23 +366,25 @@ export default class ServiceSpecs extends React.Component {
               </form>
             </div>
         </Drawer>
-
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Ae you sure you want to delete " + serviceSpecs[this.form.values()['index']] + "?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              This will remove the service spec and all instances in which it is being used in any existing services.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleDeleteServiceSpec.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        
+        {serviceSpecs[this.form.values()['index']] != null &&
+          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+            <DialogTitle>{"Ae you sure you want to delete " + serviceSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                This will delete the service spec.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleDeleteServiceSpec.bind(this)} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
 
       </div>
     );

@@ -40,6 +40,78 @@ const inlineStyles = {
 }
 
 @graphql(gql`
+query {
+  extensionSpecs {
+    id
+    type
+    key
+    name
+    component
+    formSpec {
+      key
+      value
+    }
+    environmentVariables {
+      id
+      key
+      value
+      created
+      scope
+      project {
+        id
+      }
+      user {
+        id
+        email
+      }
+      type
+      version
+      environment {
+        id
+        name
+        created
+      }
+      versions {
+        id
+        key
+        value
+        created
+        scope
+        project {
+          id
+        }
+        user {
+          id
+          email
+        }
+        type
+        version
+        environment {
+          id
+          name
+          created
+        }
+      }
+    }
+  }
+  environmentVariables {
+    id
+    key
+    value
+    created
+    scope
+    type
+    version
+    environment {
+      id
+      name
+      created
+    }
+  }
+}
+`)
+
+@graphql(gql`
 mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentVariables: [String!]!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
@@ -100,65 +172,14 @@ export default class Extensions extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      selected: null,
-      open: false,
-      currentExtension: {
-        id: -1,
-      },
-      drawerText: 'Create',
+      drawerOpen: false,
     }
   }
 
-  componentDidMount(){
-    this.props.socket.on("extensionSpecs/new", (data) => {
-      console.log("extensions/new");
-      console.log(data)
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false, drawerText: 'Create' })
-        this.props.store.app.setSnackbar({msg: "Extension spec "+ data.name +" was created"})
-      }, 2000);
-    });
-
-    this.props.socket.on("extensionSpecs/updated", (data) => {
-      console.log("extensions/updated");
-      console.log(data)
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false, drawerText: 'Update' })
-        this.props.store.app.setSnackbar({msg: "Extension spec "+ data.name +" was updated."})
-      }, 2000);
-    });
-
-    this.props.socket.on("extensionSpecs/deleted", (data) => {
-      console.log("extensions/deleted");
-      console.log(data)
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false })
-        this.props.store.app.setSnackbar({msg: "Extension spec "+ data.name +" was deleted"})
-      }, 2000);
-    });
-
-
-  }
-
   componentWillMount(){
-    console.log(this.props);
-
-    const environmentVariables = this.props.environmentVariables.filter(function(envVar){
-        console.log(envVar)
-        if(envVar.scope === "extension"){
-            return true
-        }
-        return false
-    })
-
     const fields = [
       'id',
+      'index',
       'name',
       'key',
       'type',
@@ -171,7 +192,6 @@ export default class Extensions extends React.Component {
       'environmentVariables[].envVar',
       'component',
     ];
-
     const rules = {
       'name': 'required|string',
       'key': 'required|string',
@@ -180,7 +200,6 @@ export default class Extensions extends React.Component {
       'formSpec[].value': 'required|string',
       'component': 'required|string',
     };
-
     const labels = {
       'name': 'Name',
       'key': 'Key',
@@ -191,17 +210,13 @@ export default class Extensions extends React.Component {
       'environmentVariables[].envVar': 'Env. Var',
       'component': 'Component Name',
     };
-
-    console.log(this.props.environmentVariables)
-
     const initials = {
       'type': 'Workflow',
-      'environmentVariables': environmentVariables.length > 0 ? environmentVariables[0].id : "",
+      'environmentVariables':[],
+      'formSpec':[],
+      'index': '',
     };
-
-    const types = {
-    };
-
+    const types = {};
     const extra = {
       'type': [{
         key: 'deployment',
@@ -216,137 +231,104 @@ export default class Extensions extends React.Component {
         key: 'once',
         value: 'Once',
       }],
-      'environmentVariables[].envVar': environmentVariables,
     };
-
-    const hooks = {
-    };
-
-    const handlers = {
-    }
-
+    const hooks = {};
+    const handlers = {}
     const plugins = { dvr: validatorjs };
-
-    this.extensionForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
 
-  handleToggleDrawer(){
-    console.log(this.state.open, this.extensionForm.values())
-    if(this.state.open === true){
-      this.extensionForm.clear()
-    }
-    console.log(this.extensionForm.values())
-
-    this.setState({ open: !this.state.open, dialogOpen: false, currentExtension: { id: -1 } })
+  openDrawer(){
+    this.form.showErrors(false)
+    this.setState({ drawerOpen: true, dialogOpen: false })
   }
 
-  isSelected(id){
-    return this.state.selected === id
+  closeDrawer(){
+    this.form.reset()
+    this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
   }
 
-  handleClick(e, extension){
-    console.log(extension)
-	const envVars = extension.environmentVariables.map(function(envVar){
-		return {
-			'envVar': envVar.id,
-		}
-	})
+  handleClick(e, extension, index){
+	  const envVars = extension.environmentVariables.map(function(envVar){
+      return {
+        'envVar': envVar.id,
+      }
+	  })
 
-	console.log(envVars)
-
-    this.extensionForm.$('id').set(extension.id)
-    this.extensionForm.$('name').set(extension.name)
-    this.extensionForm.$('key').set(extension.key)
-    this.extensionForm.update({ formSpec: extension.formSpec })
-    this.extensionForm.$('component').set(extension.component)
-    this.extensionForm.$('type').set(extension.type)
-	this.extensionForm.update({ environmentVariables: envVars})
-
-	console.log(this.extensionForm.values())
-    this.setState({ selected: extension.id, open: true, currentExtension: extension, drawerText: 'Update' })
-  }
-
-  handleNewExtensionClick(e){
-    this.setState({ open: true, drawerText: 'Create' })
+    this.form.$('id').set(extension.id)
+    this.form.$('index').set(index)
+    this.form.$('name').set(extension.name)
+    this.form.$('key').set(extension.key)
+    this.form.update({ formSpec: extension.formSpec })
+    this.form.$('component').set(extension.component)
+    this.form.$('type').set(extension.type)
+	  this.form.update({ environmentVariables: envVars})
+    
+    this.openDrawer()
   }
 
   onSuccess(form){
-    console.log('onSuccess')
-    console.log(form.values())
-    this.setState({ loading: true })
-    var that = this
-    switch(this.state.drawerText){
-      case "Creating":
-        this.props.createExtensionSpec({
-          variables: form.values(),
-        }).then(({data}) => {
-          that.handleToggleDrawer()
-        }).catch(error => {
-          console.log(error)
-        });
-        break;
-      case "Updating":
-        this.props.updateExtensionSpec({
-          variables: form.values(),
-        }).then(({data}) => {
-          console.log(data)
-        }).catch(error => {
-          console.log(error)
-        });
-        break;
+    this.setState({ saving: true })
+    if(this.form.values()['id'] === ''){
+      this.props.createExtensionSpec({
+        variables: form.values(),
+      }).then(({data}) => {
+        this.props.data.refetch()
+        this.closeDrawer()
+      });
+    } else {
+      this.props.updateExtensionSpec({
+        variables: form.values(),
+      }).then(({data}) => {
+        this.props.data.refetch()
+        this.closeDrawer()
+      });
     }
   }
 
   handleDeleteExtension() {
-    console.log('handleDeleteExtension')
-    this.setState({ loading: true })
+    this.setState({ saving: true })
     var that = this
     this.props.deleteExtensionSpec({
-      variables: this.extensionForm.values(),
+      variables: this.form.values(),
     }).then(({ data }) => {
-      that.handleToggleDrawer()
-    }).catch(error => {
-      console.log(error)
+      this.props.data.refetch()
+      that.closeDrawer() 
     });
   }
 
   onError(){
-    console.log('onError')
+    //todo 
+    return
   }
 
   onSubmit(e){
-
-    let drawerText = this.state.drawerText
-    switch(this.state.drawerText){
-      case "Create":
-        drawerText = "Creating"
-        break;
-      case "Update":
-        drawerText = "Updating"
-        break;
-    }
-
-    this.setState({ drawerText: drawerText })
-    this.extensionForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   render() {
-    const { extensionSpecs } = this.props;
+    const { loading, extensionSpecs, environmentVariables } = this.props.data;
 
-    let deleteButton = "";
-
-    if(this.state.currentExtension.id !== -1){
-      deleteButton = (
-        <Button
-          disabled={this.state.loading}
-          color="accent"
-          onClick={()=>this.setState({ dialogOpen: true })}>
-          Delete
-        </Button>
-      );
+    if(loading){
+      return (
+        <div>
+          Loading ...
+        </div>
+      )
     }
 
     var self = this
+
+
+    const envVarOptions = environmentVariables.map(function(envVar){
+      return {
+        key: envVar.id,
+        value: "(" + envVar.key + ") => " + envVar.value,
+      }
+    })
+    this.form.state.extra({
+      environmentVariables: envVarOptions,
+    })
 
     return (
       <div className={styles.root}>
@@ -375,13 +357,11 @@ export default class Extensions extends React.Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {extensionSpecs.map(extension => {
-                    const isSelected = this.isSelected(extension.id);
+                  {extensionSpecs.map( (extension, index) => {
                     return (
                       <TableRow
                         hover
-                        onClick={event => this.handleClick(event, extension)}
-                        selected={isSelected}
+                        onClick={event => this.handleClick(event, extension, index)}
                         tabIndex={-1}
                         key={extension.id}>
                         <TableCell> { extension.name} </TableCell>
@@ -397,7 +377,7 @@ export default class Extensions extends React.Component {
         </Grid>
         <Button fab aria-label="Add" type="submit" raised color="primary"
               style={inlineStyles.addButton}
-              onClick={this.handleNewExtensionClick.bind(this)}>
+              onClick={this.openDrawer.bind(this)}>
               <AddIcon />
         </Button>
         <Drawer
@@ -406,36 +386,35 @@ export default class Extensions extends React.Component {
           classes={{
             paper: styles.drawer
           }}
-          open={this.state.open}
+          open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                 <Toolbar>
                   <Typography type="title" color="inherit">
-                    {this.state.drawerText} Extension Spec
+                    Extension Spec
                   </Typography>
                 </Toolbar>
               </AppBar>
               <form onSubmit={(e) => e.preventDefault()}>
                 <Grid container spacing={24} className={styles.grid}>
                   <Grid item xs={12}>
-                    <InputField field={this.extensionForm.$('name')} fullWidth={true} />
+                    <InputField field={this.form.$('name')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <InputField field={this.extensionForm.$('key')} fullWidth={true} />
+                    <InputField field={this.form.$('key')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.extensionForm.$('type')} autoWidth={true} />
+                    <SelectField field={this.form.$('type')} autoWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <InputField field={this.extensionForm.$('component')} fullWith={true} />
+                    <InputField field={this.form.$('component')} fullWith={true} />
                   </Grid>
                   <Grid item xs={12}>
                     <Typography type="subheading"> Form Specification Rules </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    {this.extensionForm.$('formSpec').map(function(kv){
-                        console.log(kv)
+                    {this.form.$('formSpec').map(function(kv){
                         return (
                         <Grid container spacing={24}>
                             <Grid item xs={4}>
@@ -452,7 +431,7 @@ export default class Extensions extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="secondary" onClick={this.extensionForm.$('formSpec').onAdd}>
+                    <Button raised type="secondary" onClick={this.form.$('formSpec').onAdd}>
                       Add rule
                     </Button>
                   </Grid>
@@ -460,12 +439,11 @@ export default class Extensions extends React.Component {
                     <Typography type="subheading"> Environment Variables </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    {this.extensionForm.$('environmentVariables').map(function(kv){
-                        console.log(kv)
+                    {this.form.$('environmentVariables').map(function(kv){
                         return (
                         <Grid container spacing={24}>
                             <Grid item xs={10}>
-                                <SelectField field={kv.$('envVar')} autoWidth={true} varType="environmentVariable" />
+                                <SelectField field={kv.$('envVar')} autoWidth={true} extraKey="environmentVariables" />
                             </Grid>
                             <Grid item xs={2}>
                             <IconButton>
@@ -475,23 +453,32 @@ export default class Extensions extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="secondary" onClick={this.extensionForm.$('environmentVariables').onAdd}>
+                    <Button raised type="secondary" onClick={this.form.$('environmentVariables').onAdd}>
                       Add env var
                     </Button>
                   </Grid>
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
-                        disabled={this.state.loading}
+                        disabled={this.state.saving}
                         type="submit"
                         raised
                         onClick={this.onSubmit.bind(this)}>
-                          {this.state.drawerText}
+                          Save
                     </Button>
-                    { deleteButton }
+
+                    {this.form.values()['id'] != '' &&
+                      <Button
+                        disabled={this.state.saving}
+                        color="accent"
+                        onClick={()=>this.setState({ dialogOpen: true })}>
+                        Delete
+                      </Button>
+                    }
+
                     <Button
                       color="accent"
-                      onClick={this.handleToggleDrawer.bind(this)}>
+                      onClick={this.closeDrawer.bind(this)}>
                       Cancel
                     </Button>
                   </Grid>
@@ -499,23 +486,24 @@ export default class Extensions extends React.Component {
               </form>
             </div>
         </Drawer>
-
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Ae you sure you want to delete " + this.state.currentExtension.name + "?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              This will remove the service spec and all instances in which it is being used in any existing services.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleDeleteExtension.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {extensionSpecs[this.form.values()['index']] != null &&
+          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+            <DialogTitle>{"Ae you sure you want to delete " + extensionSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                This will delete the extension spec.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleDeleteExtension.bind(this)} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
 
       </div>
     );
