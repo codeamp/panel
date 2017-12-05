@@ -90,6 +90,7 @@ const inlineStyles = {
     }
   }
 `)
+
 @graphql(gql`
   mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $environmentId: String!) {
       createEnvironmentVariable(environmentVariable:{
