@@ -17,8 +17,6 @@ export default observer(({field, autoWidth, extraKey }) => {
         extraOptions = field.state.extra()[extraKey]
     }
 
-    console.log(field.state.extra())
-
     return (
         <div>
             <FormControl>

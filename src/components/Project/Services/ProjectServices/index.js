@@ -108,20 +108,16 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
 
 
 @observer
-export default class Services extends React.Component {
+export default class ProjectServices extends React.Component {
 
   constructor(props){
     super(props)
     this.state = {
-      open: false,
+      drawerOpen: false,
       anchorEl: null,
       addServiceMenuOpen: false,
-      oneShot: false,
-      currentService: { id: -1 },
-      loading: false,
-      drawerText: 'Create',
+      saving: false,
       dialogOpen: false,
-      selected: null,
     }
   }
 
@@ -227,15 +223,7 @@ export default class Services extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    this.serviceForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
-  }
-
-  isSelected(id){
-    return this.state.selected === id
-  }
-
-  addService() {
-    console.log("HELLO")
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
   }
 
   onSuccess(form) {
@@ -247,34 +235,25 @@ export default class Services extends React.Component {
       this.props.updateService({
         variables: form.values(),
       }).then(({data}) => {
-        console.log(data)
-      }).catch(error => {
-        console.log(error)
-      });
+        this.props.data.refetch()
+      })
     } else {
       this.props.createService({
         variables: form.values(),
       }).then(({data}) => {
-        console.log(data)
-      }).catch(error => {
-        console.log(error)
+        this.props.data.refetch()
       });
     }
   }
 
   onError(form) {
-    let drawerText = "Update"
-    if(this.state.drawerText === "Creating"){
-      drawerText = "Create"
-    }
-
-    this.setState({ loading: false, drawerText: drawerText})
+    this.setState({ saving: false })
     form.invalidate('This is a generic error message!');
   }
 
   handleClick = event => {
-    this.serviceForm.$('containerPorts').set(new Array())
-    this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget, currentService: { id: -1 }, drawerText: 'Create' });
+    this.form.$('containerPorts').set(new Array())
+    this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
   };
 
   handleRequestClose = value => {
@@ -283,41 +262,37 @@ export default class Services extends React.Component {
       oneShot = true;
     }
 
-    this.serviceForm.clear()
-    this.serviceForm.$('containerPorts').set(new Array())
-    this.serviceForm.$('oneShot').set(oneShot);
+    this.form.clear()
+    this.form.$('containerPorts').set(new Array())
+    this.form.$('oneShot').set(oneShot);
 
     this.setState({ addServiceMenuOpen: false, oneShot: oneShot, open: true });
   };
 
   editService = service => {
-    this.serviceForm.$('name').set(service.name);
-    this.serviceForm.$('count').set(service.count);
-    this.serviceForm.$('command').set(service.command);
-    this.serviceForm.$('serviceSpecId').set(service.serviceSpec.id);
-    this.serviceForm.$('containerPorts').set(service.containerPorts);
-    this.serviceForm.$('oneShot').set(service.oneShot);
-    this.serviceForm.$('id').set(service.id);
+    this.form.$('name').set(service.name);
+    this.form.$('count').set(service.count);
+    this.form.$('command').set(service.command);
+    this.form.$('serviceSpecId').set(service.serviceSpec.id);
+    this.form.$('containerPorts').set(service.containerPorts);
+    this.form.$('oneShot').set(service.oneShot);
+    this.form.$('id').set(service.id);
 
     var that = this
-    that.serviceForm.update({ containerPorts: service.containerPorts });
+    that.form.update({ containerPorts: service.containerPorts });
 
-    this.setState({ open: true, currentService: service, oneShot: service.oneShot, drawerText: 'Update' })
+    this.setState({ drawerOpen: true })
   }
 
   onSubmit(e) {
-    let drawerText = 'Creating'
-    if(this.state.drawerText === 'Update'){
-      drawerText = 'Updating'
-    }
-    this.setState({ drawerText: drawerText, loading: true})
-    this.serviceForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+    this.setState({ saving: true})
+    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   handleDeleteService() {
     this.setState({ dialogOpen: false, loading: true })
     this.props.deleteService({
-      variables: this.serviceForm.values(),
+      variables: this.form.values(),
     }).then(({data}) => {
       console.log(data)
     }).catch(error => {
@@ -329,22 +304,22 @@ export default class Services extends React.Component {
     const { services } = this.props.project;
     console.log(services)
 
-    this.serviceForm.$('projectId').set(this.props.project.id);
+    this.form.$('projectId').set(this.props.project.id);
 
     let addContainerPorts = ""
     if(this.state.oneShot === false){
         addContainerPorts = (
             <div>
             <Grid container spacing={24}>
-                { this.serviceForm.$('containerPorts').value.length > 0 &&
+                { this.form.$('containerPorts').value.length > 0 &&
                 <Grid item xs={12}>
                 <Typography type="subheading"> Container Ports </Typography>
                 </Grid>
                 }
-                { this.serviceForm.$('containerPorts').value.length > 0 &&
+                { this.form.$('containerPorts').value.length > 0 &&
                 <Grid item xs={12}>
                 <div>
-                    {this.serviceForm.$('containerPorts').map(port =>
+                    {this.form.$('containerPorts').map(port =>
                       <Grid container spacing={24}>
                         <Grid item xs={4}>
                           <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
@@ -365,7 +340,7 @@ export default class Services extends React.Component {
 
 
                 <Grid item xs={12}>
-                <Button raised type="secondary" onClick={this.serviceForm.$('containerPorts').onAdd}>
+                <Button raised type="secondary" onClick={this.form.$('containerPorts').onAdd}>
                     Add container port
                 </Button>
                 </Grid>
@@ -469,30 +444,30 @@ export default class Services extends React.Component {
               classes={{
               paper: styles.list,
               }}
-              open={this.state.open}
+              open={this.state.drawerOpen}
           >
               <div tabIndex={0} className={styles.createServiceBar}>
                 <AppBar position="static" color="default">
                     <Toolbar>
                     <Typography type="title" color="inherit">
-                        {this.state.drawerText} Service
+                        Service
                     </Typography>
                     </Toolbar>
                 </AppBar>
-                <form onSubmit={this.serviceForm.onSubmit}>
+                <form onSubmit={this.form.onSubmit}>
                   <div className={styles.drawerBody}>
                     <Grid container spacing={24} className={styles.grid}>
                       <Grid item xs={12}>
-                        <InputField field={this.serviceForm.$('name')} fullWidth={true} />
+                        <InputField field={this.form.$('name')} fullWidth={true} />
                       </Grid>
                       <Grid item xs={12}>
-                        <InputField field={this.serviceForm.$('command')} fullWidth={true}/>
+                        <InputField field={this.form.$('command')} fullWidth={true}/>
                       </Grid>
                       <Grid item xs={3}>
-                        <InputField field={this.serviceForm.$('count')}/>
+                        <InputField field={this.form.$('count')}/>
                       </Grid>
                       <Grid item xs={9}>
-                        <SelectField field={this.serviceForm.$('serviceSpecId')} />
+                        <SelectField field={this.form.$('serviceSpecId')} />
                       </Grid>
                       <Grid item xs={12}>
                         { addContainerPorts }
@@ -500,11 +475,11 @@ export default class Services extends React.Component {
                       <Grid item xs={12}>
                         <Button color="primary"
                             className={styles.buttonSpacing}
-                            disabled={this.state.loading}
+                            disabled={this.state.saving}
                             type="submit"
                             raised
                             onClick={e => this.onSubmit(e)}>
-                              {this.state.drawerText}
+                              Save
                         </Button>
                         { deleteButton }
                         <Button
