@@ -31,6 +31,10 @@ const socket = io('http://localhost:3011');
       name
       slug
     }
+    environments {
+      id
+      name
+    }
   }
 `)
 
@@ -80,7 +84,7 @@ export default class App extends React.Component {
   };
 
   render() {
-    let { loading, error, projects, user } = this.props.data;
+    let { loading, error, projects, user, environments } = this.props.data;
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -92,6 +96,9 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
+
+      this.props.store.app.setCurrentEnv({ id: environments[0].id })
+
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
@@ -99,7 +106,7 @@ export default class App extends React.Component {
               <TopNav projects={projects} user={user} {...this.props} />
             </Grid>
             <Grid item xs={12} className={styles.center}>
-              <LeftNav />
+              <LeftNav environments={environments} />
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
@@ -112,7 +119,7 @@ export default class App extends React.Component {
                     <Admin data={this.props.data} projects={projects} socket={socket} {...props} />
                   )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} user={user} {...props} />
+                    <Project socket={socket} user={user} {...props} envId={environments[0].id} />
                   )} />
                 </Switch>
               </div>
