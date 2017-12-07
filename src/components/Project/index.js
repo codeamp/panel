@@ -296,7 +296,9 @@ export default class Project extends React.Component {
     }
 
     if(project)
-      this.props.store.app.setProjectTitle(project.name)
+      this.props.store.app.setProjectTitle(project.slug)
+
+    console.log(this.props)
 
     return (
       <div className={styles.root}>
@@ -305,7 +307,7 @@ export default class Project extends React.Component {
             <ProjectFeatures project={project} store={store} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
-            <ProjectServices user={user} project={project} store={store} />
+            <ProjectServices user={user} project={project} store={store} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
             <ProjectFeatures project={project} store={store} {...this.props} />

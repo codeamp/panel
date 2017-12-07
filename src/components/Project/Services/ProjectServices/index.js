@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
@@ -10,7 +9,7 @@ import IconButton from 'material-ui/IconButton';
 import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
 import CloseIcon from 'material-ui-icons/Close';
-import Menu, { MenuItem } from 'material-ui/Menu';
+import { MenuItem, MenuList } from 'material-ui/Menu';
 import Input from 'material-ui/Input';
 import Dialog, {
   DialogActions,
@@ -19,17 +18,18 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
-
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
-
 import { observer } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
-import { graphql } from 'react-apollo';
+import { graphql, compose, withApollo } from 'react-apollo';
 import gql from 'graphql-tag';
+import { Manager, Target, Popper } from 'react-popper';
+import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
+import Grow from 'material-ui/transitions/Grow';
 
 const inlineStyles = {
   addButton: {
@@ -39,76 +39,8 @@ const inlineStyles = {
   }
 }
 
-@graphql(gql`
-  mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-      $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-      createService(service:{
-      projectId: $projectId,
-      command: $command,
-      name: $name,
-      serviceSpecId: $serviceSpecId,
-      count: $count,
-      oneShot: $oneShot,
-      containerPorts: $containerPorts,
-      environmentId: $environmentId,
-      }) {
-          id
-          containerPorts {
-              port
-              protocol
-          }
-      }
-  }
-`, { name: "createService" })
-@graphql(gql`
-  mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-      $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-      updateService(service:{
-      id: $id,
-      projectId: $projectId,
-      command: $command,
-      name: $name,
-      serviceSpecId: $serviceSpecId,
-      count: $count,
-      oneShot: $oneShot,
-      containerPorts: $containerPorts,
-      environmentId: $environmentId,
-      }) {
-          id
-          containerPorts {
-              port
-              protocol
-          }
-      }
-  }
-`, { name: "updateService" })
-
-@graphql(gql`
-mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-    deleteService(service:{
-    id: $id,
-    projectId: $projectId,
-    command: $command,
-    name: $name,
-    serviceSpecId: $serviceSpecId,
-    count: $count,
-    oneShot: $oneShot,
-    containerPorts: $containerPorts,
-    environmentId: $environmentId,
-    }) {
-        id
-        containerPorts {
-            port
-            protocol
-        }
-    }
-}
-`, { name: "deleteService" })
-
-
 @observer
-export default class ProjectServices extends React.Component {
+class ProjectServices extends React.Component {
 
   constructor(props){
     super(props)
@@ -126,16 +58,6 @@ export default class ProjectServices extends React.Component {
   }
 
   componentWillMount(){
-    const serviceSpecKeys = this.props.serviceSpecs.map(function(serviceSpec){
-      return serviceSpec.id
-    })
-    const serviceSpecDisplays = this.props.serviceSpecs.map(function(serviceSpec){
-      return { key: serviceSpec.id, value: serviceSpec.name }
-    })
-
-
-    console.log(serviceSpecDisplays)
-
     const fields = [
       'id',
       'name',
@@ -149,8 +71,8 @@ export default class ProjectServices extends React.Component {
       'containerPorts[].port',
       'containerPorts[].protocol',
       'environmentId',
+      'index',
     ];
-
     const rules = {
       'name': 'string|required',
       'serviceSpecId': 'string|required',
@@ -159,7 +81,6 @@ export default class ProjectServices extends React.Component {
       'containerPorts[].port': 'numeric|required|between:1,65535',
       'containerPorts[].protocol': 'required',
     };
-
     const labels = {
       'name': 'Name',
       'serviceSpecId': 'Service Spec',
@@ -169,28 +90,20 @@ export default class ProjectServices extends React.Component {
       'containerPorts[].port': 'Port',
       'containerPorts[].protocol': 'Protocol',
     };
-
     const initials = {
       'name': '',
-      'serviceSpecId': serviceSpecKeys[0],
       'command': '',
       'projectId': this.props.project.id,
-      'oneShot': this.state.oneShot,
+      'oneShot': false,
       'containerPorts[].protocol': 'TCP',
       'count': 0,
     }
-
     const types = {
       'count': 'number',
       'containerPorts[].port': 'number',
     };
-
-    const keys = {
-      'serviceSpecId': serviceSpecKeys
-    };
-
+    const keys = {};
     const extra = {
-      'serviceSpecId': serviceSpecDisplays,
       'containerPorts[].protocol': ['TCP', 'UDP']
     };
 
@@ -230,8 +143,7 @@ export default class ProjectServices extends React.Component {
 
     form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
 
-    let values = form.values();
-    if(values.id !== ""){
+    if(form.values()['id'] !== ""){
       this.props.updateService({
         variables: form.values(),
       }).then(({data}) => {
@@ -242,6 +154,7 @@ export default class ProjectServices extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.closeDrawer()
       });
     }
   }
@@ -252,7 +165,6 @@ export default class ProjectServices extends React.Component {
   }
 
   handleClick = event => {
-    this.form.$('containerPorts').set(new Array())
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
   };
 
@@ -261,13 +173,19 @@ export default class ProjectServices extends React.Component {
     if(value === "one-shot"){
       oneShot = true;
     }
-
-    this.form.clear()
-    this.form.$('containerPorts').set(new Array())
     this.form.$('oneShot').set(oneShot);
-
-    this.setState({ addServiceMenuOpen: false, oneShot: oneShot, open: true });
+    this.openDrawer()
   };
+
+  openDrawer(){
+    this.form.showErrors(false)
+    this.setState({ drawerOpen: true, addServiceMenuOpen: false })
+  }
+
+  closeDrawer(){
+    this.form.reset()
+    this.setState({ drawerOpen: false, addServiceMenuOpen: false })
+  }
 
   editService = service => {
     this.form.$('name').set(service.name);
@@ -302,65 +220,29 @@ export default class ProjectServices extends React.Component {
 
   render() {
     const { services } = this.props.project;
-    console.log(services)
+    const { loading, serviceSpecs } = this.props.data;
+
+    console.log(this.props.data)
+
+
+    if(loading){
+      return (
+        <div>
+          Loading ...
+        </div>
+      )
+    }
+
+    this.form.state.extra({
+      serviceSpecs: serviceSpecs.map(function(serviceSpec){
+        return {
+          key: serviceSpec.id,
+          value: serviceSpec.name,
+        }
+      })
+    })
 
     this.form.$('projectId').set(this.props.project.id);
-
-    let addContainerPorts = ""
-    if(this.state.oneShot === false){
-        addContainerPorts = (
-            <div>
-            <Grid container spacing={24}>
-                { this.form.$('containerPorts').value.length > 0 &&
-                <Grid item xs={12}>
-                <Typography type="subheading"> Container Ports </Typography>
-                </Grid>
-                }
-                { this.form.$('containerPorts').value.length > 0 &&
-                <Grid item xs={12}>
-                <div>
-                    {this.form.$('containerPorts').map(port =>
-                      <Grid container spacing={24}>
-                        <Grid item xs={4}>
-                          <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
-                        </Grid>
-                        <Grid item xs={6}>
-                          <RadioField field={port.$('protocol')} />
-                        </Grid>
-                        <Grid item xs={1}>
-                          <IconButton>
-                            <CloseIcon onClick={port.onDel} />
-                          </IconButton>
-                        </Grid>
-                      </Grid>
-                    )}
-                </div>
-                </Grid>
-                }
-
-
-                <Grid item xs={12}>
-                <Button raised type="secondary" onClick={this.form.$('containerPorts').onAdd}>
-                    Add container port
-                </Button>
-                </Grid>
-            </Grid>
-            </div>
-        )
-    }
-
-    let deleteButton = "";
-
-    if(this.state.currentService.id !== -1){
-      deleteButton = (
-        <Button
-          disabled={this.state.loading}
-          color="accent"
-          onClick={()=>this.setState({ dialogOpen: true })}>
-          Delete
-        </Button>
-      );
-    }
 
     return (
       <div>
@@ -372,7 +254,7 @@ export default class ProjectServices extends React.Component {
                 </Typography>
               </div>
             </Toolbar>
-            <Table bodyStyle={{ overflow: 'visible' }}>
+            <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>
@@ -400,12 +282,10 @@ export default class ProjectServices extends React.Component {
               </TableHead>
               <TableBody>
                 {services.map(service => {
-                  const isSelected = this.isSelected(service.id);
                   return (
                     <TableRow
                       hover
                       onClick={event => this.editService(service)}
-                      selected={isSelected}
                       tabIndex={-1}
                       key={service.id}>
                       <TableCell> { service.name} </TableCell>
@@ -421,22 +301,33 @@ export default class ProjectServices extends React.Component {
               </TableBody>
             </Table>
           </Paper>
-
-          <Button fab aria-label="Add" type="submit" raised color="primary"
-              style={inlineStyles.addButton}
-              onClick={this.handleClick.bind(this)}>
-              <AddIcon />
-          </Button>
-
-          <Menu
-              id="simple-menu"
-              anchorEl={this.state.anchorEl}
-              open={this.state.addServiceMenuOpen}
-              onRequestClose={this.handleRequestClose}
-          >
-              <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>
-              <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>
-          </Menu>
+          <div className={styles.addButton}>
+          <Manager>
+            <Target>
+              <Button fab aria-label="Add" type="submit" raised color="primary"
+                aria-owns={this.state.addServiceMenuOpen ? 'menu-list' : null}
+                aria-haspopup="true"              
+                onClick={this.handleClick.bind(this)}>
+                <AddIcon />
+              </Button>
+            </Target>
+            <Popper
+              placement="bottom-start"
+              eventsEnabled={this.state.addServiceMenuOpen}
+            >
+              <ClickAwayListener onClickAway={()=>this.setState({ addServiceMenuOpen: false })}>
+                <Grow in={this.state.addServiceMenuOpen} id="menu-list">
+                  <Paper>
+                    <MenuList role="menu">
+                      <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>
+                      <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>
+                    </MenuList>
+                  </Paper>
+                </Grow>
+              </ClickAwayListener>
+            </Popper>
+          </Manager>
+        </div>
 
           <Drawer
               type="persistent"
@@ -467,10 +358,48 @@ export default class ProjectServices extends React.Component {
                         <InputField field={this.form.$('count')}/>
                       </Grid>
                       <Grid item xs={9}>
-                        <SelectField field={this.form.$('serviceSpecId')} />
+                        <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} />
                       </Grid>
                       <Grid item xs={12}>
-                        { addContainerPorts }
+                        { !this.form.values()['oneShot'] &&
+                          <div>
+                            <Grid container spacing={24}>
+                                { this.form.$('containerPorts').value.length > 0 &&
+                                <Grid item xs={12}>
+                                <Typography type="subheading"> Container Ports </Typography>
+                                </Grid>
+                                }
+                                { this.form.$('containerPorts').value.length > 0 &&
+                                <Grid item xs={12}>
+                                <div>
+                                    {this.form.$('containerPorts').map(port =>
+                                      <Grid container spacing={24}>
+                                        <Grid item xs={4}>
+                                          <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
+                                        </Grid>
+                                        <Grid item xs={6}>
+                                          <RadioField field={port.$('protocol')} />
+                                        </Grid>
+                                        <Grid item xs={1}>
+                                          <IconButton>
+                                            <CloseIcon onClick={port.onDel} />
+                                          </IconButton>
+                                        </Grid>
+                                      </Grid>
+                                    )}
+                                </div>
+                                </Grid>
+                                }
+
+
+                                <Grid item xs={12}>
+                                <Button raised type="secondary" onClick={this.form.$('containerPorts').onAdd}>
+                                    Add container port
+                                </Button>
+                                </Grid>
+                            </Grid>
+                          </div>
+                        }
                       </Grid>
                       <Grid item xs={12}>
                         <Button color="primary"
@@ -481,10 +410,15 @@ export default class ProjectServices extends React.Component {
                             onClick={e => this.onSubmit(e)}>
                               Save
                         </Button>
-                        { deleteButton }
+                        <Button
+                          disabled={this.state.saving}
+                          color="accent"
+                          onClick={()=>this.setState({ dialogOpen: true })}>
+                          Delete
+                        </Button>
                         <Button
                           color="primary"
-                          onClick={this.handleToggleDrawer.bind(this)}>
+                          onClick={this.closeDrawer.bind(this)}>
                           Cancel
                         </Button>
                       </Grid>
@@ -495,7 +429,7 @@ export default class ProjectServices extends React.Component {
           </Drawer>
 
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + this.state.currentService.name + "?"}</DialogTitle>
+            <DialogTitle>{"Ae you sure you want to delete " + services[this.form.values()['index']] + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
@@ -515,3 +449,128 @@ export default class ProjectServices extends React.Component {
     )
   }
 }
+
+
+
+
+
+// Mutations
+
+// const CreateServiceMutation = gql`
+// mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+//     $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+//     createService(service:{
+//     projectId: $projectId,
+//     command: $command,
+//     name: $name,
+//     serviceSpecId: $serviceSpecId,
+//     count: $count,
+//     oneShot: $oneShot,
+//     containerPorts: $containerPorts,
+//     environmentId: $environmentId,
+//     }) {
+//         id
+//         containerPorts {
+//             port
+//             protocol
+//         }
+//     }
+// }
+// `, { name: "createService" })
+// @graphql(gql`
+// mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+//     $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+//     updateService(service:{
+//     id: $id,
+//     projectId: $projectId,
+//     command: $command,
+//     name: $name,
+//     serviceSpecId: $serviceSpecId,
+//     count: $count,
+//     oneShot: $oneShot,
+//     containerPorts: $containerPorts,
+//     environmentId: $environmentId,
+//     }) {
+//         id
+//         containerPorts {
+//             port
+//             protocol
+//         }
+//     }
+// }
+// `, { name: "updateService" })
+
+// @graphql(gql`
+// mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+//   $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+//   deleteService(service:{
+//   id: $id,
+//   projectId: $projectId,
+//   command: $command,
+//   name: $name,
+//   serviceSpecId: $serviceSpecId,
+//   count: $count,
+//   oneShot: $oneShot,
+//   containerPorts: $containerPorts,
+//   environmentId: $environmentId,
+//   }) {
+//       id
+//       containerPorts {
+//           port
+//           protocol
+//       }
+//   }
+// }
+// `, { name: "deleteService" })
+
+const ProjectQuery = gql`
+query Project($slug: String, $environmentId: String){
+  project(slug: $slug, environmentId: $environmentId) {
+    id
+    services {
+      id
+      name
+      command
+      serviceSpec {
+        id
+        name
+      }
+      count
+      oneShot
+      containerPorts {
+        port
+        protocol
+      }
+      created
+    }
+  }
+
+}
+`
+
+const ServiceSpecsQuery = gql`
+query {
+  serviceSpecs {
+    id
+    name
+    cpuRequest
+    cpuLimit
+    memoryRequest
+    memoryLimit
+    terminationGracePeriod
+  }
+}
+`
+
+export default compose(
+  withApollo,
+  graphql(ProjectQuery, {
+    options: (props) => ({
+      variables: {
+        slug: props.store.app.leftNavProjectTitle,
+        environmentId: props.envId,
+      }
+    }) 
+  }),
+  // graphql(ServiceSpecsQuery),
+)(ProjectServices);
