@@ -31,114 +31,9 @@ const socket = io('http://localhost:3011');
       name
       slug
     }
-    serviceSpecs {
-      id
-      name
-      cpuRequest
-      cpuLimit
-      memoryRequest
-      memoryLimit
-      terminationGracePeriod
-    }
-    extensionSpecs {
-      id
-      name
-      key
-      type
-      component
-      formSpec {
-        key
-        value
-      }
-      environmentVariables {
-          id
-		  key
-  		  value
-		  created
-		  scope
-		  project {
-		    id
-		  }
-		  user {
-			id
-			email
-		  }
-		  type
-		  version
-		  environment {
-			  id
-			  name
-			  created
-		  }
-		  versions {
-			  id
-			  key
-			  value
-			  created
-			  scope
-			  project {
-				  id
-			  }
-			  user {
-				  id
-				  email
-			  }
-			  type
-			  version
-			  environment {
-				  id
-				  name
-				  created
-			  }
-		  }
-      }
-    }
     environments {
-        id
-        name
-        created
-    }
-    environmentVariables {
       id
-      key
-      value
-      created
-      scope
-      project {
-          id
-      }
-      user {
-          id
-          email
-      }
-      type
-      version
-      environment {
-          id
-          name
-          created
-      }
-      versions {
-          id
-          key
-          value
-          created
-          scope
-          project {
-              id
-          }
-          user {
-              id
-              email
-          }
-          type
-          version
-          environment {
-              id
-              name
-              created
-          }
-      }
+      name
     }
   }
 `)
@@ -172,17 +67,12 @@ export default class App extends React.Component {
         this.props.store.app.setConnectionHeader({ msg: "", type: "SUCCESS" })
     });
 
-
     socket.on('reconnecting', () => {
         this.props.store.app.setConnectionHeader({ msg: "Attempting to reconnect to server...", type: "FAIL" })
     });
+
     socket.on('projects', (data) => {
       this.props.data.refetch();
-    });
-
-    socket.on('projectExists', (data) => {
-      this.props.store.app.setSnackbar({msg: "Project already exists. Try a different repository.."})
-      this.props.history.push('/create')
     });
   }
 
@@ -190,46 +80,11 @@ export default class App extends React.Component {
     if (reason === 'clickaway') {
       return;
     }
-
     this.setState({ snackbar: { open: false, lastCreated: this.state.snackbar.lastCreated } });
   };
 
-  handleEnvChange(e){
-    let environments = this.props.data.environments
-    let name = ""
-
-    environments.forEach(function(env){
-      if(env.id === e.target.value){
-        name = env.name
-        return
-      }
-    })
-
-    this.props.store.app.setCurrentEnv({ id: e.target.value })
-    this.props.store.app.setSnackbar({ msg: "Environment switched to " + name})
-  }
-
   render() {
-    let { loading, error, projects, serviceSpecs, user, extensionSpecs, environmentVariables, environments } = this.props.data;
-
-    if(!user){
-        user = {}
-    }
-    if(!projects){
-        projects = []
-    }
-    if(!serviceSpecs){
-        serviceSpecs = []
-    }
-    if(!extensionSpecs){
-        extensionSpecs = []
-    }
-    if(!environmentVariables){
-        environmentVariables = []
-    }
-    if(!environments){
-        environments = []
-    }
+    let { loading, error, projects, user, environments } = this.props.data;
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -241,77 +96,56 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-	  if(this.props.store.app.currentEnvironment.id === '' && this.props.data.environments && environments.length > 0){
-	    this.props.store.app.setCurrentEnv({ id : environments[0].id })
-    }
-    var self = this
 
+      if(environments.length > 0)
+        this.props.store.app.setCurrentEnv({ id: environments[0].id })
 
-    return (
-      <div className={styles.root}>
-        <Grid container spacing={0}>
-          <Grid item xs={12} className={styles.top}>
-            <TopNav projects={projects} user={user} {...this.props} />
+      return (
+        <div className={styles.root}>
+          <Grid container spacing={0}>
+            <Grid item xs={12} className={styles.top}>
+              <TopNav projects={projects} user={user} {...this.props} />
+            </Grid>
+            <Grid item xs={12} className={styles.center}>
+              <LeftNav environments={environments} />
+              <div className={styles.children}>
+                <Switch>
+                  <Route exact path='/' render={(props) => (
+                    <Dashboard projects={projects} />
+                  )} />
+                  <Route exact path='/create' render={(props) => (
+                    <Create projects={projects} type={"create"} {...props} />
+                  )} />
+                  <Route path='/admin' render={(props) => (
+                    <Admin data={this.props.data} projects={projects} socket={socket} {...props} />
+                  )} />
+                  <Route path='/projects/:slug' render={(props) => (
+                    <Project socket={socket} user={user} {...props} envId={environments[0].id} />
+                  )} />
+                </Switch>
+              </div>
+            </Grid>
           </Grid>
-          <Grid item xs={12} className={styles.center}>
-            <LeftNav 
-              handleEnvChange={this.handleEnvChange.bind(this)}
-              environments={environments} />
-            <div className={styles.children}>
-              <Switch>
-                <Route exact path='/' render={(props) => (
-                  <Dashboard projects={projects} />
-                  )} />
-                <Route exact path='/create' render={(props) => (
-                  <Create projects={projects} type={"create"} {...props} />
-                  )} />
-                <Route path='/admin' render={(props) => (
-                  <Admin data={this.props.data}
-                      extensionSpecs={extensionSpecs}
-                      projects={projects}
-                      socket={socket}
-                      serviceSpecs={serviceSpecs}
-                      environments={environments}
-                      environmentVariables={environmentVariables}
-                      {...props} />
-                  )} />
-                <Route path='/projects/:slug' render={(props) => (
-                  <Project socket={socket}
-                      user={user}
-                      envId={self.props.store.app.currentEnvironment.id}
-                      serviceSpecs={serviceSpecs}
-                      extensionSpecs={extensionSpecs}
-                      {...props} />
-                  )} />
-              </Switch>
-            </div>
-          </Grid>
-        </Grid>
 
-        <Snackbar
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-          open={this.state.snackbar.open}
-          autoHideDuration={6000}
-          onRequestClose={this.handleRequestClose}
-          SnackbarContentProps={{
-            'aria-describedby': 'message-id',
-          }}
-          message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
-          action={[
-            <IconButton
-              key="close"
-              aria-label="Close"
-              color="inherit"
-              onClick={this.handleRequestClose}
-            >
-              <CloseIcon />
-            </IconButton>,
-          ]}
-        />
-      </div>
+          <Snackbar
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            open={this.state.snackbar.open}
+            autoHideDuration={6000}
+            onRequestClose={this.handleRequestClose}
+            SnackbarContentProps={{
+              'aria-describedby': 'message-id',
+            }}
+            message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
+            action={[
+              <IconButton key="close" aria-label="Close" color="inherit" onClick={this.handleRequestClose}>
+                <CloseIcon />
+              </IconButton>,
+            ]}
+          />
+        </div>
       );
     }
   }

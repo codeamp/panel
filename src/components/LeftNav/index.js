@@ -139,29 +139,29 @@ export default class LeftNav extends React.Component {
               </NavLink>
               )}
           </Collapse>
-      {this.props.store.app.leftNavProjectTitle !== '' &&
-      <ListItem>
-        <FormControl>
-          <InputLabel>Current Env</InputLabel>
-          <Select
-          classes={{
-            select: styles.currentEnv,
-            root: styles.currentEnv,
-          }}
-          style={{ width: 200 }}
-          value={this.props.store.app.currentEnvironment.id}
-          onChange={handleEnvChange}
-          input={<Input fullWidth={true} />}
-          >
-          {environments.map(function(env){
-            return (
-              <MenuItem value={env.id}>{env.name}</MenuItem>
-            )
-          })}
-          </Select>
-        </FormControl>
-      </ListItem>
-      }
+          {this.props.store.app.leftNavProjectTitle !== '' &&
+          <ListItem>
+            <FormControl>
+              <InputLabel>Current Env</InputLabel>
+              <Select
+              classes={{
+                select: styles.currentEnv,
+                root: styles.currentEnv,
+              }}
+              style={{ width: 200 }}
+              value={this.props.store.app.currentEnvironment.id}
+              onChange={handleEnvChange}
+              input={<Input fullWidth={true} />}
+              >
+              {environments.map(function(env){
+                return (
+                  <MenuItem value={env.id}>{env.name}</MenuItem>
+                )
+              })}
+              </Select>
+            </FormControl>
+          </ListItem>
+          }
           </List>
         </div>
       </Drawer>

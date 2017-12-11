@@ -6,7 +6,7 @@ import AppBar from 'material-ui/AppBar';
 import { observer } from 'mobx-react';
 import styles from './style.module.css';
 
-import Services from './Services';
+import ProjectServices from './ProjectServices';
 import EnvironmentVariables from './EnvironmentVariables';
 
 
@@ -15,7 +15,7 @@ function TabContainer(props) {
 }
 
 @observer
-export default class ProjectServices extends React.Component {
+export default class Services extends React.Component {
 
   constructor(props){
     super(props)
@@ -43,7 +43,7 @@ export default class ProjectServices extends React.Component {
                
         <Grid container spacing={24}>                                                            
           <Grid item sm={12}>                    
-            {value === 0 && <TabContainer> <Services serviceSpecs={serviceSpecs} project={project} store={store} /> </TabContainer>}
+            {value === 0 && <TabContainer> <ProjectServices project={project} store={store} {...this.props} /> </TabContainer>}
           </Grid>
           <Grid item sm={12}>
             {value === 1 && <TabContainer><EnvironmentVariables project={project} store={store} user={user} /></TabContainer>}

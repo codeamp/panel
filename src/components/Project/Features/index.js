@@ -28,20 +28,8 @@ class InitPrivateProjectComponent extends React.Component {
 
     var successful = document.execCommand('copy')
     if(successful){
-      this.handleClick();
+      this.props.store.app.setSnackbar({msg: "SSH Key Copied."})
     }
-  };
-
-  handleClick = () => {
-    this.props.store.app.setSnackbar({msg: "SSH Key Copied."})
-  };
-
-  handleRequestClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    this.setState({ open: false });
   };
 
   render() {
@@ -108,9 +96,8 @@ class FeatureView extends React.Component {
     this.props.createRelease({
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id, environmentId: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
+      this.props.data.refetch()
       self.props.history.push(self.props.match.url + '/releases')
-    }).catch(error => {
-      console.log(error)
     });
   }
 
@@ -150,53 +137,31 @@ class FeatureView extends React.Component {
   }
 }
 
+
 @inject("store") @observer
 
-
 @graphql(gql`
-  mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
-    createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
-      headFeature {
-        message
-      }
-      tailFeature  {
-        message
-      }
-      state
-      stateMessage
+mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
+  createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
+    headFeature {
+      message
     }
+    tailFeature  {
+      message
+    }
+    state
+    stateMessage
   }
+}
 `, { name: "createRelease" })
-
 export default class Features extends React.Component {
 
   constructor(props){
     super(props)
     this.state = {
-      activeStep: 0,
       activeFeatureKey: -1,
     };
   }
-
-  componentWillMount(){
-    this.props.data.refetch()
-  }
-
-  shouldComponentUpdate(){
-      return true
-  }
-
-  handleNext = () => {
-    this.setState({
-      activeStep: this.state.activeStep + 1,
-    });
-  };
-
-  handleBack = () => {
-    this.setState({
-      activeStep: this.state.activeStep - 1,
-    });
-  };
 
   copyGitHash(featureId){
     var gitHash = document.querySelector('#git-hash-' + featureId);
@@ -240,14 +205,14 @@ export default class Features extends React.Component {
   }
 
   render() {
-    if(!this.props.project){
-      return null
-    }
+    const { project } = this.props;
+
+    console.log(project)
 
     let defaultComponent = (<Typography>Loading...</Typography>)
 
     if(this.props.project.features.length > 0) {
-      defaultComponent = this.renderFeatureList(this.props.project);
+      defaultComponent = this.renderFeatureList(project);
     } else if(this.props.project.gitProtocol === "SSH"){
         defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
     } else if(this.props.project.gitProtocol === "HTTPS"){

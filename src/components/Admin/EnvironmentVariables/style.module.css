@@ -19,7 +19,8 @@
 
 .addButton {
     position: absolute;
-    bottom: 0px;
+    bottom: 25px;
+    right: 25px;
 }
 
 .appBar {

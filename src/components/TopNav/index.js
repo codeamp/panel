@@ -22,16 +22,15 @@ export default class TopNav extends React.Component {
     open: false,
     originalSuggestions: [],
     suggestions: [],
-    value: ''
+    value: '',
+    hovering: false,
   };
 
   componentDidMount(){
-    if(this.props.projects){
-        const originalSuggestions = this.props.projects.map(function(project){
-            return { id: project.id, label: project.name, project: project }
-        })
-        this.setState({ originalSuggestions: originalSuggestions })
-    }
+    const originalSuggestions = this.props.projects.map(function(project){
+        return { id: project.id, label: project.name, project: project }
+    })
+    this.setState({ originalSuggestions: originalSuggestions })
   }
 
   handleClick = event => {
@@ -47,48 +46,46 @@ export default class TopNav extends React.Component {
     window.location.href = '/login';
   }
 
-  getSuggestionValue(suggestion) {
-    return suggestion.label;
+  escapeRegExp(str) {
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
   }
 
   getSuggestions(value) {
-    const inputValue = value.trim().toLowerCase();
-    const inputLength = inputValue.length;
-
-    return inputLength === 0 ? [] : this.state.originalSuggestions.filter(lang =>
-      lang.label.toLowerCase().slice(0, inputLength) === inputValue
-    );
+    const cleanedValue = this.escapeRegExp(value.trim().toLowerCase());
+    let re = new RegExp(cleanedValue, "i");
+    
+    return cleanedValue === '' ? [] : this.state.originalSuggestions.filter(function(project){
+      return project.label.toLowerCase().match(re)
+    });
   }
 
-  renderSuggestions(bookmarksOnly, suggestions){
-    if(bookmarksOnly){
-      const bookmarks = this.props.projects.map(function(project){
-        return { id: project.id, label: project.name, project: project }
-      })
-      this.setState({ suggestions: bookmarks, showSuggestions: true })
-    } else {
-      this.setState({ suggestions: suggestions, showSuggestions: true })
+  renderBookmarks(){
+    // TODO
+  }
+
+  hideSuggestions(force=false){
+    if(force){
+      this.setState({ showSuggestions: false, suggestions: [], hovering: false })
+      return
     }
-  }
-
-  hideSuggestions(){
-    this.setState({ showSuggestions: false })
+    if(!this.state.hovering){
+      this.setState({ showSuggestions: false, suggestions: [], hovering: false })
+    }
   }
 
   onSuggestionItemClick(suggestion){
     this.props.history.push('/projects/' + suggestion.project.slug)
-    this.hideSuggestions()
+    this.hideSuggestions(true)
   }
 
   onChange(e){
     const suggestions = this.getSuggestions(e.target.value)
-    this.renderSuggestions(false, suggestions)
+    this.setState({ suggestions: suggestions, showSuggestions: true })
   }
 
   render() {
     var self = this
     const { store, user } = this.props
-
 
     return (
     <div>
@@ -102,26 +99,28 @@ export default class TopNav extends React.Component {
             </Grid>
             <Grid item xs={8} style={{ position: 'absolute', left: '15%' }}>
               <div>
-                <TextField
+                <TextField                
                   autoFocus={false}
                   value={this.state.projectQuery}
-                  onClick={()=>this.renderSuggestions(true)}
-                  onChange={this.onChange.bind(this)}
+                  onClick={()=>this.renderBookmarks()}
+                  onChange={(e)=>this.onChange(e)}
+                  onBlur={()=>this.hideSuggestions() }                  
                   placeholder="Search for a project or view your bookmarks"
                   style={{ width: 800 }}
                 />
-                <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
+                <div 
+                  className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
                   {this.state.suggestions.map(function(suggestion){
                     return (
                       <Paper
                         key={suggestion.id}
                         className={styles.suggestion}
                         square={true}>
-                        <ListItem onClick={()=>self.onSuggestionItemClick(suggestion)}>
+                        <ListItem 
+                          onMouseEnter={() => self.setState({ hovering: true })}
+                          onMouseLeave={() => self.setState({ hovering: false })}                                       
+                          onClick={()=>self.onSuggestionItemClick(suggestion)}>
                           <ListItemText primary={suggestion.label} />
-                          {/* <ListItemIcon>
-                            <StarIcon />
-                          </ListItemIcon>                         */}
                         </ListItem>
                       </Paper>
                     )

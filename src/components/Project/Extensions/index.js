@@ -1,4 +1,5 @@
 import React from 'react';
+import { Route, Switch } from "react-router-dom";
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -31,60 +32,89 @@ const DEFAULT_EXTENSION = {
   extensionSpec: {
     type: '',
   },
-  formSpecValues: `{ "test": "1" }`
+  formSpecValues: `{ "": "" }`
 }
 
 const DEFAULT_EXTENSION_SPEC = {
   id: -1,
 }
 
-@graphql(gql`
-mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
-    createExtension(extension:{
-      projectId: $projectId,
-      extensionSpecId: $extensionSpecId,
-      formSpecValues: $formSpecValues,
-      environmentId: $environmentId,
-    }) {
+const query = gql`
+  query ProjectExtensions($slug: String, $environmentId: String){
+    project(slug: $slug, environmentId: $environmentId) {
+      extensions {
         id
+        extensionSpec {
+          id
+          name
+          type
+        }
+        state
+        formSpecValues {
+          key
+          value
+        }
+        artifacts {
+          key
+          value
+        }
+        created
+      }
     }
-}
-`, { name: "createExtension" })
+  }
+`
+
+@graphql(query, {
+  options: (props) => ({
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.envId,
+    }
+  })
+})
 
 @graphql(gql`
-mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
-    updateExtension(extension:{
-      id: $id,
-      projectId: $projectId,
-      extensionSpecId: $extensionSpecId,
-      formSpecValues: $formSpecValues,
-      environmentId: $environmentId,
-    }) {
-        id
-    }
-}
-`, { name: "updateExtension" })
+  mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
+      createExtension(extension:{
+        projectId: $projectId,
+        extensionSpecId: $extensionSpecId,
+        formSpecValues: $formSpecValues,
+        environmentId: $environmentId,
+      }) {
+          id
+      }
+  }`, { name: "createExtension" }
+)
 
 @graphql(gql`
-mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
-    deleteExtension(extension:{
-      id: $id,
-      projectId: $projectId,
-      extensionSpecId: $extensionSpecId,
-      formSpecValues: $formSpecValues,
-      environmentId: $environmentId,
-    }) {
-        id
-    }
-}
-`, { name: "deleteExtension" })
+  mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
+      updateExtension(extension:{
+        id: $id,
+        projectId: $projectId,
+        extensionSpecId: $extensionSpecId,
+        formSpecValues: $formSpecValues,
+        environmentId: $environmentId,
+      }) {
+          id
+      }
+  }`, { name: "updateExtension" }
+)
 
-
-
-
+@graphql(gql`
+  mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
+      deleteExtension(extension:{
+        id: $id,
+        projectId: $projectId,
+        extensionSpecId: $extensionSpecId,
+        formSpecValues: $formSpecValues,
+        environmentId: $environmentId,
+      }) {
+          id
+      }
+  }`, { name: "deleteExtension" }
+)
 
 export default class Extensions extends React.Component {
-
   constructor(props){
     super(props)
     this.state = {

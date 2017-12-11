@@ -35,7 +35,19 @@ const inlineStyles = {
   }
 }
 
-
+@graphql(gql`
+query {
+  serviceSpecs {
+    id
+    name
+    cpuRequest
+    cpuLimit
+    memoryRequest
+    memoryLimit
+    terminationGracePeriod
+  }
+}
+`)
 
 @graphql(gql`
 mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: String!,
@@ -98,49 +110,12 @@ export default class ServiceSpecs extends React.Component {
     super(props)
     this.state = {
       selected: null,
-      open: false,
-      currentServiceSpec: {
-        id: -1,
-      },
-      drawerText: 'Create',
+      drawerOpen: false,
+      saving: false,
     }
   }
 
-  componentDidMount(){
-    this.props.socket.on("serviceSpecs/new", (data) => {
-      console.log("serviceSpecs/new");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false })
-        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was created"})
-      }, 2000);
-    })
-
-    this.props.socket.on("serviceSpecs/deleted", (data) => {
-      console.log("serviceSpecs/deleted");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false })
-        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was deleted"})
-      }, 2000);
-    })
-
-    this.props.socket.on("serviceSpecs/updated", (data) => {
-      console.log("serviceSpecs/updated");
-      clearTimeout(this.state.fetchDelay);
-      this.state.fetchDelay = setTimeout(() => {
-        this.props.data.refetch();
-        this.setState({ loading: false })
-        this.props.store.app.setSnackbar({msg: "Service spec "+ data.name +" was updated"})
-      }, 2000);
-    })
-  }
-
   componentWillMount(){
-    console.log(this.props);
-
     const fields = [
       'name',
       'cpuRequest',
@@ -149,14 +124,15 @@ export default class ServiceSpecs extends React.Component {
       'memoryLimit',
       'terminationGracePeriod',
       'id',
+      'index',
     ];
 
     const rules = {
       'name': 'required|string',
-      'cpuRequest': 'required|string',
-      'cpuLimit': 'required|string',
-      'memoryRequest': 'required|string',
-      'memoryLimit': 'required|string',
+      'cpuRequest': 'required|numeric',
+      'cpuLimit': 'required|numeric',
+      'memoryRequest': 'required|numeric',
+      'memoryLimit': 'required|numeric',
       'terminationGracePeriod': 'required|string',
     };
 
@@ -169,96 +145,72 @@ export default class ServiceSpecs extends React.Component {
       'terminationGracePeriod': 'Termination Grace Period (seconds)',
     };
 
-    const initials = {
+    const initials = {};
 
-    };
+    const types = {};
 
-    const types = {
+    const extra = {};
 
-    };
-
-    const extra = {
-
-    };
-
-    const hooks = {
-
-    };
+    const hooks = {};
 
     const plugins = { dvr: validatorjs };
 
-    this.serviceSpecForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
-  }
-
-  handleToggleDrawer(){
-    console.log(this.state.open, this.serviceSpecForm.values())
-    if(this.state.open === true){
-      this.serviceSpecForm.clear()
-    }
-    console.log(this.serviceSpecForm.values())
-
-    this.setState({ open: !this.state.open, dialogOpen: false, currentServiceSpec: { id: -1 } })
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
   }
 
   isSelected(id){
     return this.state.selected === id
   }
-  handleClick(e, serviceSpec){
-    console.log(serviceSpec)
-    this.serviceSpecForm.$('name').set(serviceSpec.name);
-    this.serviceSpecForm.$('cpuRequest').set(serviceSpec.cpuRequest);
-    this.serviceSpecForm.$('cpuLimit').set(serviceSpec.cpuLimit);
-    this.serviceSpecForm.$('memoryRequest').set(serviceSpec.memoryRequest);
-    this.serviceSpecForm.$('memoryLimit').set(serviceSpec.memoryLimit);
-    this.serviceSpecForm.$('terminationGracePeriod').set(serviceSpec.terminationGracePeriod);
-    this.serviceSpecForm.$('id').set(serviceSpec.id);
+  handleClick(e, serviceSpec, index){
+    this.form.$('name').set(serviceSpec.name);
+    this.form.$('cpuRequest').set(serviceSpec.cpuRequest);
+    this.form.$('cpuLimit').set(serviceSpec.cpuLimit);
+    this.form.$('memoryRequest').set(serviceSpec.memoryRequest);
+    this.form.$('memoryLimit').set(serviceSpec.memoryLimit);
+    this.form.$('terminationGracePeriod').set(serviceSpec.terminationGracePeriod);
+    this.form.$('id').set(serviceSpec.id);
+    this.form.$('index').set(index);
 
-    console.log(this.serviceSpecForm)
-
-    this.setState({ selected: serviceSpec.id, open: true, currentServiceSpec: serviceSpec, drawerText: 'Update' })
-  }
-
-  handleNewSpecClick(e){
-    this.setState({ open: true, drawerText: 'Create' })
+    this.setState({ selected: serviceSpec.id, drawerOpen: true })
   }
 
   onSuccess(form){
-    console.log('onSuccess')
-    this.setState({ loading: true })
-    var that = this
-    switch(this.state.drawerText){
-      case "Creating":
-        this.props.createServiceSpec({
-          variables: form.values(),
-        }).then(({data}) => {
-          that.handleToggleDrawer()
-        }).catch(error => {
-          console.log(error)
-        });
-        break;
-      case "Updating":
-        this.props.updateServiceSpec({
-          variables: form.values(),
-        }).then(({data}) => {
-          console.log(data)
-        }).catch(error => {
-          console.log(error)
-        });
-        break;
+    console.log(form.values())
+
+    if(this.form.values()['id'] === ''){
+      this.props.createServiceSpec({
+        variables: form.values(),
+      }).then(({data}) => {
+        this.props.data.refetch()
+        this.closeDrawer()
+      });
+    } else {
+      this.props.updateServiceSpec({
+        variables: form.values(),
+      }).then(({data}) => {
+        this.props.data.refetch();
+        this.closeDrawer()
+      });
     }
   }
 
   handleDeleteServiceSpec() {
-    console.log('handleDeleteServiceSpec')
-    this.setState({ loading: true })
-    var that = this
     this.props.deleteServiceSpec({
-      variables: this.serviceSpecForm.values(),
+      variables: this.form.values(),
     }).then(({ data }) => {
-      that.handleToggleDrawer()
-    }).catch(error => {
-      console.log(error)
+      this.props.data.refetch()
+      this.closeDrawer()
     });
+  }
+
+  openDrawer(){
+    this.form.reset()
+    this.form.showErrors(false)
+    this.setState({ drawerOpen: true })
+  }
+
+  closeDrawer(){
+    this.setState({ drawerOpen: false, dialogOpen: false })
   }
 
   onError(){
@@ -266,36 +218,18 @@ export default class ServiceSpecs extends React.Component {
   }
 
   onSubmit(e){
-
-    let drawerText = this.state.drawerText
-    switch(this.state.drawerText){
-      case "Create":
-        drawerText = "Creating"
-        break;
-      case "Update":
-        drawerText = "Updating"
-        break;
-    }
-
-    this.setState({ drawerText: drawerText })
-    this.serviceSpecForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   render() {
-    const { serviceSpecs } = this.props;
+    const { loading, serviceSpecs } = this.props.data;
 
-
-    let deleteButton = "";
-
-    if(this.state.currentServiceSpec.id !== -1){
-      deleteButton = (
-        <Button
-          disabled={this.state.loading}
-          color="accent"
-          onClick={()=>this.setState({ dialogOpen: true })}>
-          Delete
-        </Button>
-      );
+    if(loading){
+      return (
+        <div>
+          Loading ...
+        </div>
+      )
     }
 
     return (
@@ -334,12 +268,12 @@ export default class ServiceSpecs extends React.Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {serviceSpecs.map(serviceSpec => {
+                  {serviceSpecs.map( (serviceSpec, index) => {
                     const isSelected = this.isSelected(serviceSpec.id);
                     return (
                       <TableRow
                         hover
-                        onClick={event => this.handleClick(event, serviceSpec)}
+                        onClick={event => this.handleClick(event, serviceSpec, index)}
                         selected={isSelected}
                         tabIndex={-1}
                         key={serviceSpec.id}>
@@ -359,7 +293,7 @@ export default class ServiceSpecs extends React.Component {
         </Grid>
         <Button fab aria-label="Add" type="submit" raised color="primary"
               style={inlineStyles.addButton}
-              onClick={this.handleNewSpecClick.bind(this)}>
+              onClick={this.openDrawer.bind(this)}>
               <AddIcon />
         </Button>
         <Drawer
@@ -368,13 +302,13 @@ export default class ServiceSpecs extends React.Component {
           classes={{
             paper: styles.drawer
           }}
-          open={this.state.open}
+          open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                 <Toolbar>
                   <Typography type="title" color="inherit">
-                    {this.state.drawerText} Service Spec
+                    Service Spec
                   </Typography>
                 </Toolbar>
               </AppBar>
@@ -386,36 +320,45 @@ export default class ServiceSpecs extends React.Component {
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    <InputField field={this.serviceSpecForm.$('name')} fullWidth={true} />
+                    <InputField field={this.form.$('name')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('cpuRequest')} fullWidth={true} />
+                    <InputField field={this.form.$('cpuRequest')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('cpuLimit')} fullWidth={true} />
+                    <InputField field={this.form.$('cpuLimit')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('memoryRequest')} fullWidth={true} />
+                    <InputField field={this.form.$('memoryRequest')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('memoryLimit')} fullWidth={true} />
+                    <InputField field={this.form.$('memoryLimit')} fullWidth={true} />
                   </Grid>
-                  <Grid item xs={6}>
-                    <InputField field={this.serviceSpecForm.$('terminationGracePeriod')} fullWidth={true} />
+                  <Grid item xs={8}>
+                    <InputField field={this.form.$('terminationGracePeriod')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
-                        disabled={this.state.loading}
+                        disabled={this.state.saving}
                         type="submit"
                         raised
                         onClick={this.onSubmit.bind(this)}>
-                          {this.state.drawerText}
+                        Save
                     </Button>
-                    { deleteButton }
+                    
+                    {this.form.values()['id'] !== '' &&
+                      <Button
+                        disabled={this.state.saving}
+                        color="accent"
+                        onClick={()=>this.setState({ dialogOpen: true })}>
+                        Delete
+                      </Button>
+                    }
+
                     <Button
                       color="primary"
-                      onClick={this.handleToggleDrawer.bind(this)}>
+                      onClick={this.closeDrawer.bind(this)}>
                       Cancel
                     </Button>
                   </Grid>
@@ -423,23 +366,25 @@ export default class ServiceSpecs extends React.Component {
               </form>
             </div>
         </Drawer>
-
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Ae you sure you want to delete " + this.state.currentServiceSpec.name + "?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              This will remove the service spec and all instances in which it is being used in any existing services.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleDeleteServiceSpec.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        
+        {serviceSpecs[this.form.values()['index']] != null &&
+          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+            <DialogTitle>{"Ae you sure you want to delete " + serviceSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                This will delete the service spec.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleDeleteServiceSpec.bind(this)} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
 
       </div>
     );

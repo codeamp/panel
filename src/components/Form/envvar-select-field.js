@@ -9,13 +9,7 @@ import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
-export default observer(({field, autoWidth, extraKey }) => {
-
-    let extraOptions = field.extra
-
-    if(extraKey){
-        extraOptions = field.state.extra()[extraKey]
-    }
+export default observer(({field, autoWidth }) => {
 
     return (
         <div>
@@ -28,13 +22,15 @@ export default observer(({field, autoWidth, extraKey }) => {
                     className={styles.selectField}
                     input={<Input id={field.key} />}
                 >
-                    {extraOptions.map(option => (
-                        <MenuItem 
-                            key={option.key}
-                            value={option.key}>
-                            {option.value}
-                        </MenuItem>
-                    ))}
+                    {field.extra.map(function(option){
+                        return (
+                            <MenuItem
+                                key={option.key}
+                                value={option.id}>
+                                {option.environment.name} : {option.key}={option.value} ({option.type})
+                            </MenuItem>
+                        )
+                    })}
                 </Select>
                 <FormHelperText> {field.helperText} </FormHelperText>
             </FormControl>
