@@ -88,22 +88,6 @@ const query = gql`
           version
         }
       }
-      services {
-        id
-        name
-        command
-        serviceSpec {
-          id
-          name
-        }
-        count
-        oneShot
-        containerPorts {
-          port
-          protocol
-        }
-        created
-      }
       features {
         id
         message
@@ -316,7 +300,7 @@ export default class Project extends React.Component {
             <ProjectReleases project={project} socket={socket} variables={variables} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions project={project} store={this.props.store} />
+            <ProjectExtensions project={project} store={this.props.store} {...this.props} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings project={project} />

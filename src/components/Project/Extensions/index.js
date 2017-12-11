@@ -60,6 +60,23 @@ const query = gql`
         }
         created
       }
+      extensionSpecs {
+        id
+        name
+        component
+        formSpec {
+          key
+          value
+        }
+        type
+        key
+        environmentVariables {
+          id
+          key
+          value
+        }
+        created
+      }
     }
   }
 `
@@ -186,7 +203,7 @@ export default class Extensions extends React.Component {
         }
     }
 
-   let availableExtensionsDrawer = this.state.availableExtensionsDrawer
+    let availableExtensionsDrawer = this.state.availableExtensionsDrawer
     availableExtensionsDrawer.currentExtensionSpec = extensionSpec
     availableExtensionsDrawer.open = true
 
@@ -465,8 +482,18 @@ export default class Extensions extends React.Component {
   }
 
   render() {
-    const { project, extensionSpecs } = this.props;
-    console.log(project)
+    const { project } = this.props;
+    const { loading, extensionSpecs } = this.props.data;
+
+    if(loading){
+      return (
+        <div>
+          Loading ...
+        </div>
+      )
+    }
+
+    console.log(this.props.data)
 
     let addedExtensionsDeleteButton = "";
 
