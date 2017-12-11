@@ -64,30 +64,6 @@ const query = gql`
           created
         }
       }
-      environmentVariables {
-        id
-        key
-        value
-        user {
-          id
-          email
-        }
-        type
-        created
-        version
-        versions {
-          id
-          key
-          value
-          user {
-            id
-            email
-          }
-          type
-          created
-          version
-        }
-      }
       features {
         id
         message
@@ -135,24 +111,6 @@ const query = gql`
           created
         }
       }
-      extensions {
-        id
-        extensionSpec {
-          id
-          name
-          type
-        }
-        state
-        formSpecValues {
-          key
-          value
-        }
-        artifacts {
-          key
-          value
-        }
-        created
-      }
     }
   }
 `
@@ -169,7 +127,6 @@ const query = gql`
 
 
 @inject("store") @observer
-
 export default class Project extends React.Component {
   state = {
     fetchDelay: null,
@@ -269,7 +226,7 @@ export default class Project extends React.Component {
 
   render() {
     const { loading, project, variables, errors, error } = this.props.data;
-    const { store, socket, user } = this.props;
+    const { store, socket, user, match, envId } = this.props;
 
     if(loading){
       return (
@@ -282,31 +239,29 @@ export default class Project extends React.Component {
     if(project)
       this.props.store.app.setProjectTitle(project.slug)
 
-    console.log(this.props)
-
     return (
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures project={project} store={store} {...this.props} />
+            <ProjectFeatures project={project} store={store} match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
-            <ProjectServices user={user} project={project} store={store} {...this.props} />
+            <ProjectServices user={user} store={store} match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures project={project} store={store} {...this.props} />
+            <ProjectFeatures project={project} store={store} match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases project={project} socket={socket} variables={variables} {...this.props} />
+            <ProjectReleases project={project} socket={socket} variables={variables} match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions project={project} store={this.props.store} {...this.props} />
+            <ProjectExtensions project={project} store={this.props.store} match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
-            <ProjectSettings project={project} />
+            <ProjectSettings project={project} match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/logs' render={(props) => (
-            <ProjectSettings project={project} />
+            <ProjectSettings project={project} match={match} envId={envId} />
           )}/>
         </Switch>
       </div>

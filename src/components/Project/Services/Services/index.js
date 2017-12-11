@@ -39,8 +39,115 @@ const inlineStyles = {
   }
 }
 
+const ProjectServicesQuery = gql`
+query Project($slug: String, $environmentId: String) {
+  project(slug: $slug, environmentId: $environmentId) {
+    id
+    services {
+      id
+      name
+      command
+      serviceSpec {
+        id
+        name
+      }
+      count
+      oneShot
+      containerPorts {
+        port
+        protocol
+      }
+      created
+    }
+  }
+  serviceSpecs {
+    id
+    name
+    cpuRequest
+    cpuLimit
+    memoryRequest
+    memoryLimit
+    terminationGracePeriod
+  }
+}`
+
+@graphql(ProjectServicesQuery, {
+  options: (props) => ({
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.envId,
+    }
+  })
+})
+
+// Mutations
+@graphql(gql`
+mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+    createService(service:{
+    projectId: $projectId,
+    command: $command,
+    name: $name,
+    serviceSpecId: $serviceSpecId,
+    count: $count,
+    oneShot: $oneShot,
+    containerPorts: $containerPorts,
+    environmentId: $environmentId,
+    }) {
+        id
+        containerPorts {
+            port
+            protocol
+        }
+    }
+}`, { name: "createService" })
+
+@graphql(gql`
+mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+    updateService(service:{
+    id: $id,
+    projectId: $projectId,
+    command: $command,
+    name: $name,
+    serviceSpecId: $serviceSpecId,
+    count: $count,
+    oneShot: $oneShot,
+    containerPorts: $containerPorts,
+    environmentId: $environmentId,
+    }) {
+        id
+        containerPorts {
+            port
+            protocol
+        }
+    }
+}`, { name: "updateService" })
+
+@graphql(gql`
+mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+  $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+  deleteService(service:{
+  id: $id,
+  projectId: $projectId,
+  command: $command,
+  name: $name,
+  serviceSpecId: $serviceSpecId,
+  count: $count,
+  oneShot: $oneShot,
+  containerPorts: $containerPorts,
+  environmentId: $environmentId,
+  }) {
+      id
+      containerPorts {
+          port
+          protocol
+      }
+  }
+}`, { name: "deleteService" })
+
 @observer
-class ProjectServices extends React.Component {
+export default class Services extends React.Component {
 
   constructor(props){
     super(props)
@@ -90,10 +197,11 @@ class ProjectServices extends React.Component {
       'containerPorts[].port': 'Port',
       'containerPorts[].protocol': 'Protocol',
     };
+
     const initials = {
       'name': '',
       'command': '',
-      'projectId': this.props.project.id,
+      'projectId': '',
       'oneShot': false,
       'containerPorts[].protocol': 'TCP',
       'count': 0,
@@ -221,18 +329,15 @@ class ProjectServices extends React.Component {
   }
 
   render() {
-    const { services } = this.props.project;
-    const { serviceSpecs } = this.props.serviceSpecsQuery;
-    const { project } = this.props.projectServicesQuery;
-
-    if(this.props.serviceSpecsQuery.loading || this.props.projectServicesQuery.loading){
+    const { loading, project, serviceSpecs } = this.props.data;
+    if(loading){
       return (
         <div>
           Loading ...
         </div>
       )
     }
-
+    this.form.$('projectId').set(project.id)
     this.form.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
         return {
@@ -241,9 +346,6 @@ class ProjectServices extends React.Component {
         }
       })
     })
-
-    this.form.$('projectId').set(this.props.project.id);
-
     return (
       <div>
           <Paper className={styles.tablePaper}>
@@ -449,123 +551,3 @@ class ProjectServices extends React.Component {
     )
   }
 }
-
-// Mutations
-const CreateServiceMutation = gql`
-mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-    createService(service:{
-    projectId: $projectId,
-    command: $command,
-    name: $name,
-    serviceSpecId: $serviceSpecId,
-    count: $count,
-    oneShot: $oneShot,
-    containerPorts: $containerPorts,
-    environmentId: $environmentId,
-    }) {
-        id
-        containerPorts {
-            port
-            protocol
-        }
-    }
-}`
-
-const UpdateServiceMutation = gql`
-mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-    updateService(service:{
-    id: $id,
-    projectId: $projectId,
-    command: $command,
-    name: $name,
-    serviceSpecId: $serviceSpecId,
-    count: $count,
-    oneShot: $oneShot,
-    containerPorts: $containerPorts,
-    environmentId: $environmentId,
-    }) {
-        id
-        containerPorts {
-            port
-            protocol
-        }
-    }
-}`
-
-const DeleteServiceMutation = gql`
-mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-  $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-  deleteService(service:{
-  id: $id,
-  projectId: $projectId,
-  command: $command,
-  name: $name,
-  serviceSpecId: $serviceSpecId,
-  count: $count,
-  oneShot: $oneShot,
-  containerPorts: $containerPorts,
-  environmentId: $environmentId,
-  }) {
-      id
-      containerPorts {
-          port
-          protocol
-      }
-  }
-}`
-
-const ProjectServicesQuery = gql`
-query Project($slug: String, $environmentId: String){
-  project(slug: $slug, environmentId: $environmentId) {
-    id
-    services {
-      id
-      name
-      command
-      serviceSpec {
-        id
-        name
-      }
-      count
-      oneShot
-      containerPorts {
-        port
-        protocol
-      }
-      created
-    }
-  }
-
-}`
-
-const ServiceSpecsQuery = gql`
-query {
-  serviceSpecs {
-    id
-    name
-    cpuRequest
-    cpuLimit
-    memoryRequest
-    memoryLimit
-    terminationGracePeriod
-  }
-}`
-
-export default compose(
-  withApollo,
-  graphql(CreateServiceMutation, { name: 'createService'}),
-  graphql(UpdateServiceMutation, { name: 'updateService'}),
-  graphql(DeleteServiceMutation, { name: 'deleteService'}),
-  graphql(ProjectServicesQuery, {
-    options: (props) => ({
-      variables: {
-        slug: props.store.app.leftNavProjectTitle,
-        environmentId: props.envId,
-      }
-    }),
-    name: 'projectServicesQuery',
-  }),
-  graphql(ServiceSpecsQuery, { name: 'serviceSpecsQuery'}),
-)(ProjectServices);
