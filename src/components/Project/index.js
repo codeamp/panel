@@ -15,117 +15,6 @@ import ProjectSettings from 'components/Project/Settings';
 import ProjectServices from 'components/Project/Services';
 import ProjectExtensions from 'components/Project/Extensions';
 
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
-
-const query = gql`
-  query Project($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
-      id
-      name
-      slug
-      rsaPublicKey
-      gitProtocol
-      gitUrl
-      currentRelease {
-        id
-        state
-        stateMessage
-        releaseExtensions {
-            id
-            extension {
-                extensionSpec {
-                    name
-                }
-            }
-            state
-            stateMessage
-        }
-        created
-        user {
-          email
-        }
-        headFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
-        }
-        tailFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
-        }
-      }
-      features {
-        id
-        message
-        user
-        hash
-        parentHash
-        ref
-        created
-      }
-      releases {
-        id
-        state
-        stateMessage
-        created
-        user {
-          email
-        }
-        releaseExtensions {
-            id
-            extension {
-                extensionSpec {
-                    name
-                }
-            }
-            type
-            state
-            stateMessage
-        }
-        headFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
-        }
-        tailFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
-        }
-      }
-    }
-  }
-`
-
-@graphql(query, {
-  options: (props) => ({
-    variables: {
-      slug: props.match.params.slug,
-      environmentId: props.envId,
-    }
-  })
-})
-
-
-
 @inject("store") @observer
 export default class Project extends React.Component {
   state = {
@@ -173,12 +62,10 @@ export default class Project extends React.Component {
         slug: "/"
       }
     ];
-    this.props.data.refetch()
   }
 
   componentWillUpdate(nextProps){
       this.props.store.app.setUrl(nextProps.match.url)
-      this.props.data.refetch()
   }
 
   shouldComponentUpdate(nextProps){
@@ -225,43 +112,31 @@ export default class Project extends React.Component {
   }
 
   render() {
-    const { loading, project, variables, errors, error } = this.props.data;
     const { store, socket, user, match, envId } = this.props;
-
-    if(loading){
-      return (
-        <div>
-          Loading ...
-        </div>
-      )
-    }
-
-    if(project)
-      this.props.store.app.setProjectTitle(project.slug)
 
     return (
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures project={project} store={store} match={match} envId={envId} />
+            <ProjectFeatures match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
-            <ProjectServices user={user} store={store} match={match} envId={envId} />
+            <ProjectServices match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures project={project} store={store} match={match} envId={envId} />
+            <ProjectFeatures match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases project={project} socket={socket} variables={variables} match={match} envId={envId} />
+            <ProjectReleases match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions project={project} store={this.props.store} match={match} envId={envId} />
+            <ProjectExtensions match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
-            <ProjectSettings project={project} match={match} envId={envId} />
+            <ProjectSettings match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/logs' render={(props) => (
-            <ProjectSettings project={project} match={match} envId={envId} />
+            <ProjectSettings match={match} envId={envId} />
           )}/>
         </Switch>
       </div>

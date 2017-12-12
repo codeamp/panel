@@ -7,9 +7,7 @@ import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
 import { CircularProgress } from 'material-ui/Progress';
-
 import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
-
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -102,6 +100,8 @@ class FeatureView extends React.Component {
   }
 
   render() {
+    const { project } = this.props;
+    this.props.store.app.setProjectTitle(project.slug)
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <div
@@ -125,7 +125,7 @@ class FeatureView extends React.Component {
               <CopyGitHashIcon />
             </IconButton>
             <Button raised color="primary"
-              disabled={this.state.disabledDeployBtn || this.props.project.extensions.length == 0}
+              disabled={this.state.disabledDeployBtn || project.extensions.length == 0}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
               { this.state.text }
@@ -137,8 +137,50 @@ class FeatureView extends React.Component {
   }
 }
 
-
-@inject("store") @observer
+@graphql(gql`
+  query Project($slug: String, $environmentId: String){
+    project(slug: $slug, environmentId: $environmentId) {
+      id
+      name
+      slug
+      rsaPublicKey
+      gitProtocol
+      gitUrl
+      currentRelease {
+        id
+        state
+        stateMessage
+        created
+        user {
+          email
+        }
+      }
+      features {
+        id
+        message
+        user
+        hash
+        parentHash
+        ref
+        created
+      }
+      releases {
+        id
+        state
+      }
+      extensions {
+        id
+      }
+    }
+  }
+`, {
+  options: (props) => ({
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.envId,
+    }
+  })
+})
 
 @graphql(gql`
 mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
@@ -154,6 +196,8 @@ mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: 
   }
 }
 `, { name: "createRelease" })
+
+@inject("store") @observer
 export default class Features extends React.Component {
 
   constructor(props){
@@ -174,7 +218,6 @@ export default class Features extends React.Component {
       this.props.store.app.setSnackbar({msg: "Git hash copied."});
     }
   }
-
 
   renderFeatureList = (project) => {
     var self = this
@@ -205,17 +248,19 @@ export default class Features extends React.Component {
   }
 
   render() {
-    const { project } = this.props;
+    const { loading, project } = this.props.data;
 
-    console.log(project)
+    if(loading){
+      return (<div>Loading...</div>);
+    }
 
     let defaultComponent = (<Typography>Loading...</Typography>)
 
-    if(this.props.project.features.length > 0) {
+    if(project.features.length > 0) {
       defaultComponent = this.renderFeatureList(project);
-    } else if(this.props.project.gitProtocol === "SSH"){
+    } else if(project.gitProtocol === "SSH"){
         defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
-    } else if(this.props.project.gitProtocol === "HTTPS"){
+    } else if(project.gitProtocol === "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
 
@@ -234,7 +279,3 @@ export default class Features extends React.Component {
     );
   }
 }
-
-
-
-

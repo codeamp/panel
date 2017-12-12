@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer, inject } from 'mobx-react';
 import { Route, Switch } from "react-router-dom";
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
@@ -15,15 +16,12 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import InputField from 'components/Form/input-field';
-
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-
 import styles from './style.module.css';
 import DockerBuilder from './DockerBuilder';
 
@@ -39,7 +37,7 @@ const DEFAULT_EXTENSION_SPEC = {
   id: -1,
 }
 
-const query = gql`
+@graphql(gql`
   query ProjectExtensions($slug: String, $environmentId: String){
     project(slug: $slug, environmentId: $environmentId) {
       extensions {
@@ -60,28 +58,25 @@ const query = gql`
         }
         created
       }
-      extensionSpecs {
-        id
-        name
-        component
-        formSpec {
-          key
-          value
-        }
-        type
-        key
-        environmentVariables {
-          id
-          key
-          value
-        }
-        created
-      }
     }
-  }
-`
-
-@graphql(query, {
+    extensionSpecs {
+      id
+      name
+      component
+      formSpec {
+        key
+        value
+      }
+      type
+      key
+      environmentVariables {
+        id
+        key
+        value
+      }
+      created
+    }
+  }`, {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
@@ -131,6 +126,7 @@ const query = gql`
   }`, { name: "deleteExtension" }
 )
 
+@inject("store") @observer
 export default class Extensions extends React.Component {
   constructor(props){
     super(props)
@@ -191,7 +187,7 @@ export default class Extensions extends React.Component {
       // check if added extension includes atleast one workflow if this is type deployment
     if(extensionSpec.type === "deployment"){
         let valid = false
-        this.props.project.extensions.forEach(function(extension){
+        this.props.data.project.extensions.forEach(function(extension){
             if(extension.extensionSpec.type === "workflow"){
                 valid = true
                 return
@@ -253,7 +249,7 @@ export default class Extensions extends React.Component {
 
     this.props.createExtension({
       variables: {
-        'projectId': this.props.project.id,
+        'projectId': this.props.data.project.id,
         'extensionSpecId': this.state.availableExtensionsDrawer.currentExtensionSpec.id,
         'formSpecValues': convertedFormSpecValues,
         'environmentId': this.props.store.app.currentEnvironment.id,
@@ -283,7 +279,7 @@ export default class Extensions extends React.Component {
     } else {
         this.props.createExtension({
           variables: {
-            'projectId': this.props.project.id,
+            'projectId': this.props.data.project.id,
             'extensionSpecId': this.state.availableExtensionsDrawer.currentExtensionSpec.id,
             'formSpecValues': [],
             'environmentId': this.props.store.app.currentEnvironment.id,
@@ -312,7 +308,7 @@ export default class Extensions extends React.Component {
         switch(extensionSpec.component){
         case "DockerBuilderView":
             form = (<DockerBuilder
-                        project={this.props.project}
+                        project={this.props.data.project}
                         extensionSpec={extensionSpec}
                         store={this.props.store}
                         createExtension={this.props.createExtension}
@@ -395,7 +391,7 @@ export default class Extensions extends React.Component {
               case "DockerBuilderView":
                   view = (
                     <DockerBuilder
-                        project={this.props.project}
+                        project={this.props.data.project}
                         extensionSpec={extension.extensionSpec}
                         extension={extension}
                         store={this.props.store}
@@ -457,7 +453,7 @@ export default class Extensions extends React.Component {
 
       let variables = {
           'id': this.state.addedExtensionsDrawer.currentExtension.id,
-          'projectId': this.props.project.id,
+          'projectId': this.props.data.project.id,
           'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
           'formSpecValues': this.state.addedExtensionsDrawer.currentExtension.formSpec,
           'environmentId': this.props.store.app.currentEnvironment.id,
@@ -467,7 +463,7 @@ export default class Extensions extends React.Component {
       this.props.deleteExtension({
           variables: {
               'id': this.state.addedExtensionsDrawer.currentExtension.id,
-              'projectId': this.props.project.id,
+              'projectId': this.props.data.project.id,
               'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
               'formSpecValues': new Array(),
               'environmentId': this.props.store.app.currentEnvironment.id,
@@ -482,30 +478,10 @@ export default class Extensions extends React.Component {
   }
 
   render() {
-    const { project } = this.props;
-    const { loading, extensionSpecs } = this.props.data;
+    const { loading, project, extensionSpecs } = this.props.data;
 
     if(loading){
-      return (
-        <div>
-          Loading ...
-        </div>
-      )
-    }
-
-    console.log(this.props.data)
-
-    let addedExtensionsDeleteButton = "";
-
-    if(this.state.addedExtensionsDrawer.currentExtension.id !== -1){
-      addedExtensionsDeleteButton = (
-        <Button
-          disabled={this.state.loading}
-          color="accent"
-          onClick={()=>this.setState({ dialogOpen: true })}>
-          Delete
-        </Button>
-      );
+      return (<div>Loading...</div>);
     }
 
     return (
@@ -649,7 +625,7 @@ export default class Extensions extends React.Component {
                   </Grid>
                   <Grid item xs={12}>
                     <Button
-                        onClick={() => this.setState({ dialogOpen: !this.state.dialogOpen })}
+                        onClick={() => this.setState({ dialogOpen: true })}
                         color="accent">
                         delete
                     </Button>
@@ -663,7 +639,7 @@ export default class Extensions extends React.Component {
               <DialogTitle>{"Are you sure you want to delete " + this.state.addedExtensionsDrawer.currentExtension.extensionSpec.name + "?"}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  {"This will delete the extension and all its generated environment variables and cloud resources associated with" + this.props.project.name + "."}
+                  {"This will delete the extension and all its generated environment variables and cloud resources associated with" + project.name + "."}
                 </DialogContentText>
               </DialogContent>
               <DialogActions>

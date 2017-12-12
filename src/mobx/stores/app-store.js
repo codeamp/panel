@@ -58,7 +58,7 @@ class AppStore {
   setUser = action(user => {
     let { localStorage } = window
     this.user = user
-    localStorage.setItem('user', user);
+    localStorage.setItem('user', JSON.stringify(user));
   });
 
   setConnectionHeader = action(params => {
