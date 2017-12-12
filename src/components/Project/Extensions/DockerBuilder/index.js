@@ -117,6 +117,8 @@ export default class DockerBuilder extends React.Component {
           }
         }).then(({ data }) => {
           this.setState({ addButtonDisabled: false, buttonText: 'Add' })
+          this.props.data.refetch()
+          this.props.handleClose()
         });
     } else if(this.props.viewType === 'read'){
         this.props.updateExtension({

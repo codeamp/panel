@@ -54,13 +54,13 @@ export default class Create extends React.Component {
       this.setState({ url: this.props.project.gitUrl })
       this.validateUrl(this.props.project.gitUrl)
     } else {
-      this.props.store.app.setNavProjects(this.props.projects) 
+      this.props.store.app.setNavProjects(this.props.projects)
     }
   }
 
   componentWillReact() {
     const { projects } = this.props.data;
-    this.props.store.app.setNavProjects(projects) 
+    this.props.store.app.setNavProjects(projects)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -93,35 +93,35 @@ export default class Create extends React.Component {
     let isSSH = /^git@[a-z,0-9,.]+:.+.git$/.test(url)
 
     if (!isHTTPS && !isSSH) {
-      this.setState({ 
-        urlIsValid: false, 
-        url: url, 
-        showBadUrlMsg: true, 
-        msg: '* URL must be a valid HTTPS or SSH url.', 
+      this.setState({
+        urlIsValid: false,
+        url: url,
+        showBadUrlMsg: true,
+        msg: '* URL must be a valid HTTPS or SSH url.',
         repoType: ""
-      })    
-      return      
+      })
+      return
     }
 
     if(isHTTPS) {
-      this.setState({ 
-        previousGitUrl: this.state.url, 
-        repoType: "public", 
-        urlIsValid: true, 
-        url: url, 
-        msg: "This is a valid HTTPS url.", 
+      this.setState({
+        previousGitUrl: this.state.url,
+        repoType: "public",
+        urlIsValid: true,
+        url: url,
+        msg: "This is a valid HTTPS url.",
         showBadUrlMsg: false,
       })
       return
     }
 
     if (isSSH) {
-      this.setState({ 
-        previousGitUrl: this.state.url, 
-        repoType: "private", 
-        urlIsValid: true, 
-        url: url, 
-        msg: "This is a valid SSH url.", 
+      this.setState({
+        previousGitUrl: this.state.url,
+        repoType: "private",
+        urlIsValid: true,
+        url: url,
+        msg: "This is a valid SSH url.",
         showBadUrlMsg: false,
       })
       return
@@ -144,8 +144,8 @@ export default class Create extends React.Component {
       if(Object.keys(obj).length > 0 && obj.constructor === Object){
         self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
       }
-    });    
-  }  
+    });
+  }
 
   onProjectCreate(event){
     if(this.props.onProjectCreate != null){
@@ -191,7 +191,7 @@ export default class Create extends React.Component {
               <Grid item xs={12}>
                 {urlTextField}
               </Grid>
-              
+
               <Grid item xs={12}>
                 <FormControl
                   className={styles.formControl}

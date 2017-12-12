@@ -96,8 +96,6 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-      const user = JSON.parse(localStorage.getItem('user'));
-      this.props.store.app.setUser(user)
       if(environments.length > 0){
         this.props.store.app.setCurrentEnv({ id: environments[0].id })
       }

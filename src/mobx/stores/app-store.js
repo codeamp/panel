@@ -3,9 +3,10 @@ import map from 'lodash/map';
 
 class AppStore {
   constructor() {
+    const user = JSON.parse(localStorage.getItem('user'));
     extendObservable(this, {
       title: 'CodeAmp Panel',
-      user: null,
+      user: user,
       leftNavItems: [],
       leftNavProjectTitle: '',
       bookmarks: [],
