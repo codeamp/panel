@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
@@ -16,14 +15,11 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import Menu, { MenuItem } from 'material-ui/Menu';
-
 import InputField from 'components/Form/input-field';
 import TextareaField from 'components/Form/textarea-field';
-
 import AddIcon from 'material-ui-icons/Add';
-
 import styles from './style.module.css';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql, compose, withApollo } from 'react-apollo';
@@ -153,7 +149,7 @@ mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!
     }
 }`, {name: "deleteEnvironmentVariable"})
 
-@observer
+@inject("store") @observer
 export default class EnvironmentVariables extends React.Component {
 
   constructor(props){
@@ -225,6 +221,11 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
+  onClickVersion(versionIdx) {
+    this.form.$('selectedVersionIndex').set(versionIdx)
+    this.form.$('value').set(this.props.data.project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value)
+  }
+
   onError(form){
     // todo
     this.closeDrawer()
@@ -245,7 +246,7 @@ export default class EnvironmentVariables extends React.Component {
       this.props.createEnvironmentVariable({
         variables: form.values(),
       }).then(({data}) => {
-        this.props.projectEnvVarsQuery.refetch()
+        this.props.data.refetch()
         this.closeDrawer()
       });
     } else {
@@ -274,7 +275,7 @@ export default class EnvironmentVariables extends React.Component {
   closeDrawer(){
     this.form.reset()
     this.form.showErrors(false)
-    this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: false })
+    this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: false, dialogOpen: false })
   }
 
   handleDeleteEnvVar(){
@@ -282,7 +283,7 @@ export default class EnvironmentVariables extends React.Component {
       variables: this.form.values(),
     }).then(({data}) => {
       this.closeDrawer()
-      this.props.projectEnvVarsQuery.refetch()
+      this.props.data.refetch()
     });
   }
 
@@ -495,7 +496,7 @@ export default class EnvironmentVariables extends React.Component {
                                 <TableRow
                                   hover
                                   tabIndex={-1}
-                                  onClick={() => self.onClick(idx)}
+                                  onClick={() => self.onClickVersion(idx)}
                                 key={envVar.id}>
                                 <TableCell>
                                   {envVar.version}

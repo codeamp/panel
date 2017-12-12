@@ -112,7 +112,7 @@ export default class Project extends React.Component {
   }
 
   render() {
-    const { store, socket, user, match, envId } = this.props;
+    const { store, socket, user, match, envId, history } = this.props;
 
     return (
       <div className={styles.root}>
@@ -124,7 +124,7 @@ export default class Project extends React.Component {
             <ProjectServices match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures match={match} envId={envId} />
+            <ProjectFeatures match={match} history={history} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
             <ProjectReleases match={match} envId={envId} />

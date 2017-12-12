@@ -3,7 +3,7 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import AppBar from 'material-ui/AppBar';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 
 import ServicesComponent from './Services';
@@ -14,7 +14,7 @@ function TabContainer(props) {
   return <div style={{ padding: 20 }}>{props.children}</div>;
 }
 
-@observer
+@inject("store") @observer
 export default class Services extends React.Component {
 
   constructor(props){

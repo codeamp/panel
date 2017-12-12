@@ -89,13 +89,12 @@ class FeatureView extends React.Component {
   }
 
   handleDeploy(){
-    var self = this
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id, environmentId: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
       this.props.data.refetch()
-      self.props.history.push(self.props.match.url + '/releases')
+      this.props.history.push(this.props.match.url + '/releases')
     });
   }
 
@@ -153,6 +152,24 @@ class FeatureView extends React.Component {
         created
         user {
           email
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
         }
       }
       features {

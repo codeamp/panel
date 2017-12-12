@@ -18,6 +18,7 @@ import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import MobxReactForm from 'mobx-react-form';
 
 const inlineStyles = {
     extensionLogs: {
@@ -205,17 +206,32 @@ export default class Releases extends React.Component {
   }
   componentWillMount() {
     this.props.data.refetch()
+    const fields = [
+      'id',
+      'index',
+    ];
+    const rules = {};
+    const labels = {};
+    const initials = {}
+    const types = {};
+    const keys = {};
+    const disabled = {}
+    const extra = {};
+    const hooks = {};
+    const plugins = {};
+
+    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   };
 
   handleToggleDrawer(releaseIdx){
     let deployAction = 'Rollback'
-    if(releaseIdx === 0 && this.props.project.releases[0].state === "complete"){
+    if(releaseIdx === 0 && this.props.data.project.releases[0].state === "complete"){
         deployAction = 'Redeploy'
     }
 
     if(releaseIdx === -1){
-        for(var i = 0; i < this.props.project.releases.length; i++){
-            let release = this.props.project.releases[i]
+        for(var i = 0; i < this.props.data.project.releases.length; i++){
+            let release = this.props.data.project.releases[i]
             deployAction = 'Redeploy'
             if(release.state === "complete"){
                 releaseIdx = i;
@@ -223,6 +239,10 @@ export default class Releases extends React.Component {
             }
         }
     }
+
+    this.form.$('index').set(releaseIdx)
+    this.form.$('id').set(this.props.data.project.releases[releaseIdx].id)
+
     this.setState({ drawerOpen: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
   }
 
@@ -231,7 +251,6 @@ export default class Releases extends React.Component {
     if(loading){
       return (<div>Loading...</div>);
     }
-    console.log(this.props.data)
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
@@ -272,7 +291,7 @@ export default class Releases extends React.Component {
           classes={{
             paper: styles.drawer
           }}
-          open={this.state.open}
+          open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
@@ -286,10 +305,10 @@ export default class Releases extends React.Component {
               <Grid container spacing={24} className={styles.grid}>
                 <Grid item xs={12}>
                     <Typography type="body2">
-                    <b> head </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease.headFeature.hash }
+                    <b> head </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease && project.currentRelease.headFeature.hash }
                     </Typography>
                     <Typography type="body2">
-                    <b> tail </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease.tailFeature.hash }
+                    <b> tail </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease && project.currentRelease.tailFeature.hash }
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
@@ -319,7 +338,7 @@ export default class Releases extends React.Component {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']].releaseExtensions.map(re => {
+                          {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].releaseExtensions.map(re => {
                             let stateIcon = <CircularProgress size={25} />
                             if(re.state === "complete"){
                                 stateIcon = <ExtensionStateCompleteIcon />
@@ -347,7 +366,7 @@ export default class Releases extends React.Component {
                 <Grid item xs={12}>
                     <Button
                       raised
-                      disabled={project.releases.length > 0 && project.currentRelease.state !== "complete"}
+                      disabled={project.releases.length > 0 && project.currentRelease && project.currentRelease.state !== "complete"}
                       color="primary"
                       onClick={()=>this.setState({ drawerOpen: false }) }>
                       { this.state.deployAction }

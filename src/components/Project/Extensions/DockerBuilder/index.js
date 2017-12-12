@@ -46,10 +46,6 @@ export default class DockerBuilder extends React.Component {
     this.setupForm()
   }
 
-  componentWillReceiveProps(nextProps){
-    console.log(nextProps)
-  }
-
   setupForm(){
     const fields = [
       'hostname',
@@ -77,7 +73,6 @@ export default class DockerBuilder extends React.Component {
 
     // reflect viewType in state props
     if(this.props.viewType === "read"){
-        console.log(this.props.extension)
         let obj = {}
         this.props.extension.formSpecValues.map(function(kv) {
             obj[kv['key']] = kv.value
@@ -95,24 +90,24 @@ export default class DockerBuilder extends React.Component {
 
 
   handleDelete(extension){
-    console.log('handleDeleteExtension', extension)
+    // todo
   }
 
   onSuccess(form){
-    console.log('onSuccessAddExtension')
-
     let formSpecValues = form.values()
-
     const convertedFormSpecValues = Object.keys(formSpecValues).map(function(key, index) {
         return {
             'key': key,
             'value': formSpecValues[key]
         }
     })
-
-    console.log(formSpecValues)
-
     if(this.props.viewType === 'edit'){
+        let vars = {
+          'projectId': this.props.project.id,
+          'extensionSpecId': this.state.extensionSpec.id,
+          'formSpecValues': convertedFormSpecValues,
+          'environmentId': this.props.store.app.currentEnvironment.id,
+        }
         this.props.createExtension({
           variables: {
             'projectId': this.props.project.id,
@@ -121,13 +116,9 @@ export default class DockerBuilder extends React.Component {
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
-          console.log(data)
-        }).catch(error => {
           this.setState({ addButtonDisabled: false, buttonText: 'Add' })
-          console.log(error)
-        })
+        });
     } else if(this.props.viewType === 'read'){
-        console.log(this.state.extension)
         this.props.updateExtension({
           variables: {
             'id': this.state.extension.id,
@@ -136,22 +127,16 @@ export default class DockerBuilder extends React.Component {
             'formSpecValues': convertedFormSpecValues,
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
-        }).then(({ data }) => {
-          console.log(data)
-        }).catch(error => {
-          this.setState({ addButtonDisabled: false, buttonText: 'Add' })
-          console.log(error)
-        })
+        });
     }
   }
 
 
   onError(form){
-    console.log('onErrorAddExtension')
+    // todo
   }
 
   onAdd(extension, event){
-    console.log('handleAddExtension', extension)
     let buttonText = "Adding"
     if(this.props.viewType === "read"){
         buttonText = "Updating"
@@ -166,11 +151,7 @@ export default class DockerBuilder extends React.Component {
 
   render(){
     const { viewType } = this.props;
-
-    console.log(this.state)
-
     let view = (<div></div>);
-
     if(viewType === "edit"){
       view = (
         <div>

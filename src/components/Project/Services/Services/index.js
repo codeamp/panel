@@ -21,7 +21,7 @@ import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Ta
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
@@ -146,7 +146,7 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
   }
 }`, { name: "deleteService" })
 
-@observer
+@inject("store") @observer
 export default class Services extends React.Component {
 
   constructor(props){
@@ -322,9 +322,7 @@ export default class Services extends React.Component {
     this.props.deleteService({
       variables: this.form.values(),
     }).then(({data}) => {
-      console.log(data)
-    }).catch(error => {
-      console.log(error)
+      this.props.data.refetch()
     });
   }
 

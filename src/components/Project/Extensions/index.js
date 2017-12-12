@@ -40,6 +40,9 @@ const DEFAULT_EXTENSION_SPEC = {
 @graphql(gql`
   query ProjectExtensions($slug: String, $environmentId: String){
     project(slug: $slug, environmentId: $environmentId) {
+      id
+      name
+      slug
       extensions {
         id
         extensionSpec {
@@ -244,9 +247,6 @@ export default class Extensions extends React.Component {
             }
         })
     }
-
-    console.log(convertedFormSpecValues)
-
     this.props.createExtension({
       variables: {
         'projectId': this.props.data.project.id,
@@ -255,19 +255,15 @@ export default class Extensions extends React.Component {
         'environmentId': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
-      console.log(data)
-    }).catch(error => {
-      console.log(error)
+      this.props.data.refetch()
     })
   }
 
   onErrorAddExtension(form){
-    console.log('onErrorAddExtension')
-    console.log(form)
+    // todo
   }
 
   handleAddExtension(extension, event){
-    console.log('handleAddExtension', extension)
     let availableExtensionsDrawer = this.state.availableExtensionsDrawer
     availableExtensionsDrawer.btnDisabled = true
     availableExtensionsDrawer.btnText = 'adding'
@@ -285,10 +281,8 @@ export default class Extensions extends React.Component {
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
-          console.log(data)
-        }).catch(error => {
-          console.log(error)
-        })
+          this.props.data.refetch()
+        });
     }
   }
 
@@ -301,7 +295,6 @@ export default class Extensions extends React.Component {
   }
 
   renderFormSpecFromExtensionSpec(extensionSpec){
-    console.log('renderFormSpecFromExtensionSpec', extensionSpec)
 	  let form = (<div></div>)
 
     if(extensionSpec.id !== -1){
@@ -316,7 +309,6 @@ export default class Extensions extends React.Component {
                         viewType="edit" />)
             break;
         default:
-            console.log(extensionSpec)
             if(extensionSpec.formSpec.length > 0 ){
                 if(extensionSpec.id !== -1 ){
 
@@ -340,7 +332,6 @@ export default class Extensions extends React.Component {
 
 
                   this.availableExtensionsForm = new MobxReactForm({ fields, rules, labels, plugins })
-                  console.log(this.availableExtensionsForm.values())
                   var self = this;
                   form = (
                     <div>
@@ -364,15 +355,11 @@ export default class Extensions extends React.Component {
     } else {
         this.availableExtensionsForm = null
     }
-
-	console.log(form)
 	return form
   }
 
   renderFormSpecValues(extension){
-		console.log(extension)
 		let formSpecValues = JSON.parse(extension.formSpecValues)
-		console.log(formSpecValues)
 		formSpecValues = JSON.stringify(formSpecValues, null, 2)
 		return (
 			<Typography type="body2">
@@ -382,99 +369,87 @@ export default class Extensions extends React.Component {
   }
 
   renderAddedExtensionView(extension){
-      console.log(extension)
-      let view = (<div></div>);
+    let view = (<div></div>);
 
-      if(extension.id !== -1){
-          console.log(extension)
-          switch(extension.extensionSpec.component){
-              case "DockerBuilderView":
-                  view = (
-                    <DockerBuilder
-                        project={this.props.data.project}
-                        extensionSpec={extension.extensionSpec}
-                        extension={extension}
-                        store={this.props.store}
-                        updateExtension={this.props.updateExtension}
-                        handleClose={this.handleCloseAddedExtensionsDrawer.bind(this)}
-                        viewType="read" />)
-                  break;
-              default:
+    if(extension.id !== -1){
+        switch(extension.extensionSpec.component){
+            case "DockerBuilderView":
                 view = (
-                <div>
-                    <Grid item xs={12}>
-                        <Paper>
-                            <Toolbar>
-                                <div>
-                                    <Typography type="title">
-                                        Artifacts
-                                    </Typography>
-                                </div>
-                            </Toolbar>
-                            <Table bodyStyle={{ overflow: 'visible' }}>
-                                <TableHead>
-                                    <TableRow>
-                                            <TableCell>
-                                                Key
-                                            </TableCell>
-                                            <TableCell>
-                                                Value
-                                            </TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                {extension.artifacts.map(artifact => {
-                                    return (
-                                        <TableRow>
-                                            <TableCell>
-                                              {artifact.key}
-                                            </TableCell>
-                                            <TableCell>
-                                              {artifact.value}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                                </TableBody>
-                            </Table>
-                        </Paper>
-                    </Grid>
-                </div>
-                )
-        }
+                  <DockerBuilder
+                      project={this.props.data.project}
+                      extensionSpec={extension.extensionSpec}
+                      extension={extension}
+                      store={this.props.store}
+                      updateExtension={this.props.updateExtension}
+                      handleClose={this.handleCloseAddedExtensionsDrawer.bind(this)}
+                      viewType="read" />)
+                break;
+            default:
+              view = (
+              <div>
+                  <Grid item xs={12}>
+                      <Paper>
+                          <Toolbar>
+                              <div>
+                                  <Typography type="title">
+                                      Artifacts
+                                  </Typography>
+                              </div>
+                          </Toolbar>
+                          <Table bodyStyle={{ overflow: 'visible' }}>
+                              <TableHead>
+                                  <TableRow>
+                                          <TableCell>
+                                              Key
+                                          </TableCell>
+                                          <TableCell>
+                                              Value
+                                          </TableCell>
+                                  </TableRow>
+                              </TableHead>
+                              <TableBody>
+                              {extension.artifacts.map(artifact => {
+                                  return (
+                                      <TableRow>
+                                          <TableCell>
+                                            {artifact.key}
+                                          </TableCell>
+                                          <TableCell>
+                                            {artifact.value}
+                                          </TableCell>
+                                      </TableRow>
+                                  )
+                              })}
+                              </TableBody>
+                          </Table>
+                      </Paper>
+                  </Grid>
+              </div>
+              )
       }
-      return view
+    }
+    return view
   }
 
   handleDeleteExtension(){
-      console.log('handleDeleteExtension')
-
-      console.log(this.state.addedExtensionsDrawer.currentExtension)
-
-      let variables = {
-          'id': this.state.addedExtensionsDrawer.currentExtension.id,
-          'projectId': this.props.data.project.id,
-          'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
-          'formSpecValues': this.state.addedExtensionsDrawer.currentExtension.formSpec,
-          'environmentId': this.props.store.app.currentEnvironment.id,
-      }
-      console.log(variables)
-
-      this.props.deleteExtension({
-          variables: {
-              'id': this.state.addedExtensionsDrawer.currentExtension.id,
-              'projectId': this.props.data.project.id,
-              'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
-              'formSpecValues': new Array(),
-              'environmentId': this.props.store.app.currentEnvironment.id,
-          }
-      }).then(({ data }) => {
-          console.log(data)
-      }).catch(error => {
-          console.log(error)
-      })
-
-
+    let variables = {
+        'id': this.state.addedExtensionsDrawer.currentExtension.id,
+        'projectId': this.props.data.project.id,
+        'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
+        'formSpecValues': this.state.addedExtensionsDrawer.currentExtension.formSpec,
+        'environmentId': this.props.store.app.currentEnvironment.id,
+    }
+    this.props.deleteExtension({
+        variables: {
+            'id': this.state.addedExtensionsDrawer.currentExtension.id,
+            'projectId': this.props.data.project.id,
+            'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
+            'formSpecValues': new Array(),
+            'environmentId': this.props.store.app.currentEnvironment.id,
+        }
+    }).then(({ data }) => {
+        this.props.data.refetch()
+    })
   }
 
   render() {
