@@ -256,14 +256,14 @@ export default class Services extends React.Component {
       this.props.updateService({
         variables: form.values(),
       }).then(({data}) => {
-        this.props.projectServicesQuery.refetch()
+        this.props.data.refetch()
         this.closeDrawer()
       })
     } else {
       this.props.createService({
         variables: form.values(),
       }).then(({data}) => {
-        this.props.projectServicesQuery.refetch()
+        this.props.data.refetch()
         this.closeDrawer()
       });
     }

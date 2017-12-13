@@ -168,11 +168,11 @@ export default class EnvironmentVariables extends React.Component {
       'key',
       'value',
       'created',
-      'version',
       'type',
       'scope',
       'environmentId',
       'index',
+      'selectedVersionIndex',
     ];
     const rules = {
     'key': 'string|required',
@@ -181,7 +181,6 @@ export default class EnvironmentVariables extends React.Component {
     const labels = {
       'key': 'Key',
       'value': 'Value',
-      'version': 'Version',
     };
     const initials = {}
     const types = {};
@@ -223,7 +222,6 @@ export default class EnvironmentVariables extends React.Component {
 
   onClickVersion(versionIdx) {
     this.form.$('selectedVersionIndex').set(versionIdx)
-    this.form.$('value').set(this.props.data.project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value)
   }
 
   onError(form){
@@ -233,6 +231,7 @@ export default class EnvironmentVariables extends React.Component {
 
   replaceEnvVarValue(){
     this.form.$('value').set(this.props.data.project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value);
+    this.onSuccess(this.form)
   }
 
   onSuccess(form){
@@ -254,8 +253,10 @@ export default class EnvironmentVariables extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.form.$('key').set('disabled', true)
         this.form.$('id').set(data.updateEnvironmentVariable.id)
         this.form.$('value').set(data.updateEnvironmentVariable.value)
+        this.form.$('selectedVersionIndex').set(null)
         this.setState({ saving: false })
       });
     }
@@ -285,6 +286,14 @@ export default class EnvironmentVariables extends React.Component {
       this.closeDrawer()
       this.props.data.refetch()
     });
+  }
+
+  showPreviousVersionValue(){
+    const project = this.props.data.project;
+    return project.environmentVariables.length > 0 &&
+     project.environmentVariables[this.form.values()['index']] &&
+     project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
+     project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value !== project.environmentVariables[this.form.values()['index']].value;
   }
 
   render() {
@@ -398,7 +407,7 @@ export default class EnvironmentVariables extends React.Component {
               <form>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
-                    {this.form.$('type').value === 'normal' &&
+                    {this.form.$('type').value === 'normal' || this.form.$('type').value === 'build-arg' &&
                       <Grid item xs={12}>
                         <Grid item xs={6}>
                           <InputField field={this.form.$('key')} fullWidth={true} />
@@ -406,10 +415,7 @@ export default class EnvironmentVariables extends React.Component {
                         <Grid item xs={6}>
                           <InputField field={this.form.$('value')} fullWidth={true} />
                         </Grid>
-                        {project.environmentVariables.length > 0 && project.environmentVariables[this.form.values()['index']] &&
-                        this.form.values()['selectedVersionIndex'] &&
-                        project.environmentVariables[this.form.values()['selectedVersionIndex']] &&
-                        project.environmentVariables[this.form.values()['selectedVersionIndex']].versions &&
+                        {this.showPreviousVersionValue() &&
                           <Grid item xs={6}>
                             <Input value={project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value} fullWidth={true} disabled />
                           </Grid>
@@ -426,7 +432,7 @@ export default class EnvironmentVariables extends React.Component {
                         <Grid item xs={5}>
                           <TextareaField field={this.form.$('value')} />
                         </Grid>
-                        {project.environmentVariables.length > 0 && project.environmentVariables[this.form.values()['index']] && project.environmentVariables[this.form.values()['selectedVersionIndex']].versions &&
+                        {this.showPreviousVersionValue() &&
                           <Grid item xs={6}>
                             <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
                               {project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value}
@@ -436,12 +442,12 @@ export default class EnvironmentVariables extends React.Component {
                       </Grid>
                     }
 
-                    {project.environmentVariables.length > 0 && project.environmentVariables[this.form.values()['index']] && project.environmentVariables[this.form.values()['index']].versions && project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] && project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].id !== -1 &&
+                    {this.showPreviousVersionValue() &&
                       <Grid item xs={12}>
                         <Button color="default"
-                          disabled={project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value === this.form.$('value').value}
+                          disabled={project.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value === project.environmentVariables[this.form.values()['index']].value}
                           raised onClick={this.replaceEnvVarValue.bind(this)}>
-                          Use It
+                          Revert
                         </Button>
                       </Grid>
                     }
@@ -476,7 +482,7 @@ export default class EnvironmentVariables extends React.Component {
                               </Typography>
                             </div>
                           </Toolbar>
-                          <Table bodyStyle={{ overflow: 'visible' }}>
+                          <Table>
                             <TableHead>
                               <TableRow>
                                 <TableCell>
@@ -497,7 +503,7 @@ export default class EnvironmentVariables extends React.Component {
                                   hover
                                   tabIndex={-1}
                                   onClick={() => self.onClickVersion(idx)}
-                                key={envVar.id}>
+                                  key={envVar.id}>
                                 <TableCell>
                                   {envVar.version}
                                 </TableCell>

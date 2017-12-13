@@ -36,7 +36,6 @@ export default class DockerBuilder extends React.Component {
     this.state = {
       dialogOpen: false,
       addButtonDisabled: false,
-      buttonText: 'Add',
       extension: DEFAULT_EXTENSION,
       extensionSpec: DEFAULT_EXTENSION_SPEC,
     }
@@ -48,22 +47,27 @@ export default class DockerBuilder extends React.Component {
 
   setupForm(){
     const fields = [
-      'hostname',
-      'credentials',
+      'USER',
+      'PASSWORD',
+      'EMAIL',
     ];
 
     const rules = {
-      'hostname': 'required|string',
-      'credentials': 'required|string',
+      'USER': 'required|string',
+      'PASSWORD': 'required|string',
+      'EMAIL': 'required|string',
     };
 
     const labels = {
-      'hostname': 'Registry URL',
-      'credentials': 'Credentials',
+      'USER': 'User',
+      'PASSWORD': 'Password',
+      'EMAIL': 'Email',
     };
 
     const initials = {};
-    const types = {};
+    const types = {
+      'PASSWORD': 'password',
+    };
     const extra = {}
     const hooks = {};
     const plugins = { dvr: validatorjs };
@@ -79,12 +83,13 @@ export default class DockerBuilder extends React.Component {
         })
 
 
-        this.form.$('hostname').set(obj['hostname'])
-        this.form.$('credentials').set(obj['credentials'])
+        this.form.$('USER').set(obj['USER'])
+        this.form.$('PASSWORD').set(obj['PASSWORD'])
+        this.form.$('EMAIL').set(obj['EMAIL'])
 
-        this.setState({ buttonText: "Update", extension: this.props.extension, extensionSpec: this.props.extensionSpec })
+        this.setState({ extension: this.props.extension, extensionSpec: this.props.extensionSpec })
     } else if(this.props.viewType === "edit"){
-        this.setState({ buttonText: "Add", extensionSpec: this.props.extensionSpec })
+        this.setState({ extensionSpec: this.props.extensionSpec })
     }
   }
 
@@ -116,7 +121,7 @@ export default class DockerBuilder extends React.Component {
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
-          this.setState({ addButtonDisabled: false, buttonText: 'Add' })
+          this.setState({ addButtonDisabled: false })
           this.props.data.refetch()
           this.props.handleClose()
         });
@@ -139,12 +144,7 @@ export default class DockerBuilder extends React.Component {
   }
 
   onAdd(extension, event){
-    let buttonText = "Adding"
-    if(this.props.viewType === "read"){
-        buttonText = "Updating"
-    }
-    this.setState({ addButtonDisabled: true, buttonText: buttonText})
-
+    this.setState({ addButtonDisabled: true })
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
     }
@@ -160,10 +160,13 @@ export default class DockerBuilder extends React.Component {
           <form onSubmit={(e) => e.preventDefault()}>
             <Grid container spacing={24}>
               <Grid item xs={12}>
-                <InputField field={this.form.$('hostname')} />
+                <InputField field={this.form.$('USER')} />
               </Grid>
               <Grid item xs={12}>
-                <InputField field={this.form.$('credentials')} />
+                <InputField field={this.form.$('PASSWORD')} />
+              </Grid>
+              <Grid item xs={12}>
+                <InputField field={this.form.$('EMAIL')} />
               </Grid>
             </Grid>
             <Grid item xs={12}>
@@ -171,7 +174,7 @@ export default class DockerBuilder extends React.Component {
                 onClick={this.onAdd.bind(this)}
                 disabled={this.state.addButtonDisabled}
               >
-                {this.state.buttonText}
+                Save
               </Button>
               <Button color="primary"
                 className={styles.paddingLeft}
@@ -182,24 +185,22 @@ export default class DockerBuilder extends React.Component {
             </Grid>
           </form>
 
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Ae you sure you want to delete " + this.state.extensionSpec.name + "?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              This will remove the service spec and all instances in which it is being used in any existing services.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.handleDelete.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-
+          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+            <DialogTitle>{"Ae you sure you want to delete " + this.state.extensionSpec.name + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                This will remove the service spec and all instances in which it is being used in any existing services.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleDelete.bind(this)} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
         </div>
       )
     }
@@ -210,10 +211,13 @@ export default class DockerBuilder extends React.Component {
           <form onSubmit={(e) => e.preventDefault()}>
             <Grid container spacing={24}>
               <Grid item xs={12}>
-                <InputField field={this.form.$('hostname')} />
+                <InputField field={this.form.$('USER')} />
               </Grid>
               <Grid item xs={12}>
-                <InputField field={this.form.$('credentials')} />
+                <InputField field={this.form.$('PASSWORD')} />
+              </Grid>
+              <Grid item xs={12}>
+                <InputField field={this.form.$('EMAIL')} />
               </Grid>
             </Grid>
             <Grid item xs={12}>
@@ -225,7 +229,7 @@ export default class DockerBuilder extends React.Component {
                             </Typography>
                         </div>
                     </Toolbar>
-                    <Table bodyStyle={{ overflow: 'visible' }}>
+                    <Table>
                         <TableHead>
                             <TableRow>
                                     <TableCell>
@@ -258,7 +262,7 @@ export default class DockerBuilder extends React.Component {
                 onClick={this.onAdd.bind(this)}
                 disabled={this.state.addButtonDisabled}
               >
-                {this.state.buttonText}
+                Save
               </Button>
               <Button color="primary"
                 className={styles.paddingLeft}

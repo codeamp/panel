@@ -229,13 +229,13 @@ export default class Extensions extends React.Component {
   onSuccessAddExtension(form){
     var self = this
     let convertedFormSpecValues = []
-    if(this.availableExtensionsForm !== null){
-        convertedFormSpecValues = Object.keys(this.availableExtensionsForm.values()).map(function(key, index) {
-            return {
-                'key': key,
-                'value': self.availableExtensionsForm.values()[key]
-            }
-        })
+    if(this.form !== null){
+      convertedFormSpecValues = Object.keys(this.form.values()).map(function(key, index) {
+        return {
+            'key': key,
+            'value': self.form.values()[key]
+        }
+      })
     }
     this.props.createExtension({
       variables: {
@@ -245,6 +245,7 @@ export default class Extensions extends React.Component {
         'environmentId': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
+      console.log('created', data)
       this.props.data.refetch()
       this.handleCloseAvailableExtensionsDrawer()
     })
@@ -260,8 +261,9 @@ export default class Extensions extends React.Component {
 
     this.setState({ availableExtensionsDrawer: availableExtensionsDrawer })
 
-    if(this.availableExtensionsForm){
-      this.availableExtensionsForm.onSubmit(event, { onSuccess: this.onSuccessAddExtension.bind(this), onError: this.onErrorAddExtension.bind(this) })
+    console.log(this.form)
+    if(this.form){
+      this.form.onSubmit(event, { onSuccess: this.onSuccessAddExtension.bind(this), onError: this.onErrorAddExtension.bind(this) })
     } else {
         this.props.createExtension({
           variables: {
@@ -272,6 +274,7 @@ export default class Extensions extends React.Component {
           }
         }).then(({ data }) => {
           this.props.data.refetch()
+          this.handleCloseAvailableExtensionsDrawer()
         });
     }
   }
@@ -322,7 +325,7 @@ export default class Extensions extends React.Component {
                   })
 
 
-                  this.availableExtensionsForm = new MobxReactForm({ fields, rules, labels, plugins })
+                  this.form = new MobxReactForm({ fields, rules, labels, plugins })
                   var self = this;
                   form = (
                     <div>
@@ -330,7 +333,7 @@ export default class Extensions extends React.Component {
                         <Typography>
                           {fields.map(function(field){
                                return (
-                                 <InputField field={self.availableExtensionsForm.$(field)} />
+                                 <InputField field={self.form.$(field)} />
                                )
                             })}
                         </Typography>
@@ -340,11 +343,11 @@ export default class Extensions extends React.Component {
 
                 }
             } else {
-                this.availableExtensionsForm = null
+                this.form = null
             }
         }
     } else {
-        this.availableExtensionsForm = null
+        this.form = null
     }
 	return form
   }
@@ -387,7 +390,7 @@ export default class Extensions extends React.Component {
                                   </Typography>
                               </div>
                           </Toolbar>
-                          <Table bodyStyle={{ overflow: 'visible' }}>
+                          <Table>
                               <TableHead>
                                   <TableRow>
                                           <TableCell>
@@ -401,7 +404,9 @@ export default class Extensions extends React.Component {
                               <TableBody>
                               {extension.artifacts.map(artifact => {
                                   return (
-                                      <TableRow>
+                                      <TableRow
+                                        key={artifact.key}
+                                      >
                                           <TableCell>
                                             {artifact.key}
                                           </TableCell>

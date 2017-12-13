@@ -2,7 +2,6 @@ import React from 'react';
 import { Route, Switch } from "react-router-dom";
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
-import LogsIcon from 'material-ui-icons/ClearAll';
 import SettingsIcon from 'material-ui-icons/Settings';
 import FeaturesIcon from 'material-ui-icons/Input';
 import ReleasesIcon from 'material-ui-icons/Timeline';
@@ -55,12 +54,6 @@ export default class Project extends React.Component {
         name: "Settings",
         slug: this.props.match.url + "/settings",
       },
-      {
-        key: "60",
-        icon: <LogsIcon />,
-        name: "Logs",
-        slug: "/"
-      }
     ];
   }
 
@@ -101,12 +94,6 @@ export default class Project extends React.Component {
           name: "Settings",
           slug: nextProps.match.url + "/settings",
       },
-      {
-          key: "60",
-          icon: <LogsIcon />,
-          name: "Logs",
-          slug: "/"
-      }
     ];
     return true
   }
@@ -133,9 +120,6 @@ export default class Project extends React.Component {
             <ProjectExtensions match={match} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
-            <ProjectSettings match={match} envId={envId} />
-          )}/>
-          <Route exact path='/projects/:slug/logs' render={(props) => (
             <ProjectSettings match={match} envId={envId} />
           )}/>
         </Switch>

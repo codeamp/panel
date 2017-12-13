@@ -238,7 +238,6 @@ export default class Features extends React.Component {
 
   renderFeatureList = (project) => {
     var self = this
-
     return (
       <div>
         {project.features.map(function(feature, idx) {
