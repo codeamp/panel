@@ -105,7 +105,7 @@ export default class Project extends React.Component {
       <div className={styles.root}>
         <Switch>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures match={match} envId={envId} />
+            <ProjectFeatures match={match} history={history} envId={envId} />
           )}/>
           <Route exact path='/projects/:slug/services' render={(props) => (
             <ProjectServices match={match} envId={envId} />

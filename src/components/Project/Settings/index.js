@@ -30,12 +30,8 @@ export default class Settings extends React.Component {
   state = {
     activeStep: 0,
   };
-
-  componentDidMount(){
-  }
-
+  
   updateProject(newProjectState){
-    var self = this
     this.props.mutate({
       variables: {
         id: this.props.project.id,
@@ -43,10 +39,7 @@ export default class Settings extends React.Component {
         gitProtocol: newProjectState.repoType
       }
     }).then(({data}) => {
-      self.props.data.refetch();
-    }).catch(error => {
-      let obj = JSON.parse(JSON.stringify(error))
-      console.log(obj)
+      this.props.data.refetch();
     });
   }
 

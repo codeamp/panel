@@ -59,7 +59,7 @@ export default class App extends React.Component {
 
   componentDidMount() {
     socket.on('reconnect_failed', () => {
-        console.log('reconnect_failed')
+        // todo
     });
 
     socket.on('reconnect', () => {

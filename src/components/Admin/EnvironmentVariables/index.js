@@ -199,7 +199,7 @@ export default class EnvironmentVariables extends React.Component {
     }
 
     const extra = {
-      'type': [{key: 'build', value: 'Build'}, {key: 'normal', value: 'Normal' },{key: 'file', value: 'File'}],
+      'type': [{key: 'build', value: 'Build'}, {key: 'env', value: 'Normal' },{key: 'file', value: 'File'}],
       'scope': [{key: 'extension', value: 'Extension'}, {key: 'global', value: 'Global'}],
       'environmentId': [],
     };
@@ -418,9 +418,9 @@ export default class EnvironmentVariables extends React.Component {
                 <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build-arg")}>Build Arg</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
                       <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}>File</MenuItem>
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("normal")}>Normal</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>
@@ -455,7 +455,7 @@ export default class EnvironmentVariables extends React.Component {
                     <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' />
                   </Grid>
 
-                  {(this.form.$('type').value === 'normal' || this.form.$('type').value === 'build-arg') &&
+                  {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                     <Grid item xs={12}>
                       <Grid item xs={6}>
                         <InputField field={this.form.$('key')} fullWidth={true} />

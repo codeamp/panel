@@ -189,7 +189,7 @@ export default class EnvironmentVariables extends React.Component {
       'key': false
     }
     const extra = {
-      'type': [{key: 'Build', value: 'Build'}, {key: 'Normal', value: 'Normal' },{key: 'File', value: 'File'}]
+      'type': [{key: 'build', value: 'Build'}, {key: 'env', value: 'Normal' },{key: 'file', value: 'File'}]
     };
     const hooks = {};
     const plugins = { dvr: validatorjs };
@@ -305,9 +305,7 @@ export default class EnvironmentVariables extends React.Component {
         </div>
       )
     }
-
     var self = this;
-
     return (
       <div>
         <Paper className={styles.tablePaper}>
@@ -383,8 +381,8 @@ export default class EnvironmentVariables extends React.Component {
             open={this.state.addEnvVarMenuOpen}
             onRequestClose={this.handleRequestClose}
         >
-          <MenuItem onClick={() => this.handleRequestClose("normal")}>Normal</MenuItem>
-          <MenuItem onClick={() => this.handleRequestClose("build-arg")}>Build Arg</MenuItem>
+          <MenuItem onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
+          <MenuItem onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
           <MenuItem onClick={() => this.handleRequestClose("file")}>File</MenuItem>
         </Menu>
 
@@ -407,7 +405,7 @@ export default class EnvironmentVariables extends React.Component {
               <form>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
-                    {this.form.$('type').value === 'normal' || this.form.$('type').value === 'build-arg' &&
+                    {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                       <Grid item xs={12}>
                         <Grid item xs={6}>
                           <InputField field={this.form.$('key')} fullWidth={true} />
@@ -460,12 +458,16 @@ export default class EnvironmentVariables extends React.Component {
                           onClick={e => this.onSubmit(e)}>
                           Save
                       </Button>
-                      <Button
-                        disabled={this.state.saving}
-                        color="accent"
-                        onClick={()=>this.setState({ dialogOpen: true })}>
-                        Delete
-                      </Button>
+
+                      {this.form.values()['id'] !== "" &&
+                        <Button
+                          disabled={this.state.saving}
+                          color="accent"
+                          onClick={()=>this.setState({ dialogOpen: true })}>
+                          Delete
+                        </Button>
+                      }
+
                       <Button
                         color="primary"
                         onClick={this.closeDrawer.bind(this)}>

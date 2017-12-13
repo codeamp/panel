@@ -245,7 +245,6 @@ export default class Extensions extends React.Component {
         'environmentId': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
-      console.log('created', data)
       this.props.data.refetch()
       this.handleCloseAvailableExtensionsDrawer()
     })
@@ -258,10 +257,8 @@ export default class Extensions extends React.Component {
   handleAddExtension(extension, event){
     let availableExtensionsDrawer = this.state.availableExtensionsDrawer
     availableExtensionsDrawer.btnDisabled = true
-
     this.setState({ availableExtensionsDrawer: availableExtensionsDrawer })
-
-    console.log(this.form)
+    
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccessAddExtension.bind(this), onError: this.onErrorAddExtension.bind(this) })
     } else {
