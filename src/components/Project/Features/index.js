@@ -94,7 +94,7 @@ class FeatureView extends React.Component {
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id, environmentId: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
       this.props.data.refetch()
-      this.props.history.push(this.props.match.url + '/releases')
+      this.props.history.push(this.props.match.url.replace('features', 'releases'))
     });
   }
 
