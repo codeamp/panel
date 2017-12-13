@@ -20,15 +20,6 @@ import MobxReactForm from 'mobx-react-form';
 
 import styles from './style.module.css';
 
-const DEFAULT_EXTENSION = {
-    id: -1,
-    artifacts: [],
-}
-
-const DEFAULT_EXTENSION_SPEC = {
-    id: -1,
-}
-
 export default class DockerBuilder extends React.Component {
 
   constructor(props){
@@ -36,8 +27,8 @@ export default class DockerBuilder extends React.Component {
     this.state = {
       dialogOpen: false,
       addButtonDisabled: false,
-      extension: DEFAULT_EXTENSION,
-      extensionSpec: DEFAULT_EXTENSION_SPEC,
+      extension: null,
+      extensionSpec: null,
     }
   }
 
@@ -93,11 +84,6 @@ export default class DockerBuilder extends React.Component {
     }
   }
 
-
-  handleDelete(extension){
-    // todo
-  }
-
   onSuccess(form){
     let formSpecValues = form.values()
     const convertedFormSpecValues = Object.keys(formSpecValues).map(function(key, index) {
@@ -137,7 +123,6 @@ export default class DockerBuilder extends React.Component {
         });
     }
   }
-
 
   onError(form){
     // todo
@@ -184,23 +169,6 @@ export default class DockerBuilder extends React.Component {
               </Button>
             </Grid>
           </form>
-
-          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + this.state.extensionSpec.name + "?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                This will remove the service spec and all instances in which it is being used in any existing services.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={this.handleDelete.bind(this)} color="accent">
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
         </div>
       )
     }
@@ -230,30 +198,28 @@ export default class DockerBuilder extends React.Component {
                         </div>
                     </Toolbar>
                     <Table>
-                        <TableHead>
-                            <TableRow>
-                                    <TableCell>
-                                        Key
-                                    </TableCell>
-                                    <TableCell>
-                                        Value
-                                    </TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {this.state.extension.artifacts.map(artifact=> {
-                            return (
-                                <TableRow>
-                                    <TableCell>
-                                      {artifact.key}
-                                    </TableCell>
-                                    <TableCell>
-                                      {artifact.value}
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
-                        </TableBody>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>
+                              Key
+                          </TableCell>
+                          <TableCell>
+                              Value
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                      {this.state.extension.artifacts.map(artifact=> (
+                        <TableRow>
+                          <TableCell>
+                            {artifact.key}
+                          </TableCell>
+                          <TableCell>
+                            {artifact.value}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      </TableBody>
                     </Table>
                 </Paper>
             </Grid>
