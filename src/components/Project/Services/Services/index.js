@@ -71,11 +71,12 @@ query Project($slug: String, $environmentId: String) {
   }
 }`
 
+@inject("store") @observer
 @graphql(ProjectServicesQuery, {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.envId,
+      environmentId: props.store.app.currentEnvironment.id,
     }
   })
 })
@@ -145,8 +146,6 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
       }
   }
 }`, { name: "deleteService" })
-
-@inject("store") @observer
 export default class Services extends React.Component {
 
   constructor(props){

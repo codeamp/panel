@@ -33,6 +33,7 @@ const inlineStyles = {
   }
 }
 
+@inject("store") @observer
 @graphql(gql`
 query Project($slug: String, $environmentId: String){
   project(slug: $slug, environmentId: $environmentId) {
@@ -67,7 +68,7 @@ query Project($slug: String, $environmentId: String){
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.envId,
+      environmentId: props.store.app.currentEnvironment.id,
     }
   })
 })
@@ -149,7 +150,6 @@ mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!
     }
 }`, {name: "deleteEnvironmentVariable"})
 
-@inject("store") @observer
 export default class EnvironmentVariables extends React.Component {
 
   constructor(props){

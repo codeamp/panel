@@ -69,6 +69,7 @@ class ReleaseView extends React.Component {
   }
 }
 
+@inject("store") @observer
 @graphql(gql`
   query Project($slug: String, $environmentId: String){
     project(slug: $slug, environmentId: $environmentId) {
@@ -159,7 +160,7 @@ class ReleaseView extends React.Component {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.envId,
+      environmentId: props.store.app.currentEnvironment.id,
     }
   })
 })
@@ -178,8 +179,6 @@ mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: 
   }
 }
 `, { name: "createRelease" })
-
-@inject("store") @observer
 export default class Releases extends React.Component {
   state = {
     activeStep: 0,

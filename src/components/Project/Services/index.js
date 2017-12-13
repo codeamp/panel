@@ -30,7 +30,7 @@ export default class Services extends React.Component {
 
   render() {
     const { value } = this.state;
-    const { project, store, user, match, envId } = this.props;
+    const { project, store, match } = this.props;
 
     return (
       <div className={styles.root}>
@@ -43,10 +43,10 @@ export default class Services extends React.Component {
 
         <Grid container spacing={24}>
           <Grid item sm={12}>
-            {value === 0 && <TabContainer> <ServicesComponent store={store} match={match} envId={envId} /> </TabContainer>}
+            {value === 0 && <TabContainer> <ServicesComponent match={match} /> </TabContainer>}
           </Grid>
           <Grid item sm={12}>
-            {value === 1 && <TabContainer><EnvironmentVariables store={store} user={user} match={match} envId={envId} /></TabContainer>}
+            {value === 1 && <TabContainer><EnvironmentVariables match={match} /></TabContainer>}
           </Grid>
         </Grid>
       </div>

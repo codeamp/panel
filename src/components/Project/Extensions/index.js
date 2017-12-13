@@ -25,6 +25,9 @@ import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import DockerBuilder from './DockerBuilder';
 
+
+@inject("store") @observer
+
 @graphql(gql`
   query ProjectExtensions($slug: String, $environmentId: String){
     project(slug: $slug, environmentId: $environmentId) {
@@ -71,7 +74,7 @@ import DockerBuilder from './DockerBuilder';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.envId,
+      environmentId: props.store.app.currentEnvironment.id,
     }
   })
 })
@@ -116,8 +119,6 @@ import DockerBuilder from './DockerBuilder';
       }
   }`, { name: "deleteExtension" }
 )
-
-@inject("store") @observer
 export default class Extensions extends React.Component {
   constructor(props){
     super(props)
@@ -258,7 +259,7 @@ export default class Extensions extends React.Component {
     let availableExtensionsDrawer = this.state.availableExtensionsDrawer
     availableExtensionsDrawer.btnDisabled = true
     this.setState({ availableExtensionsDrawer: availableExtensionsDrawer })
-    
+
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccessAddExtension.bind(this), onError: this.onErrorAddExtension.bind(this) })
     } else {
