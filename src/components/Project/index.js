@@ -111,7 +111,7 @@ export default class Project extends React.Component {
             <ProjectServices {...props} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures history={history} />
+            <ProjectFeatures history={history} {...props} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
             <ProjectReleases {...props} />
