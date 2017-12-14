@@ -349,7 +349,7 @@ export default class Services extends React.Component {
                     Command
                   </TableCell>
                   <TableCell>
-                    One-shot
+                    Type
                   </TableCell>
                   <TableCell>
                     Open Ports
