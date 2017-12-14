@@ -21,7 +21,7 @@ import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Ta
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
@@ -39,9 +39,100 @@ const inlineStyles = {
   }
 }
 
-@observer
-class ProjectServices extends React.Component {
+@inject("store") @observer
+@graphql(gql`
+query Project($slug: String, $environmentId: String) {
+  project(slug: $slug, environmentId: $environmentId) {
+    id
+    services {
+      id
+      name
+      command
+      serviceSpec {
+        id
+        name
+      }
+      count
+      type
+      containerPorts {
+        port
+        protocol
+      }
+      created
+    }
+  }
+  serviceSpecs {
+    id
+    name
+    cpuRequest
+    cpuLimit
+    memoryRequest
+    memoryLimit
+    terminationGracePeriod
+  }
+}`, {
+  options: (props) => ({
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.store.app.currentEnvironment.id,
+    }
+  })
+})
 
+// Mutations
+@graphql(gql`
+mutation CreateService($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+    $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+    createService(service:{
+    projectId: $projectId,
+    command: $command,
+    name: $name,
+    serviceSpecId: $serviceSpecId,
+    count: $count,
+    type: $type,
+    containerPorts: $containerPorts,
+    environmentId: $environmentId,
+    }) {
+      id
+    }
+}`, { name: "createService" })
+
+@graphql(gql`
+mutation UpdateService($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+    $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+    updateService(service:{
+    id: $id,
+    projectId: $projectId,
+    command: $command,
+    name: $name,
+    serviceSpecId: $serviceSpecId,
+    count: $count,
+    type: $type,
+    containerPorts: $containerPorts,
+    environmentId: $environmentId,
+    }) {
+      id
+    }
+}`, { name: "updateService" })
+
+@graphql(gql`
+mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+  $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+  deleteService(service:{
+  id: $id,
+  projectId: $projectId,
+  command: $command,
+  name: $name,
+  serviceSpecId: $serviceSpecId,
+  count: $count,
+  type: $type,
+  containerPorts: $containerPorts,
+  environmentId: $environmentId,
+  }) {
+    id
+  }
+}`, { name: "deleteService" })
+export default class Services extends React.Component {
   constructor(props){
     super(props)
     this.state = {
@@ -64,7 +155,7 @@ class ProjectServices extends React.Component {
       'serviceSpecId',
       'count',
       'command',
-      'oneShot',
+      'type',
       'projectId',
       'containerPorts',
       'containerPorts[]',
@@ -73,6 +164,7 @@ class ProjectServices extends React.Component {
       'environmentId',
       'index',
     ];
+
     const rules = {
       'name': 'string|required',
       'serviceSpecId': 'string|required',
@@ -81,6 +173,7 @@ class ProjectServices extends React.Component {
       'containerPorts[].port': 'numeric|required|between:1,65535',
       'containerPorts[].protocol': 'required',
     };
+
     const labels = {
       'name': 'Name',
       'serviceSpecId': 'Service Spec',
@@ -90,19 +183,24 @@ class ProjectServices extends React.Component {
       'containerPorts[].port': 'Port',
       'containerPorts[].protocol': 'Protocol',
     };
+
     const initials = {
       'name': '',
       'command': '',
-      'projectId': this.props.project.id,
-      'oneShot': false,
+      'projectId': '',
+      'type': 'general',
       'containerPorts[].protocol': 'TCP',
       'count': 0,
+      'environmentId': this.props.store.app.currentEnvironment.id,
     }
+
     const types = {
       'count': 'number',
       'containerPorts[].port': 'number',
     };
+
     const keys = {};
+
     const extra = {
       'containerPorts[].protocol': ['TCP', 'UDP']
     };
@@ -137,17 +235,16 @@ class ProjectServices extends React.Component {
     const plugins = { dvr: validatorjs };
 
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
+
   }
 
   onSuccess(form) {
-
-    form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
-
     if(form.values()['id'] !== ""){
       this.props.updateService({
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.closeDrawer()
       })
     } else {
       this.props.createService({
@@ -161,30 +258,25 @@ class ProjectServices extends React.Component {
 
   onError(form) {
     this.setState({ saving: false })
-    form.invalidate('This is a generic error message!');
   }
 
   handleClick = event => {
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
   };
 
-  handleRequestClose = value => {
-    let oneShot = false;
-    if(value === "one-shot"){
-      oneShot = true;
-    }
-    this.form.$('oneShot').set(oneShot);
+  handleServiceRequest = value => {
+    this.form.$('type').set(value);
     this.openDrawer()
   };
 
   openDrawer(){
-    this.form.showErrors(false)
     this.setState({ drawerOpen: true, addServiceMenuOpen: false })
   }
 
   closeDrawer(){
     this.form.reset()
-    this.setState({ drawerOpen: false, addServiceMenuOpen: false })
+    this.form.showErrors(false)
+    this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false })
   }
 
   editService = service => {
@@ -193,7 +285,7 @@ class ProjectServices extends React.Component {
     this.form.$('command').set(service.command);
     this.form.$('serviceSpecId').set(service.serviceSpec.id);
     this.form.$('containerPorts').set(service.containerPorts);
-    this.form.$('oneShot').set(service.oneShot);
+    this.form.$('type').set(service.type);
     this.form.$('id').set(service.id);
 
     var that = this
@@ -212,19 +304,12 @@ class ProjectServices extends React.Component {
     this.props.deleteService({
       variables: this.form.values(),
     }).then(({data}) => {
-      console.log(data)
-    }).catch(error => {
-      console.log(error)
+      this.props.data.refetch()
     });
   }
 
   render() {
-    const { services } = this.props.project;
-    const { loading, serviceSpecs } = this.props.data;
-
-    console.log(this.props.data)
-
-
+    const { loading, project, serviceSpecs } = this.props.data;
     if(loading){
       return (
         <div>
@@ -232,7 +317,7 @@ class ProjectServices extends React.Component {
         </div>
       )
     }
-
+    this.form.$('projectId').set(project.id)
     this.form.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
         return {
@@ -241,9 +326,6 @@ class ProjectServices extends React.Component {
         }
       })
     })
-
-    this.form.$('projectId').set(this.props.project.id);
-
     return (
       <div>
           <Paper className={styles.tablePaper}>
@@ -267,7 +349,7 @@ class ProjectServices extends React.Component {
                     Command
                   </TableCell>
                   <TableCell>
-                    One-shot
+                    Type
                   </TableCell>
                   <TableCell>
                     Open Ports
@@ -281,17 +363,17 @@ class ProjectServices extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {services.map(service => {
+                {project.services.map(service => {
                   return (
                     <TableRow
                       hover
                       onClick={event => this.editService(service)}
                       tabIndex={-1}
                       key={service.id}>
-                      <TableCell> { service.name} </TableCell>
-                      <TableCell> { service.count} </TableCell>
-                      <TableCell> <Input value={ service.command} disabled fullWidth={true} /></TableCell>
-                      <TableCell> { service.oneShot ? "Yes" : "No" }</TableCell>
+                      <TableCell> { service.name } </TableCell>
+                      <TableCell> { service.count } </TableCell>
+                      <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
+                      <TableCell> { service.type }</TableCell>
                       <TableCell> { service.containerPorts.length}</TableCell>
                       <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { service.created}</TableCell>
@@ -306,7 +388,7 @@ class ProjectServices extends React.Component {
             <Target>
               <Button fab aria-label="Add" type="submit" raised color="primary"
                 aria-owns={this.state.addServiceMenuOpen ? 'menu-list' : null}
-                aria-haspopup="true"              
+                aria-haspopup="true"
                 onClick={this.handleClick.bind(this)}>
                 <AddIcon />
               </Button>
@@ -319,8 +401,8 @@ class ProjectServices extends React.Component {
                 <Grow in={this.state.addServiceMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>
-                      <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>
@@ -361,7 +443,7 @@ class ProjectServices extends React.Component {
                         <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} />
                       </Grid>
                       <Grid item xs={12}>
-                        { !this.form.values()['oneShot'] &&
+                        { !this.form.values()['type'] &&
                           <div>
                             <Grid container spacing={24}>
                                 { this.form.$('containerPorts').value.length > 0 &&
@@ -429,7 +511,7 @@ class ProjectServices extends React.Component {
           </Drawer>
 
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + services[this.form.values()['index']] + "?"}</DialogTitle>
+            <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']] + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
@@ -449,128 +531,3 @@ class ProjectServices extends React.Component {
     )
   }
 }
-
-
-
-
-
-// Mutations
-
-// const CreateServiceMutation = gql`
-// mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-//     $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-//     createService(service:{
-//     projectId: $projectId,
-//     command: $command,
-//     name: $name,
-//     serviceSpecId: $serviceSpecId,
-//     count: $count,
-//     oneShot: $oneShot,
-//     containerPorts: $containerPorts,
-//     environmentId: $environmentId,
-//     }) {
-//         id
-//         containerPorts {
-//             port
-//             protocol
-//         }
-//     }
-// }
-// `, { name: "createService" })
-// @graphql(gql`
-// mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-//     $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-//     updateService(service:{
-//     id: $id,
-//     projectId: $projectId,
-//     command: $command,
-//     name: $name,
-//     serviceSpecId: $serviceSpecId,
-//     count: $count,
-//     oneShot: $oneShot,
-//     containerPorts: $containerPorts,
-//     environmentId: $environmentId,
-//     }) {
-//         id
-//         containerPorts {
-//             port
-//             protocol
-//         }
-//     }
-// }
-// `, { name: "updateService" })
-
-// @graphql(gql`
-// mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-//   $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
-//   deleteService(service:{
-//   id: $id,
-//   projectId: $projectId,
-//   command: $command,
-//   name: $name,
-//   serviceSpecId: $serviceSpecId,
-//   count: $count,
-//   oneShot: $oneShot,
-//   containerPorts: $containerPorts,
-//   environmentId: $environmentId,
-//   }) {
-//       id
-//       containerPorts {
-//           port
-//           protocol
-//       }
-//   }
-// }
-// `, { name: "deleteService" })
-
-const ProjectQuery = gql`
-query Project($slug: String, $environmentId: String){
-  project(slug: $slug, environmentId: $environmentId) {
-    id
-    services {
-      id
-      name
-      command
-      serviceSpec {
-        id
-        name
-      }
-      count
-      oneShot
-      containerPorts {
-        port
-        protocol
-      }
-      created
-    }
-  }
-
-}
-`
-
-const ServiceSpecsQuery = gql`
-query {
-  serviceSpecs {
-    id
-    name
-    cpuRequest
-    cpuLimit
-    memoryRequest
-    memoryLimit
-    terminationGracePeriod
-  }
-}
-`
-
-export default compose(
-  withApollo,
-  graphql(ProjectQuery, {
-    options: (props) => ({
-      variables: {
-        slug: props.store.app.leftNavProjectTitle,
-        environmentId: props.envId,
-      }
-    }) 
-  }),
-  // graphql(ServiceSpecsQuery),
-)(ProjectServices);

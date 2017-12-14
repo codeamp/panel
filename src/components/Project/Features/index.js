@@ -7,9 +7,7 @@ import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
 import { CircularProgress } from 'material-ui/Progress';
-
 import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
-
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -91,17 +89,18 @@ class FeatureView extends React.Component {
   }
 
   handleDeploy(){
-    var self = this
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
       variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id, environmentId: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
       this.props.data.refetch()
-      self.props.history.push(self.props.match.url + '/releases')
+      this.props.history.push(this.props.match.url.replace('features', 'releases'))
     });
   }
 
   render() {
+    const { project } = this.props;
+    this.props.store.app.setProjectTitle(project.slug)
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <div
@@ -125,7 +124,7 @@ class FeatureView extends React.Component {
               <CopyGitHashIcon />
             </IconButton>
             <Button raised color="primary"
-              disabled={this.state.disabledDeployBtn || this.props.project.extensions.length == 0}
+              disabled={this.state.disabledDeployBtn || project.extensions.length == 0}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
               { this.state.text }
@@ -141,6 +140,70 @@ class FeatureView extends React.Component {
 @inject("store") @observer
 
 @graphql(gql`
+  query Project($slug: String, $environmentId: String){
+    project(slug: $slug, environmentId: $environmentId) {
+      id
+      name
+      slug
+      rsaPublicKey
+      gitProtocol
+      gitUrl
+      currentRelease {
+        id
+        state
+        stateMessage
+        created
+        user {
+          email
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+      }
+      features {
+        id
+        message
+        user
+        hash
+        parentHash
+        ref
+        created
+      }
+      releases {
+        id
+        state
+      }
+      extensions {
+        id
+      }
+    }
+  }
+`, {
+  options: (props) => ({
+
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.store.app.currentEnvironment.id,
+    }
+  })
+})
+
+@graphql(gql`
 mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
   createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
     headFeature {
@@ -154,6 +217,7 @@ mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: 
   }
 }
 `, { name: "createRelease" })
+
 export default class Features extends React.Component {
 
   constructor(props){
@@ -175,10 +239,8 @@ export default class Features extends React.Component {
     }
   }
 
-
   renderFeatureList = (project) => {
     var self = this
-
     return (
       <div>
         {project.features.map(function(feature, idx) {
@@ -205,17 +267,19 @@ export default class Features extends React.Component {
   }
 
   render() {
-    const { project } = this.props;
+    const { loading, project } = this.props.data;
 
-    console.log(project)
+    if(loading){
+      return (<div>Loading...</div>);
+    }
 
     let defaultComponent = (<Typography>Loading...</Typography>)
 
-    if(this.props.project.features.length > 0) {
+    if(project.features.length > 0) {
       defaultComponent = this.renderFeatureList(project);
-    } else if(this.props.project.gitProtocol === "SSH"){
+    } else if(project.gitProtocol === "SSH"){
         defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
-    } else if(this.props.project.gitProtocol === "HTTPS"){
+    } else if(project.gitProtocol === "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
 
@@ -234,7 +298,3 @@ export default class Features extends React.Component {
     );
   }
 }
-
-
-
-

@@ -48,7 +48,7 @@ class Dex extends Component {
     return (
       <div>
         <button onClick={this.startSigninMainWindow.bind(this)}>Signin</button>
-      </div> 
+      </div>
     );
   }
 }
@@ -57,7 +57,7 @@ class Dex extends Component {
 class Callback extends Component {
   componentWillMount() {
     userManger.events.addUserLoaded((user) => {
-      this.props.store.app.setUser(JSON.stringify(user))
+      this.props.store.app.setUser(user)
     });
 
     userManger.signinRedirectCallback().then(function(user) {
@@ -85,7 +85,7 @@ class Login extends Component {
             <Callback/>
           )} />
         </Switch>
-      </div> 
+      </div>
     );
   }
 }

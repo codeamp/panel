@@ -53,7 +53,7 @@ export default class TopNav extends React.Component {
   getSuggestions(value) {
     const cleanedValue = this.escapeRegExp(value.trim().toLowerCase());
     let re = new RegExp(cleanedValue, "i");
-    
+
     return cleanedValue === '' ? [] : this.state.originalSuggestions.filter(function(project){
       return project.label.toLowerCase().match(re)
     });
@@ -85,7 +85,7 @@ export default class TopNav extends React.Component {
 
   render() {
     var self = this
-    const { store, user } = this.props
+    const { store } = this.props
 
     return (
     <div>
@@ -99,16 +99,16 @@ export default class TopNav extends React.Component {
             </Grid>
             <Grid item xs={8} style={{ position: 'absolute', left: '15%' }}>
               <div>
-                <TextField                
+                <TextField
                   autoFocus={false}
                   value={this.state.projectQuery}
                   onClick={()=>this.renderBookmarks()}
                   onChange={(e)=>this.onChange(e)}
-                  onBlur={()=>this.hideSuggestions() }                  
+                  onBlur={()=>this.hideSuggestions() }
                   placeholder="Search for a project or view your bookmarks"
                   style={{ width: 800 }}
                 />
-                <div 
+                <div
                   className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
                   {this.state.suggestions.map(function(suggestion){
                     return (
@@ -116,9 +116,9 @@ export default class TopNav extends React.Component {
                         key={suggestion.id}
                         className={styles.suggestion}
                         square={true}>
-                        <ListItem 
+                        <ListItem
                           onMouseEnter={() => self.setState({ hovering: true })}
-                          onMouseLeave={() => self.setState({ hovering: false })}                                       
+                          onMouseLeave={() => self.setState({ hovering: false })}
                           onClick={()=>self.onSuggestionItemClick(suggestion)}>
                           <ListItemText primary={suggestion.label} />
                         </ListItem>
@@ -130,7 +130,7 @@ export default class TopNav extends React.Component {
             </Grid>
             <Grid item xs={2}>
               <Chip
-                label={user.email}
+                label={store.app.user.profile.email}
                 onClick={this.handleClick}
                 aria-owns={this.state.open ? 'simple-menu' : null}
                 aria-haspopup="true"

@@ -199,7 +199,7 @@ export default class EnvironmentVariables extends React.Component {
     }
 
     const extra = {
-      'type': [{key: 'build', value: 'Build'}, {key: 'normal', value: 'Normal' },{key: 'file', value: 'File'}],
+      'type': [{key: 'build', value: 'Build'}, {key: 'env', value: 'Normal' },{key: 'file', value: 'File'}],
       'scope': [{key: 'extension', value: 'Extension'}, {key: 'global', value: 'Global'}],
       'environmentId': [],
     };
@@ -219,13 +219,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onClick(envVarIdx){
-	  const environmentVariables = this.props.data.environmentVariables.filter(function(envVar){
-		  if(envVar.scope === "project"){
-			  return false
-		  }
-		  return true
-	  })
-    const envVar = environmentVariables[envVarIdx]
+    const envVar = this.props.data.environmentVariables[envVarIdx]
     if(envVar !== undefined){
         this.form.$('key').set(envVar.key)
         this.form.$('key').set('disabled', true)
@@ -242,8 +236,8 @@ export default class EnvironmentVariables extends React.Component {
 
   onClickVersion(versionIndex){
     this.form.$('selectedVersionIndex').set(versionIndex)
-    this.form.$('scope').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIndex].scope)    
-  }  
+    this.form.$('scope').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIndex].scope)
+  }
 
   onError(form){
     // TODO
@@ -251,7 +245,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   replaceEnvVarValue(e){
-    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value);    
+    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value);
     this.onSubmit(e)
   }
 
@@ -308,19 +302,22 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
+  showPreviousVersionValue() {
+    const environmentVariables = this.props.data.environmentVariables;
+    return this.form.values()['index'] !== '' &&
+     environmentVariables[this.form.values()['index']] &&
+     environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
+     environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value !== environmentVariables[this.form.values()['index']].value;
+  }
+
   render() {
     let { loading, environmentVariables, environments } = this.props.data;
-    var self = this;    
+    var self = this;
 
     if(loading){
       return null;
     }
-    environmentVariables = environmentVariables.filter(function(envVar){
-      if(envVar.scope === "project"){
-        return false
-      }
-      return true
-    })
+
     const extraOptions = environments.map(function(env){
       return {
         key: env.id,
@@ -408,7 +405,7 @@ export default class EnvironmentVariables extends React.Component {
             <Target>
               <Button fab aria-label="Add" type="submit" raised color="primary"
                 aria-owns={this.state.addEnvVarMenuOpen ? 'menu-list' : null}
-                aria-haspopup="true"              
+                aria-haspopup="true"
                 onClick={this.handleAddClick.bind(this)}>
                 <AddIcon />
               </Button>
@@ -421,9 +418,9 @@ export default class EnvironmentVariables extends React.Component {
                 <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build-arg")}>Build Arg</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
                       <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}>File</MenuItem>
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("normal")}>Normal</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>
@@ -458,7 +455,7 @@ export default class EnvironmentVariables extends React.Component {
                     <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' />
                   </Grid>
 
-                  {(this.form.$('type').value === 'normal' || this.form.$('type').value === 'build-arg') &&
+                  {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                     <Grid item xs={12}>
                       <Grid item xs={6}>
                         <InputField field={this.form.$('key')} fullWidth={true} />
@@ -466,11 +463,7 @@ export default class EnvironmentVariables extends React.Component {
                       <Grid item xs={6}>
                         <InputField field={this.form.$('value')} fullWidth={true} />
                       </Grid>
-                      {this.form.values()['index'] !== '' &&
-                      environmentVariables[this.form.values()['index']] != null && 
-                      environmentVariables[this.form.values()['index']].versions.length > 0 &&
-                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
-                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].id !== this.form.values()['id'] &&
+                      {this.showPreviousVersionValue() &&
                         <Grid item xs={6}>
                           <Input value={environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value} fullWidth={true} disabled />
                         </Grid>
@@ -486,12 +479,8 @@ export default class EnvironmentVariables extends React.Component {
                       <br/>
                       <Grid item xs={5}>
                         <TextareaField field={this.form.$('value')} />
-                      </Grid>                    
-                      {this.form.values()['index'] !== '' &&
-                      environmentVariables[this.form.values()['index']] != null && 
-                      environmentVariables[this.form.values()['index']].versions.length > 0 &&
-                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
-                      environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].id !== this.form.values()['id'] &&                      
+                      </Grid>
+                      {this.showPreviousVersionValue() &&
                         <Grid item xs={6}>
                           <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
                             {environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value}
@@ -500,11 +489,8 @@ export default class EnvironmentVariables extends React.Component {
                       }
                     </Grid>
                   }
-                  
-                  {environmentVariables[this.form.values()['index']] != null && 
-                   environmentVariables[this.form.values()['index']].versions.length > 0 &&
-                   this.form.values()['selectedVersionIndex'] !== '' &&                   
-                   environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].id !== this.form.values()['id'] &&                                         
+
+                  {this.showPreviousVersionValue() &&
                     <Grid item xs={12}>
                       <Button color="default"
                         raised onClick={this.replaceEnvVarValue.bind(this)}>
@@ -512,9 +498,9 @@ export default class EnvironmentVariables extends React.Component {
                       </Button>
                     </Grid>
                     }
-                    
+
                     <br/>
- 
+
                     <Grid item xs={12}>
                       <Button color="primary"
                         className={styles.buttonSpacing}
@@ -524,7 +510,7 @@ export default class EnvironmentVariables extends React.Component {
                         onClick={e => this.onSubmit(e)}>
                         Save
                       </Button>
-                      {this.form.values()['id'] !== '' &&
+                      {this.form.values()['id'] &&
                         <Button
                           disabled={this.state.saving}
                           color="accent"
@@ -540,7 +526,7 @@ export default class EnvironmentVariables extends React.Component {
                     </Grid>
 
                     <br/>
-                    {environmentVariables[this.form.values()['index']] != null && 
+                    {environmentVariables[this.form.values()['index']] != null &&
                      environmentVariables[this.form.values()['index']].versions.length > 0 &&
                      <div>
                     <Grid item xs={12}>

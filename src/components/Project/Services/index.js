@@ -3,10 +3,10 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import AppBar from 'material-ui/AppBar';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 
-import ProjectServices from './ProjectServices';
+import ServicesComponent from './Services';
 import EnvironmentVariables from './EnvironmentVariables';
 
 
@@ -14,7 +14,7 @@ function TabContainer(props) {
   return <div style={{ padding: 20 }}>{props.children}</div>;
 }
 
-@observer
+@inject("store") @observer
 export default class Services extends React.Component {
 
   constructor(props){
@@ -30,7 +30,7 @@ export default class Services extends React.Component {
 
   render() {
     const { value } = this.state;
-    const { project, store, serviceSpecs, user } = this.props;
+    const { project, store, match } = this.props;
 
     return (
       <div className={styles.root}>
@@ -40,15 +40,15 @@ export default class Services extends React.Component {
             <Tab label="Environment" />
           </Tabs>
         </AppBar>
-               
-        <Grid container spacing={24}>                                                            
-          <Grid item sm={12}>                    
-            {value === 0 && <TabContainer> <ProjectServices project={project} store={store} {...this.props} /> </TabContainer>}
+
+        <Grid container spacing={24}>
+          <Grid item sm={12}>
+            {value === 0 && <TabContainer> <ServicesComponent match={match} /> </TabContainer>}
           </Grid>
           <Grid item sm={12}>
-            {value === 1 && <TabContainer><EnvironmentVariables project={project} store={store} user={user} /></TabContainer>}
+            {value === 1 && <TabContainer><EnvironmentVariables match={match} /></TabContainer>}
           </Grid>
-        </Grid>            
+        </Grid>
       </div>
       )
     }

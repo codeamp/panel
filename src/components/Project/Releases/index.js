@@ -14,9 +14,11 @@ import Grid from 'material-ui/Grid';
 import ForkIcon from 'react-icons/lib/fa/code-fork';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import { withTheme } from 'material-ui/styles';
-
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+import MobxReactForm from 'mobx-react-form';
 
 const inlineStyles = {
     extensionLogs: {
@@ -30,47 +32,12 @@ const inlineStyles = {
     }
 }
 
-const DEFAULT_RELEASE_EXTENSION_LOG = {
-    id: -1,
-    msg: "first!",
-}
-
-const DEFAULT_RELEASE_EXTENSION = {
-    id: -1,
-    logs: [
-        DEFAULT_RELEASE_EXTENSION_LOG,
-    ],
-    extension: {
-        extensionSpec: {
-            name: "Default"
-        },
-    },
-    state: "waiting",
-    stateMessage: "initialized",
-}
-
-const DEFAULT_RELEASE = {
-    id: -1,
-    headFeature: "",
-    tailFeature: "",
-    releaseExtensions: [
-        DEFAULT_RELEASE_EXTENSION,
-    ],
-}
-
-@inject("store") @observer
-
 class ReleaseView extends React.Component {
-  componentDidMount(){
-  }
-
   render() {
     let releaseStateIcon = <CircularProgress size={25} />
     if(this.props.release.state === "complete"){
         releaseStateIcon = <ReleaseStateCompleteIcon color={'green'} />
     }
-
-
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
@@ -102,6 +69,116 @@ class ReleaseView extends React.Component {
   }
 }
 
+@inject("store") @observer
+@graphql(gql`
+  query Project($slug: String, $environmentId: String){
+    project(slug: $slug, environmentId: $environmentId) {
+      id
+      name
+      slug
+      rsaPublicKey
+      gitProtocol
+      gitUrl
+      currentRelease {
+        id
+        state
+        stateMessage
+        releaseExtensions {
+            id
+            extension {
+                extensionSpec {
+                    name
+                }
+            }
+            state
+            stateMessage
+        }
+        created
+        user {
+          email
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+      }
+      releases {
+        id
+        state
+        stateMessage
+        created
+        user {
+          email
+        }
+        releaseExtensions {
+            id
+            extension {
+              extensionSpec {
+                name
+              }
+            }
+            type
+            state
+            stateMessage
+        }
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+      }
+    }
+  }
+`, {
+  options: (props) => ({
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.store.app.currentEnvironment.id,
+    }
+  })
+})
+
+@graphql(gql`
+mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
+  createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
+    headFeature {
+      message
+    }
+    tailFeature  {
+      message
+    }
+    state
+    stateMessage
+  }
+}
+`, { name: "createRelease" })
 export default class Releases extends React.Component {
   state = {
     activeStep: 0,
@@ -128,17 +205,32 @@ export default class Releases extends React.Component {
   }
   componentWillMount() {
     this.props.data.refetch()
+    const fields = [
+      'id',
+      'index',
+    ];
+    const rules = {};
+    const labels = {};
+    const initials = {}
+    const types = {};
+    const keys = {};
+    const disabled = {}
+    const extra = {};
+    const hooks = {};
+    const plugins = {};
+
+    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   };
 
   handleToggleDrawer(releaseIdx){
     let deployAction = 'Rollback'
-    if(releaseIdx === 0 && this.props.project.releases[0].state === "complete"){
+    if(releaseIdx === 0 && this.props.data.project.releases[0].state === "complete"){
         deployAction = 'Redeploy'
     }
 
     if(releaseIdx === -1){
-        for(var i = 0; i < this.props.project.releases.length; i++){
-            let release = this.props.project.releases[i]
+        for(var i = 0; i < this.props.data.project.releases.length; i++){
+            let release = this.props.data.project.releases[i]
             deployAction = 'Redeploy'
             if(release.state === "complete"){
                 releaseIdx = i;
@@ -146,12 +238,18 @@ export default class Releases extends React.Component {
             }
         }
     }
-    this.setState({ open: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
+
+    this.form.$('index').set(releaseIdx)
+    this.form.$('id').set(this.props.data.project.releases[releaseIdx].id)
+
+    this.setState({ drawerOpen: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
   }
 
   render() {
-
-    const { project } = this.props;
+    const { loading, project } = this.props.data;
+    if(loading){
+      return (<div>Loading...</div>);
+    }
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
@@ -192,7 +290,7 @@ export default class Releases extends React.Component {
           classes={{
             paper: styles.drawer
           }}
-          open={this.state.open}
+          open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
@@ -206,10 +304,10 @@ export default class Releases extends React.Component {
               <Grid container spacing={24} className={styles.grid}>
                 <Grid item xs={12}>
                     <Typography type="body2">
-                    <b> head </b> : {project.releases !== undefined && project.releases.length > 0 && project.releases[this.state.currentRelease].headFeature.hash }
+                    <b> head </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease && project.currentRelease.headFeature.hash }
                     </Typography>
                     <Typography type="body2">
-                    <b> tail </b> : {project.releases !== undefined && project.releases.length > 0 && project.releases[this.state.currentRelease].tailFeature.hash }
+                    <b> tail </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease && project.currentRelease.tailFeature.hash }
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
@@ -239,7 +337,7 @@ export default class Releases extends React.Component {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {project.releases !== undefined && this.props.project.releases.length > 0 && this.props.project.releases[this.state.currentRelease].releaseExtensions.map(re => {
+                          {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].releaseExtensions.map(re => {
                             let stateIcon = <CircularProgress size={25} />
                             if(re.state === "complete"){
                                 stateIcon = <ExtensionStateCompleteIcon />
@@ -267,22 +365,20 @@ export default class Releases extends React.Component {
                 <Grid item xs={12}>
                     <Button
                       raised
-                      disabled={project.releases.length > 0 && project.releases[this.state.currentRelease].state !== "complete"}
+                      disabled={project.releases.length > 0 && project.currentRelease && project.currentRelease.state !== "complete"}
                       color="primary"
-                      onClick={()=>this.setState({ open: false }) }>
+                      onClick={()=>this.setState({ drawerOpen: false }) }>
                       { this.state.deployAction }
                     </Button>
                     <Button
                       color="primary"
-                      onClick={()=>this.setState({ open: false }) }>
+                      onClick={()=>this.setState({ drawerOpen: false }) }>
                       Exit Panel
                     </Button>
                 </Grid>
               </Grid>
             </div>
         </Drawer>
-
-
       </div>
     );
   }

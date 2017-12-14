@@ -59,7 +59,7 @@ export default class App extends React.Component {
 
   componentDidMount() {
     socket.on('reconnect_failed', () => {
-        console.log('reconnect_failed')
+        // todo
     });
 
     socket.on('reconnect', () => {
@@ -84,7 +84,7 @@ export default class App extends React.Component {
   };
 
   render() {
-    let { loading, error, projects, user, environments } = this.props.data;
+    const { loading, error, projects, environments } = this.props.data;
 
     if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
       this.state.snackbar.open = true;
@@ -92,19 +92,18 @@ export default class App extends React.Component {
     }
 
     if (loading) {
-      return <div>Loading...</div>;
+      return (<div>Loading...</div>);
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-
-      if(environments.length > 0)
+      if(environments.length > 0){
         this.props.store.app.setCurrentEnv({ id: environments[0].id })
-
+      }
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} user={user} {...this.props} />
+              <TopNav projects={projects} {...this.props} />
             </Grid>
             <Grid item xs={12} className={styles.center}>
               <LeftNav environments={environments} />
@@ -120,7 +119,7 @@ export default class App extends React.Component {
                     <Admin data={this.props.data} projects={projects} socket={socket} {...props} />
                   )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} user={user} {...props} envId={environments[0].id} />
+                    <Project socket={socket} {...props} />
                   )} />
                 </Switch>
               </div>

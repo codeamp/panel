@@ -175,8 +175,6 @@ export default class ServiceSpecs extends React.Component {
   }
 
   onSuccess(form){
-    console.log(form.values())
-
     if(this.form.values()['id'] === ''){
       this.props.createServiceSpec({
         variables: form.values(),
@@ -214,7 +212,7 @@ export default class ServiceSpecs extends React.Component {
   }
 
   onError(){
-    console.log('onError')
+    // todo
   }
 
   onSubmit(e){
@@ -346,7 +344,7 @@ export default class ServiceSpecs extends React.Component {
                         onClick={this.onSubmit.bind(this)}>
                         Save
                     </Button>
-                    
+
                     {this.form.values()['id'] !== '' &&
                       <Button
                         disabled={this.state.saving}
@@ -366,7 +364,7 @@ export default class ServiceSpecs extends React.Component {
               </form>
             </div>
         </Drawer>
-        
+
         {serviceSpecs[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
             <DialogTitle>{"Ae you sure you want to delete " + serviceSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
