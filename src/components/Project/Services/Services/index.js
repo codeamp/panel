@@ -39,7 +39,8 @@ const inlineStyles = {
   }
 }
 
-const ProjectServicesQuery = gql`
+@inject("store") @observer
+@graphql(gql`
 query Project($slug: String, $environmentId: String) {
   project(slug: $slug, environmentId: $environmentId) {
     id
@@ -52,7 +53,7 @@ query Project($slug: String, $environmentId: String) {
         name
       }
       count
-      oneShot
+      type
       containerPorts {
         port
         protocol
@@ -69,10 +70,7 @@ query Project($slug: String, $environmentId: String) {
     memoryLimit
     terminationGracePeriod
   }
-}`
-
-@inject("store") @observer
-@graphql(ProjectServicesQuery, {
+}`, {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
@@ -83,29 +81,25 @@ query Project($slug: String, $environmentId: String) {
 
 // Mutations
 @graphql(gql`
-mutation CreateService ($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+mutation CreateService($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+    $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
     createService(service:{
     projectId: $projectId,
     command: $command,
     name: $name,
     serviceSpecId: $serviceSpecId,
     count: $count,
-    oneShot: $oneShot,
+    type: $type,
     containerPorts: $containerPorts,
     environmentId: $environmentId,
     }) {
-        id
-        containerPorts {
-            port
-            protocol
-        }
+      id
     }
 }`, { name: "createService" })
 
 @graphql(gql`
-mutation UpdateService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+mutation UpdateService($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
+    $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
     updateService(service:{
     id: $id,
     projectId: $projectId,
@@ -113,21 +107,17 @@ mutation UpdateService ($id: String, $projectId: String!, $command: String!, $na
     name: $name,
     serviceSpecId: $serviceSpecId,
     count: $count,
-    oneShot: $oneShot,
+    type: $type,
     containerPorts: $containerPorts,
     environmentId: $environmentId,
     }) {
-        id
-        containerPorts {
-            port
-            protocol
-        }
+      id
     }
 }`, { name: "updateService" })
 
 @graphql(gql`
 mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-  $count: String!, $oneShot: Boolean!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+  $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
   deleteService(service:{
   id: $id,
   projectId: $projectId,
@@ -135,19 +125,14 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
   name: $name,
   serviceSpecId: $serviceSpecId,
   count: $count,
-  oneShot: $oneShot,
+  type: $type,
   containerPorts: $containerPorts,
   environmentId: $environmentId,
   }) {
-      id
-      containerPorts {
-          port
-          protocol
-      }
+    id
   }
 }`, { name: "deleteService" })
 export default class Services extends React.Component {
-
   constructor(props){
     super(props)
     this.state = {
@@ -170,7 +155,7 @@ export default class Services extends React.Component {
       'serviceSpecId',
       'count',
       'command',
-      'oneShot',
+      'type',
       'projectId',
       'containerPorts',
       'containerPorts[]',
@@ -179,6 +164,7 @@ export default class Services extends React.Component {
       'environmentId',
       'index',
     ];
+
     const rules = {
       'name': 'string|required',
       'serviceSpecId': 'string|required',
@@ -187,6 +173,7 @@ export default class Services extends React.Component {
       'containerPorts[].port': 'numeric|required|between:1,65535',
       'containerPorts[].protocol': 'required',
     };
+
     const labels = {
       'name': 'Name',
       'serviceSpecId': 'Service Spec',
@@ -201,15 +188,19 @@ export default class Services extends React.Component {
       'name': '',
       'command': '',
       'projectId': '',
-      'oneShot': false,
+      'type': 'general',
       'containerPorts[].protocol': 'TCP',
       'count': 0,
+      'environmentId': this.props.store.app.currentEnvironment.id,
     }
+
     const types = {
       'count': 'number',
       'containerPorts[].port': 'number',
     };
+
     const keys = {};
+
     const extra = {
       'containerPorts[].protocol': ['TCP', 'UDP']
     };
@@ -248,9 +239,6 @@ export default class Services extends React.Component {
   }
 
   onSuccess(form) {
-
-    form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
-
     if(form.values()['id'] !== ""){
       this.props.updateService({
         variables: form.values(),
@@ -270,19 +258,14 @@ export default class Services extends React.Component {
 
   onError(form) {
     this.setState({ saving: false })
-    form.invalidate('This is a generic error message!');
   }
 
   handleClick = event => {
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
   };
 
-  handleRequestClose = value => {
-    let oneShot = false;
-    if(value === "one-shot"){
-      oneShot = true;
-    }
-    this.form.$('oneShot').set(oneShot);
+  handleServiceRequest = value => {
+    this.form.$('type').set(value);
     this.openDrawer()
   };
 
@@ -302,7 +285,7 @@ export default class Services extends React.Component {
     this.form.$('command').set(service.command);
     this.form.$('serviceSpecId').set(service.serviceSpec.id);
     this.form.$('containerPorts').set(service.containerPorts);
-    this.form.$('oneShot').set(service.oneShot);
+    this.form.$('type').set(service.type);
     this.form.$('id').set(service.id);
 
     var that = this
@@ -387,10 +370,10 @@ export default class Services extends React.Component {
                       onClick={event => this.editService(service)}
                       tabIndex={-1}
                       key={service.id}>
-                      <TableCell> { service.name} </TableCell>
-                      <TableCell> { service.count} </TableCell>
-                      <TableCell> <Input value={ service.command} disabled fullWidth={true} /></TableCell>
-                      <TableCell> { service.oneShot ? "Yes" : "No" }</TableCell>
+                      <TableCell> { service.name } </TableCell>
+                      <TableCell> { service.count } </TableCell>
+                      <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
+                      <TableCell> { service.type }</TableCell>
                       <TableCell> { service.containerPorts.length}</TableCell>
                       <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { service.created}</TableCell>
@@ -418,8 +401,8 @@ export default class Services extends React.Component {
                 <Grow in={this.state.addServiceMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem onClick={() => this.handleRequestClose("one-shot")}>One-shot service</MenuItem>
-                      <MenuItem onClick={() => this.handleRequestClose("general")}>General</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>
@@ -460,7 +443,7 @@ export default class Services extends React.Component {
                         <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} />
                       </Grid>
                       <Grid item xs={12}>
-                        { !this.form.values()['oneShot'] &&
+                        { !this.form.values()['type'] &&
                           <div>
                             <Grid container spacing={24}>
                                 { this.form.$('containerPorts').value.length > 0 &&
