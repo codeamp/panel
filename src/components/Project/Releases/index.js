@@ -15,7 +15,9 @@ import ForkIcon from 'react-icons/lib/fa/code-fork';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import { withTheme } from 'material-ui/styles';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
+import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
+import ReleaseStateFailedIcon from 'material-ui-icons/Error';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
@@ -37,6 +39,9 @@ class ReleaseView extends React.Component {
     let releaseStateIcon = <CircularProgress size={25} />
     if(this.props.release.state === "complete"){
         releaseStateIcon = <ReleaseStateCompleteIcon color={'green'} />
+    }
+    if(this.props.release.state === "failed"){
+        releaseStateIcon = <ReleaseStateFailedIcon color={'red'} />
     }
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
@@ -342,6 +347,10 @@ export default class Releases extends React.Component {
                             if(re.state === "complete"){
                                 stateIcon = <ExtensionStateCompleteIcon />
                             }
+                            if(re.state === "failed"){
+                                stateIcon = <ExtensionStateFailedIcon />
+                            }
+                            console.log(re)
 
                             return (
                               <TableRow
@@ -363,6 +372,8 @@ export default class Releases extends React.Component {
                     </Paper>
                 </Grid>
                 <Grid item xs={12}>
+                  {project.releases[this.form.values()['index']] &&
+                   project.releases[this.form.values()['index']].state === "complete" &&
                     <Button
                       raised
                       disabled={project.releases.length > 0 && project.currentRelease && project.currentRelease.state !== "complete"}
@@ -370,6 +381,7 @@ export default class Releases extends React.Component {
                       onClick={()=>this.setState({ drawerOpen: false }) }>
                       { this.state.deployAction }
                     </Button>
+                  }
                     <Button
                       color="primary"
                       onClick={()=>this.setState({ drawerOpen: false }) }>

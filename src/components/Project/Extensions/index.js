@@ -489,7 +489,7 @@ export default class Extensions extends React.Component {
                     const isSelected = this.isAddedExtensionSelected(extension.id);
                     let stateIcon = <CircularProgress size={25} />
                     if(extension.state === "complete"){
-                        stateIcon = <ExtensionStateCompleteIcon />
+                        stateIcon = <ExtensionStateCompleteIcon color={'green'} />
                     }
 
                     return (
