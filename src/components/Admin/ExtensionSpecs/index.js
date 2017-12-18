@@ -207,13 +207,12 @@ export default class Extensions extends React.Component {
     };
     const initials = {
       'type': 'Workflow',
-      'environmentVariables[].environmentVariable': environmentVariables.length > 0 ? environmentVariables[0].id : "",
+      'environmentVariables[].environmentVariable': "",
       'environmentVariables[].type': "hidden",
     };
 
     const types = {
     };
-    const types = {};
     const extra = {
       'type': [{
         key: 'deployment',
@@ -238,12 +237,11 @@ export default class Extensions extends React.Component {
         key: 'empty',
         value: 'Empty',
       }],
-      'environmentVariables[].environmentVariable': environmentVariables,
+      'environmentVariables[].environmentVariable': [],
     };
 
     const hooks = {
     };
-    const hooks = {};
     const handlers = {}
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
@@ -252,6 +250,10 @@ export default class Extensions extends React.Component {
   openDrawer(){
     this.form.showErrors(false)
     this.setState({ drawerOpen: true, dialogOpen: false })
+  }
+
+  closeDrawer(){
+    this.setState({ drawerOpen: false, dialogOpen: false })
   }
 
   handleClick(e, extension){
@@ -267,14 +269,14 @@ export default class Extensions extends React.Component {
       }
     })
 
-    this.extensionForm.$('id').set(extension.id)
-    this.extensionForm.$('name').set(extension.name)
-    this.extensionForm.$('key').set(extension.key)
-    this.extensionForm.update({ environmentVariables: extensionEnvironmentVariables })
-    this.extensionForm.$('component').set(extension.component)
-    this.extensionForm.$('type').set(extension.type)
+    this.form.$('id').set(extension.id)
+    this.form.$('name').set(extension.name)
+    this.form.$('key').set(extension.key)
+    this.form.update({ environmentVariables: extensionEnvironmentVariables })
+    this.form.$('component').set(extension.component)
+    this.form.$('type').set(extension.type)
 
-	console.log(this.extensionForm.values())
+	console.log(this.form.values())
     this.setState({ selected: extension.id, drawerOpen: true })
   }
 
@@ -468,7 +470,7 @@ export default class Extensions extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="secondary" onClick={this.extensionForm.$('environmentVariables').onAdd}>
+                    <Button raised color="secondary" onClick={this.form.$('environmentVariables').onAdd}>
                       Add rule
                     </Button>
                   </Grid>

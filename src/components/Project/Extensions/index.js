@@ -18,11 +18,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import InputField from 'components/Form/input-field';
-<<<<<<< HEAD
-=======
 import SelectField from 'components/Form/select-field';
-
->>>>>>> changes
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
@@ -317,8 +313,6 @@ export default class Extensions extends React.Component {
               return false
             })
 
-            console.log(this.props.project.environmentVariables)
-
             const fields = ['extensionSpecEnvironmentVariables',
               'extensionSpecEnvironmentVariables[].environmentVariable',
               'extensionSpecEnvironmentVariables[].extensionSpecEnvironmentVariable']
@@ -454,7 +448,7 @@ export default class Extensions extends React.Component {
 
       let variables = {
           'id': this.state.addedExtensionsDrawer.currentExtension.id,
-          'projectId': this.props.project.id,
+          'projectId': this.props.data.project.id,
           'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
           'environmentVariables': environmentVariables,
           'environmentId': this.props.store.app.currentEnvironment.id,
@@ -464,7 +458,7 @@ export default class Extensions extends React.Component {
       this.props.deleteExtension({
           variables: {
               'id': this.state.addedExtensionsDrawer.currentExtension.id,
-              'projectId': this.props.project.id,
+              'projectId': this.props.data.project.id,
               'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
               'environmentVariables': new Array(),
               'environmentId': this.props.store.app.currentEnvironment.id,
