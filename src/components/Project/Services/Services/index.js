@@ -279,7 +279,7 @@ export default class Services extends React.Component {
     this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false })
   }
 
-  editService = service => {
+  editService(service, index){
     this.form.$('name').set(service.name);
     this.form.$('count').set(service.count);
     this.form.$('command').set(service.command);
@@ -287,6 +287,7 @@ export default class Services extends React.Component {
     this.form.$('containerPorts').set(service.containerPorts);
     this.form.$('type').set(service.type);
     this.form.$('id').set(service.id);
+    this.form.$('index').set(index);
 
     var that = this
     that.form.update({ containerPorts: service.containerPorts });
@@ -363,11 +364,11 @@ export default class Services extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {project.services.map(service => {
+                {project.services.map( (service, index) => {
                   return (
                     <TableRow
                       hover
-                      onClick={event => this.editService(service)}
+                      onClick={event => this.editService(service, index)}
                       tabIndex={-1}
                       key={service.id}>
                       <TableCell> { service.name } </TableCell>
@@ -510,23 +511,25 @@ export default class Services extends React.Component {
               </div>
           </Drawer>
 
-          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']] + "?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
-                with this service.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={this.handleDeleteService.bind(this)} color="accent">
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
+          {project.services[this.form.values()['index']] &&
+            <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+              <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']].name + "?"}</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
+                  with this service.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={this.handleDeleteService.bind(this)} color="accent">
+                  Confirm
+                </Button>
+              </DialogActions>
+            </Dialog>
+          }
       </div>
     )
   }

@@ -309,10 +309,14 @@ export default class Releases extends React.Component {
               <Grid container spacing={24} className={styles.grid}>
                 <Grid item xs={12}>
                     <Typography type="body2">
-                    <b> head </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease && project.currentRelease.headFeature.hash }
+                    <b> head </b> : {project.releases !== undefined &&
+                      project.releases[this.form.values()['index']] &&
+                      project.releases[this.form.values()['index']].headFeature.hash }
                     </Typography>
                     <Typography type="body2">
-                    <b> tail </b> : {project.releases !== undefined && project.releases.length > 0 && project.currentRelease && project.currentRelease.tailFeature.hash }
+                    <b> tail </b> : {project.releases !== undefined &&
+                      project.releases[this.form.values()['index']] &&
+                      project.releases[this.form.values()['index']].tailFeature.hash }
                     </Typography>
                 </Grid>
                 <Grid item xs={12}>
