@@ -10,7 +10,6 @@ import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
 export default observer(({field, autoWidth, extraKey }) => {
-
     let extraOptions = field.extra
 
     if(extraKey){
