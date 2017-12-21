@@ -46,11 +46,9 @@ query {
       id
       name
     }
-    environmentVariables {
-      projectId
+    config {
       key
-      type
-      environmentVariableId
+      value
     }
   }
   environments {
@@ -76,13 +74,13 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentId: String!, $environmentVariables: [ExtensionEnvironmentVariableInput!]!, $component: String!) {
+mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
     key: $key,
     type: $type,
     environmentId: $environmentId,
-    environmentVariables: $environmentVariables,
+    config: $config,
     component: $component,
     }) {
         id
@@ -93,14 +91,14 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $fo
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $environmentVariables: [ExtensionEnvironmentVariableInput]!, $component: String!) {
+mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
     updateExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
     key: $key,
     type: $type,
     environmentId: $environmentId,
-    environmentVariables: $environmentVariables,
+    config: $config,
     component: $component,
     }) {
         id
@@ -111,14 +109,14 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type:
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $environmentVariables: [ExtensionEnvironmentVariableInput!]!, $component: String!) {
+mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
     key: $key,
     type: $type,
     environmentId: $environmentId,
-    environmentVariables: $environmentVariables,
+    config: $config,
     component: $component,
     }) {
         id
@@ -146,12 +144,10 @@ export default class ExtensionSpecs extends React.Component {
       'name',
       'key',
       'type',
-      'environmentVariables',
-      'environmentVariables[]',
-      'environmentVariables[].projectId',
-      'environmentVariables[].key',
-      'environmentVariables[].type',
-      'environmentVariables[].environmentVariableId',
+      'config',
+      'config[]',
+      'config[].key',
+      'config[].value',
       'environmentId',
       'component',
     ];
@@ -159,24 +155,22 @@ export default class ExtensionSpecs extends React.Component {
       'name': 'required|string',
       'key': 'required|string',
       'type': 'required',
-      'environmentVariables[].key': 'required|string',
-      'environmentVariables[].type': 'required|string',
+      'config[].key': 'required|string',
+      'config[].value': 'required|string',
       'component': 'required|string',
     };
     const labels = {
       'name': 'Name',
       'key': 'Key',
       'type': 'Type',
-      'environmentVariables': "Form Specification",
-      'environmentVariables[].key': 'Key',
-      'environmentVariables[].type': 'Type',
-      'environmentVariables[].environmentVariableId': 'Value',
+      'config': "Form Specification",
+      'config[].key': 'Key',
+      'config[].value': 'Value',
       'component': 'React Component',
       'environmentId': 'Environment',
     };
     const initials = {
       'type': 'Workflow',
-      'environmentVariables[].type': "hidden",
     };
 
     const types = {
@@ -195,7 +189,7 @@ export default class ExtensionSpecs extends React.Component {
         key: 'once',
         value: 'Once',
       }],
-      'environmentVariables[].type': [{
+      'config[].type': [{
         key: 'hidden',
         value: 'Hidden',
       }, {
@@ -205,7 +199,7 @@ export default class ExtensionSpecs extends React.Component {
         key: 'empty',
         value: 'Empty',
       }],
-      'environmentVariables[].environmentVariableId': [],
+      'config[].value': [],
     };
 
     const hooks = {
@@ -230,7 +224,7 @@ export default class ExtensionSpecs extends React.Component {
     this.form.$('name').set(extension.name)
     this.form.$('key').set(extension.key)
     this.form.$('environmentId').set(extension.environment.id)
-    this.form.update({ environmentVariables: extension.environmentVariables })
+    this.form.update({ config: extension.config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
 
@@ -305,7 +299,7 @@ export default class ExtensionSpecs extends React.Component {
     })
 
     this.form.state.extra({
-      environmentVariables: envVarOptions,
+      config: envVarOptions,
       environmentId: envOptions,
     })
 
@@ -400,18 +394,16 @@ export default class ExtensionSpecs extends React.Component {
                     <Typography type="subheading">Config </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    {this.form.$('environmentVariables').map(function(kv){
+                    {this.form.$('config').map(function(kv){
 
                         return (
                         <Grid container spacing={24}>
                             <Grid item xs={4}>
                                 <InputField field={kv.$('key')} fullWidth={false} className={styles.containerPortFormInput} />
                             </Grid>
-                            {kv.$('type').value !== "empty" &&
-                              <Grid item xs={7}>
-                                  <EnvVarSelectField field={kv.$('environmentVariableId')} autoWidth={true} extraKey="environmentVariables" />
-                              </Grid>
-                            }
+                            <Grid item xs={7}>
+                                <EnvVarSelectField field={kv.$('value')} autoWidth={true} extraKey="config" />
+                            </Grid>
                             <Grid item xs={1}>
                             <IconButton>
                                 <CloseIcon onClick={kv.onDel} />
@@ -420,7 +412,7 @@ export default class ExtensionSpecs extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="default" onClick={this.form.$('environmentVariables').onAdd}>
+                    <Button raised color="default" onClick={this.form.$('config').onAdd}>
                       Add Config
                     </Button>
                   </Grid>
@@ -428,11 +420,11 @@ export default class ExtensionSpecs extends React.Component {
                     <Typography type="subheading"> Environment Variables </Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    {this.form.$('environmentVariables').map(function(kv){
+                    {this.form.$('config').map(function(kv){
                         return (
                         <Grid container spacing={24}>
                             <Grid item xs={10}>
-                                <SelectField field={kv.$('envVar')} autoWidth={true} extraKey="environmentVariables" />
+                                <SelectField field={kv.$('envVar')} autoWidth={true} extraKey="config" />
                             </Grid>
                             <Grid item xs={2}>
                             <IconButton>
@@ -442,7 +434,7 @@ export default class ExtensionSpecs extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised type="secondary" onClick={this.form.$('environmentVariables').onAdd}>
+                    <Button raised type="secondary" onClick={this.form.$('config').onAdd}>
                       Add env var
                     </Button>
                   </Grid> */}
