@@ -46,10 +46,7 @@ query {
       id
       name
     }
-    config {
-      key
-      value
-    }
+    config
   }
   environments {
     id
@@ -74,7 +71,7 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
+mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $environmentId: String!, $config: String!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
     key: $key,
@@ -91,7 +88,7 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $fo
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
+mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: String!, $component: String!) {
     updateExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
@@ -109,7 +106,7 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type:
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
+mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: String!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
@@ -215,7 +212,24 @@ export default class ExtensionSpecs extends React.Component {
   }
 
   closeDrawer(){
-    this.setState({ drawerOpen: false, dialogOpen: false })
+    this.form.reset()
+    this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
+  }
+
+  convertKVArrayToObject(kvArray){
+    var obj = {}
+    kvArray.forEach(function(kv){
+      obj[kv.key] = kv.value
+    })
+    return obj
+  }
+
+  convertObjectToKVArray(obj){
+    var kvArray = []
+    Object.keys(obj).forEach(function(objKey){
+      kvArray.push({ key: objKey, value: obj[objKey] })
+    })
+    return kvArray
   }
 
   handleClick(e, extension, index){
@@ -223,26 +237,33 @@ export default class ExtensionSpecs extends React.Component {
     this.form.$('index').set(index)
     this.form.$('name').set(extension.name)
     this.form.$('key').set(extension.key)
-    this.form.$('environmentId').set(extension.environment.id)
-    this.form.update({ config: extension.config })
+    this.form.update({ config: this.convertObjectToKVArray(JSON.parse(extension.config)) })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
+
+    if(extension.environment){
+      this.form.$('environmentId').set(extension.environment.id)
+    }
 
     this.openDrawer()
   }
 
   onSuccess(form){
     this.setState({ saving: true })
-    if(this.form.values()['id'] === ''){
+
+    var values = this.form.values()
+    values.config = JSON.stringify(this.convertKVArrayToObject(values.config))
+
+    if(values.id === ''){
       this.props.createExtensionSpec({
-        variables: form.values(),
+        variables: values,
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer()
       });
     } else {
       this.props.updateExtensionSpec({
-        variables: form.values(),
+        variables: values,
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer()
