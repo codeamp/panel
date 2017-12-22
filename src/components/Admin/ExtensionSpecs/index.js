@@ -46,10 +46,7 @@ query {
       id
       name
     }
-    config {
-      key
-      value
-    }
+    config
   }
   environments {
     id
@@ -74,7 +71,7 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [KeyValueInput!]!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
+mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [Json!]!, $environmentId: String!, $config: Json!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
     key: $key,
@@ -91,7 +88,7 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $fo
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
+mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
     updateExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
@@ -109,7 +106,7 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type:
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: [KeyValueInput!]!, $component: String!) {
+mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
     id: $id,
     name: $name,
@@ -189,17 +186,6 @@ export default class ExtensionSpecs extends React.Component {
         key: 'once',
         value: 'Once',
       }],
-      'config[].type': [{
-        key: 'hidden',
-        value: 'Hidden',
-      }, {
-        key: 'visible',
-        value: 'Visible',
-      }, {
-        key: 'empty',
-        value: 'Empty',
-      }],
-      'config[].value': [],
     };
 
     const hooks = {
@@ -215,7 +201,7 @@ export default class ExtensionSpecs extends React.Component {
   }
 
   closeDrawer(){
-    this.setState({ drawerOpen: false, dialogOpen: false })
+    this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
   }
 
   handleClick(e, extension, index){
@@ -223,8 +209,10 @@ export default class ExtensionSpecs extends React.Component {
     this.form.$('index').set(index)
     this.form.$('name').set(extension.name)
     this.form.$('key').set(extension.key)
-    this.form.$('environmentId').set(extension.environment.id)
-    this.form.update({ config: extension.config })
+    if(extension.environment){
+      this.form.$('environmentId').set(extension.environment.id)
+    }
+    this.form.update({ config: extension.config.config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
 
@@ -233,16 +221,21 @@ export default class ExtensionSpecs extends React.Component {
 
   onSuccess(form){
     this.setState({ saving: true })
-    if(this.form.values()['id'] === ''){
+    var values = this.form.values()
+
+    // turning [Json!]! -> Json!
+    values.config = { "config": values.config }
+
+    if(values.id === ''){
       this.props.createExtensionSpec({
-        variables: form.values(),
+        variables: values,
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer()
       });
     } else {
       this.props.updateExtensionSpec({
-        variables: form.values(),
+        variables: values,
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer()
@@ -395,7 +388,6 @@ export default class ExtensionSpecs extends React.Component {
                   </Grid>
                   <Grid item xs={12}>
                     {this.form.$('config').map(function(kv){
-
                         return (
                         <Grid container spacing={24}>
                             <Grid item xs={4}>
