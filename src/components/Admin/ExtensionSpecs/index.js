@@ -73,12 +73,12 @@ query {
 @graphql(gql`
 mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
     createExtensionSpec(extensionSpec:{
-    name: $name,
-    key: $key,
-    type: $type,
-    environmentId: $environmentId,
-    config: $config,
-    component: $component,
+      name: $name,
+      key: $key,
+      type: $type,
+      environmentId: $environmentId,
+      config: $config,
+      component: $component,
     }) {
         id
         name
@@ -90,13 +90,13 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $en
 @graphql(gql`
 mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
     updateExtensionSpec(extensionSpec:{
-    id: $id,
-    name: $name,
-    key: $key,
-    type: $type,
-    environmentId: $environmentId,
-    config: $config,
-    component: $component,
+      id: $id,
+      name: $name,
+      key: $key,
+      type: $type,
+      environmentId: $environmentId,
+      config: $config,
+      component: $component,
     }) {
         id
         name
@@ -108,13 +108,13 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type:
 @graphql(gql`
 mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
     deleteExtensionSpec(extensionSpec:{
-    id: $id,
-    name: $name,
-    key: $key,
-    type: $type,
-    environmentId: $environmentId,
-    config: $config,
-    component: $component,
+      id: $id,
+      name: $name,
+      key: $key,
+      type: $type,
+      environmentId: $environmentId,
+      config: $config,
+      component: $component,
     }) {
         id
         name

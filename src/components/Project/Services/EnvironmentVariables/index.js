@@ -49,7 +49,6 @@ query Project($slug: String, $environmentId: String){
       }
       type
       created
-      version
       versions {
         id
         key
@@ -60,7 +59,6 @@ query Project($slug: String, $environmentId: String){
         }
         type
         created
-        version
       }
     }
   }
@@ -94,7 +92,6 @@ query Project($slug: String, $environmentId: String){
           id
           name
         }
-        version
         created
     }
 }`, {name: "createEnvironmentVariable"})
@@ -119,7 +116,6 @@ mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!
           id
           name
         }
-        version
         created
     }
 }`, {name: "updateEnvironmentVariable"})
@@ -145,7 +141,6 @@ mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!
           id
           name
         }
-        version
         created
     }
 }`, {name: "deleteEnvironmentVariable"})
@@ -235,7 +230,6 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onSuccess(form){
-
     form.$('projectId').set(this.props.data.project.id)
     form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
     form.$('scope').set('project')
@@ -270,13 +264,13 @@ export default class EnvironmentVariables extends React.Component {
   };
 
   openDrawer(){
-    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true })
+    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
   }
 
   closeDrawer(){
     this.form.reset()
     this.form.showErrors(false)
-    this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: false, dialogOpen: false })
+    this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false })
   }
 
   handleDeleteEnvVar(){
@@ -360,7 +354,7 @@ export default class EnvironmentVariables extends React.Component {
                     </TableCell>
 
                     <TableCell>
-                      {envVar.version}
+                      {idx}
                     </TableCell>
                   </TableRow>
                 )
@@ -452,7 +446,9 @@ export default class EnvironmentVariables extends React.Component {
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}
-                          disabled={this.state.saving || project.environmentVariables.length > 0 && project.environmentVariables[this.form.values()['index']] && this.form.$('value').value === project.environmentVariables[this.form.values()['index']].value}
+                          disabled={this.state.saving || project.environmentVariables.length > 0 &&
+                            project.environmentVariables[this.form.values()['index']] &&
+                            this.form.$('value').value === project.environmentVariables[this.form.values()['index']].value}
                           type="submit"
                           raised
                           onClick={e => this.onSubmit(e)}>
@@ -507,7 +503,7 @@ export default class EnvironmentVariables extends React.Component {
                                   onClick={() => self.onClickVersion(idx)}
                                   key={envVar.id}>
                                 <TableCell>
-                                  {envVar.version}
+                                  {idx}
                                 </TableCell>
                                 <TableCell>
                                   {envVar.user.email}
