@@ -154,20 +154,6 @@ export default class DockerBuilder extends React.Component {
                 <InputField field={this.form.$('EMAIL')} />
               </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <Button raised color="primary" className={styles.rightPad}
-                onClick={this.onAdd.bind(this)}
-                disabled={this.state.addButtonDisabled}
-              >
-                Save
-              </Button>
-              <Button color="primary"
-                className={styles.paddingLeft}
-                onClick={this.props.handleClose}
-              >
-                cancel
-              </Button>
-            </Grid>
           </form>
         </div>
       )
