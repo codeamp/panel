@@ -71,7 +71,7 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $formSpec: [Json!]!, $environmentId: String!, $config: Json!, $component: String!) {
+mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
     createExtensionSpec(extensionSpec:{
     name: $name,
     key: $key,
@@ -215,6 +215,10 @@ export default class ExtensionSpecs extends React.Component {
     this.form.update({ config: extension.config.config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
+
+    if(extension.environment){
+      this.form.$('environmentId').set(extension.environment.id)
+    }
 
     this.openDrawer()
   }
