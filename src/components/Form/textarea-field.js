@@ -10,8 +10,8 @@ export default observer(({field, fullWidth}) => (
   <div className={styles.root}>
     <FormControl fullWidth={fullWidth} {...field.error ? {error: true} : {}}>
       <Typography type="subheading" htmlFor={field.id}>{field.label}</Typography>
-      <textarea type={field.type} {...field.bind()} style={{ width: 300, height: 200}}>
-      {field.value}
+      <textarea type={field.type} {...field.bind()} style={{ height: 300}}>
+        {field.value}
       </textarea>
       <FormHelperText>{field.error}</FormHelperText>
     </FormControl>

@@ -84,7 +84,7 @@ export default class LeftNav extends React.Component {
               <ListItemText primary="Admin" />
               {this.state.open ? <ExpandLess /> : <ExpandMore />}
             </ListItem>
-            <Collapse in={this.state.open} transitionDuration="auto" unmountOnExit>
+            <Collapse in={this.state.open} unmountOnExit>
               <NavLink to="/admin/environments" exact activeClassName={styles.active}>
                 <ListItem button>
                   <ListItemIcon>
@@ -122,7 +122,7 @@ export default class LeftNav extends React.Component {
           <Divider/>
           <List>
           { projectTitleItem }
-          <Collapse in={this.state.openProject} transitionDuration="auto" unmountOnExit>
+          <Collapse in={this.state.openProject} unmountOnExit>
             {this.props.store.app.leftNavItems.map(nav =>
               <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
                 <ListItem button>

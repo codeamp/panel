@@ -332,7 +332,7 @@ export default class ServiceSpecs extends React.Component {
                   <Grid item xs={6}>
                     <InputField field={this.form.$('memoryLimit')} fullWidth={true} />
                   </Grid>
-                  <Grid item xs={8}>
+                  <Grid item xs={6}>
                     <InputField field={this.form.$('terminationGracePeriod')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>

@@ -264,7 +264,6 @@ export default class ExtensionSpecs extends React.Component {
   }
 
   onError(){
-    //todo
     return
   }
 
@@ -384,26 +383,26 @@ export default class ExtensionSpecs extends React.Component {
                     <InputField field={this.form.$('key')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' />
+                    <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('type')} autoWidth={true} />
+                    <SelectField field={this.form.$('type')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <InputField field={this.form.$('component')} fullWith={true} />
+                    <InputField field={this.form.$('component')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography type="subheading">Config </Typography>
+                    <Typography type="title">Config</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     {this.form.$('config').map(function(kv){
                         return (
-                        <Grid container spacing={24}>
-                            <Grid item xs={4}>
-                                <InputField field={kv.$('key')} fullWidth={false} className={styles.containerPortFormInput} />
+                        <Grid container spacing={24} key={kv.id}>
+                            <Grid item xs={5}>
+                                <InputField field={kv.$('key')} fullWidth={true} />
                             </Grid>
-                            <Grid item xs={7}>
-                                <EnvVarSelectField field={kv.$('value')} autoWidth={true} extraKey="config" />
+                            <Grid item xs={5}>
+                                <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
                             </Grid>
                             <Grid item xs={1}>
                             <IconButton>

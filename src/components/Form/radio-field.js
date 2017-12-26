@@ -10,18 +10,18 @@ import { FormLabel } from 'material-ui/Form';
 export default observer(({field}) => (
   <div className={styles.root}>
     <Grid container spacing={12}>   
-        {field.extra.map(option => (
-            <Grid item xs={6}>    
-                <Radio
-                {...field.bind()}
-                name={option}
-                value={option}
-                checked={option === field.value}
-                />
-                <FormLabel>{option}</FormLabel>
-            </Grid>                
-        ))}
-        <FormHelperText>{field.error}</FormHelperText>            
+      {field.extra.map(option => (
+      <Grid item xs={6}>    
+        <Radio
+          {...field.bind()}
+          name={option}
+          value={option}
+          checked={option === field.value}
+        />
+        <FormLabel>{option}</FormLabel>
+      </Grid>                
+      ))}
+      <FormHelperText>{field.error}</FormHelperText>            
     </Grid>
   </div>
 ));

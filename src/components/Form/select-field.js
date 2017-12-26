@@ -9,34 +9,34 @@ import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
-export default observer(({field, autoWidth, extraKey }) => {
-    let extraOptions = field.extra
+export default observer(({field, autoWidth, extraKey, fullWidth }) => {
+  let extraOptions = field.extra
 
-    if(extraKey){
-        extraOptions = field.state.extra()[extraKey]
-    }
+  if(extraKey){
+    extraOptions = field.state.extra()[extraKey]
+  }
 
-    return (
-        <div>
-            <FormControl>
-                <InputLabel>{field.label}</InputLabel>
-                <Select
-                    {...field.bind()}
-                    autoWidth={autoWidth}
-                    value={field.value}
-                    className={styles.selectField}
-                    input={<Input id={field.value} />}
-                >
-                    {extraOptions.map(option => (
-                        <MenuItem
-                            key={option.key}
-                            value={option.key}>
-                            {option.value}
-                        </MenuItem>
-                    ))}
-                </Select>
-                <FormHelperText> {field.helperText} </FormHelperText>
-            </FormControl>
-        </div>
+  return (
+    <div>
+      <FormControl fullWidth={fullWidth} {...field.error ? {error: true} : {}}>
+        <InputLabel>{field.label}</InputLabel>
+        <Select
+          {...field.bind()}
+          autoWidth={autoWidth}
+          value={field.value}
+          className={styles.selectField}
+          input={<Input id={field.value} />}
+        >
+          {extraOptions.map(option => (
+          <MenuItem
+            key={option.key}
+            value={option.key}>
+            {option.value}
+          </MenuItem>
+          ))}
+        </Select>
+        <FormHelperText> {field.helperText} </FormHelperText>
+      </FormControl>
+    </div>
     )
 });

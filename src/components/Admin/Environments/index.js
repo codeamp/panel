@@ -248,11 +248,9 @@ export default class Environments extends React.Component {
               <form>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
-                      <Grid item xs={12}>
-                        <Grid item xs={6}>
-                          <InputField field={this.form.$('name')} fullWidth={true} />
-                        </Grid>
-                      </Grid>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('name')} fullWidth={true} />
+                    </Grid>
                     <Grid item xs={12}>
                       <Button color="primary"
                         className={styles.buttonSpacing}

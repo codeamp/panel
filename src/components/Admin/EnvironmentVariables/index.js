@@ -56,26 +56,6 @@ import Grow from 'material-ui/transitions/Grow';
         name
         created
       }
-      versions {
-        id
-        key
-        value
-        created
-        scope
-        project {
-          id
-        }
-        user {
-          id
-          email
-        }
-        type
-        environment {
-          id
-          name
-          created
-        }
-      }
     }
   }
 `)
@@ -164,16 +144,13 @@ export default class EnvironmentVariables extends React.Component {
       'key',
       'value',
       'created',
-      'version',
       'type',
       'scope',
       'environmentId',
       'projectId',
-      'selectedVersionIndex',
     ];
     const initials = {
       'projectId': '',
-      'selectedVersionIndex': '',
       'index': '',
     }
     const rules = {
@@ -185,7 +162,6 @@ export default class EnvironmentVariables extends React.Component {
       'value': 'Value',
       'scope': 'Scope',
       'environmentId': 'Environment',
-      'version': 'Version',
     };
     const types = {};
     const keys = {};
@@ -195,7 +171,7 @@ export default class EnvironmentVariables extends React.Component {
 
     const extra = {
       'type': [{key: 'build', value: 'Build'}, {key: 'env', value: 'Normal' },{key: 'file', value: 'File'}],
-      'scope': [{key: 'extension', value: 'Extension'}, {key: 'global', value: 'Global'}],
+      'scope': [{key: 'global', value: 'Global'}, {key: 'extension', value: 'Extension'}],
       'environmentId': [],
     };
     const hooks = {};
@@ -229,19 +205,9 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
-  onClickVersion(versionIndex){
-    this.form.$('selectedVersionIndex').set(versionIndex)
-    this.form.$('scope').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIndex].scope)
-  }
-
   onError(form){
     // TODO
     return
-  }
-
-  replaceEnvVarValue(e){
-    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value);
-    this.onSubmit(e)
   }
 
   onSuccess(form){
@@ -261,7 +227,6 @@ export default class EnvironmentVariables extends React.Component {
       }).then(({data}) => {
         this.props.data.refetch()
         this.form.$('id').set(data.updateEnvironmentVariable.id)
-        this.form.$('selectedVersionIndex').set('')
         this.form.$('key').set('disabled', true)
         this.setState({ saving: false })
       });
@@ -295,14 +260,6 @@ export default class EnvironmentVariables extends React.Component {
       });
       this.setState({ dialogOpen: false })
     }
-  }
-
-  showPreviousVersionValue() {
-    const environmentVariables = this.props.data.environmentVariables;
-    return this.form.values()['index'] !== '' &&
-     environmentVariables[this.form.values()['index']] &&
-     environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']] &&
-     environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value !== environmentVariables[this.form.values()['index']].value;
   }
 
   render() {
@@ -354,9 +311,6 @@ export default class EnvironmentVariables extends React.Component {
                 <TableCell>
                   Created
                 </TableCell>
-                <TableCell>
-                  Version
-                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -384,9 +338,6 @@ export default class EnvironmentVariables extends React.Component {
                     </TableCell>
                     <TableCell>
                       {new Date(envVar.created).toString()}
-                    </TableCell>
-                    <TableCell>
-                      {idx}
                     </TableCell>
                   </TableRow>
                 )
@@ -444,147 +395,58 @@ export default class EnvironmentVariables extends React.Component {
               <div className={styles.drawerBody}>
                 <Grid container spacing={24} className={styles.grid}>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('scope')} autoWidth={true} />
+                    <SelectField field={this.form.$('scope')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' />
+                    <SelectField field={this.form.$('environmentId')} fullWidth={true} extraKey='environmentId' />
                   </Grid>
 
                   {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
+                  <Grid item xs={12}>
                     <Grid item xs={12}>
-                      <Grid item xs={6}>
-                        <InputField field={this.form.$('key')} fullWidth={true} />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <InputField field={this.form.$('value')} fullWidth={true} />
-                      </Grid>
-                      {this.showPreviousVersionValue() &&
-                        <Grid item xs={6}>
-                          <Input value={environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value} fullWidth={true} disabled />
-                        </Grid>
-                      }
+                      <InputField field={this.form.$('key')} fullWidth={true} />
                     </Grid>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('value')} fullWidth={true} />
+                    </Grid>
+                  </Grid>
                   }
 
                   {this.form.$('type').value === 'file' &&
+                  <Grid item xs={12}>
                     <Grid item xs={12}>
-                      <Grid item xs={5}>
-                        <InputField field={this.form.$('key')} fullWidth={true} />
-                      </Grid>
-                      <br/>
-                      <Grid item xs={5}>
-                        <TextareaField field={this.form.$('value')} />
-                      </Grid>
-                      {this.showPreviousVersionValue() &&
-                        <Grid item xs={6}>
-                          <textarea style={{ width: 300, height: 200, scrollable: 'true' }} readOnly>
-                            {environmentVariables[this.form.values()['index']].versions[this.form.values()['selectedVersionIndex']].value}
-                          </textarea>
-                        </Grid>
-                      }
+                      <InputField field={this.form.$('key')} fullWidth={true} />
                     </Grid>
+                    <br/>
+                    <Grid item xs={12}>
+                      <TextareaField field={this.form.$('value')} fullWidth={true} />
+                    </Grid>
+                  </Grid>
                   }
 
-                  {this.showPreviousVersionValue() &&
-                    <Grid item xs={12}>
-                      <Button color="default"
-                        raised onClick={this.replaceEnvVarValue.bind(this)}>
-                        Revert
-                      </Button>
-                    </Grid>
-                    }
-
-                    <br/>
-
-                    <Grid item xs={12}>
-                      <Button color="primary"
-                        className={styles.buttonSpacing}
-                        disabled={this.state.loading}
-                        type="submit"
-                        raised
-                        onClick={e => this.onSubmit(e)}>
-                        Save
-                      </Button>
-                      {this.form.values()['id'] &&
-                        <Button
-                          disabled={this.state.saving}
-                          color="accent"
-                          onClick={()=>this.setState({ dialogOpen: true })}>
-                          Delete
-                        </Button>
-                      }
+                  <Grid item xs={12}>
+                    <Button color="primary"
+                      className={styles.buttonSpacing}
+                      disabled={this.state.loading}
+                      type="submit"
+                      raised
+                      onClick={e => this.onSubmit(e)}>
+                      Save
+                    </Button>
+                    {this.form.values()['id'] &&
                       <Button
-                        color="primary"
-                        onClick={this.closeDrawer.bind(this)}>
-                        Cancel
+                        disabled={this.state.saving}
+                        color="accent"
+                        onClick={()=>this.setState({ dialogOpen: true })}>
+                        Delete
                       </Button>
-                    </Grid>
-
-                    <br/>
-                    {environmentVariables[this.form.values()['index']] != null &&
-                     environmentVariables[this.form.values()['index']].versions.length > 0 &&
-                     <div>
-                    <Grid item xs={12}>
-                      <Paper className={styles.tablePaper}>
-                        <Toolbar>
-                          <div>
-                            <Typography type="title">
-                              Version History
-                            </Typography>
-                          </div>
-                        </Toolbar>
-                        <Table>
-                          <TableHead>
-                            <TableRow>
-                              <TableCell>
-                                Version
-                              </TableCell>
-                              <TableCell>
-                                Creator
-                              </TableCell>
-                              <TableCell>
-                                Created At
-                              </TableCell>
-                              <TableCell>
-                                Scope
-                              </TableCell>
-                              <TableCell>
-                                Environment
-                              </TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                             {environmentVariables[this.form.values()['index']].versions.map(function(envVar, idx){
-                              return (
-                                <TableRow
-                                  hover
-                                  tabIndex={-1}
-                                  onClick={() => self.onClickVersion(idx)}
-                                  key={envVar.id}>
-                                  <TableCell>
-                                    {idx}
-                                  </TableCell>
-                                  <TableCell>
-                                    {envVar.user.email}
-                                  </TableCell>
-                                  <TableCell>
-                                    {new Date(envVar.created).toString()}
-                                  </TableCell>
-                                  <TableCell>
-                                    {envVar.scope}
-                                  </TableCell>
-                                  <TableCell>
-                                    {envVar.environment.name}
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            })}
-                          </TableBody>
-                        </Table>
-                      </Paper>
-                    </Grid>
-                  </div>
-                  }
+                    }
+                    <Button
+                      color="primary"
+                      onClick={this.closeDrawer.bind(this)}>
+                      Cancel
+                    </Button>
+                  </Grid>
                 </Grid>
               </div>
             </form>
