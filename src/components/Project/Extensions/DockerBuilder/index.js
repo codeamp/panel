@@ -91,7 +91,8 @@ export default class DockerBuilder extends React.Component {
     Object.keys(this.props.config.values()).map(function(key){
       userConfig.config.push({ "key": key, "value": self.props.config.values()[key] })
     })
-    console.log(userConfig)
+
+    console.log(userConfig.config)
 
     if(this.props.viewType === 'edit'){
         let vars = {
@@ -109,7 +110,7 @@ export default class DockerBuilder extends React.Component {
           }
         }).then(({ data }) => {
           this.setState({ addButtonDisabled: false })
-          this.props.data.refetch()
+          this.props.refetch()
           this.props.handleClose()
         });
     } else if(this.props.viewType === 'read'){
@@ -224,25 +225,10 @@ export default class DockerBuilder extends React.Component {
                     </Table>
                 </Paper>
             </Grid>
-            <Grid item xs={12}>
-              <Button raised color="primary" className={styles.rightPad}
-                onClick={this.onAdd.bind(this)}
-                disabled={this.state.addButtonDisabled}
-              >
-                Save
-              </Button>
-              <Button color="primary"
-                className={styles.paddingLeft}
-                onClick={this.props.handleClose}
-              >
-                cancel
-              </Button>
-            </Grid>
           </form>
         </div>
       )
     }
-
 
     return view
   }

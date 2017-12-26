@@ -60,7 +60,6 @@ query {
     created
     scope
     type
-    version
     environment {
       id
       name
@@ -205,6 +204,12 @@ export default class ExtensionSpecs extends React.Component {
   }
 
   handleClick(e, extension, index){
+
+    var config = {}
+    if(extension.config){
+      config = extension.config.config
+    }
+    
     this.form.$('id').set(extension.id)
     this.form.$('index').set(index)
     this.form.$('name').set(extension.name)
@@ -212,7 +217,7 @@ export default class ExtensionSpecs extends React.Component {
     if(extension.environment){
       this.form.$('environmentId').set(extension.environment.id)
     }
-    this.form.update({ config: extension.config.config })
+    this.form.update({ config: config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
 
