@@ -26,10 +26,10 @@ export default observer(({field, autoWidth, extraKey }) => {
                     autoWidth={autoWidth}
                     value={field.value}
                     className={styles.selectField}
-                    input={<Input id={field.key} />}
+                    input={<Input id={field.value} />}
                 >
                     {extraOptions.map(option => (
-                        <MenuItem 
+                        <MenuItem
                             key={option.key}
                             value={option.key}>
                             {option.value}

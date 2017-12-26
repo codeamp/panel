@@ -31,7 +31,7 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-    query { 
+    query {
       environments {
         id
         name
@@ -117,10 +117,10 @@ export default class Environments extends React.Component {
     this.setState({ saving: true })
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
-  
+
   onError(form){
     this.setState({ saving: false })
-  }  
+  }
 
   onClick(envIdx){
 
@@ -140,7 +140,7 @@ export default class Environments extends React.Component {
       }).then(({data}) => {
         this.closeDrawer()
         this.props.data.refetch()
-      });      
+      });
     } else {
       this.props.createEnvironment({
         variables: form.values(),

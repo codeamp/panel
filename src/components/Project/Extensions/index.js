@@ -18,6 +18,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import InputField from 'components/Form/input-field';
+import SelectField from 'components/Form/select-field';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
@@ -80,11 +81,11 @@ import DockerBuilder from './DockerBuilder';
 })
 
 @graphql(gql`
-  mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
+  mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $environmentVariables: [ExtensionEnvironmentVariableInput!]!, $environmentId: String!) {
       createExtension(extension:{
         projectId: $projectId,
         extensionSpecId: $extensionSpecId,
-        formSpecValues: $formSpecValues,
+        environmentVariables: $environmentVariables,
         environmentId: $environmentId,
       }) {
           id
@@ -93,12 +94,12 @@ import DockerBuilder from './DockerBuilder';
 )
 
 @graphql(gql`
-  mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
+  mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $environmentVariables: [ExtensionEnvironmentVariableInput!]!, $environmentId: String!) {
       updateExtension(extension:{
         id: $id,
         projectId: $projectId,
         extensionSpecId: $extensionSpecId,
-        formSpecValues: $formSpecValues,
+        environmentVariables: $environmentVariables,
         environmentId: $environmentId,
       }) {
           id
@@ -107,12 +108,12 @@ import DockerBuilder from './DockerBuilder';
 )
 
 @graphql(gql`
-  mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $formSpecValues: [KeyValueInput!]!, $environmentId: String!) {
+  mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $environmentVariables: [ExtensionEnvironmentVariableInput!]!, $environmentId: String!) {
       deleteExtension(extension:{
         id: $id,
         projectId: $projectId,
         extensionSpecId: $extensionSpecId,
-        formSpecValues: $formSpecValues,
+        environmentVariables: $environmentVariables,
         environmentId: $environmentId,
       }) {
           id
@@ -267,7 +268,7 @@ export default class Extensions extends React.Component {
           variables: {
             'projectId': this.props.data.project.id,
             'extensionSpecId': this.state.availableExtensionsDrawer.currentExtensionSpec.id,
-            'formSpecValues': [],
+            'environmentVariables': [],
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
@@ -287,6 +288,7 @@ export default class Extensions extends React.Component {
 
   renderFormSpecFromExtensionSpec(extensionSpec){
 	  let form = (<div></div>)
+    const self = this
 
     if(extensionSpec.id !== -1){
         switch(extensionSpec.component){
@@ -301,63 +303,75 @@ export default class Extensions extends React.Component {
                         viewType="edit" />)
             break;
         default:
-            if(extensionSpec.formSpec.length > 0 ){
-                if(extensionSpec.id !== -1 ){
+            // loop through env vars
 
-                  let plugins = {
-                    dvr: validatorjs,
-                  }
+            // filter to hidden and visible only
+            const filteredExtensionSpecEnvVars = extensionSpec.environmentVariables.filter(function(envVar){
+              if(envVar.type === "empty" || envVar.type === "visible"){
+                return true
+              }
+              return false
+            })
 
-                  let fields= extensionSpec.formSpec.map(function(kv){
-                    return kv.key
-                  })
+            const fields = ['extensionSpecEnvironmentVariables',
+              'extensionSpecEnvironmentVariables[].environmentVariable',
+              'extensionSpecEnvironmentVariables[].extensionSpecEnvironmentVariable']
 
-                  let rules = {}
-                  extensionSpec.formSpec.map(function(kv){
-                    rules[kv.key] = kv.value
-                  })
+            console.log(fields)
 
-                  let labels = {}
-                  extensionSpec.formSpec.map(function(kv){
-                    labels[kv.key] = kv.key
-                  })
+            const rules = {};
 
+            const labels = {};
 
-                  this.form = new MobxReactForm({ fields, rules, labels, plugins })
-                  var self = this;
-                  form = (
-                    <div>
-                      <form>
-                        <Typography>
-                          {fields.map(function(field){
-                               return (
-                                 <InputField field={self.form.$(field)} />
-                               )
-                            })}
-                        </Typography>
-                      </form>
-                    </div>
+            const values = {
+              'extensionSpecEnvironmentVariables': [],
+            };
+
+            filteredExtensionSpecEnvVars.forEach(function(envVar){
+              console.log(envVar)
+              values['extensionSpecEnvironmentVariables'].push({
+                'environmentVariable': { key: envVar.key, id: envVar.environmentVariable.id },
+                'extensionSpecEnvironmentVariable': envVar.id,
+              })
+            });
+
+            const types = {};
+
+            const extra = {
+              'extensionSpecEnvironmentVariables[].environmentVariable': [],
+            };
+            filteredExtensionSpecEnvVars.forEach(function(envVar){
+              self.props.project.environmentVariables.forEach(function(listEnvVar){
+                  extra['extensionSpecEnvironmentVariables[].environmentVariable'].push(listEnvVar)
+              })
+            })
+
+            const hooks = {};
+
+            const handlers = {}
+
+            const plugins = { dvr: validatorjs };
+
+            this.availableExtensionsForm = new MobxReactForm({ fields, rules, labels, values, extra, hooks, types }, { handlers }, { plugins })
+
+            console.log(this.availableExtensionsForm.values())
+
+            form = (
+              <div>
+                {self.availableExtensionsForm.$('extensionSpecEnvironmentVariables').map(function(kv){
+                  return (
+                    <Grid item xs={12}>
+                      <SelectField autoWidth={false} field={kv.$('environmentVariable')} varType="extensionSpecEnvironmentVariable" />
+                    </Grid>
                   )
-
-                }
-            } else {
-                this.form = null
-            }
+                })}
+              </div>
+            )
         }
     } else {
-        this.form = null
+      this.availableExtensionsForm = null
     }
 	return form
-  }
-
-  renderFormSpecValues(extension){
-		let formSpecValues = JSON.parse(extension.formSpecValues)
-		formSpecValues = JSON.stringify(formSpecValues, null, 2)
-		return (
-			<Typography type="body2">
-				{formSpecValues}
-			</Typography>
-		)
   }
 
   renderAddedExtensionView(extension){
@@ -426,26 +440,36 @@ export default class Extensions extends React.Component {
   }
 
   handleDeleteExtension(){
-    let variables = {
-        'id': this.state.addedExtensionsDrawer.currentExtension.id,
-        'projectId': this.props.data.project.id,
-        'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
-        'formSpecValues': this.state.addedExtensionsDrawer.currentExtension.formSpec,
-        'environmentId': this.props.store.app.currentEnvironment.id,
-    }
-    this.props.deleteExtension({
-        variables: {
-            'id': this.state.addedExtensionsDrawer.currentExtension.id,
-            'projectId': this.props.data.project.id,
-            'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
-            'formSpecValues': new Array(),
-            'environmentId': this.props.store.app.currentEnvironment.id,
-        }
-    }).then(({ data }) => {
-        this.props.data.refetch()
-        this.handleCloseAddedExtensionsDrawer()
-        this.setState({ dialogOpen: false })
-    })
+      console.log('handleDeleteExtension')
+
+      const environmentVariables = new Array()
+
+      console.log(this.state.addedExtensionsDrawer.currentExtension)
+
+      let variables = {
+          'id': this.state.addedExtensionsDrawer.currentExtension.id,
+          'projectId': this.props.data.project.id,
+          'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
+          'environmentVariables': environmentVariables,
+          'environmentId': this.props.store.app.currentEnvironment.id,
+      }
+      console.log(variables)
+
+      this.props.deleteExtension({
+          variables: {
+              'id': this.state.addedExtensionsDrawer.currentExtension.id,
+              'projectId': this.props.data.project.id,
+              'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.extensionSpec.id,
+              'environmentVariables': new Array(),
+              'environmentId': this.props.store.app.currentEnvironment.id,
+          }
+      }).then(({ data }) => {
+          console.log(data)
+      }).catch(error => {
+          console.log(error)
+      })
+
+
   }
 
   render() {
