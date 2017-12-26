@@ -12,12 +12,9 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import Input from 'material-ui/Input';
-
 import InputField from 'components/Form/input-field';
-
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-
 import styles from './style.module.css';
 
 export default class DockerBuilder extends React.Component {
@@ -85,30 +82,35 @@ export default class DockerBuilder extends React.Component {
   }
 
   onSuccess(form){
-    let formSpecValues = form.values()
-    const convertedFormSpecValues = Object.keys(formSpecValues).map(function(key, index) {
-        return {
-            'key': key,
-            'value': formSpecValues[key]
-        }
+    // convert obj -> { "config": [kv] }
+    var self = this
+    var userConfig = {
+      "config": [],
+      "form": this.form.values(),
+    }
+    Object.keys(this.props.config.values()).map(function(key){
+      userConfig.config.push({ "key": key, "value": self.props.config.values()[key] })
     })
+
+    console.log(userConfig.config)
+
     if(this.props.viewType === 'edit'){
         let vars = {
           'projectId': this.props.project.id,
           'extensionSpecId': this.state.extensionSpec.id,
-          'formSpecValues': convertedFormSpecValues,
+          'config': userConfig,
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
         this.props.createExtension({
           variables: {
             'projectId': this.props.project.id,
             'extensionSpecId': this.state.extensionSpec.id,
-            'formSpecValues': convertedFormSpecValues,
+            'config': userConfig,
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
         }).then(({ data }) => {
           this.setState({ addButtonDisabled: false })
-          this.props.data.refetch()
+          this.props.refetch()
           this.props.handleClose()
         });
     } else if(this.props.viewType === 'read'){
@@ -117,7 +119,7 @@ export default class DockerBuilder extends React.Component {
             'id': this.state.extension.id,
             'projectId': this.props.project.id,
             'extensionSpecId': this.state.extensionSpec.id,
-            'formSpecValues': convertedFormSpecValues,
+            'config': userConfig,
             'environmentId': this.props.store.app.currentEnvironment.id,
           }
         });
@@ -154,7 +156,8 @@ export default class DockerBuilder extends React.Component {
                 <InputField field={this.form.$('EMAIL')} />
               </Grid>
             </Grid>
-            <Grid item xs={12}>
+          </form>
+          <Grid item xs={12}>
               <Button raised color="primary" className={styles.rightPad}
                 onClick={this.onAdd.bind(this)}
                 disabled={this.state.addButtonDisabled}
@@ -167,8 +170,7 @@ export default class DockerBuilder extends React.Component {
               >
                 cancel
               </Button>
-            </Grid>
-          </form>
+            </Grid>          
         </div>
       )
     }
@@ -223,25 +225,10 @@ export default class DockerBuilder extends React.Component {
                     </Table>
                 </Paper>
             </Grid>
-            <Grid item xs={12}>
-              <Button raised color="primary" className={styles.rightPad}
-                onClick={this.onAdd.bind(this)}
-                disabled={this.state.addButtonDisabled}
-              >
-                Save
-              </Button>
-              <Button color="primary"
-                className={styles.paddingLeft}
-                onClick={this.props.handleClose}
-              >
-                cancel
-              </Button>
-            </Grid>
           </form>
         </div>
       )
     }
-
 
     return view
   }

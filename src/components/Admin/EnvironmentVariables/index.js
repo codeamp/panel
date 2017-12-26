@@ -51,7 +51,6 @@ import Grow from 'material-ui/transitions/Grow';
         email
       }
       type
-      version
       environment {
         id
         name
@@ -71,7 +70,6 @@ import Grow from 'material-ui/transitions/Grow';
           email
         }
         type
-        version
         environment {
           id
           name
@@ -98,7 +96,6 @@ mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: Strin
         id
         email
       }
-      version
       created
   }
 }
@@ -122,7 +119,6 @@ mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!,
         id
         email
       }
-      version
       created
   }
 }
@@ -145,7 +141,6 @@ mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!
         id
         email
       }
-      version
       created
   }
 }
@@ -391,7 +386,7 @@ export default class EnvironmentVariables extends React.Component {
                       {new Date(envVar.created).toString()}
                     </TableCell>
                     <TableCell>
-                      {envVar.version}
+                      {idx}
                     </TableCell>
                   </TableRow>
                 )
@@ -567,7 +562,7 @@ export default class EnvironmentVariables extends React.Component {
                                   onClick={() => self.onClickVersion(idx)}
                                   key={envVar.id}>
                                   <TableCell>
-                                    {envVar.version}
+                                    {idx}
                                   </TableCell>
                                   <TableCell>
                                     {envVar.user.email}
