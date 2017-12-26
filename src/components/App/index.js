@@ -83,13 +83,17 @@ export default class App extends React.Component {
     this.setState({ snackbar: { open: false, lastCreated: this.state.snackbar.lastCreated } });
   };
 
-  render() {
-    const { loading, error, projects, environments } = this.props.data;
-
-    if(this.props.store.app.snackbar.created !== this.state.snackbar.lastCreated){
-      this.state.snackbar.open = true;
-      this.state.snackbar.lastCreated = this.props.store.app.snackbar.created;
+  componentDidUpdate = (prevProps, prevState) => {
+    if(prevProps.store.app.snackbar.created !== prevState.snackbar.lastCreated){
+      this.setState({snackbar: {
+        open: true,
+        lastCreated: this.props.store.app.snackbar.created
+      }})
     }
+  }
+
+  render() {
+    const { loading, projects, environments } = this.props.data;
 
     if (loading) {
       return (<div>Loading...</div>);

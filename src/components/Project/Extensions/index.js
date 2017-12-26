@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-import { Route, Switch } from "react-router-dom";
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -17,8 +16,6 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
-import InputField from 'components/Form/input-field';
-import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -230,6 +227,7 @@ export default class Extensions extends React.Component {
     }    
     Object.keys(this.form.values()).map(function(key){
       userConfig.config.push({ "key": key, "value": self.form.values()[key] })
+      return null
     })
 
     this.props.createExtension({
@@ -319,6 +317,7 @@ export default class Extensions extends React.Component {
     var configObj ={}
     config.map(function(kv){
       configObj[kv.key] = kv.value
+      return null
     })
     var fields = Object.keys(configObj);
     const rules = {};
@@ -360,10 +359,8 @@ export default class Extensions extends React.Component {
     let view = (<div></div>);
 
     if(extension.id !== -1){
-      var customComponentExists = false;
         switch(extension.extensionSpec.component){
             case "DockerBuilderView":
-                customComponentExists = true;
                 view = (
                   <DockerBuilder
                     project={this.props.data.project}
@@ -422,15 +419,6 @@ export default class Extensions extends React.Component {
   }
 
   handleDeleteExtension(){
-      const environmentVariables = new Array()
-      let variables = {
-        'id': this.state.addedExtensionsDrawer.currentExtension.id,
-        'projectId': this.props.data.project.id,
-        'extensionSpecId': this.state.addedExtensionsDrawer.currentExtension.id,
-        'config': this.state.addedExtensionsDrawer.currentExtension.config,
-        'environmentId': this.props.store.app.currentEnvironment.id,
-      }
-
       this.props.deleteExtension({
           variables: {
             'id': this.state.addedExtensionsDrawer.currentExtension.id,

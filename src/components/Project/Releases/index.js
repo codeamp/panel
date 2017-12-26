@@ -5,7 +5,7 @@ import Typography from 'material-ui/Typography';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import { CircularProgress } from 'material-ui/Progress';
-import Card, { CardActions, CardContent } from 'material-ui/Card';
+import Card, { CardContent } from 'material-ui/Card';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
@@ -13,7 +13,6 @@ import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
 import ForkIcon from 'react-icons/lib/fa/code-fork';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
-import { withTheme } from 'material-ui/styles';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
@@ -21,18 +20,6 @@ import ReleaseStateFailedIcon from 'material-ui-icons/Error';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
-
-const inlineStyles = {
-    extensionLogs: {
-        background: "black",
-        color: "white",
-        fontSize: 12,
-        padding: 10,
-        fontFamily: 'monospace',
-        minHeight: 250,
-        overflow: 'scroll',
-    }
-}
 
 class ReleaseView extends React.Component {
   render() {

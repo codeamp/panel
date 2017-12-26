@@ -15,18 +15,12 @@ import { FormControl } from 'material-ui/Form';
 import Input, { InputLabel } from 'material-ui/Input';
 import Select from 'material-ui/Select';
 import { MenuItem } from 'material-ui/Menu';
-
-
-
 import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import ServiceSpecIcon from 'material-ui-icons/Description';
 import ExtensionIcon from 'material-ui-icons/Extension';
 import EnvironmentVariableIcon from 'material-ui-icons/VpnKey';
 import EnvironmentIcon from 'material-ui-icons/Public';
-
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
 
 @withRouter
 @inject("store") @observer

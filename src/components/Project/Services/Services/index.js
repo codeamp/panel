@@ -25,19 +25,11 @@ import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
-import { graphql, compose, withApollo } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
-
-const inlineStyles = {
-  addButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-  }
-}
 
 @inject("store") @observer
 @graphql(gql`

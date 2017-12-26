@@ -159,7 +159,7 @@ export default class ExtensionSpecs extends React.Component {
       'name': 'Name',
       'key': 'Key',
       'type': 'Type',
-      'config': "Form Specification",
+      'config': 'Form Specification',
       'config[].key': 'Key',
       'config[].value': 'Value',
       'component': 'React Component',
@@ -281,9 +281,6 @@ export default class ExtensionSpecs extends React.Component {
         </div>
       )
     }
-
-    var self = this
-
 
     const envVarOptions = environmentVariables.map(function(envVar){
       return {
@@ -448,7 +445,7 @@ export default class ExtensionSpecs extends React.Component {
                           Save
                     </Button>
 
-                    {this.form.values()['id'] != '' &&
+                    {this.form.values()['id'] !== '' &&
                       <Button
                         disabled={this.state.saving}
                         color="accent"

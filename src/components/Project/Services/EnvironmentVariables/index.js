@@ -22,7 +22,7 @@ import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-import { graphql, compose, withApollo } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 const inlineStyles = {
@@ -446,9 +446,7 @@ export default class EnvironmentVariables extends React.Component {
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}
-                          disabled={this.state.saving || project.environmentVariables.length > 0 &&
-                            project.environmentVariables[this.form.values()['index']] &&
-                            this.form.$('value').value === project.environmentVariables[this.form.values()['index']].value}
+                          disabled={this.state.saving}
                           type="submit"
                           raised
                           onClick={e => this.onSubmit(e)}>

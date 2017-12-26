@@ -124,7 +124,7 @@ class FeatureView extends React.Component {
               <CopyGitHashIcon />
             </IconButton>
             <Button raised color="primary"
-              disabled={this.state.disabledDeployBtn || project.extensions.length == 0}
+              disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
               { this.state.text }
@@ -255,10 +255,6 @@ export default class Features extends React.Component {
               handleOnClick={() => self.setState({ activeFeatureKey: idx })}
               showFullView={self.state.activeFeatureKey === idx} />
             )
-            if(project.currentRelease && project.currentRelease.state !== "" && new Date(project.currentRelease.headFeature.created).getTime() > new Date(feature.created).getTime() || (project.currentRelease && project.currentRelease.headFeature.message === feature.message)){
-                  featureView = ""
-            }
-
             return featureView
         })}
           <br/>

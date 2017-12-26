@@ -5,13 +5,6 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Paper from 'material-ui/Paper';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
-import Input from 'material-ui/Input';
 import InputField from 'components/Form/input-field';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
@@ -68,6 +61,7 @@ export default class DockerBuilder extends React.Component {
         let obj = {}
         this.props.extension.formSpecValues.map(function(kv) {
             obj[kv['key']] = kv.value
+            return null
         })
 
 
@@ -90,17 +84,12 @@ export default class DockerBuilder extends React.Component {
     }
     Object.keys(this.props.config.values()).map(function(key){
       userConfig.config.push({ "key": key, "value": self.props.config.values()[key] })
+      return null
     })
 
     console.log(userConfig.config)
 
     if(this.props.viewType === 'edit'){
-        let vars = {
-          'projectId': this.props.project.id,
-          'extensionSpecId': this.state.extensionSpec.id,
-          'config': userConfig,
-          'environmentId': this.props.store.app.currentEnvironment.id,
-        }
         this.props.createExtension({
           variables: {
             'projectId': this.props.project.id,

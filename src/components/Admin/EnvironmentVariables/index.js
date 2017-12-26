@@ -7,7 +7,6 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import Input from 'material-ui/Input';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -18,7 +17,6 @@ import { MenuItem, MenuList } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import TextareaField from 'components/Form/textarea-field';
 import SelectField from 'components/Form/select-field';
-import EnvVarSelectField from 'components/Form/envvar-select-field';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
@@ -206,13 +204,11 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onError(form){
-    // TODO
     return
   }
 
   onSuccess(form){
     this.form.$('key').set('disabled', false)
-    var self = this
     if(this.form.values()['id'] === ""){
       this.props.createEnvironmentVariable({
         variables: form.values(),

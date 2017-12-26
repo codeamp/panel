@@ -2,8 +2,6 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
-import Card, { CardActions, CardContent } from 'material-ui/Card';
-import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -24,7 +22,6 @@ import CreateProject from '../../Create';
     }
   }
 `)
-
 
 export default class Settings extends React.Component {
   state = {

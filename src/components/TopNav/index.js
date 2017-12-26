@@ -47,7 +47,7 @@ export default class TopNav extends React.Component {
   }
 
   escapeRegExp(str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    return str.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
   }
 
   getSuggestions(value) {
