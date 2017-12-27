@@ -9,16 +9,17 @@ import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 
-export default observer(({field, autoWidth, extraKey, fullWidth }) => {
+export default observer(({field, autoWidth, extraKey, fullWidth, label }) => {
   let extraOptions = field.extra
 
   if(extraKey){
     extraOptions = field.state.extra()[extraKey]
   }
+  
   return (
     <div>
       <FormControl fullWidth={fullWidth} {...field.error ? {error: true} : {}}>
-        <InputLabel>{field.label}</InputLabel>
+        <InputLabel>{label ? label : field.label}</InputLabel>
         <Select
           {...field.bind()}
           autoWidth={autoWidth}

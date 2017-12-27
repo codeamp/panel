@@ -7,7 +7,6 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import Input from 'material-ui/Input';
 import Dialog, {
   DialogActions,
   DialogContent,

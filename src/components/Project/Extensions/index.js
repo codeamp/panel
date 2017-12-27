@@ -22,7 +22,7 @@ import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
-import DockerBuilder from './DockerBuilder';
+import _ from "lodash"
 
 @inject("store") @observer
 @graphql(gql`
@@ -44,10 +44,7 @@ import DockerBuilder from './DockerBuilder';
         }
         state
         config
-        artifacts {
-          key
-          value
-        }
+        artifacts
         created
       }
       environmentVariables {
@@ -156,24 +153,14 @@ export default class Extensions extends React.Component {
 
   saveExtension(e){
     let { extension } = this.state.extensionDrawer
-
-    var config = {
-      "config": [],
-      "form": {},
-    }    
-
-    Object.keys(this.form.values()).map((key)=>{
-      config.config.push({ "key": key, "value": this.form.values()[key] })
-      return null
-    })
-    
+  
     if (extension.extensionSpec) {
       this.props.updateExtension({
         variables: {
           'id': extension.id,
           'projectId': this.props.data.project.id,
           'extensionSpecId': extension.extensionSpec.id,
-          'config': config,
+          'config': this.form.values(),
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -185,7 +172,7 @@ export default class Extensions extends React.Component {
         variables: {
           'projectId': this.props.data.project.id,
           'extensionSpecId': extension.id,
-          'config': config,
+          'config': this.form.values(),
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -271,7 +258,7 @@ export default class Extensions extends React.Component {
     let extensions = extensionSpecs.reduce((extensions, extensionSpec) => {
       let found = false
       project.extensions.forEach(function(extension) {
-        if (extension.extensionSpec.id == extensionSpec.id) {
+        if (extension.extensionSpec.id === extensionSpec.id) {
           found = true 
         }
       })
@@ -378,38 +365,51 @@ export default class Extensions extends React.Component {
     }
     
     let { extension } = this.state.extensionDrawer
-    let configObj ={}
     
     let name = extension.name
     let type = extension.type
+    let config = []
 
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
       type = extension.extensionSpec.type
 
-      extension.extensionSpec.config.config.map(function(kv){
-        configObj[kv.key] = kv.value
+      extension.config.config.map(function(obj){
+        let _obj = _.find(config, {key: obj.key});
+        if (_obj) {
+          _obj.value = obj.value
+          config.push(_obj) 
+        } else {
+          config.push(obj) 
+        }
+        return null
+      })
+
+    } else {
+      extension.config.map(function(obj){
+        let _obj = _.clone(obj)
+        _obj.value = ""
+        config.push(_obj) 
         return null
       })
     }
 
-    // convert from kv -> object
-    extension.config.config.map(function(kv){
-      configObj[kv.key] = kv.value
-      return null
-    })
-
-    var fields = Object.keys(configObj);
+    const fields = [
+      'config[]',
+      'config[].key',
+      'config[].value',
+    ];
     const rules = {};
     const labels = {};
-    const initials = configObj;
+    const initials = {};
     const types = {};
     const extra = {};
     const hooks = {};
     const handlers = {}
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
-    
+    this.form.update({ config: config })
+
     const envVarOptions = this.props.data.project.environmentVariables.map(function(envVar){
       return {
         key: envVar.id,
@@ -420,11 +420,11 @@ export default class Extensions extends React.Component {
     this.form.state.extra({
       config: envVarOptions,
     })
-
-    let config_jsx = fields.map((key) => {
+    
+    let config_jsx = this.form.$('config').map((obj) => {
       return (
-        <Grid key={key} item xs={12}>
-          <EnvVarSelectField field={this.form.$(key)} fullWidth={true} extraKey="config" />
+        <Grid key={obj.key} item xs={12}>
+          <EnvVarSelectField field={obj.$('value')} fullWidth={true} extraKey="config" label={config[obj.key].key} />
         </Grid>
       )
     })

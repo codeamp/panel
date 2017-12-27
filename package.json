@@ -5,7 +5,7 @@
     "custom-react-scripts": "0.1.4"
   },
   "dependencies": {
-    "apollo-client": "^2.0.3",
+    "apollo-client": "^2.1.0",
     "apollo-client-preset": "^1.0.5",
     "apollo-fetch": "^0.6.0",
     "apollo-link-context": "^1.0.3",
