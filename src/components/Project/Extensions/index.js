@@ -221,7 +221,7 @@ export default class Extensions extends React.Component {
           </Grid>
         </Grid>
 
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+        <Dialog open={this.state.dialogOpen}>
           <DialogTitle>{"Are you sure you want to delete"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -369,22 +369,20 @@ export default class Extensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
-
+    
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
       type = extension.extensionSpec.type
-
-      extension.config.config.map(function(obj){
-        let _obj = _.find(config, {key: obj.key});
+      
+      extension.extensionSpec.config.map(function(obj){
+        let _obj = _.find(extension.config.config, {key: obj.key});
         if (_obj) {
-          _obj.value = obj.value
           config.push(_obj) 
         } else {
           config.push(obj) 
         }
         return null
       })
-
     } else {
       extension.config.map(function(obj){
         let _obj = _.clone(obj)
