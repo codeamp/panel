@@ -137,7 +137,6 @@ export default class App extends React.Component {
             }}
             open={this.state.snackbar.open}
             autoHideDuration={6000}
-            onRequestClose={this.handleRequestClose}
             SnackbarContentProps={{
               'aria-describedby': 'message-id',
             }}

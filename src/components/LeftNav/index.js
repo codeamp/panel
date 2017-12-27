@@ -136,7 +136,7 @@ export default class LeftNav extends React.Component {
           {this.props.store.app.leftNavProjectTitle !== '' &&
           <ListItem>
             <FormControl>
-              <InputLabel>Current Env</InputLabel>
+              <InputLabel>Current Environment</InputLabel>
               <Select
               classes={{
                 select: styles.currentEnv,

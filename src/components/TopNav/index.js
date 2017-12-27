@@ -91,7 +91,7 @@ export default class TopNav extends React.Component {
     <div>
       <AppBar position="static" className={styles.appBar}>
         <Toolbar>
-          <Grid container>
+          <Grid container spacing={24}>
             <Grid item xs={10}>
               <Typography type="title" color="inherit" className={styles.flex}>
                 CodeAmp
@@ -152,7 +152,7 @@ export default class TopNav extends React.Component {
       {store.app.connectionHeader.msg !== "" &&
           <AppBar position="absolute" color="default">
             <Toolbar>
-                <Grid container>
+                <Grid container spacin={24}>
                     <Grid item xs={1}>
                     <Typography type="body1">
                         <a href={window.location.href}>

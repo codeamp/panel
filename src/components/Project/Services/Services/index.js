@@ -430,10 +430,10 @@ export default class Services extends React.Component {
                         <InputField field={this.form.$('command')} fullWidth={true}/>
                       </Grid>
                       <Grid item xs={3}>
-                        <InputField field={this.form.$('count')}/>
+                        <InputField field={this.form.$('count')} fullWidth={true}/>
                       </Grid>
                       <Grid item xs={9}>
-                        <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} />
+                        <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} fullWidth={true} />
                       </Grid>
                       <Grid item xs={12}>
                         { !this.form.values()['type'] &&
