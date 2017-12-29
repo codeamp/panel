@@ -304,7 +304,7 @@ export default class Extensions extends React.Component {
       <Toolbar>
         <div>
           <Typography type="title">
-            Available Extensions
+            Available extensions
           </Typography>
         </div>
       </Toolbar>
@@ -333,7 +333,7 @@ export default class Extensions extends React.Component {
     return (<Paper>
       <Toolbar>
         <div> <Typography type="title">
-            Added Extensions
+            Enabled extensions
           </Typography>
         </div>
       </Toolbar>
@@ -350,7 +350,7 @@ export default class Extensions extends React.Component {
               State
             </TableCell>
             <TableCell>
-              Added
+              Created
             </TableCell>
           </TableRow>
         </TableHead>
