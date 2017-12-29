@@ -9,8 +9,6 @@ import Grid from 'material-ui/Grid';
 import Snackbar from 'material-ui/Snackbar';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
-
-//components
 import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';
 import Dashboard from 'components/Dashboard';

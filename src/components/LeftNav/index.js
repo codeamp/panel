@@ -25,7 +25,6 @@ import EnvironmentIcon from 'material-ui-icons/Public';
 @withRouter
 @inject("store") @observer
 
-
 export default class LeftNav extends React.Component {
   state = {
     open: false,

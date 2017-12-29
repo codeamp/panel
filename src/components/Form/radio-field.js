@@ -1,7 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react';
 import styles from './style.module.css';
-
 import Radio from 'material-ui/Radio';
 import Grid from 'material-ui/Grid';
 import FormHelperText from 'material-ui/Form/FormHelperText';
