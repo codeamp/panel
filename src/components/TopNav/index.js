@@ -103,7 +103,7 @@ export default class TopNav extends React.Component {
                 className={styles.searchInput}
                 autoFocus={false}
                 value={this.state.projectQuery}
-                label="Search..."
+                placeholder="Search..."
                 InputProps={{
                   disableUnderline: true,
                   classes: {
