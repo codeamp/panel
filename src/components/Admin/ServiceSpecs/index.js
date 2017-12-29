@@ -295,7 +295,6 @@ export default class ServiceSpecs extends React.Component {
               <AddIcon />
         </Button>
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
             paper: styles.drawer

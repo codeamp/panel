@@ -339,7 +339,6 @@ export default class ExtensionSpecs extends React.Component {
               <AddIcon />
         </Button>
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
             paper: styles.drawer

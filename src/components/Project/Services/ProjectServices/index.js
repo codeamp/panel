@@ -330,7 +330,6 @@ class ProjectServices extends React.Component {
         </div>
 
           <Drawer
-              type="persistent"
               anchor="right"
               classes={{
               paper: styles.list,

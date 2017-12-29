@@ -277,7 +277,6 @@ export default class Releases extends React.Component {
           </Grid>
         </Grid>
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
             paper: styles.drawer

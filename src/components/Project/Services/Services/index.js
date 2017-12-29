@@ -31,6 +31,7 @@ import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 
+@inject("store") 
 @graphql(gql`
 query Project($slug: String, $environmentId: String) {
   project(slug: $slug, environmentId: $environmentId) {
@@ -124,7 +125,7 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
   }
 }`, { name: "deleteService" })
 
-@inject("store") @observer
+@observer
 export default class Services extends React.Component {
   constructor(props){
     super(props)
@@ -406,7 +407,6 @@ export default class Services extends React.Component {
         </div>
 
           <Drawer
-              type="persistent"
               anchor="right"
               classes={{
               paper: styles.list,

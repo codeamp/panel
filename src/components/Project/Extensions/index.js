@@ -24,7 +24,8 @@ import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import _ from "lodash"
 
-@inject("store") @observer
+@inject("store") 
+
 @graphql(gql`
   query ProjectExtensions($slug: String, $environmentId: String){
     project(slug: $slug, environmentId: $environmentId) {
@@ -120,6 +121,7 @@ import _ from "lodash"
   }`, { name: "deleteExtension" }
 )
 
+@observer
 export default class Extensions extends React.Component {
   constructor(props){
     super(props)
@@ -170,7 +172,9 @@ export default class Extensions extends React.Component {
     let { extension } = this.state.extensionDrawer
     
     let formValues = this.form.values()
-    formValues.custom = this.customForm.values()
+    if (this.customForm) {
+      formValues.custom = this.customForm.values()
+    }
 
     if (extension.extensionSpec) {
       this.props.updateExtension({
@@ -257,10 +261,9 @@ export default class Extensions extends React.Component {
         </Dialog>
 
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
-          paper: styles.drawer
+            paper: styles.drawer
           }}
           open={this.state.extensionDrawer.open}
         >
