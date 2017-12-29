@@ -132,11 +132,26 @@ export default class Extensions extends React.Component {
     }
   }
 
-  openExtensionDrawer(e, extension){
+  async openExtensionDrawer(e, extension){
+    let component = null
+    
+    if (extension.extensionSpec.component !== ""){
+      try {
+        await import("./" + extension.extensionSpec.component)
+        .then((c) => {
+          component = c.default
+        });
+      }
+      catch (e) {
+
+      }
+    }
+
     this.setState({
       extensionDrawer: {
         open: true,
         extension: extension, 
+        customForm: component,
       }
     })
   } 
@@ -153,14 +168,17 @@ export default class Extensions extends React.Component {
 
   saveExtension(e){
     let { extension } = this.state.extensionDrawer
-  
+    
+    let formValues = this.form.values()
+    formValues.custom = this.customForm.values()
+
     if (extension.extensionSpec) {
       this.props.updateExtension({
         variables: {
           'id': extension.id,
           'projectId': this.props.data.project.id,
           'extensionSpecId': extension.extensionSpec.id,
-          'config': this.form.values(),
+          'config': formValues,
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -172,7 +190,7 @@ export default class Extensions extends React.Component {
         variables: {
           'projectId': this.props.data.project.id,
           'extensionSpecId': extension.id,
-          'config': this.form.values(),
+          'config': formValues,
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -364,6 +382,7 @@ export default class Extensions extends React.Component {
       return null 
     }
     
+    let CustomForm = this.state.extensionDrawer.customForm
     let { extension } = this.state.extensionDrawer
     
     let name = extension.name
@@ -442,9 +461,11 @@ export default class Extensions extends React.Component {
             <br/>
             {config_jsx}
           </Grid>
+
           <Grid item xs={12}>
-            { this.state.customConfigForm }
+            { CustomForm && <CustomForm key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
+
           <Grid item xs={12}>
             <Button raised color="primary" className={styles.rightPad}
               onClick={(event) => this.saveExtension(event)}

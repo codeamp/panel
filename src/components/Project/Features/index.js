@@ -11,7 +11,6 @@ import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
-
 class InitPrivateProjectComponent extends React.Component {
   state = {
     open: false,
@@ -136,7 +135,6 @@ class FeatureView extends React.Component {
   }
 }
 
-
 @inject("store") @observer
 
 @graphql(gql`
@@ -195,7 +193,6 @@ class FeatureView extends React.Component {
   }
 `, {
   options: (props) => ({
-
     variables: {
       slug: props.match.params.slug,
       environmentId: props.store.app.currentEnvironment.id,
