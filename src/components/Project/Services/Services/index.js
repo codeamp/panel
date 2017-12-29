@@ -31,7 +31,6 @@ import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 
-@inject("store") @observer
 @graphql(gql`
 query Project($slug: String, $environmentId: String) {
   project(slug: $slug, environmentId: $environmentId) {
@@ -124,6 +123,8 @@ mutation DeleteService ($id: String, $projectId: String!, $command: String!, $na
     id
   }
 }`, { name: "deleteService" })
+
+@inject("store") @observer
 export default class Services extends React.Component {
   constructor(props){
     super(props)
@@ -436,7 +437,6 @@ export default class Services extends React.Component {
                         <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} fullWidth={true} />
                       </Grid>
                       <Grid item xs={12}>
-                        { !this.form.values()['type'] &&
                           <div>
                             <Grid container spacing={24}>
                                 { this.form.$('containerPorts').value.length > 0 &&
@@ -448,7 +448,7 @@ export default class Services extends React.Component {
                                 <Grid item xs={12}>
                                 <div>
                                     {this.form.$('containerPorts').map(port =>
-                                      <Grid container spacing={24}>
+                                      <Grid key={port.id} container spacing={24}>
                                         <Grid item xs={4}>
                                           <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
                                         </Grid>
@@ -474,7 +474,6 @@ export default class Services extends React.Component {
                                 </Grid>
                             </Grid>
                           </div>
-                        }
                       </Grid>
                       <Grid item xs={12}>
                         <Button color="primary"

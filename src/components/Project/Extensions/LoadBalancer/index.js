@@ -11,8 +11,6 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
-@inject("store") @observer
-
 @graphql(gql`
 query Project($slug: String, $environmentId: String){
   project(slug: $slug, environmentId: $environmentId) {
@@ -43,6 +41,8 @@ query Project($slug: String, $environmentId: String){
     }
   })
 })
+
+@inject("store") @observer
 
 export default class LoadBalancer extends React.Component {
   constructor(props){
@@ -215,14 +215,14 @@ export default class LoadBalancer extends React.Component {
           <div>
             {this.form.$('portMaps').map(function(portMap){
             return (
-            <Grid container spacing={24}>
-              <Grid item xs={2}>
+            <Grid container spacing={24} key={portMap.id}>
+              <Grid item xs={3}>
                 <InputField fullWidth={true} field={portMap.$('port')} />
               </Grid>
               <Grid item xs={4}>
                 <SelectField fullWidth={true} field={portMap.$('containerPort')} extraKey={'containerPort'} />
               </Grid>        
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                 <SelectField fullWidth={true} field={portMap.$('serviceProtocol')} />
               </Grid>      
               <Grid item xs={2}>
