@@ -54,6 +54,15 @@ import Grow from 'material-ui/transitions/Grow';
         name
         created
       }
+      versions {
+        id
+        value
+        created
+        user {
+          id
+          email
+        }
+      }
     }
   }
 `)
@@ -132,6 +141,7 @@ export default class EnvironmentVariables extends React.Component {
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
+      dialogOpen:false,
     }
   }
 
@@ -149,7 +159,6 @@ export default class EnvironmentVariables extends React.Component {
     ];
     const initials = {
       'projectId': '',
-      'index': '',
     }
     const rules = {
       'key': 'string|required',
@@ -189,9 +198,14 @@ export default class EnvironmentVariables extends React.Component {
 
   onClick(envVarIdx){
     const envVar = this.props.data.environmentVariables[envVarIdx]
+    console.log(envVar)
     if(envVar !== undefined){
         this.form.$('key').set(envVar.key)
+        
         this.form.$('key').set('disabled', true)
+        this.form.$('environmentId').set('disabled', true)
+        this.form.$('scope').set('disabled', true)
+
         this.form.$('value').set(envVar.value)
         this.form.$('type').set(envVar.type)
         this.form.$('environmentId').set(envVar.environment.id)
@@ -203,11 +217,17 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
+  onClickVersion(versionIdx) {
+    console.log(versionIdx)
+    console.log(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIdx], this.form.values()['index'])
+    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIdx].value)
+  }
+
   onError(form){
-    return
   }
 
   onSuccess(form){
+    console.log(form.values())
     this.form.$('key').set('disabled', false)
     if(this.form.values()['id'] === ""){
       this.props.createEnvironmentVariable({
@@ -260,12 +280,14 @@ export default class EnvironmentVariables extends React.Component {
 
   render() {
     let { loading, environmentVariables, environments } = this.props.data;
-    var self = this;
 
+
+    console.log(environmentVariables)
+
+    var self = this;
     if(loading){
       return null;
     }
-
     const extraOptions = environments.map(function(env){
       return {
         key: env.id,
@@ -419,6 +441,59 @@ export default class EnvironmentVariables extends React.Component {
                   </Grid>
                   }
 
+                  {/* Version History */}
+                  {this.form.values()['index'] >= 0 && environmentVariables[this.form.values()['index']] &&
+                    <Grid item xs={12}>
+                      <Paper className={styles.root}>
+                        <div className={styles.tableWrapper}>
+                          <Toolbar>
+                            <div>
+                              <Typography type="title">
+                                Version History
+                              </Typography>
+                            </div>
+                          </Toolbar>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>
+                                  Version
+                                </TableCell>
+                                <TableCell>
+                                  Creator
+                                </TableCell>
+                                <TableCell>
+                                  Created At
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            {environmentVariables[this.form.values()['index']].versions.map(function(envVar, idx){
+                                return (
+                                  <TableRow
+                                    hover
+                                    tabIndex={-1}
+                                    onClick={() => self.onClickVersion(idx)}
+                                    key={envVar.id}>
+                                    <TableCell>
+                                      {environmentVariables[self.form.values()['index']].versions.length - idx}
+                                    </TableCell>
+                                    <TableCell>
+                                      {envVar.user.email}
+                                    </TableCell>
+                                    <TableCell>
+                                      {new Date(envVar.created).toString()}
+                                    </TableCell>
+                                  </TableRow>
+                                )
+                              })}                            
+                            </TableBody>
+                          </Table>
+                        </div>                        
+                      </Paper>
+                    </Grid>        
+                  }        
+
                   <Grid item xs={12}>
                     <Button color="primary"
                       className={styles.buttonSpacing}
@@ -448,7 +523,7 @@ export default class EnvironmentVariables extends React.Component {
           </div>
         </Drawer>
         {environmentVariables.length > 0 && environmentVariables[this.form.values()['index']] &&
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+        <Dialog open={this.state.dialogOpen}>
           <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.form.values()['index']].key + "?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
