@@ -27,6 +27,7 @@ import gql from 'graphql-tag';
 import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
+import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 
 @graphql(gql`
   query {
@@ -436,56 +437,11 @@ export default class EnvironmentVariables extends React.Component {
 
                   {/* Version History */}
                   {this.form.values()['index'] >= 0 && environmentVariables[this.form.values()['index']] &&
-                    <Grid item xs={12}>
-                      <Paper className={styles.root}>
-                        <div className={styles.tableWrapper}>
-                          <Toolbar>
-                            <div>
-                              <Typography type="title">
-                                Version History
-                              </Typography>
-                            </div>
-                          </Toolbar>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>
-                                  Version
-                                </TableCell>
-                                <TableCell>
-                                  Creator
-                                </TableCell>
-                                <TableCell>
-                                  Created At
-                                </TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            {environmentVariables[this.form.values()['index']].versions.map(function(envVar, idx){
-                                return (
-                                  <TableRow
-                                    hover
-                                    tabIndex={-1}
-                                    onClick={() => self.onClickVersion(idx)}
-                                    key={envVar.id}>
-                                    <TableCell>
-                                      {environmentVariables[self.form.values()['index']].versions.length - idx}
-                                    </TableCell>
-                                    <TableCell>
-                                      {envVar.user.email}
-                                    </TableCell>
-                                    <TableCell>
-                                      {new Date(envVar.created).toString()}
-                                    </TableCell>
-                                  </TableRow>
-                                )
-                              })}                            
-                            </TableBody>
-                          </Table>
-                        </div>                        
-                      </Paper>
-                    </Grid>        
-                  }        
+                    <EnvVarVersionHistory 
+                      versions={environmentVariables[this.form.values()['index']].versions}
+                      onClickVersion={this.onClickVersion.bind(this)}
+                    />
+                  }       
 
                   <Grid item xs={12}>
                     <Button color="primary"
