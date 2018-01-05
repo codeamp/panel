@@ -198,7 +198,6 @@ export default class EnvironmentVariables extends React.Component {
 
   onClick(envVarIdx){
     const envVar = this.props.data.environmentVariables[envVarIdx]
-    console.log(envVar)
     if(envVar !== undefined){
         this.form.$('key').set(envVar.key)
         
@@ -218,8 +217,6 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onClickVersion(versionIdx) {
-    console.log(versionIdx)
-    console.log(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIdx], this.form.values()['index'])
     this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIdx].value)
   }
 
@@ -227,7 +224,6 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onSuccess(form){
-    console.log(form.values())
     this.form.$('key').set('disabled', false)
     if(this.form.values()['id'] === ""){
       this.props.createEnvironmentVariable({
@@ -280,9 +276,6 @@ export default class EnvironmentVariables extends React.Component {
 
   render() {
     let { loading, environmentVariables, environments } = this.props.data;
-
-
-    console.log(environmentVariables)
 
     var self = this;
     if(loading){
