@@ -1,7 +1,3 @@
-.root {
-    
-}
-
 .releaseExtensionStatus {
     display: inline-block;
     margin-left: 20px;
@@ -85,4 +81,12 @@
 
 .title {
     text-align: center;
+}
+
+.tableWrapper {
+    width: 100%;
+}
+
+.root {
+    overflow: auto;
 }

@@ -136,17 +136,23 @@ export default class Extensions extends React.Component {
 
   async openExtensionDrawer(e, extension){
     let component = null
+    // check typename to know if Extension or ExtensionSpec
+    if(extension.__typename === "Extension"){
+      component = extension.extensionSpec.component;
+    } else if(extension.__typename === "ExtensionSpec") {
+      component = extension.component;
+    } else {
+      return;
+    }
     
-    if (extension.extensionSpec.component !== ""){
+    if (component !== ""){
       try {
-        await import("./" + extension.extensionSpec.component)
+        await import("./" + component)
         .then((c) => {
           component = c.default
         });
       }
-      catch (e) {
-
-      }
+      catch (e) {}
     }
 
     this.setState({
@@ -395,23 +401,26 @@ export default class Extensions extends React.Component {
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
       type = extension.extensionSpec.type
-      
-      extension.extensionSpec.config.map(function(obj){
-        let _obj = _.find(extension.config.config, {key: obj.key});
-        if (_obj) {
-          config.push(_obj) 
-        } else {
-          config.push(obj) 
-        }
-        return null
-      })
+      if(extension.extensionSpec.config){
+        extension.extensionSpec.config.map(function(obj){
+          let _obj = _.find(extension.config.config, {key: obj.key});
+          if (_obj) {
+            config.push(_obj) 
+          } else {
+            config.push(obj) 
+          }
+          return null
+        })
+      }
     } else {
-      extension.config.map(function(obj){
-        let _obj = _.clone(obj)
-        _obj.value = ""
-        config.push(_obj) 
-        return null
-      })
+      if(extension.config){
+        extension.config.map(function(obj){
+          let _obj = _.clone(obj)
+          _obj.value = ""
+          config.push(_obj) 
+          return null
+        })
+      }
     }
 
     const fields = [
