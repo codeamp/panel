@@ -98,7 +98,7 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-      if(environments.length > 0){
+      if(environments.length > 0 && this.props.store.app.currentEnvironment.id === ''){
         this.props.store.app.setCurrentEnv({ id: environments[0].id })
       }
       return (

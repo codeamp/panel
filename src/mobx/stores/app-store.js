@@ -4,11 +4,14 @@ import map from 'lodash/map';
 class AppStore {
   constructor() {
     const user = JSON.parse(localStorage.getItem('user'));
+    const currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
+    const projectTitle = localStorage.getItem('projectTitle');    
+
     extendObservable(this, {
       title: 'CodeAmp Panel',
       user: user,
       leftNavItems: [],
-      leftNavProjectTitle: '',
+      leftNavProjectTitle: projectTitle,
       bookmarks: [],
       ws: {
         channel: null,
@@ -22,9 +25,7 @@ class AppStore {
       connectionHeader: {
           msg: "",
       },
-      currentEnvironment: {
-		    id: '',
-	    },
+      currentEnvironment: currentEnv,
     });
   }
 
@@ -49,6 +50,7 @@ class AppStore {
 
   setProjectTitle = action(title => {
     this.leftNavProjectTitle = title;
+    localStorage.setItem('projectTitle', title);
   })
 
   setSnackbar = action(params => {
@@ -67,7 +69,8 @@ class AppStore {
   });
 
   setCurrentEnv = action(params => {
-	this.currentEnvironment.id = params.id
+    this.currentEnvironment.id = params.id;
+    localStorage.setItem('currentEnv', JSON.stringify(params));
   })
 }
 

@@ -192,9 +192,6 @@ export default class Releases extends React.Component {
     });
   };
 
-  shouldComponentUpdate(){
-      return true
-  }
   componentWillMount() {
     this.props.data.refetch()
     const fields = [
@@ -237,8 +234,13 @@ export default class Releases extends React.Component {
     this.setState({ drawerOpen: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
   }
 
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  }
+
   render() {
     const { loading, project } = this.props.data;
+
     if(loading){
       return (<div>Loading...</div>);
     }

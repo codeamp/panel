@@ -134,7 +134,6 @@ class FeatureView extends React.Component {
     );
   }
 }
-
 @inject("store") @observer
 
 @graphql(gql`

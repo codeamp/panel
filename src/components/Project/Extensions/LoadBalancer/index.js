@@ -3,6 +3,7 @@ import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
+import Typography from 'material-ui/Typography';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import validatorjs from 'validatorjs';
@@ -137,20 +138,19 @@ export default class LoadBalancer extends React.Component {
       })
     }
 
-    if(this.props.viewType === 'edit'){
-        this.props.createExtension({
-          variables: {
-            'projectId': this.props.project.id,
-            'extensionSpecId': this.props.extensionSpec.id,
-            'config': userConfig,
-            'environmentId': this.props.store.app.currentEnvironment.id,
-          }
-        }).then(({ data }) => {
-          this.setState({ addButtonDisabled: false })
-          this.props.refetch()
-          this.props.onCancel()
-        });
-    }
+    this.props.createExtension({
+      variables: {
+        'projectId': this.props.project.id,
+        'extensionSpecId': this.props.extensionSpec.id,
+        'config': userConfig,
+        'environmentId': this.props.store.app.currentEnvironment.id,
+      }
+    }).then(({ data }) => {
+      this.setState({ addButtonDisabled: false })
+      this.form.reset()      
+      this.props.refetch()
+      this.props.onCancel()
+    });
   }
 
   onAdd(extension, event){
@@ -158,44 +158,9 @@ export default class LoadBalancer extends React.Component {
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
     }
-  }    
-
-  render(){
-    const { loading, project } = this.props.data;
-
-    if(loading){
-      return (<div>Loading...</div>)
-    }
-    
-    var self = this
-    const extraOptions = project.services.map(function(service){
-        return {
-          key: service.id,
-          value: service.name,
-        }
-    })
-
-    var containerPortOptions = []
-    // get port options depending on selected service, if exists
-    if(this.form.$('service').value){
-      project.services.map(function(service){
-        if(service.id === self.form.$('service').value){
-          containerPortOptions = service.containerPorts.map(function(cPort){
-            return {
-              key: cPort.port,
-              value: cPort.port
-            }
-          })
-        }
-        return null
-      })
-    }
-
-    this.form.state.extra({
-        service: extraOptions,
-        containerPort: containerPortOptions,
-    })
-
+  }   
+  
+  renderLoadBalancerForm(project){
     return (
       <div>
         <form onSubmit={(e) => e.preventDefault()}>
@@ -242,7 +207,65 @@ export default class LoadBalancer extends React.Component {
           </div>      
           }
         </form>
+      </div>        
+    )
+  }
+
+  renderEnabledView(project){
+    return (
+      <div>
+        <Typography> hello </Typography>
+        {this.renderLoadBalancerForm(project)}
       </div>
     )
+  }
+
+  renderAvailableView(project){
+    return this.renderLoadBalancerForm(project)
+  }
+
+  render(){
+    const { loading, project } = this.props.data;
+    const { type } = this.props;
+
+    if(loading){
+      return (<div>Loading...</div>)
+    }
+    
+    var self = this
+    const extraOptions = project.services.map(function(service){
+        return {
+          key: service.id,
+          value: service.name,
+        }
+    })
+
+    var containerPortOptions = []
+    // get port options depending on selected service, if exists
+    if(this.form.$('service').value){
+      project.services.map(function(service){
+        if(service.id === self.form.$('service').value){
+          containerPortOptions = service.containerPorts.map(function(cPort){
+            return {
+              key: cPort.port,
+              value: cPort.port
+            }
+          })
+        }
+        return null
+      })
+    }
+
+    this.form.state.extra({
+        service: extraOptions,
+        containerPort: containerPortOptions,
+    })
+    if(type === "enabled"){
+      return this.renderEnabledView(project)
+    } else if(type === "available"){
+      return this.renderAvailableView(project)
+    } else {
+      return (<Typography> ERROR: INVALID VIEW TYPE </Typography>)
+    }
   }
 }

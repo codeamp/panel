@@ -129,6 +129,7 @@ export default class Extensions extends React.Component {
       extensionDrawer: {
         open: false,
         extension: null,
+        formType: "",
       },
       dialogOpen: false,
     }
@@ -136,11 +137,14 @@ export default class Extensions extends React.Component {
 
   async openExtensionDrawer(e, extension){
     let component = null
+    let formType = null
     // check typename to know if Extension or ExtensionSpec
     if(extension.__typename === "Extension"){
       component = extension.extensionSpec.component;
+      formType = "enabled";
     } else if(extension.__typename === "ExtensionSpec") {
       component = extension.component;
+      formType = "available";
     } else {
       return;
     }
@@ -160,6 +164,7 @@ export default class Extensions extends React.Component {
         open: true,
         extension: extension, 
         customForm: component,
+        formType: formType,
       }
     })
   } 
@@ -230,6 +235,10 @@ export default class Extensions extends React.Component {
       this.closeExtensionDrawer()
     })
   }
+  
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  } 
 
   render() {
     const { loading, project } = this.props.data;
@@ -362,23 +371,23 @@ export default class Extensions extends React.Component {
         </TableHead>
         <TableBody>
           {project.extensions.map(extension => {
-          let stateIcon = <CircularProgress size={25} />
-          if(extension.state === "complete"){
-          stateIcon = <ExtensionStateCompleteIcon size={25}/>
-          }
+            let stateIcon = <CircularProgress size={25} />
+            if(extension.state === "complete"){
+              stateIcon = <ExtensionStateCompleteIcon size={25}/>
+            }
 
-          return (
-          <TableRow
-            hover
-            onClick={event => this.openExtensionDrawer(event, extension)}
-            tabIndex={-1}
-            key={extension.id}>
-            <TableCell> { extension.extensionSpec.name } </TableCell>
-            <TableCell> { extension.extensionSpec.type } </TableCell>
-            <TableCell> { stateIcon } </TableCell>
-            <TableCell> { new Date(extension.created).toDateString() }</TableCell>
-          </TableRow>
-          )
+            return (
+            <TableRow
+              hover
+              onClick={event => this.openExtensionDrawer(event, extension)}
+              tabIndex={-1}
+              key={extension.id}>
+              <TableCell> { extension.extensionSpec.name } </TableCell>
+              <TableCell> { extension.extensionSpec.type } </TableCell>
+              <TableCell> { stateIcon } </TableCell>
+              <TableCell> { new Date(extension.created).toDateString() }</TableCell>
+            </TableRow>
+            )
           })}
         </TableBody>
       </Table>
@@ -475,7 +484,7 @@ export default class Extensions extends React.Component {
           </Grid>
 
           <Grid item xs={12}>
-            { CustomForm && <CustomForm key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
 
           <Grid item xs={12}>

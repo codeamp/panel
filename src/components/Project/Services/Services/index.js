@@ -201,22 +201,22 @@ export default class Services extends React.Component {
 
     const $hooks = {
       onAdd(instance) {
-        console.log('-> onAdd HOOK', instance.path || 'form');
+        // console.log('-> onAdd HOOK', instance.path || 'form');
       },
       onDel(instance) {
-        console.log('-> onDel HOOK', instance.path || 'form');
+        // console.log('-> onDel HOOK', instance.path || 'form');
       },
       onSubmit(instance){
-        console.log('-> onSubmit HOOK', instance.path || 'form');
+        // console.log('-> onSubmit HOOK', instance.path || 'form');
       },
       onSuccess(instance){
-        console.log('Form Values!', instance.values())
+        // console.log('Form Values!', instance.values())
       },
       sync(instance){
-        console.log('sync', instance)
+        // console.log('sync', instance)
       },
       onChange(instance){
-        console.log(instance.values())
+        // console.log(instance.values())
       }
     };
 
@@ -302,6 +302,10 @@ export default class Services extends React.Component {
       this.props.data.refetch()
     });
   }
+
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  }  
 
   render() {
     const { loading, project, serviceSpecs } = this.props.data;

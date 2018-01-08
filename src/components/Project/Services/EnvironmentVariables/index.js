@@ -272,6 +272,10 @@ export default class EnvironmentVariables extends React.Component {
       this.props.data.refetch()
     });
   }
+  
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  }  
 
   render() {
     const { loading, project } = this.props.data;
