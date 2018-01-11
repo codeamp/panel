@@ -4,8 +4,14 @@ import map from 'lodash/map';
 class AppStore {
   constructor() {
     const user = JSON.parse(localStorage.getItem('user'));
-    const currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
-    const projectTitle = localStorage.getItem('projectTitle');    
+    var currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
+    if(!currentEnv){
+      currentEnv = {id: ''};
+    }
+    var projectTitle = localStorage.getItem('projectTitle');    
+    if(!projectTitle){
+      projectTitle = '';
+    }
 
     extendObservable(this, {
       title: 'CodeAmp Panel',

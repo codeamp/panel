@@ -16,6 +16,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
+import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -185,7 +186,12 @@ export default class Extensions extends React.Component {
     let formValues = this.form.values()
     if (this.customForm) {
       formValues.custom = this.customForm.values()
+    } else {
+      formValues.custom = {}
     }
+
+    console.log(extension)
+    console.log(formValues)
 
     if (extension.extensionSpec) {
       this.props.updateExtension({
@@ -235,7 +241,7 @@ export default class Extensions extends React.Component {
       this.closeExtensionDrawer()
     })
   }
-  
+
   componentWillUpdate(nextProps, nextState){
     nextProps.data.refetch()
   } 
@@ -375,7 +381,9 @@ export default class Extensions extends React.Component {
             if(extension.state === "complete"){
               stateIcon = <ExtensionStateCompleteIcon size={25}/>
             }
-
+            if(extension.state === "failed"){
+              stateIcon = <ExtensionStateFailedIcon />
+            }            
             return (
             <TableRow
               hover
@@ -406,13 +414,14 @@ export default class Extensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
+    let artifacts = ""
     
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
       type = extension.extensionSpec.type
       if(extension.extensionSpec.config){
         extension.extensionSpec.config.map(function(obj){
-          let _obj = _.find(extension.config.config, {key: obj.key});
+          let _obj = _.find(extension.config.config, {key: obj.key, value: obj.value });
           if (_obj) {
             config.push(_obj) 
           } else {
@@ -425,12 +434,19 @@ export default class Extensions extends React.Component {
       if(extension.config){
         extension.config.map(function(obj){
           let _obj = _.clone(obj)
-          _obj.value = ""
+          _obj.value = obj.value
           config.push(_obj) 
           return null
         })
       }
     }
+
+    if(extension.artifacts){
+      console.log('extension artifacts', extension.artifacts)
+      artifacts = JSON.stringify(extension.artifacts)
+    }
+
+    console.log('config', config)
 
     const fields = [
       'config[]',
@@ -450,7 +466,7 @@ export default class Extensions extends React.Component {
 
     const envVarOptions = this.props.data.project.environmentVariables.map(function(envVar){
       return {
-        key: envVar.id,
+        key: envVar.value,
         value: "(" + envVar.key + ") => " + envVar.value,
       }
     })
@@ -485,6 +501,10 @@ export default class Extensions extends React.Component {
 
           <Grid item xs={12}>
             { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+          </Grid>
+          
+          <Grid item xs={12}>
+            <Typography type="body1">{artifacts}</Typography>
           </Grid>
 
           <Grid item xs={12}>

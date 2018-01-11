@@ -259,7 +259,10 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   closeDrawer(){
-    this.form.reset()
+    this.form.$('key').set('disabled', false)
+    this.form.$('environmentId').set('disabled', false)
+    this.form.$('scope').set('disabled', false)
+
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false, addEnvVarMenuOpen: false })
   }
 

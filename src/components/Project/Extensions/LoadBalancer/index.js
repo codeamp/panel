@@ -67,27 +67,27 @@ export default class LoadBalancer extends React.Component {
   componentWillMount(){
     const fields = [
         'service',
-        'subdomain',
-        'access',
-        'portMaps',
-        'portMaps[].port',
-        'portMaps[].containerPort',
-        'portMaps[].serviceProtocol',
+        'name',
+        'type',
+        'listener_pairs',
+        'listener_pairs[].port',
+        'listener_pairs[].containerPort',
+        'listener_pairs[].serviceProtocol',
     ]
     const rules = {}
     const labels = {
         'service': 'SERVICE',
-        'subdomain': 'SUBDOMAIN',
-        'access': 'ACCESS',
-        'portMaps': 'PORT MAPS',
-        'portMaps[].port': 'PORT',
-        'portMaps[].containerPort': 'CONTAINER PORT',
-        'portMaps[].serviceProtocol': 'PROTOCOL',
+        'name': 'SUBDOMAIN',
+        'type': 'ACCESS',
+        'listener_pairs': 'LISTENER PAIRS',
+        'listener_pairs[].port': 'PORT',
+        'listener_pairs[].containerPort': 'CONTAINER PORT',
+        'listener_pairs[].serviceProtocol': 'PROTOCOL',
     }
     const initials = {}
     const types = {}
     const extra = {
-        'access': [{
+        'type': [{
             'key': 'internal',
             'value': 'Internal'
         }, {
@@ -97,7 +97,7 @@ export default class LoadBalancer extends React.Component {
             'key': 'office',
             'value': 'Office'
         }],
-        'portMaps[].serviceProtocol': [{
+        'listener_pairs[].serviceProtocol': [{
             'key': 'http',
             'value': 'HTTP'
         }, {
@@ -138,19 +138,21 @@ export default class LoadBalancer extends React.Component {
       })
     }
 
-    this.props.createExtension({
-      variables: {
-        'projectId': this.props.project.id,
-        'extensionSpecId': this.props.extensionSpec.id,
-        'config': userConfig,
-        'environmentId': this.props.store.app.currentEnvironment.id,
-      }
-    }).then(({ data }) => {
-      this.setState({ addButtonDisabled: false })
-      this.form.reset()      
-      this.props.refetch()
-      this.props.onCancel()
-    });
+    console.log(userConfig)
+
+    // this.props.createExtension({
+    //   variables: {
+    //     'projectId': this.props.project.id,
+    //     'extensionSpecId': this.props.extensionSpec.id,
+    //     'config': userConfig,
+    //     'environmentId': this.props.store.app.currentEnvironment.id,
+    //   }
+    // }).then(({ data }) => {
+    //   this.setState({ addButtonDisabled: false })
+    //   this.form.reset()      
+    //   this.props.refetch()
+    //   this.props.onCancel()
+    // });
   }
 
   onAdd(extension, event){
@@ -169,16 +171,16 @@ export default class LoadBalancer extends React.Component {
               <SelectField fullWidth={true} field={this.form.$('service')} extraKey={'service'} />
             </Grid>
             <Grid item xs={6}>
-              <InputField fullWidth={true} field={this.form.$('subdomain')} />
+              <InputField fullWidth={true} field={this.form.$('name')} />
             </Grid>        
             <Grid item xs={12}>
-              <SelectField fullWidth={true} field={this.form.$('access')} />
+              <SelectField fullWidth={true} field={this.form.$('type')} />
             </Grid>        
           </Grid>
           {/* port maps */}
           {this.form.values()['service'] !== "" &&
           <div>
-            {this.form.$('portMaps').map(function(portMap){
+            {this.form.$('listener_pairs').map(function(portMap){
             return (
             <Grid container spacing={24} key={portMap.id}>
               <Grid item xs={3}>
@@ -199,7 +201,7 @@ export default class LoadBalancer extends React.Component {
             )
             })}
             <Grid item xs={12}>
-              <Button raised type="secondary" onClick={this.form.$('portMaps').onAdd}>
+              <Button raised type="secondary" onClick={this.form.$('listener_pairs').onAdd}>
                 Add Port Map
               </Button>
             </Grid>        
@@ -214,7 +216,6 @@ export default class LoadBalancer extends React.Component {
   renderEnabledView(project){
     return (
       <div>
-        <Typography> hello </Typography>
         {this.renderLoadBalancerForm(project)}
       </div>
     )
@@ -235,7 +236,7 @@ export default class LoadBalancer extends React.Component {
     var self = this
     const extraOptions = project.services.map(function(service){
         return {
-          key: service.id,
+          key: service.name,
           value: service.name,
         }
     })
@@ -244,7 +245,7 @@ export default class LoadBalancer extends React.Component {
     // get port options depending on selected service, if exists
     if(this.form.$('service').value){
       project.services.map(function(service){
-        if(service.id === self.form.$('service').value){
+        if(service.name === self.form.$('service').value){
           containerPortOptions = service.containerPorts.map(function(cPort){
             return {
               key: cPort.port,
