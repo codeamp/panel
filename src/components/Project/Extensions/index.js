@@ -71,6 +71,9 @@ import _ from "lodash"
       type
       key
       created
+      environment {
+        id
+      }
     }
   }`, {
   options: (props) => ({
@@ -268,7 +271,7 @@ export default class Extensions extends React.Component {
           <DialogTitle>{"Are you sure you want to delete"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {"This will delete the extension and all its generated environment variables and cloud resources associated with" + project.name + "."}
+              {"This will delete the extension and all its generated environment variables and cloud resources associated with " + project.name + "."}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -305,7 +308,7 @@ export default class Extensions extends React.Component {
         }
       })
       
-      if (!found) {
+      if (!found && extensionSpec.environment.id === this.props.store.app.currentEnvironment.id) {
         extensions.push(
           <TableRow
             hover
