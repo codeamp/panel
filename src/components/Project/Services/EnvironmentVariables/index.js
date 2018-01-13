@@ -16,6 +16,7 @@ import Dialog, {
 import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import TextareaField from 'components/Form/textarea-field';
+import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
@@ -46,6 +47,15 @@ query Project($slug: String, $environmentId: String){
         id
         email
       }
+      versions {
+        id
+        value
+        created
+        user {
+          id
+          email
+        }
+      }      
       type
       created
     }
@@ -202,6 +212,10 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
+  onClickVersion(versionIdx) {
+    this.form.$('value').set(this.props.data.project.environmentVariables[this.form.values()['index']].versions[versionIdx].value)
+  }
+
   onError(form){
     // todo
     this.closeDrawer()
@@ -258,6 +272,10 @@ export default class EnvironmentVariables extends React.Component {
       this.props.data.refetch()
     });
   }
+  
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  }  
 
   render() {
     const { loading, project } = this.props.data;
@@ -341,7 +359,6 @@ export default class EnvironmentVariables extends React.Component {
         </Menu>
 
         <Drawer
-            type="persistent"
             anchor="right"
             classes={{
             paper: styles.list,
@@ -381,6 +398,14 @@ export default class EnvironmentVariables extends React.Component {
                         </Grid>
                       </Grid>
                     }
+
+                    {this.form.values()['index'] >= 0 && project.environmentVariables[this.form.values()['index']] &&
+                      <EnvVarVersionHistory 
+                        versions={project.environmentVariables[this.form.values()['index']].versions}
+                        onClickVersion={this.onClickVersion.bind(this)}
+                      />
+                    }    
+
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}

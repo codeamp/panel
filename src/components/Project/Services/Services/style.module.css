@@ -50,7 +50,7 @@
 }
 
 .createServiceBar {
-    padding-top: 70px;
+    /* padding-top: 70px; */
 }
 
 .containerPortFormInput {
@@ -68,8 +68,8 @@
 }
 
 .grid {
-    width: 100% !important;
-    margin: 0px !important;
+    width: 100%;
+    margin: 0px;
     padding: 24px;
 }
 

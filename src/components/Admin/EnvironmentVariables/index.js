@@ -27,6 +27,7 @@ import gql from 'graphql-tag';
 import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
+import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 
 @graphql(gql`
   query {
@@ -53,6 +54,15 @@ import Grow from 'material-ui/transitions/Grow';
         id
         name
         created
+      }
+      versions {
+        id
+        value
+        created
+        user {
+          id
+          email
+        }
       }
     }
   }
@@ -132,6 +142,7 @@ export default class EnvironmentVariables extends React.Component {
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
+      dialogOpen:false,
     }
   }
 
@@ -149,7 +160,6 @@ export default class EnvironmentVariables extends React.Component {
     ];
     const initials = {
       'projectId': '',
-      'index': '',
     }
     const rules = {
       'key': 'string|required',
@@ -191,7 +201,11 @@ export default class EnvironmentVariables extends React.Component {
     const envVar = this.props.data.environmentVariables[envVarIdx]
     if(envVar !== undefined){
         this.form.$('key').set(envVar.key)
+        
         this.form.$('key').set('disabled', true)
+        this.form.$('environmentId').set('disabled', true)
+        this.form.$('scope').set('disabled', true)
+
         this.form.$('value').set(envVar.value)
         this.form.$('type').set(envVar.type)
         this.form.$('environmentId').set(envVar.environment.id)
@@ -203,8 +217,11 @@ export default class EnvironmentVariables extends React.Component {
     }
   }
 
+  onClickVersion(versionIdx) {
+    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIdx].value)
+  }
+
   onError(form){
-    return
   }
 
   onSuccess(form){
@@ -242,7 +259,10 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   closeDrawer(){
-    this.form.reset()
+    this.form.$('key').set('disabled', false)
+    this.form.$('environmentId').set('disabled', false)
+    this.form.$('scope').set('disabled', false)
+
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false, addEnvVarMenuOpen: false })
   }
 
@@ -260,12 +280,11 @@ export default class EnvironmentVariables extends React.Component {
 
   render() {
     let { loading, environmentVariables, environments } = this.props.data;
-    var self = this;
 
+    var self = this;
     if(loading){
       return null;
     }
-
     const extraOptions = environments.map(function(env){
       return {
         key: env.id,
@@ -372,7 +391,6 @@ export default class EnvironmentVariables extends React.Component {
         </div>
 
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
           paper: styles.list,
@@ -420,6 +438,14 @@ export default class EnvironmentVariables extends React.Component {
                   </Grid>
                   }
 
+                  {/* Version History */}
+                  {this.form.values()['index'] >= 0 && environmentVariables[this.form.values()['index']] &&
+                    <EnvVarVersionHistory 
+                      versions={environmentVariables[this.form.values()['index']].versions}
+                      onClickVersion={this.onClickVersion.bind(this)}
+                    />
+                  }       
+
                   <Grid item xs={12}>
                     <Button color="primary"
                       className={styles.buttonSpacing}
@@ -449,7 +475,7 @@ export default class EnvironmentVariables extends React.Component {
           </div>
         </Drawer>
         {environmentVariables.length > 0 && environmentVariables[this.form.values()['index']] &&
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+        <Dialog open={this.state.dialogOpen}>
           <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.form.values()['index']].key + "?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>

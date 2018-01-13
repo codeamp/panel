@@ -50,7 +50,6 @@
 }
 
 .createServiceBar {
-    padding-top: 70px;
 }
 
 .selectedEnvVar { 
@@ -66,8 +65,8 @@
 }
 
 .grid {
-    width: 100% !important;
-    margin: 0px !important;
+    width: 100%;
+    margin: 0px;
     padding: 24px;
 }
 
@@ -101,4 +100,13 @@
 .hide {
     display: none;
     visibility: hidden;
+}
+
+
+.tableWrapper {
+    width: 100%;
+}
+
+.root {
+    overflow: auto;
 }

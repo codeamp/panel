@@ -9,8 +9,6 @@ import Grid from 'material-ui/Grid';
 import Snackbar from 'material-ui/Snackbar';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
-
-//components
 import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';
 import Dashboard from 'components/Dashboard';
@@ -100,7 +98,7 @@ export default class App extends React.Component {
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-      if(environments.length > 0){
+      if(environments.length > 0 && this.props.store.app.currentEnvironment.id === ''){
         this.props.store.app.setCurrentEnv({ id: environments[0].id })
       }
       return (

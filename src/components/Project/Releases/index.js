@@ -192,9 +192,6 @@ export default class Releases extends React.Component {
     });
   };
 
-  shouldComponentUpdate(){
-      return true
-  }
   componentWillMount() {
     this.props.data.refetch()
     const fields = [
@@ -237,13 +234,18 @@ export default class Releases extends React.Component {
     this.setState({ drawerOpen: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
   }
 
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  }
+
   render() {
     const { loading, project } = this.props.data;
+
     if(loading){
       return (<div>Loading...</div>);
     }
     return (
-      <div className={styles.root}>
+      <div>
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.title}>
             <Typography type="subheading">
@@ -277,7 +279,6 @@ export default class Releases extends React.Component {
           </Grid>
         </Grid>
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
             paper: styles.drawer
@@ -306,8 +307,9 @@ export default class Releases extends React.Component {
                       project.releases[this.form.values()['index']].tailFeature.hash }
                     </Typography>
                 </Grid>
-                <Grid item xs={12}>
-                    <Paper>
+                <Grid item xs={12}>                
+                  <Paper className={styles.root}>
+                    <div className={styles.tableWrapper}>
                       <Toolbar>
                         <div>
                           <Typography type="title">
@@ -341,8 +343,6 @@ export default class Releases extends React.Component {
                             if(re.state === "failed"){
                                 stateIcon = <ExtensionStateFailedIcon />
                             }
-                            console.log(re)
-
                             return (
                               <TableRow
                                 tabIndex={-1}
@@ -360,7 +360,8 @@ export default class Releases extends React.Component {
                           })}
                         </TableBody>
                       </Table>
-                    </Paper>
+                    </div>
+                  </Paper>
                 </Grid>
                 <Grid item xs={12}>
                   {project.releases[this.form.values()['index']] &&

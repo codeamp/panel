@@ -212,6 +212,8 @@ export default class ExtensionSpecs extends React.Component {
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
 
+    console.log(extension)
+
     this.openDrawer()
   }
 
@@ -267,7 +269,7 @@ export default class ExtensionSpecs extends React.Component {
 
     const envVarOptions = environmentVariables.map(function(envVar){
       return {
-        key: envVar.id,
+        key: envVar.value,
         value: "(" + envVar.key + ") => " + envVar.value,
       }
     })
@@ -339,7 +341,6 @@ export default class ExtensionSpecs extends React.Component {
               <AddIcon />
         </Button>
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
             paper: styles.drawer

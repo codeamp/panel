@@ -1,8 +1,5 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
-
-import styles from './style.module.css';
-
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
@@ -13,6 +10,7 @@ import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
+import styles from './style.module.css';
 
 @inject("store") @observer
 
@@ -54,13 +52,14 @@ export default class TopNav extends React.Component {
     const cleanedValue = this.escapeRegExp(value.trim().toLowerCase());
     let re = new RegExp(cleanedValue, "i");
 
-    return cleanedValue === '' ? [] : this.state.originalSuggestions.filter(function(project){
+    return cleanedValue === '' ? [] : this.state.originalSuggestions.filter((project) => {
       return project.label.toLowerCase().match(re)
     });
   }
 
-  renderBookmarks(){
-    // TODO
+  renderBookmarks(e){
+    const suggestions = this.getSuggestions(e.target.value)
+    this.setState({ suggestions: suggestions, showSuggestions: true })
   }
 
   hideSuggestions(force=false){
@@ -92,24 +91,35 @@ export default class TopNav extends React.Component {
       <AppBar position="static" className={styles.appBar}>
         <Toolbar>
           <Grid container spacing={24}>
-            <Grid item xs={10}>
+            <Grid item xs={2}>
               <Typography type="title" color="inherit" className={styles.flex}>
                 CodeAmp
               </Typography>
             </Grid>
-            <Grid item xs={8} style={{ position: 'absolute', left: '15%' }}>
-              <div>
-                <TextField
-                  autoFocus={false}
-                  value={this.state.projectQuery}
-                  onClick={()=>this.renderBookmarks()}
-                  onChange={(e)=>this.onChange(e)}
-                  onBlur={()=>this.hideSuggestions() }
-                  placeholder="Search for a project or view your bookmarks"
-                  style={{ width: 800 }}
-                />
-                <div
-                  className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
+            <Grid item xs={8}>
+              <div style={{position: "relative"}}>
+              <TextField
+                fullWidth={true}
+                className={styles.searchInput}
+                autoFocus={false}
+                value={this.state.projectQuery}
+                placeholder="Search..."
+                InputProps={{
+                  disableUnderline: true,
+                  classes: {
+                    root: styles.textFieldRoot,
+                    input: styles.textFieldInput,
+                  },
+                }}
+                InputLabelProps={{
+                  shrink: true,
+                  className: styles.textFieldFormLabel,
+                }}
+                onClick={(e)=>this.renderBookmarks(e)}
+                onChange={(e)=>this.onChange(e)}
+                onBlur={(e)=>this.hideSuggestions()}
+              />
+                <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
                   {this.state.suggestions.map(function(suggestion){
                     return (
                       <Paper

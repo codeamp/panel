@@ -7,7 +7,6 @@ import FeaturesIcon from 'material-ui-icons/Input';
 import ReleasesIcon from 'material-ui-icons/Timeline';
 import ServicesIcon from 'material-ui-icons/Widgets';
 import ExtensionsIcon from 'material-ui-icons/Extension';
-
 import ProjectFeatures from 'components/Project/Features';
 import ProjectReleases from 'components/Project/Releases';
 import ProjectSettings from 'components/Project/Settings';

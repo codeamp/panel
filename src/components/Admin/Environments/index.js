@@ -230,7 +230,6 @@ export default class Environments extends React.Component {
         </Button>
 
         <Drawer
-            type="persistent"
             anchor="right"
             classes={{
             paper: styles.list,

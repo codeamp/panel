@@ -218,12 +218,13 @@ class ProjectServices extends React.Component {
     });
   }
 
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  }
+
   render() {
     const { services } = this.props.project;
     const { loading, serviceSpecs } = this.props.data;
-
-    console.log(this.props.data)
-
 
     if(loading){
       return (
@@ -330,7 +331,6 @@ class ProjectServices extends React.Component {
         </div>
 
           <Drawer
-              type="persistent"
               anchor="right"
               classes={{
               paper: styles.list,

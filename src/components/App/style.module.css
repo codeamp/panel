@@ -15,7 +15,7 @@
   top: 64px;
   bottom: 0;
   right: 0;
-  position: fixed !important;
+  position: fixed;
   padding: 16px 16px;
   overflow: scroll;
 }

@@ -25,7 +25,6 @@ import EnvironmentIcon from 'material-ui-icons/Public';
 @withRouter
 @inject("store") @observer
 
-
 export default class LeftNav extends React.Component {
   state = {
     open: false,
@@ -35,6 +34,10 @@ export default class LeftNav extends React.Component {
   handleClick = () => {
     this.setState({ open: !this.state.open });
   };
+
+  handleEnvChange(e){
+    this.props.store.app.setCurrentEnv({id: e.target.value })
+  }
 
   render() {
   const { environments, handleEnvChange } = this.props;
@@ -144,7 +147,7 @@ export default class LeftNav extends React.Component {
               }}
               style={{ width: 200 }}
               value={this.props.store.app.currentEnvironment.id}
-              onChange={handleEnvChange}
+              onChange={this.handleEnvChange.bind(this)}
               input={<Input fullWidth={true} />}
               >
               {environments.map(function(env){

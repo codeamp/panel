@@ -18,10 +18,10 @@
 }
 
 .addButton {
-    position: absolute !important;
-    bottom: 0px !important;
-    bottom: 25px !important;
-    right: 25px !important;
+    position: absolute;
+    bottom: 0px;
+    bottom: 25px;
+    right: 25px;
 }
 
 .appBar {
@@ -51,7 +51,6 @@
 }
 
 .createServiceBar {
-    padding-top: 70px;
 }
 
 .selectedEnvVar { 
@@ -67,8 +66,8 @@
 }
 
 .grid {
-    width: 100% !important;
-    margin: 0px !important;
+    width: 100%;
+    margin: 0px;
     padding: 24px;
 }
 

@@ -16,6 +16,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
+import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -24,7 +25,8 @@ import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import _ from "lodash"
 
-@inject("store") @observer
+@inject("store") 
+
 @graphql(gql`
   query ProjectExtensions($slug: String, $environmentId: String){
     project(slug: $slug, environmentId: $environmentId) {
@@ -69,6 +71,9 @@ import _ from "lodash"
       type
       key
       created
+      environment {
+        id
+      }
     }
   }`, {
   options: (props) => ({
@@ -120,6 +125,7 @@ import _ from "lodash"
   }`, { name: "deleteExtension" }
 )
 
+@observer
 export default class Extensions extends React.Component {
   constructor(props){
     super(props)
@@ -127,16 +133,42 @@ export default class Extensions extends React.Component {
       extensionDrawer: {
         open: false,
         extension: null,
+        formType: "",
       },
       dialogOpen: false,
     }
   }
 
-  openExtensionDrawer(e, extension){
+  async openExtensionDrawer(e, extension){
+    let component = null
+    let formType = null
+    // check typename to know if Extension or ExtensionSpec
+    if(extension.__typename === "Extension"){
+      component = extension.extensionSpec.component;
+      formType = "enabled";
+    } else if(extension.__typename === "ExtensionSpec") {
+      component = extension.component;
+      formType = "available";
+    } else {
+      return;
+    }
+    
+    if (component !== ""){
+      try {
+        await import("./" + component)
+        .then((c) => {
+          component = c.default
+        });
+      }
+      catch (e) {}
+    }
+
     this.setState({
       extensionDrawer: {
         open: true,
         extension: extension, 
+        customForm: component,
+        formType: formType,
       }
     })
   } 
@@ -153,14 +185,24 @@ export default class Extensions extends React.Component {
 
   saveExtension(e){
     let { extension } = this.state.extensionDrawer
-  
+    
+    let formValues = this.form.values()
+    if (this.customForm) {
+      formValues.custom = this.customForm.values()
+    } else {
+      formValues.custom = {}
+    }
+
+    console.log(extension)
+    console.log(formValues)
+
     if (extension.extensionSpec) {
       this.props.updateExtension({
         variables: {
           'id': extension.id,
           'projectId': this.props.data.project.id,
           'extensionSpecId': extension.extensionSpec.id,
-          'config': this.form.values(),
+          'config': formValues,
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -172,7 +214,7 @@ export default class Extensions extends React.Component {
         variables: {
           'projectId': this.props.data.project.id,
           'extensionSpecId': extension.id,
-          'config': this.form.values(),
+          'config': formValues,
           'environmentId': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -203,6 +245,10 @@ export default class Extensions extends React.Component {
     })
   }
 
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  } 
+
   render() {
     const { loading, project } = this.props.data;
 
@@ -225,7 +271,7 @@ export default class Extensions extends React.Component {
           <DialogTitle>{"Are you sure you want to delete"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {"This will delete the extension and all its generated environment variables and cloud resources associated with" + project.name + "."}
+              {"This will delete the extension and all its generated environment variables and cloud resources associated with " + project.name + "."}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -239,10 +285,9 @@ export default class Extensions extends React.Component {
         </Dialog>
 
         <Drawer
-          type="persistent"
           anchor="right"
           classes={{
-          paper: styles.drawer
+            paper: styles.drawer
           }}
           open={this.state.extensionDrawer.open}
         >
@@ -263,7 +308,7 @@ export default class Extensions extends React.Component {
         }
       })
       
-      if (!found) {
+      if (!found && extensionSpec.environment.id === this.props.store.app.currentEnvironment.id) {
         extensions.push(
           <TableRow
             hover
@@ -283,7 +328,7 @@ export default class Extensions extends React.Component {
       <Toolbar>
         <div>
           <Typography type="title">
-            Available Extensions
+            Available extensions
           </Typography>
         </div>
       </Toolbar>
@@ -312,7 +357,7 @@ export default class Extensions extends React.Component {
     return (<Paper>
       <Toolbar>
         <div> <Typography type="title">
-            Added Extensions
+            Enabled extensions
           </Typography>
         </div>
       </Toolbar>
@@ -329,29 +374,31 @@ export default class Extensions extends React.Component {
               State
             </TableCell>
             <TableCell>
-              Added
+              Created
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {project.extensions.map(extension => {
-          let stateIcon = <CircularProgress size={25} />
-          if(extension.state === "complete"){
-          stateIcon = <ExtensionStateCompleteIcon size={25}/>
-          }
-
-          return (
-          <TableRow
-            hover
-            onClick={event => this.openExtensionDrawer(event, extension)}
-            tabIndex={-1}
-            key={extension.id}>
-            <TableCell> { extension.extensionSpec.name } </TableCell>
-            <TableCell> { extension.extensionSpec.type } </TableCell>
-            <TableCell> { stateIcon } </TableCell>
-            <TableCell> { new Date(extension.created).toDateString() }</TableCell>
-          </TableRow>
-          )
+            let stateIcon = <CircularProgress size={25} />
+            if(extension.state === "complete"){
+              stateIcon = <ExtensionStateCompleteIcon size={25}/>
+            }
+            if(extension.state === "failed"){
+              stateIcon = <ExtensionStateFailedIcon />
+            }            
+            return (
+            <TableRow
+              hover
+              onClick={event => this.openExtensionDrawer(event, extension)}
+              tabIndex={-1}
+              key={extension.id}>
+              <TableCell> { extension.extensionSpec.name } </TableCell>
+              <TableCell> { extension.extensionSpec.type } </TableCell>
+              <TableCell> { stateIcon } </TableCell>
+              <TableCell> { new Date(extension.created).toDateString() }</TableCell>
+            </TableRow>
+            )
           })}
         </TableBody>
       </Table>
@@ -364,33 +411,45 @@ export default class Extensions extends React.Component {
       return null 
     }
     
+    let CustomForm = this.state.extensionDrawer.customForm
     let { extension } = this.state.extensionDrawer
     
     let name = extension.name
     let type = extension.type
     let config = []
+    let artifacts = ""
     
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
       type = extension.extensionSpec.type
-      
-      extension.extensionSpec.config.map(function(obj){
-        let _obj = _.find(extension.config.config, {key: obj.key});
-        if (_obj) {
-          config.push(_obj) 
-        } else {
-          config.push(obj) 
-        }
-        return null
-      })
+      if(extension.extensionSpec.config){
+        extension.extensionSpec.config.map(function(obj){
+          let _obj = _.find(extension.config.config, {key: obj.key, value: obj.value });
+          if (_obj) {
+            config.push(_obj) 
+          } else {
+            config.push(obj) 
+          }
+          return null
+        })
+      }
     } else {
-      extension.config.map(function(obj){
-        let _obj = _.clone(obj)
-        _obj.value = ""
-        config.push(_obj) 
-        return null
-      })
+      if(extension.config){
+        extension.config.map(function(obj){
+          let _obj = _.clone(obj)
+          _obj.value = obj.value
+          config.push(_obj) 
+          return null
+        })
+      }
     }
+
+    if(extension.artifacts){
+      console.log('extension artifacts', extension.artifacts)
+      artifacts = JSON.stringify(extension.artifacts)
+    }
+
+    console.log('config', config)
 
     const fields = [
       'config[]',
@@ -410,7 +469,7 @@ export default class Extensions extends React.Component {
 
     const envVarOptions = this.props.data.project.environmentVariables.map(function(envVar){
       return {
-        key: envVar.id,
+        key: envVar.value,
         value: "(" + envVar.key + ") => " + envVar.value,
       }
     })
@@ -442,9 +501,15 @@ export default class Extensions extends React.Component {
             <br/>
             {config_jsx}
           </Grid>
+
           <Grid item xs={12}>
-            { this.state.customConfigForm }
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
+          
+          <Grid item xs={12}>
+            <Typography type="body1">{artifacts}</Typography>
+          </Grid>
+
           <Grid item xs={12}>
             <Button raised color="primary" className={styles.rightPad}
               onClick={(event) => this.saveExtension(event)}
