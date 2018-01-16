@@ -6,8 +6,10 @@ import gql from 'graphql-tag';
 import styles from './style.module.css';
 import io from 'socket.io-client';
 import Grid from 'material-ui/Grid';
+import Typography from 'material-ui/Typography';
 import Snackbar from 'material-ui/Snackbar';
 import IconButton from 'material-ui/IconButton';
+import Card, {CardContent, CardActions} from 'material-ui/Card';
 import CloseIcon from 'material-ui-icons/Close';
 import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';
@@ -93,6 +95,32 @@ export default class App extends React.Component {
   render() {
     const { loading, projects, environments } = this.props.data;
 
+    if(this.props.data.networkStatus === 8){
+      return (
+        <div className={styles.root}>
+            <Grid item xs={12} className={styles.top}>
+              <TopNav projects={new Array()} {...this.props} />
+            </Grid>
+            <Grid item xs={4}></Grid>
+            <Grid item xs={5} className={styles.center}>
+                  <Grid container spacing={24}>
+                    <Grid item xs={12}>
+                      <Typography type="title">
+                        Internal Server Error
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography type="body2">
+                        We apologize but there is a problem in resolving your request to the server. Please bear with us as we resolve
+                      this on our side. Contact devops@checkr.com if you continue to have any issues. Thank you!
+                      </Typography>
+                    </Grid>
+                  </Grid>
+            </Grid>
+            <Grid item xs={3}></Grid>            
+        </div>
+      )
+    }
     if (loading) {
       return (<div>Loading...</div>);
     } else if (this.state.redirectToLogin) {

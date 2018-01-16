@@ -8,6 +8,9 @@
 
 .center {
   z-index: 1;
+  margin: auto;
+  text-align: center;
+  margin-top: 10%;
 }
 
 .children {
