@@ -9,6 +9,12 @@
 .center {
   z-index: 1;
   margin: auto;
+  margin-top: 10%;
+}
+
+.error-center {
+  z-index: 1;
+  margin: auto;
   text-align: center;
   margin-top: 10%;
 }
