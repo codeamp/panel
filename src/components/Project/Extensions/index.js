@@ -417,7 +417,7 @@ export default class Extensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
-    let artifacts = ""
+    let artifacts = null
     
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
@@ -445,8 +445,7 @@ export default class Extensions extends React.Component {
     }
 
     if(extension.artifacts){
-      console.log('extension artifacts', extension.artifacts)
-      artifacts = JSON.stringify(extension.artifacts)
+      artifacts = JSON.stringify(extension.artifacts, null, 2)
     }
 
     console.log('config', config)
@@ -506,9 +505,12 @@ export default class Extensions extends React.Component {
             { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
           
-          <Grid item xs={12}>
-            <Typography type="body1">{artifacts}</Typography>
-          </Grid>
+          {artifacts &&
+            <Grid item xs={12}>
+              <Typography type="subheading">Artifacts:</Typography>
+              <pre>{artifacts}</pre>
+            </Grid>
+          }
 
           <Grid item xs={12}>
             <Button raised color="primary" className={styles.rightPad}

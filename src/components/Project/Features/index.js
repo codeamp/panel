@@ -267,6 +267,8 @@ export default class Features extends React.Component {
 
     let defaultComponent = (<Typography>Loading...</Typography>)
 
+    console.log(project)
+
     if(project.features.length > 0) {
       defaultComponent = this.renderFeatureList(project);
     } else if(project.gitProtocol === "SSH"){

@@ -11,12 +11,15 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
 import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import validatorjs from 'validatorjs';
+import MobxReactForm from 'mobx-react-form';
+import InputField from 'components/Form/input-field';
 
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean! $environmentId: String!) {
-    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentId: $environmentId }) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $gitBranch: String!, $environmentId: String!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, gitBranch: $gitBranch, environmentId: $environmentId }) {
       id
       name
       slug
@@ -24,9 +27,25 @@ import gql from 'graphql-tag';
       gitUrl
       gitProtocol
       rsaPublicKey
+      gitBranch
     }
   }
-`)
+`, {name: "createProject"})
+
+@graphql(gql`
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $gitBranch: String!, $environmentId: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, gitBranch: $gitBranch, environmentId: $environmentId}) {
+      id
+      name
+      slug
+      repository
+      gitUrl
+      gitProtocol
+      gitBranch
+      rsaPublicKey
+    }
+  }
+`, { name: "updateProject"})
 
 export default class Create extends React.Component {
   constructor(props){
@@ -55,6 +74,27 @@ export default class Create extends React.Component {
     } else {
       this.props.store.app.setNavProjects(this.props.projects)
     }
+
+    const fields = [
+      'id',
+      'gitBranch',
+      'gitProtocol',
+      'gitUrl',
+      'environmentId',
+    ];
+    const rules = {};
+    const labels = {
+      'gitBranch': 'Git Branch',
+    };
+    const initials = {
+      'gitBranch': 'master',
+    };
+    const types = {};
+    const extra = {};
+    const hooks = {};
+    const handlers = {};
+    const plugins = { dvr: validatorjs };
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
 
   componentWillReact() {

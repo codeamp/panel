@@ -2,45 +2,116 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
+import Card, {CardContent, CardActions} from 'material-ui/Card';
+import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import validatorjs from 'validatorjs';
+import MobxReactForm from 'mobx-react-form';
+import InputField from 'components/Form/input-field';
 import CreateProject from '../../Create';
 
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl}) {
+  query Project($slug: String, $environmentId: String){
+    project(slug: $slug, environmentId: $environmentId) {
       id
       name
       slug
       repository
       gitUrl
       gitProtocol
+      gitBranch
+    }
+  }`, {
+  options: (props) => ({
+    variables: {
+      slug: props.match.params.slug,
+      environmentId: props.store.app.currentEnvironment.id,
+    }
+  })
+})
+
+@graphql(gql`
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $gitBranch: String!, $environmentId: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, gitBranch: $gitBranch, environmentId: $environmentId}) {
+      id
+      name
+      slug
+      repository
+      gitUrl
+      gitProtocol
+      gitBranch
       rsaPublicKey
     }
   }
-`)
+`, { name: "updateProject"})
 
 export default class Settings extends React.Component {
   state = {
-    activeStep: 0,
+    notSet: true,    
   };
-  
-  updateProject(newProjectState){
-    this.props.mutate({
-      variables: {
-        id: this.props.project.id,
-        gitUrl: newProjectState.url,
-        gitProtocol: newProjectState.repoType
-      }
+
+  componentWillMount(){
+    const fields = [
+      'id',
+      'gitBranch',
+      'gitProtocol',
+      'gitUrl',
+      'environmentId',
+    ];
+    const rules = {};
+    const labels = {
+      'gitBranch': 'Git Branch',
+    };
+    const initials = {
+      'gitBranch': 'master',
+    };
+    const types = {};
+    const extra = {};
+    const hooks = {};
+    const handlers = {};
+    const plugins = { dvr: validatorjs };
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
+  }
+
+  updateProject(form){
+    console.log('onBranchChange')
+    console.log(form.values())
+    this.props.updateProject({
+      variables: form.values(),
     }).then(({data}) => {
-      this.props.data.refetch();
+      this.props.data.refetch()
     });
   }
 
+  componentDidMount(){
+    const { loading, project } = this.props.data; 
+  }
+
   render() {
+    const { loading, project } = this.props.data;
+    const { notSet } = this.state;    
+    const { currentEnvironment } = this.props.store.app;
+
+    if(loading){
+      return (<div>Loading</div>)
+    }
+
+    if(notSet){
+      console.log(project)
+      this.form.$('id').set(project.id)
+      this.form.$('gitProtocol').set(project.gitProtocol)
+      this.form.$('gitUrl').set(project.gitUrl)
+      this.form.$('gitBranch').set(project.gitBranch)
+      this.form.$('environmentId').set(currentEnvironment.id),
+      this.setState({ notSet: false })
+    }
+
+    console.log(project.gitBranch, this.form.values()['gitBranch'])
+
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -56,12 +127,39 @@ export default class Settings extends React.Component {
           </Grid>
 
           <Grid item sm={9}>
-            <CreateProject title={"Update Project"}
-              type={"save changes"}
-              onProjectCreate={this.updateProject.bind(this)}
-              project={this.props.project}
-              loadLeftNavBar={false} />
-          </Grid>
+            <Grid item xs={12}>
+              <div className={styles.root}>
+                <Card className={styles.card}>
+                  <CardContent>
+                    <Grid container spacing={24}>
+                      <Grid item xs={12}>
+                        <Typography type="subheading">
+                          Git Branch
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <InputField field={this.form.$('gitBranch')} fullWidth={true} />
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                  <CardActions>
+                    <Button
+                      onClick={() => this.updateProject(this.form)}
+                      raised color="primary">
+                    save
+                  </Button>
+                  </CardActions>
+                </Card>
+              </div>
+            </Grid>
+            <br/><br/>
+            <Grid xs={12}>
+              <CreateProject title={"Update Project"}
+                type={"save changes"}
+                project={project}
+                loadLeftNavBar={false} />
+            </Grid>
+          </Grid>         
         </Grid>
       </div>
     );
