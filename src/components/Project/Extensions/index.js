@@ -468,7 +468,7 @@ export default class Extensions extends React.Component {
 
     const envVarOptions = this.props.data.project.environmentVariables.map(function(envVar){
       return {
-        key: envVar.value,
+        key: envVar.id,
         value: "(" + envVar.key + ") => " + envVar.value,
       }
     })
