@@ -102,8 +102,7 @@ class FeatureView extends React.Component {
 
   render() {
     const { project } = this.props;
-    console.log('projectitle', project.slug)
-    this.props.store.app.setProjectTitle(project.slug)
+
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <div
@@ -290,6 +289,12 @@ export default class Features extends React.Component {
 
   render() {
     const { loading, project } = this.props.data;
+
+    if(loading){
+      return (<div>Loading...</div>)
+    }
+
+    this.props.store.app.setProjectTitle(project.slug)    
 
     if(loading){
       return (<div>Loading...</div>);
