@@ -4,7 +4,7 @@ import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloLink } from 'apollo-link';
 
-export default (GRAPHQL_URI = process.env.REACT_APP_GRAPHQL_URI) => {
+export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
   const httpLink = createHttpLink({
     uri: GRAPHQL_URI,
     credentials: 'same-origin'

@@ -18,7 +18,7 @@ import Create from 'components/Create';
 import Project from 'components/Project';
 import Admin from 'components/Admin';
 
-const socket = io('http://localhost:3011');
+const socket = io(process.env.REACT_APP_CIRCUIT_URI);
 
 @graphql(gql`
   query {
