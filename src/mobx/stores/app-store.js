@@ -8,7 +8,7 @@ class AppStore {
     if(!currentEnv){
       currentEnv = {id: ''};
     }
-    var projectTitle = localStorage.getItem('projectTitle');    
+    var projectTitle = '';    
     if(!projectTitle){
       projectTitle = '';
     }

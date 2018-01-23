@@ -225,6 +225,7 @@ export default class EnvironmentVariables extends React.Component {
     form.$('projectId').set(this.props.data.project.id)
     form.$('environmentId').set(this.props.store.app.currentEnvironment.id)
     form.$('scope').set('project')
+    var self = this
 
     this.form.$('key').set('disabled', false)
     if(this.form.values()['id'] === ''){
@@ -238,11 +239,14 @@ export default class EnvironmentVariables extends React.Component {
       this.props.updateEnvironmentVariable({
         variables: form.values(),
       }).then(({data}) => {
-        this.props.data.refetch()
-        this.form.$('key').set('disabled', true)
-        this.form.$('id').set(data.updateEnvironmentVariable.id)
-        this.form.$('value').set(data.updateEnvironmentVariable.value)
-        this.setState({ saving: false })
+        console.log(self.form.values())
+        console.log('form id', self.form.$('id'))
+        console.log('res', data)
+        self.props.data.refetch()
+        self.form.$('key').set('disabled', true)
+        self.form.$('id').set(data.updateEnvironmentVariable.id)
+        self.form.$('value').set(data.updateEnvironmentVariable.value)
+        self.setState({ saving: false })
       });
     }
   }

@@ -6,9 +6,12 @@ import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
+import SelectField from 'components/Form/select-field';
 import { CircularProgress } from 'material-ui/Progress';
 import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql } from 'react-apollo';
+import validatorjs from 'validatorjs';
+import MobxReactForm from 'mobx-react-form';
 import gql from 'graphql-tag';
 
 class InitPrivateProjectComponent extends React.Component {
@@ -99,6 +102,7 @@ class FeatureView extends React.Component {
 
   render() {
     const { project } = this.props;
+    console.log('projectitle', project.slug)
     this.props.store.app.setProjectTitle(project.slug)
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
@@ -258,6 +262,32 @@ export default class Features extends React.Component {
       )
   }
 
+  componentWillMount(){
+    const fields = [
+      'branch[]',
+      'branch[].key',
+      'branch[].value',
+    ];
+    const rules = {};
+    const labels = {};
+    const initials = {};
+    const types = {};
+    const extra = {
+      'branch': [
+        { key: 1, value: 'dev'},
+        { key: 2, value: 'prod'},
+      ],
+    };
+    const hooks = {};
+    const handlers = {};
+    const plugins = { dvr: validatorjs };
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
+  }
+
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  } 
+
   render() {
     const { loading, project } = this.props.data;
 
@@ -278,11 +308,17 @@ export default class Features extends React.Component {
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
-          <Grid item xs={12} className={styles.feature}>
-            <Typography type="headline" component="h3">
-              Features
-            </Typography>
-            <br/>
+          <Grid container xs={12} className={styles.feature}>
+            <Grid item xs={3}>
+              <Typography type="headline" component="h3">
+                Features
+              </Typography>
+            </Grid>
+            {/* <Grid item xs={4}>
+              <SelectField field={this.form.$('branch')} fullWidth={true} />
+            </Grid>             */}
+          </Grid>
+          <Grid item xs={12}>
             {defaultComponent}
           </Grid>
         </Grid>

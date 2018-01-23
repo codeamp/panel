@@ -11,11 +11,14 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
 import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import validatorjs from 'validatorjs';
+import MobxReactForm from 'mobx-react-form';
+import InputField from 'components/Form/input-field';
 
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean! $environmentId: String!) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $environmentId: String!) {
     createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentId: $environmentId }) {
       id
       name
@@ -26,7 +29,21 @@ import gql from 'graphql-tag';
       rsaPublicKey
     }
   }
-`)
+`, {name: "createProject"})
+
+@graphql(gql`
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $environmentId: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentId: $environmentId}) {
+      id
+      name
+      slug
+      repository
+      gitUrl
+      gitProtocol
+      rsaPublicKey
+    }
+  }
+`, { name: "updateProject"})
 
 export default class Create extends React.Component {
   constructor(props){
@@ -55,6 +72,22 @@ export default class Create extends React.Component {
     } else {
       this.props.store.app.setNavProjects(this.props.projects)
     }
+
+    const fields = [
+      'id',
+      'gitProtocol',
+      'gitUrl',
+      'environmentId',
+    ];
+    const rules = {};
+    const types = {};
+    const extra = {};
+    const hooks = {};
+    const handlers = {};
+    const labels = {};
+    const initials = {};
+    const plugins = { dvr: validatorjs };
+    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
 
   componentWillReact() {
@@ -134,7 +167,7 @@ export default class Create extends React.Component {
   createProject(){
     // Post to graphql
     var self = this
-    this.props.mutate({
+    this.props.createProject({
       variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentId: this.props.store.app.currentEnvironment.id  }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)

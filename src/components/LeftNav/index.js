@@ -136,7 +136,6 @@ export default class LeftNav extends React.Component {
               </NavLink>
               )}
           </Collapse>
-          {this.props.store.app.leftNavProjectTitle !== '' &&
           <ListItem>
             <FormControl>
               <InputLabel>Current Environment</InputLabel>
@@ -158,7 +157,6 @@ export default class LeftNav extends React.Component {
               </Select>
             </FormControl>
           </ListItem>
-          }
           </List>
         </div>
       </Drawer>
