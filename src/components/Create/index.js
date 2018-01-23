@@ -18,8 +18,8 @@ import InputField from 'components/Form/input-field';
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $gitBranch: String!, $environmentId: String!) {
-    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, gitBranch: $gitBranch, environmentId: $environmentId }) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $environmentId: String!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentId: $environmentId }) {
       id
       name
       slug
@@ -27,21 +27,19 @@ import InputField from 'components/Form/input-field';
       gitUrl
       gitProtocol
       rsaPublicKey
-      gitBranch
     }
   }
 `, {name: "createProject"})
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $gitBranch: String!, $environmentId: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, gitBranch: $gitBranch, environmentId: $environmentId}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $environmentId: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentId: $environmentId}) {
       id
       name
       slug
       repository
       gitUrl
       gitProtocol
-      gitBranch
       rsaPublicKey
     }
   }
@@ -77,22 +75,17 @@ export default class Create extends React.Component {
 
     const fields = [
       'id',
-      'gitBranch',
       'gitProtocol',
       'gitUrl',
       'environmentId',
     ];
     const rules = {};
-    const labels = {
-      'gitBranch': 'Git Branch',
-    };
-    const initials = {
-      'gitBranch': 'master',
-    };
     const types = {};
     const extra = {};
     const hooks = {};
     const handlers = {};
+    const labels = {};
+    const initials = {};
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
@@ -174,7 +167,7 @@ export default class Create extends React.Component {
   createProject(){
     // Post to graphql
     var self = this
-    this.props.mutate({
+    this.props.createProject({
       variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentId: this.props.store.app.currentEnvironment.id  }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)

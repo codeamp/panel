@@ -4,7 +4,8 @@ import { Switch, Route } from "react-router-dom";
 import Oidc from 'oidc-client'
 
 var settings = {
-  authority: 'http://localhost:5556/dex',
+  authority: 'https://dex.checkrhq-dev.net:5556/dex',
+  // authority: 'https://dex.checkrhq-dev.net:5556/dex',
   client_id: 'example-app',
   redirect_uri: 'http://localhost:3010/login/callback',
   post_logout_redirect_uri: 'http://localhost:3010/logout',

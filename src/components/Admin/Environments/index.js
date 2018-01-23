@@ -35,42 +35,49 @@ const inlineStyles = {
       environments {
         id
         name
+        gitBranch
         created
       }
     }
 `)
 
 @graphql(gql`
-  mutation CreateEnvironment($name: String!) {
+  mutation CreateEnvironment($name: String!, $gitBranch: String) {
       createEnvironment(environment:{
-      name: $name,
+        name: $name,
+        gitBranch: $gitBranch
       }) {
           id
           name
+          gitBranch
       }
   }
 `, { name: "createEnvironment" })
 
 @graphql(gql`
-mutation UpdateEnvironment($id: String!, $name: String!) {
+mutation UpdateEnvironment($id: String!, $name: String!, $gitBranch: String) {
     updateEnvironment(environment:{
     id: $id,
     name: $name,
+    gitBranch: $gitBranch,
     }) {
         id
         name
+        gitBranch
     }
 }
 `, { name: "updateEnvironment" })
 
 @graphql(gql`
-mutation DeleteEnvironment ($id: String!, $name: String!) {
+mutation DeleteEnvironment ($id: String!, $name: String!, $gitBranch: String) {
     deleteEnvironment(environment:{
     id: $id,
     name: $name,
+    gitBranch: $gitBranch,
     }) {
         id
         name
+        gitBranch
     }
 }
 `, { name: "deleteEnvironment" })
@@ -91,6 +98,7 @@ export default class Environments extends React.Component {
     const fields = [
       'id',
       'name',
+      'gitBranch',
       'created',
     ];
     const rules = {
@@ -98,13 +106,15 @@ export default class Environments extends React.Component {
     };
     const labels = {
       'name': 'Name',
+      'gitBranch': 'Git Branch',
     };
     const types = {
     };
     const keys = {
     };
     const disabled = {
-      'name': false
+      'name': false,
+      'gitBranch': false,
     }
     const extra = {}
     const hooks = {};
@@ -115,6 +125,7 @@ export default class Environments extends React.Component {
 
   onSubmit(e) {
     this.setState({ saving: true })
+    console.log(this.form.values())
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
@@ -127,6 +138,7 @@ export default class Environments extends React.Component {
     this.form.clear()
 
     if(envIdx >= 0){
+      this.form.$('gitBranch').set(this.props.data.environments[envIdx].gitBranch)
       this.form.$('name').set(this.props.data.environments[envIdx].name)
       this.form.$('id').set(this.props.data.environments[envIdx].id)
       this.openDrawer()
@@ -142,6 +154,7 @@ export default class Environments extends React.Component {
         this.props.data.refetch()
       });
     } else {
+      console.log(form.values())
       this.props.createEnvironment({
         variables: form.values(),
       }).then(({data}) => {
@@ -250,6 +263,9 @@ export default class Environments extends React.Component {
                     <Grid item xs={12}>
                       <InputField field={this.form.$('name')} fullWidth={true} />
                     </Grid>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('gitBranch')} fullWidth={true} />
+                    </Grid>                    
                     <Grid item xs={12}>
                       <Button color="primary"
                         className={styles.buttonSpacing}

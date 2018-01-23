@@ -461,7 +461,7 @@ export default class Extensions extends React.Component {
     const types = {};
     const extra = {};
     const hooks = {};
-    const handlers = {}
+    const handlers = {};
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
     this.form.update({ config: config })

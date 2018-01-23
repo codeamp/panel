@@ -23,7 +23,6 @@ import CreateProject from '../../Create';
       repository
       gitUrl
       gitProtocol
-      gitBranch
     }
   }`, {
   options: (props) => ({
@@ -35,15 +34,14 @@ import CreateProject from '../../Create';
 })
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $gitBranch: String!, $environmentId: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, gitBranch: $gitBranch, environmentId: $environmentId}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentId: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentId: $environmentId}) {
       id
       name
       slug
       repository
       gitUrl
       gitProtocol
-      gitBranch
       rsaPublicKey
     }
   }
@@ -127,32 +125,6 @@ export default class Settings extends React.Component {
           </Grid>
 
           <Grid item sm={9}>
-            <Grid item xs={12}>
-              <div className={styles.root}>
-                <Card className={styles.card}>
-                  <CardContent>
-                    <Grid container spacing={24}>
-                      <Grid item xs={12}>
-                        <Typography type="subheading">
-                          Git Branch
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <InputField field={this.form.$('gitBranch')} fullWidth={true} />
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                  <CardActions>
-                    <Button
-                      onClick={() => this.updateProject(this.form)}
-                      raised color="primary">
-                    save
-                  </Button>
-                  </CardActions>
-                </Card>
-              </div>
-            </Grid>
-            <br/><br/>
             <Grid xs={12}>
               <CreateProject title={"Update Project"}
                 type={"save changes"}
