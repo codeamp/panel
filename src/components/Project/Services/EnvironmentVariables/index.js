@@ -15,6 +15,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import TextareaField from 'components/Form/textarea-field';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
@@ -43,6 +44,7 @@ query Project($slug: String, $environmentId: String){
       id
       key
       value
+      isSecret
       user {
         id
         email
@@ -70,13 +72,14 @@ query Project($slug: String, $environmentId: String){
 })
 
 @graphql(gql`
-  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!, $scope: String!, $environmentId: String!) {
+  mutation CreateEnvironmentVariable ($key: String!, $value: String!, $projectId: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
     createEnvironmentVariable(environmentVariable:{
     projectId: $projectId,
     key: $key,
     value: $value,
     type: $type,
     scope: $scope,
+    isSecret: $isSecret,
     environmentId: $environmentId,
     }) {
         id
@@ -95,13 +98,14 @@ query Project($slug: String, $environmentId: String){
 }`, {name: "createEnvironmentVariable"})
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
+mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
     updateEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
 	  type: $type,
     scope: $scope,
+    isSecret: $isSecret,
     environmentId: $environmentId,
     }) {
         id
@@ -119,13 +123,14 @@ mutation UpdateEnvironmentVariable ($id: String!, $key: String!, $value: String!
 }`, {name: "updateEnvironmentVariable"})
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
+mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
     deleteEnvironmentVariable(environmentVariable:{
     id: $id,
     key: $key,
     value: $value,
 	  type: $type,
     scope: $scope,
+    isSecret: $isSecret,
     environmentId: $environmentId,
     }) {
         id
@@ -163,6 +168,7 @@ export default class EnvironmentVariables extends React.Component {
       'created',
       'type',
       'scope',
+      'isSecret',
       'environmentId',
       'index',
     ];
@@ -173,9 +179,12 @@ export default class EnvironmentVariables extends React.Component {
     const labels = {
       'key': 'Key',
       'value': 'Value',
+      'isSecret': 'Make Secret',
     };
     const initials = {}
-    const types = {};
+    const types = {
+      'isSecret': 'checkbox'
+    };
     const keys = {};
     const disabled = {
       'key': false
@@ -208,6 +217,8 @@ export default class EnvironmentVariables extends React.Component {
         this.form.$('type').set(envVar.type)
         this.form.$('id').set(envVar.id)
         this.form.$('index').set(envVarIdx)
+        this.form.$('isSecret').set(envVar.isSecret)
+        this.form.$('isSecret').set('disabled', true)
         this.openDrawer()
     }
   }
@@ -239,9 +250,6 @@ export default class EnvironmentVariables extends React.Component {
       this.props.updateEnvironmentVariable({
         variables: form.values(),
       }).then(({data}) => {
-        console.log(self.form.values())
-        console.log('form id', self.form.$('id'))
-        console.log('res', data)
         self.props.data.refetch()
         self.form.$('key').set('disabled', true)
         self.form.$('id').set(data.updateEnvironmentVariable.id)
@@ -255,6 +263,7 @@ export default class EnvironmentVariables extends React.Component {
     this.form.clear()
     this.form.$('type').set(value);
     this.form.$('key').set('disabled', false)
+    this.form.$('isSecret').set('disabled', false)
     this.openDrawer()
   };
 
@@ -311,6 +320,9 @@ export default class EnvironmentVariables extends React.Component {
                   Type
                 </TableCell>
                 <TableCell>
+                  Secret
+                </TableCell>
+                <TableCell>
                   Creator
                 </TableCell>
                 <TableCell>
@@ -331,6 +343,9 @@ export default class EnvironmentVariables extends React.Component {
                     </TableCell>
                     <TableCell>
                       {envVar.type}
+                    </TableCell>
+                    <TableCell>
+                      {envVar.isSecret ? "yes" : "no" }
                     </TableCell>
                     <TableCell>
                       {envVar.user.email}
@@ -382,10 +397,13 @@ export default class EnvironmentVariables extends React.Component {
                   <Grid container spacing={24} className={styles.grid}>
                     {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                       <Grid item xs={12}>
-                        <Grid item xs={6}>
+                        <Grid item xs={12}>
+                          <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                        </Grid>
+                        <Grid item xs={12}>
                           <InputField field={this.form.$('key')} fullWidth={true} />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={12}>
                           <InputField field={this.form.$('value')} fullWidth={true} />
                         </Grid>
                       </Grid>
@@ -393,12 +411,15 @@ export default class EnvironmentVariables extends React.Component {
 
                     {this.form.$('type').value === 'file' &&
                       <Grid item xs={12}>
-                        <Grid item xs={5}>
+                        <Grid item xs={12}>
+                          <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                        </Grid>
+                        <Grid item xs={12}>
                           <InputField field={this.form.$('key')} fullWidth={true} />
                         </Grid>
                         <br/>
-                        <Grid item xs={5}>
-                          <TextareaField field={this.form.$('value')} />
+                        <Grid item xs={12}>
+                          <TextareaField field={this.form.$('value')} fullWidth={true} />
                         </Grid>
                       </Grid>
                     }
