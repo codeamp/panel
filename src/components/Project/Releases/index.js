@@ -49,11 +49,16 @@ class ReleaseView extends React.Component {
             </Typography>
             <br/>
             <Grid item xs={12}>
-                {releaseStateIcon}
-				<Typography type="subheading">
-					{this.props.release.releaseExtensions.filter(re => re.state === "complete").length} / {this.props.release.releaseExtensions.length}
-				</Typography>
+              {releaseStateIcon}
+              <Typography type="subheading">
+                {this.props.release.releaseExtensions.filter(re => re.state === "complete").length} / {this.props.release.releaseExtensions.length}
+              </Typography>
             </Grid>
+            <Grid item xs={12}>
+              <Typography type="subheading">
+                {this.props.release.stateMessage}
+              </Typography>
+            </Grid>            
           </CardContent>
         </Card>
       </Grid>

@@ -35,49 +35,42 @@ const inlineStyles = {
       environments {
         id
         name
-        gitBranch
         created
       }
     }
 `)
 
 @graphql(gql`
-  mutation CreateEnvironment($name: String!, $gitBranch: String) {
+  mutation CreateEnvironment($name: String!) {
       createEnvironment(environment:{
-        name: $name,
-        gitBranch: $gitBranch
+        name: $name
       }) {
           id
           name
-          gitBranch
       }
   }
 `, { name: "createEnvironment" })
 
 @graphql(gql`
-mutation UpdateEnvironment($id: String!, $name: String!, $gitBranch: String) {
+mutation UpdateEnvironment($id: String!, $name: String!) {
     updateEnvironment(environment:{
     id: $id,
     name: $name,
-    gitBranch: $gitBranch,
     }) {
         id
         name
-        gitBranch
     }
 }
 `, { name: "updateEnvironment" })
 
 @graphql(gql`
-mutation DeleteEnvironment ($id: String!, $name: String!, $gitBranch: String) {
+mutation DeleteEnvironment ($id: String!, $name: String!) {
     deleteEnvironment(environment:{
     id: $id,
     name: $name,
-    gitBranch: $gitBranch,
     }) {
         id
         name
-        gitBranch
     }
 }
 `, { name: "deleteEnvironment" })
@@ -98,23 +91,20 @@ export default class Environments extends React.Component {
     const fields = [
       'id',
       'name',
-      'gitBranch',
       'created',
     ];
     const rules = {
       'name': 'string|required',
     };
     const labels = {
-      'name': 'Name',
-      'gitBranch': 'Git Branch',
+      'name': 'Name'
     };
     const types = {
     };
     const keys = {
     };
     const disabled = {
-      'name': false,
-      'gitBranch': false,
+      'name': false
     }
     const extra = {}
     const hooks = {};
@@ -138,7 +128,6 @@ export default class Environments extends React.Component {
     this.form.clear()
 
     if(envIdx >= 0){
-      this.form.$('gitBranch').set(this.props.data.environments[envIdx].gitBranch)
       this.form.$('name').set(this.props.data.environments[envIdx].name)
       this.form.$('id').set(this.props.data.environments[envIdx].id)
       this.openDrawer()
@@ -263,9 +252,6 @@ export default class Environments extends React.Component {
                     <Grid item xs={12}>
                       <InputField field={this.form.$('name')} fullWidth={true} />
                     </Grid>
-                    <Grid item xs={12}>
-                      <InputField field={this.form.$('gitBranch')} fullWidth={true} />
-                    </Grid>                    
                     <Grid item xs={12}>
                       <Button color="primary"
                         className={styles.buttonSpacing}

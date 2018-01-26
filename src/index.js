@@ -27,7 +27,7 @@ const generateClassName = createGenerateClassName();
 const jss = create(preset());
 jss.options.insertionPoint = 'insertion-point-jss';
 
-const client = makeClient('http://localhost:3011/query');
+const client = makeClient(process.env.REACT_APP_CIRCUIT_URI + '/query');
 const theme = createMuiTheme({
   palette: createPalette({
     primary: blue,

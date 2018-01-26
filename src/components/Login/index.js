@@ -3,12 +3,13 @@ import { observer, inject } from 'mobx-react';
 import { Switch, Route } from "react-router-dom";
 import Oidc from 'oidc-client'
 
+console.log(process.env)
+
 var settings = {
-  authority: 'https://dex.checkrhq-dev.net:5556/dex',
-  // authority: 'https://dex.checkrhq-dev.net:5556/dex',
+  authority: process.env.REACT_APP_DEX_URI + '/dex',
   client_id: 'example-app',
-  redirect_uri: 'http://localhost:3010/login/callback',
-  post_logout_redirect_uri: 'http://localhost:3010/logout',
+  redirect_uri: process.env.REACT_APP_PANEL_URI + '/login/callback',
+  post_logout_redirect_uri: process.env.REACT_APP_PANEL_URI + '/logout',
   response_type: 'id_token token',
   scope: 'openid email groups',
   filterProtocolClaims: true,
