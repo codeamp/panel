@@ -130,8 +130,6 @@ export default class Settings extends React.Component {
   }
 
   updateProject(form){
-    console.log('onBranchChange')
-    console.log(form.values())
     this.props.updateProject({
       variables: form.values(),
     }).then(({data}) => {
@@ -140,7 +138,6 @@ export default class Settings extends React.Component {
   }
 
   createEnvBasedProjectBranch(form){
-    console.log('createEnvBasedProjectBranch', form.values())
     if(form.values()['gitBranch'] !== "" && form.values()['projectId'] !== "" && form.values()['environmentId'] !== ""){
       this.props.createEnvironmentBasedProjectBranch({
         variables: form.values(),
@@ -151,7 +148,6 @@ export default class Settings extends React.Component {
   }
 
   updateEnvBasedProjectBranch(form){
-    console.log('updateEnvBasedProjectBranch', form.values())
     this.props.updateEnvironmentBasedProjectBranch({
       variables: form.values(),
     }).then(({data}) => {
@@ -160,11 +156,10 @@ export default class Settings extends React.Component {
   }
 
   onError(form){
-    console.log('onError', form.values())
+    console.log('onError')
   }
 
   onUpdateEnvironmentBasedProjectBranch(e){
-    console.log(this.envBasedProjectBranchForm.values())
     if(!this.envBasedProjectBranchForm.$('id').value){
       this.envBasedProjectBranchForm.$('environmentId').set(this.props.store.app.currentEnvironment.id)
       this.envBasedProjectBranchForm.$('projectId').set(this.props.data.project.id)
@@ -185,7 +180,6 @@ export default class Settings extends React.Component {
 
 
     if(notSet){
-      console.log(project)
       this.form.$('id').set(project.id)
       this.form.$('gitProtocol').set(project.gitProtocol)
       this.form.$('gitUrl').set(project.gitUrl)
@@ -199,8 +193,6 @@ export default class Settings extends React.Component {
       this.envBasedProjectBranchForm.$('projectId').set(project.environmentBasedProjectBranch.projectId)
       this.envBasedProjectBranchForm.$('gitBranch').set(project.environmentBasedProjectBranch.gitBranch)
     }
-
-    console.log(project.gitBranch, this.form.values()['gitBranch'])
 
     return (
       <div className={styles.root}>
