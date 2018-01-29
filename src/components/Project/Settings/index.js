@@ -169,6 +169,12 @@ export default class Settings extends React.Component {
     }
   }
 
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+    this.envBasedProjectBranchForm.reset()
+    this.form.reset()
+  } 
+
   render() {
     const { loading, project } = this.props.data;
     const { notSet } = this.state;    
