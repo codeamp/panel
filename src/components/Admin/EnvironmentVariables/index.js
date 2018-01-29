@@ -15,6 +15,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import TextareaField from 'components/Form/textarea-field';
 import SelectField from 'components/Form/select-field';
 import AddIcon from 'material-ui-icons/Add';
@@ -42,6 +43,7 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
       value
       created
       scope
+      isSecret
       project {
         id
       }
@@ -69,12 +71,13 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 `)
 
 @graphql(gql`
-mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $environmentId: String!) {
+mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
   createEnvironmentVariable(environmentVariable:{
   key: $key,
   value: $value,
   type: $type,
   scope: $scope,
+  isSecret: $isSecret,
   environmentId: $environmentId,
   }) {
       id
@@ -91,13 +94,14 @@ mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: Strin
 
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
+mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
   updateEnvironmentVariable(environmentVariable:{
   id: $id,
   key: $key,
   value: $value,
   type: $type,
   scope: $scope,
+  isSecret: $isSecret,
   environmentId: $environmentId,
   }) {
       id
@@ -113,13 +117,14 @@ mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!,
 `, { name: "updateEnvironmentVariable" })
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $environmentId: String!) {
+mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
   deleteEnvironmentVariable(environmentVariable:{
   id: $id,
   key: $key,
   value: $value,
   type: $type,
   scope: $scope,
+  isSecret: $isSecret,
   environmentId: $environmentId,
   }) {
       id
@@ -155,6 +160,7 @@ export default class EnvironmentVariables extends React.Component {
       'created',
       'type',
       'scope',
+      'isSecret',
       'environmentId',
       'projectId',
     ];
@@ -170,8 +176,11 @@ export default class EnvironmentVariables extends React.Component {
       'value': 'Value',
       'scope': 'Scope',
       'environmentId': 'Environment',
+      'isSecret': "Make Secret"
     };
-    const types = {};
+    const types = {
+      'isSecret': 'checkbox'
+    };
     const keys = {};
     const disabled = {
       'key': false
@@ -212,6 +221,8 @@ export default class EnvironmentVariables extends React.Component {
         this.form.$('scope').set(envVar.scope)
         this.form.$('id').set(envVar.id)
         this.form.$('index').set(envVarIdx)
+        this.form.$('isSecret').set(envVar.isSecret)
+        this.form.$('isSecret').set('disabled', true)
 
         this.openDrawer()
     }
@@ -250,6 +261,7 @@ export default class EnvironmentVariables extends React.Component {
     this.form.reset()
     this.form.$('type').set(value);
     this.form.$('key').set('disabled', false)
+    this.form.$('isSecret').set('disabled', false)
     this.openDrawer()
   }
 
@@ -315,6 +327,9 @@ export default class EnvironmentVariables extends React.Component {
                   Type
                 </TableCell>
                 <TableCell>
+                  Secret
+                </TableCell>
+                <TableCell>
                   Scope
                 </TableCell>
                 <TableCell>
@@ -341,6 +356,9 @@ export default class EnvironmentVariables extends React.Component {
                     </TableCell>
                     <TableCell>
                       {envVar.type}
+                    </TableCell>
+                    <TableCell>
+                      {envVar.isSecret ? "yes" : "no" }
                     </TableCell>
                     <TableCell>
                       {envVar.scope}
@@ -413,6 +431,9 @@ export default class EnvironmentVariables extends React.Component {
                   </Grid>
                   <Grid item xs={12}>
                     <SelectField field={this.form.$('environmentId')} fullWidth={true} extraKey='environmentId' />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
                   </Grid>
 
                   {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
