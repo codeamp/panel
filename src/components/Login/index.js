@@ -66,7 +66,7 @@ class Callback extends Component {
 
     userManger.signinRedirectCallback().then(function(user) {
       console.log("SIGN IN REDIRECT CALLBACK", user)
-      // window.location.href = '/'
+      window.location.href = '/'
     }).catch(function(err) {
       console.log(err);
     });
