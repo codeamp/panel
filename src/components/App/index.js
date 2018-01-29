@@ -121,9 +121,7 @@ export default class App extends React.Component {
         </div>
       )
     }
-
-    console.log("INDX STATE", this.state)
-
+    
     if (loading) {
       return (<div>Loading...</div>);
     } else if (this.state.redirectToLogin) {
