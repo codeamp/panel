@@ -28,6 +28,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
       const context = operation.getContext();
 
       for (var [key, value] of context.response.headers.entries()) {
+        console.log("KEY, VaLUE", key, value)
         if (key === "www-authenticate" && value === 'Bearer token_type="JWT"') {
           const { location } = window;
           location.assign("/login")

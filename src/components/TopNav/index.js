@@ -41,6 +41,7 @@ export default class TopNav extends React.Component {
 
   logout = () => {
     this.handleRequestClose();
+    window.location.href = '/login';
   }
 
   escapeRegExp(str) {
