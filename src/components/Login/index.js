@@ -58,14 +58,11 @@ class Dex extends Component {
 @inject("store") @observer
 class Callback extends Component {
   componentWillMount() {
-    console.log("CALLBACK")
     userManger.events.addUserLoaded((user) => {
-      console.log("SET USER", user)
       this.props.store.app.setUser(user)
     });
 
     userManger.signinRedirectCallback().then(function(user) {
-      console.log("SIGN IN REDIRECT CALLBACK", user)
       window.location.href = '/'
     }).catch(function(err) {
       console.log(err);
