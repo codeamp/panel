@@ -121,6 +121,7 @@ export default class App extends React.Component {
         </div>
       )
     }
+    
     if (loading) {
       return (<div>Loading...</div>);
     } else if (this.state.redirectToLogin) {
