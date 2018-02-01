@@ -80,6 +80,12 @@ class ReleaseView extends React.Component {
         id
         state
         stateMessage
+        project {
+          id
+        }
+        environment {
+          id
+        }
         releaseExtensions {
             id
             extension {
@@ -121,6 +127,12 @@ class ReleaseView extends React.Component {
         user {
           email
         }
+        project {
+          id
+        }
+        environment {
+          id
+        }        
         releaseExtensions {
             id
             extension {
@@ -176,6 +188,22 @@ mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: 
   }
 }
 `, { name: "createRelease" })
+
+@graphql(gql`
+mutation Mutation($releaseId: ID!) {
+  rollbackRelease(releaseId: $releaseId) {
+    headFeature {
+      message
+    }
+    tailFeature  {
+      message
+    }
+    state
+    stateMessage
+  }
+}
+`, { name: "rollbackRelease" })
+
 export default class Releases extends React.Component {
   state = {
     activeStep: 0,
@@ -237,6 +265,35 @@ export default class Releases extends React.Component {
     this.form.$('id').set(this.props.data.project.releases[releaseIdx].id)
 
     this.setState({ drawerOpen: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
+  }
+
+  releaseAction(){
+    console.log('releaseAction')
+    const { deployAction } = this.state;
+    const { rollbackRelease, createRelease } = this.props;
+    const { project, refetch } = this.props.data;
+    const release = project.releases[this.form.values()['index']];
+
+    if(deployAction == 'Rollback') {
+      rollbackRelease({variables: { releaseId: release.id }}).then(function(res){
+        refetch()
+      }).catch(function(err){
+        refetch()
+      })
+    } else if(deployAction == 'Redeploy') {
+      createRelease({
+        variables: { headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
+      }).then(({data}) => {
+        refetch()
+      }).catch(function(err){
+        refetch()
+      });
+    }
+    this.closeDrawer()
+  }
+
+  closeDrawer(){
+    this.setState({ drawerOpen: false })
   }
 
   componentWillUpdate(nextProps, nextState){
@@ -375,7 +432,7 @@ export default class Releases extends React.Component {
                       raised
                       disabled={project.releases.length > 0 && project.currentRelease && project.currentRelease.state !== "complete"}
                       color="primary"
-                      onClick={()=>this.setState({ drawerOpen: false }) }>
+                      onClick={this.releaseAction.bind(this)}>
                       { this.state.deployAction }
                     </Button>
                   }
