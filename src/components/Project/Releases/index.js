@@ -289,6 +289,10 @@ export default class Releases extends React.Component {
         refetch()
       });
     }
+    this.closeDrawer()
+  }
+
+  closeDrawer(){
     this.setState({ drawerOpen: false })
   }
 
