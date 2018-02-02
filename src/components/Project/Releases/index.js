@@ -175,8 +175,8 @@ class ReleaseView extends React.Component {
 })
 
 @graphql(gql`
-mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
-  createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
+mutation Mutation($id: String, $headFeatureId: String!, $projectId: String!, $environmentId: String!) {
+  createRelease(release: { id: $id, headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
     headFeature {
       message
     }
@@ -281,8 +281,9 @@ export default class Releases extends React.Component {
         refetch()
       })
     } else if(deployAction == 'Redeploy') {
+      console.log('redeploying...', release)
       createRelease({
-        variables: { headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
+        variables: { id: release.id, headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
       }).then(({data}) => {
         refetch()
       }).catch(function(err){
