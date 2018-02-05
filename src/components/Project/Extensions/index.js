@@ -45,6 +45,7 @@ import _ from "lodash"
           created
         }
         state
+        stateMessage
         config
         artifacts
         created
@@ -495,6 +496,19 @@ export default class Extensions extends React.Component {
           <Grid item xs={12}>
             { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
+
+          {extension.stateMessage &&
+            <Grid item xs={12}>
+              <Paper>
+                <Typography type="title">
+                    Status
+                </Typography> 
+                <Typography type="body2">
+                    {extension.stateMessage}
+                </Typography>                 
+              </Paper>
+            </Grid>
+          }
           
           {extension.artifacts &&
             <Grid item xs={12}>
