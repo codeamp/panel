@@ -499,14 +499,12 @@ export default class Extensions extends React.Component {
 
           {extension.stateMessage &&
             <Grid item xs={12}>
-              <Paper>
-                <Typography type="title">
-                    Status
-                </Typography> 
-                <Typography type="body2">
-                    {extension.stateMessage}
-                </Typography>                 
-              </Paper>
+              <Typography type="title">
+                  Status
+              </Typography> 
+              <Typography type="subheading">
+                  {extension.stateMessage}
+              </Typography>                 
             </Grid>
           }
           
