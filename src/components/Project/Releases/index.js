@@ -440,7 +440,7 @@ export default class Releases extends React.Component {
                     <Button
                       color="primary"
                       onClick={()=>this.setState({ drawerOpen: false }) }>
-                      Exit Panel
+                      Cancel
                     </Button>
                 </Grid>
               </Grid>

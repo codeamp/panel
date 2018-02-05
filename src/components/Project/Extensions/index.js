@@ -193,9 +193,6 @@ export default class Extensions extends React.Component {
       formValues.custom = {}
     }
 
-    console.log(extension)
-    console.log(formValues)
-
     if (extension.extensionSpec) {
       this.props.updateExtension({
         variables: {
@@ -303,7 +300,7 @@ export default class Extensions extends React.Component {
     let extensions = extensionSpecs.reduce((extensions, extensionSpec) => {
       let found = false
       project.extensions.forEach(function(extension) {
-        if (extension.extensionSpec.id === extensionSpec.id) {
+        if (extension.extensionSpec.id === extensionSpec.id && extension.extensionSpec.type !== 'once') {
           found = true 
         }
       })
@@ -444,12 +441,6 @@ export default class Extensions extends React.Component {
       }
     }
 
-    if(extension.artifacts){
-      artifacts = JSON.stringify(extension.artifacts, null, 2)
-    }
-
-    console.log('config', config)
-
     const fields = [
       'config[]',
       'config[].key',
@@ -505,10 +496,38 @@ export default class Extensions extends React.Component {
             { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
           
-          {artifacts &&
+          {extension.artifacts &&
             <Grid item xs={12}>
-              <Typography type="subheading">Artifacts:</Typography>
-              <pre>{artifacts}</pre>
+              <Paper>
+                <Toolbar>
+                  <div> <Typography type="title">
+                      Artifacts
+                    </Typography>
+                  </div>
+                </Toolbar>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>
+                        Key
+                      </TableCell>
+                      <TableCell>
+                        Value
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {Object.keys(extension.artifacts).map(key => {
+                      return (
+                      <TableRow>
+                        <TableCell> { key } </TableCell>
+                        <TableCell> { extension.artifacts[key] } </TableCell>
+                      </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </Paper>
             </Grid>
           }
 
