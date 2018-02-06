@@ -147,10 +147,10 @@ export default class App extends React.Component {
                     <Create projects={projects} type={"create"} {...props} />
                   )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin data={this.props.data} projects={projects} socket={socket} {...props} />
+                    <Admin data={this.props.data} projects={projects} {...props} />
                   )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} {...props} />
+                    <Project socket={socket} socket={socket} {...props} />
                   )} />
                 </Switch>
               </div>

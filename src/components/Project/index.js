@@ -98,7 +98,7 @@ export default class Project extends React.Component {
   }
 
   render() {
-    const { history } = this.props;
+    const { history, socket } = this.props;
 
     return (
       <div className={styles.root}>
@@ -110,13 +110,13 @@ export default class Project extends React.Component {
             <ProjectServices {...props} />
           )}/>
           <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures history={history} {...props} />
+            <ProjectFeatures history={history} {...props} socket={socket} />
           )}/>
           <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases {...props} />
+            <ProjectReleases {...props} socket={socket} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
-            <ProjectExtensions {...props} />
+            <ProjectExtensions {...props} socket={socket} />
           )}/>
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings {...props} />

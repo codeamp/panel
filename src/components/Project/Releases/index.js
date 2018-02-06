@@ -225,8 +225,10 @@ export default class Releases extends React.Component {
     });
   };
 
-  componentWillMount() {
+  componentWillMount() {    
     this.props.data.refetch()
+    this.setupSocketHandlers()    
+
     const fields = [
       'id',
       'index',
@@ -243,6 +245,20 @@ export default class Releases extends React.Component {
 
     this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   };
+
+  setupSocketHandlers(){
+    const { socket, match, data } = this.props;
+    const { refetch } = data;
+    
+    socket.on(match.url.substring(1, match.url.length), (data) => {
+      this.props.data.refetch()
+    });    
+    
+    socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
+      this.props.data.refetch()
+    });        
+  }
+
 
   handleToggleDrawer(releaseIdx){
     let deployAction = 'Rollback'
@@ -307,6 +323,7 @@ export default class Releases extends React.Component {
     if(loading){
       return (<div>Loading...</div>);
     }
+    console.log(this.props)
     return (
       <div>
         <Grid container spacing={16}>
