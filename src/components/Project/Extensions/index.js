@@ -140,6 +140,19 @@ export default class Extensions extends React.Component {
     }
   }
 
+  componentWillMount(){
+    this.setupSocketHandlers();
+  }
+  
+  setupSocketHandlers(){
+    const { socket, match } = this.props;
+    
+    socket.on(match.url.substring(1, match.url.length), (data) => {
+      console.log('extension update', data)
+      this.props.data.refetch()
+    });    
+  }  
+
   async openExtensionDrawer(e, extension){
     let component = null
     let formType = null

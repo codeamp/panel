@@ -262,6 +262,7 @@ export default class Features extends React.Component {
   }
 
   componentWillMount(){
+    this.setupSocketHandlers();
     const fields = [
       'branch[]',
       'branch[].key',
@@ -283,9 +284,20 @@ export default class Features extends React.Component {
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
 
+  setupSocketHandlers(){
+      const { socket, match } = this.props;
+
+      socket.on(match.url.substring(1, match.url.length), (data) => {
+          console.log('extension update', data)
+              this.props.data.refetch()
+      });
+  }
+
+
+
   componentWillUpdate(nextProps, nextState){
     nextProps.data.refetch()
-  } 
+  }
 
   render() {
     const { loading, project } = this.props.data;
@@ -294,7 +306,7 @@ export default class Features extends React.Component {
       return (<div>Loading...</div>)
     }
 
-    this.props.store.app.setProjectTitle(project.slug)    
+    this.props.store.app.setProjectTitle(project.slug)
 
     if(loading){
       return (<div>Loading...</div>);
