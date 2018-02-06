@@ -93,7 +93,7 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { loading, projects, environments } = this.props.data;
+    const { loading, projects, user, environments } = this.props.data;
 
     if(this.props.data.networkStatus === 8){
       return (
@@ -117,11 +117,11 @@ export default class App extends React.Component {
                     </Grid>
                   </Grid>
             </Grid>
-            <Grid item xs={3}></Grid>            
+            <Grid item xs={3}></Grid>
         </div>
       )
     }
-    
+
     if (loading) {
       return (<div>Loading...</div>);
     } else if (this.state.redirectToLogin) {
@@ -129,6 +129,9 @@ export default class App extends React.Component {
     } else {
       if(environments.length > 0 && this.props.store.app.currentEnvironment.id === ''){
         this.props.store.app.setCurrentEnv({ id: environments[0].id })
+      }
+      if(!user){
+          return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
       }
       return (
         <div className={styles.root}>
