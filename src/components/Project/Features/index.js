@@ -307,17 +307,12 @@ export default class Features extends React.Component {
     }
 
     this.props.store.app.setProjectTitle(project.slug)
-
-    if(loading){
-      return (<div>Loading...</div>);
-    }
-
     let defaultComponent = (<Typography>Loading...</Typography>)
 
     if(project.features.length > 0) {
       defaultComponent = this.renderFeatureList(project);
     } else if(project.gitProtocol === "SSH"){
-        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={this.props.project.rsaPublicKey}/>)
+        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={project.rsaPublicKey}/>)
     } else if(project.gitProtocol === "HTTPS"){
         defaultComponent = (<InitPublicProjectComponent />)
     }
