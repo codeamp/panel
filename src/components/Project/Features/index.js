@@ -20,18 +20,6 @@ class InitPrivateProjectComponent extends React.Component {
     message: null,
   };
 
-  copySSHKey(){
-    var sshKey = document.querySelector('#ssh-key');
-    var range = document.createRange();
-    range.selectNode(sshKey);
-    window.getSelection().addRange(range);
-
-    var successful = document.execCommand('copy')
-    if(successful){
-      this.props.store.app.setSnackbar({msg: "SSH Key Copied."})
-    }
-  };
-
   render() {
     return (
       <Card className={styles.card} raised={false}>
@@ -45,14 +33,7 @@ class InitPrivateProjectComponent extends React.Component {
             component="p" className={styles.codeSnippet}>
             {this.props.rsaPublicKey}
           </Typography>
-          <br/>
-          <Button
-            onClick={this.copySSHKey.bind(this)}
-            dense color="primary">
-            Copy Key
-          </Button>
-          <br/>
-          <br/>
+          <br/><br/>
           <Typography type="body1">
             <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
               Click here to learn how to add deploy keys to Github.

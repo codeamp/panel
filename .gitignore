@@ -16,3 +16,4 @@ npm-debug.log
 .idea
 plopfile.js
 plop-templates
+*.swp
