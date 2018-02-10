@@ -35,15 +35,17 @@ const inlineStyles = {
       environments {
         id
         name
+        color
         created
       }
     }
 `)
 
 @graphql(gql`
-  mutation CreateEnvironment($name: String!) {
+  mutation CreateEnvironment($name: String!, $color: String!) {
       createEnvironment(environment:{
         name: $name
+        color: $color,
       }) {
           id
           name
@@ -52,10 +54,11 @@ const inlineStyles = {
 `, { name: "createEnvironment" })
 
 @graphql(gql`
-mutation UpdateEnvironment($id: String!, $name: String!) {
+mutation UpdateEnvironment($id: String!, $name: String!, $color: String!) {
     updateEnvironment(environment:{
     id: $id,
     name: $name,
+    color: $color,
     }) {
         id
         name
@@ -64,10 +67,11 @@ mutation UpdateEnvironment($id: String!, $name: String!) {
 `, { name: "updateEnvironment" })
 
 @graphql(gql`
-mutation DeleteEnvironment ($id: String!, $name: String!) {
+mutation DeleteEnvironment ($id: String!, $name: String!, $color: String!) {
     deleteEnvironment(environment:{
     id: $id,
     name: $name,
+    color: $color,
     }) {
         id
         name
@@ -91,20 +95,23 @@ export default class Environments extends React.Component {
     const fields = [
       'id',
       'name',
+      'color',
       'created',
     ];
     const rules = {
       'name': 'string|required',
     };
     const labels = {
-      'name': 'Name'
+      'name': 'Name',
+      'color': 'Color',
     };
     const types = {
     };
     const keys = {
     };
     const disabled = {
-      'name': false
+      'name': false,
+      'color': false,
     }
     const extra = {}
     const hooks = {};
@@ -129,6 +136,7 @@ export default class Environments extends React.Component {
 
     if(envIdx >= 0){
       this.form.$('name').set(this.props.data.environments[envIdx].name)
+      this.form.$('color').set(this.props.data.environments[envIdx].color)
       this.form.$('id').set(this.props.data.environments[envIdx].id)
       this.openDrawer()
     }
@@ -200,6 +208,9 @@ export default class Environments extends React.Component {
                   Name
                 </TableCell>
                 <TableCell>
+                  Color
+                </TableCell>
+                <TableCell>
                   Created
                 </TableCell>
               </TableRow>
@@ -214,6 +225,11 @@ export default class Environments extends React.Component {
                     key={env.id}>
                     <TableCell>
                       {env.name}
+                    </TableCell>
+                    <TableCell>
+                        <svg height="10" width="10">
+                          <circle cx="25" cy="25" r="40" fill={env.color} />
+                        </svg>
                     </TableCell>
                     <TableCell>
                       {new Date(env.created).toString()}
@@ -251,6 +267,9 @@ export default class Environments extends React.Component {
                   <Grid container spacing={24} className={styles.grid}>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('name')} fullWidth={true} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('color')} fullWidth={true} />
                     </Grid>
                     <Grid item xs={12}>
                       <Button color="primary"

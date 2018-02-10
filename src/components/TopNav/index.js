@@ -4,16 +4,33 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Chip from 'material-ui/Chip';
+import Select from 'material-ui/Select';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
+import { FormControl } from 'material-ui/Form';
+import Input, { InputLabel } from 'material-ui/Input';
+
 import styles from './style.module.css';
 
-@inject("store") @observer
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
+@graphql(gql`
+    query {
+      environments {
+        id
+        name
+		color
+        created
+      }
+    }
+`)
+
+@inject("store") @observer
 export default class TopNav extends React.Component {
   state = {
     anchorEl: undefined,
@@ -82,9 +99,32 @@ export default class TopNav extends React.Component {
     this.setState({ suggestions: suggestions, showSuggestions: true })
   }
 
+  handleEnvChange(e){
+    console.log('hdndleEnvChange')
+	const { environments } = this.props.data;
+	var color = "gray"
+
+	environments.map(function(env){
+		console.log(env.id, e.target.value)
+		if(env.id === e.target.value){
+			color = env.color
+		}
+	})
+
+	console.log(color)
+
+    this.props.store.app.setCurrentEnv({id: e.target.value, color: color })
+  }
+
   render() {
     var self = this
     const { store } = this.props
+	const { loading, environments } = this.props.data;
+    const { app } = this.props.store;
+
+	if(loading){
+		return (<div>Loading</div>)
+	}
 
     return (
     <div>
@@ -96,7 +136,7 @@ export default class TopNav extends React.Component {
                 CodeAmp
               </Typography>
             </Grid>
-            <Grid item xs={8}>
+            <Grid item xs={6}>
               <div style={{position: "relative"}}>
               <TextField
                 fullWidth={true}
@@ -146,6 +186,36 @@ export default class TopNav extends React.Component {
                 aria-haspopup="true"
               />
             </Grid>
+			<Grid item xs={2}>
+			  <FormControl>
+                <InputLabel>Current Environment</InputLabel>
+
+			    <Select
+			  	  classes={{
+					select: styles.currentEnv,
+					root: styles.currentEnv,
+				  }}
+				  style={{ width: 200 }}
+
+			      fullWidth={true}
+                  value={this.props.store.app.currentEnvironment.id}
+				  onChange={this.handleEnvChange.bind(this)}
+				  inputProps={{
+				    name: 'age',
+				    id: 'age-simple',
+				  }}
+			    >
+			  	  <MenuItem value="">
+				    <em>None</em>
+				  </MenuItem>
+				  {environments.map(function(env){
+					return (
+						<MenuItem value={env.id}>{env.name}</MenuItem>
+					)
+				  })}
+			  </Select>
+		     </FormControl>
+			</Grid>
           </Grid>
           <Menu
             id="simple-menu"
@@ -157,6 +227,8 @@ export default class TopNav extends React.Component {
             <MenuItem onClick={this.logout}>Logout</MenuItem>
           </Menu>
         </Toolbar>
+		<div style={{ border: "3px solid " + app.currentEnvironment.color }}>
+		</div>
       </AppBar>
 
       {store.app.connectionHeader.msg !== "" &&
