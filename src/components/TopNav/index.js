@@ -126,6 +126,7 @@ export default class TopNav extends React.Component {
 		return (<div>Loading</div>)
 	}
 
+
     return (
     <div>
       <AppBar position="static" className={styles.appBar}>
@@ -186,36 +187,38 @@ export default class TopNav extends React.Component {
                 aria-haspopup="true"
               />
             </Grid>
-			<Grid item xs={2}>
-			  <FormControl>
-                <InputLabel>Current Environment</InputLabel>
+			{window.location.href.includes('projects') &&
+				<Grid item xs={2}>
+				  <FormControl>
+					<InputLabel>Current Environment</InputLabel>
 
-			    <Select
-			  	  classes={{
-					select: styles.currentEnv,
-					root: styles.currentEnv,
-				  }}
-				  style={{ width: 200 }}
+					<Select
+					  classes={{
+						select: styles.currentEnv,
+						root: styles.currentEnv,
+					  }}
+					  style={{ width: 200 }}
 
-			      fullWidth={true}
-                  value={this.props.store.app.currentEnvironment.id}
-				  onChange={this.handleEnvChange.bind(this)}
-				  inputProps={{
-				    name: 'age',
-				    id: 'age-simple',
-				  }}
-			    >
-			  	  <MenuItem value="">
-				    <em>None</em>
-				  </MenuItem>
-				  {environments.map(function(env){
-					return (
-						<MenuItem value={env.id}>{env.name}</MenuItem>
-					)
-				  })}
-			  </Select>
-		     </FormControl>
-			</Grid>
+					  fullWidth={true}
+					  value={this.props.store.app.currentEnvironment.id}
+					  onChange={this.handleEnvChange.bind(this)}
+					  inputProps={{
+						name: 'age',
+						id: 'age-simple',
+					  }}
+					>
+					  <MenuItem value="">
+						<em>None</em>
+					  </MenuItem>
+					  {environments.map(function(env){
+						return (
+							<MenuItem value={env.id}>{env.name}</MenuItem>
+						)
+					  })}
+				  </Select>
+				 </FormControl>
+				</Grid>
+			}
           </Grid>
           <Menu
             id="simple-menu"
@@ -227,8 +230,10 @@ export default class TopNav extends React.Component {
             <MenuItem onClick={this.logout}>Logout</MenuItem>
           </Menu>
         </Toolbar>
-		<div style={{ border: "3px solid " + app.currentEnvironment.color }}>
-		</div>
+		{window.location.href.includes('projects') &&
+			<div style={{ border: "3px solid " + app.currentEnvironment.color }}>
+			</div>
+		}
       </AppBar>
 
       {store.app.connectionHeader.msg !== "" &&
