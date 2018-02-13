@@ -14,7 +14,6 @@ export default observer(({field, autoWidth, extraKey, fullWidth, label }) => {
   if(extraKey){
     extraOptions = field.state.extra()[extraKey]
   }
-  
   return (
     <div>
       <FormControl fullWidth={fullWidth} {...field.error ? {error: true} : {}}>
