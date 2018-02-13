@@ -428,8 +428,6 @@ export default class Extensions extends React.Component {
     let type = extension.type
     let config = []
     let artifacts = null
-
-    console.log(extension.config)
  
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
