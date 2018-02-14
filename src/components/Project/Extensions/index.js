@@ -429,23 +429,20 @@ export default class Extensions extends React.Component {
     let config = []
     let artifacts = null
  
-    if(extension.extensionSpec){
-      name = extension.extensionSpec.name
-      type = extension.extensionSpec.type
-      if(extension.extensionSpec.config){
-        extension.extensionSpec.config.map(function(obj){
-          let _obj = _.find(extension.config.config, {key: obj.key, value: obj.value });
+    if(extension.__typename === "ExtensionSpec"){
+      const extensionSpec = extension
+      name = extensionSpec.name
+      type = extensionSpec.type
+      extensionSpec.config.map(function(obj){
+          let _obj = _.find(extensionSpec.config.config, {key: obj.key, value: obj.value });
           if (_obj) {
-            config.push(_obj) 
+              config.push(_obj) 
           } else {
-            config.push(obj) 
+              config.push(obj) 
           }
           return null
-        })
-      }
-    }
-
-    if(extension.config.config){
+      })
+    } else if(extension.__typename === "Extension"){
         config = []
         extension.config.config.map(function(obj){
           let _obj = _.clone(obj)
