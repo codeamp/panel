@@ -176,7 +176,7 @@ export default class EnvironmentVariables extends React.Component {
       'value': 'Value',
       'scope': 'Scope',
       'environmentId': 'Environment',
-      'isSecret': "Make Secret"
+      'isSecret': "Protected"
     };
     const types = {
       'isSecret': 'checkbox'
@@ -327,7 +327,7 @@ export default class EnvironmentVariables extends React.Component {
                   Type
                 </TableCell>
                 <TableCell>
-                  Secret
+                  Protected
                 </TableCell>
                 <TableCell>
                   Scope
@@ -432,10 +432,7 @@ export default class EnvironmentVariables extends React.Component {
                   <Grid item xs={12}>
                     <SelectField field={this.form.$('environmentId')} fullWidth={true} extraKey='environmentId' />
                   </Grid>
-                  <Grid item xs={12}>
-                    <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                  </Grid>
-
+                  
                   {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                   <Grid item xs={12}>
                     <Grid item xs={12}>
@@ -443,6 +440,8 @@ export default class EnvironmentVariables extends React.Component {
                     </Grid>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('value')} fullWidth={true} />
+                      <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                      <Typography type="caption"> Hide value after saving </Typography>
                     </Grid>
                   </Grid>
                   }
@@ -455,6 +454,8 @@ export default class EnvironmentVariables extends React.Component {
                     <br/>
                     <Grid item xs={12}>
                       <TextareaField field={this.form.$('value')} fullWidth={true} />
+                      <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                      <Typography type="caption"> Hide value after saving </Typography>
                     </Grid>
                   </Grid>
                   }
@@ -466,6 +467,7 @@ export default class EnvironmentVariables extends React.Component {
                       onClickVersion={this.onClickVersion.bind(this)}
                     />
                   }       
+
 
                   <Grid item xs={12}>
                     <Button color="primary"
