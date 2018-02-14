@@ -148,7 +148,6 @@ export default class Extensions extends React.Component {
     const { socket, match } = this.props;
     
     socket.on(match.url.substring(1, match.url.length), (data) => {
-      console.log('extension update', data)
       this.props.data.refetch()
     });    
   }  
@@ -429,7 +428,7 @@ export default class Extensions extends React.Component {
     let type = extension.type
     let config = []
     let artifacts = null
-    
+ 
     if(extension.extensionSpec){
       name = extension.extensionSpec.name
       type = extension.extensionSpec.type
@@ -444,15 +443,16 @@ export default class Extensions extends React.Component {
           return null
         })
       }
-    } else {
-      if(extension.config){
-        extension.config.map(function(obj){
+    }
+
+    if(extension.config.config){
+        config = []
+        extension.config.config.map(function(obj){
           let _obj = _.clone(obj)
           _obj.value = obj.value
           config.push(_obj) 
           return null
         })
-      }
     }
 
     const fields = [
@@ -481,6 +481,7 @@ export default class Extensions extends React.Component {
     this.form.state.extra({
       config: envVarOptions,
     })
+
     
     let config_jsx = this.form.$('config').map((obj) => {
       return (
