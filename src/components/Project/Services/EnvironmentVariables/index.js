@@ -179,7 +179,7 @@ export default class EnvironmentVariables extends React.Component {
     const labels = {
       'key': 'Key',
       'value': 'Value',
-      'isSecret': 'Make Secret',
+      'isSecret': 'Protected',
     };
     const initials = {}
     const types = {
@@ -320,7 +320,7 @@ export default class EnvironmentVariables extends React.Component {
                   Type
                 </TableCell>
                 <TableCell>
-                  Secret
+                  Protected
                 </TableCell>
                 <TableCell>
                   Creator
@@ -398,13 +398,12 @@ export default class EnvironmentVariables extends React.Component {
                     {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                       <Grid item xs={12}>
                         <Grid item xs={12}>
-                          <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                        </Grid>
-                        <Grid item xs={12}>
                           <InputField field={this.form.$('key')} fullWidth={true} />
                         </Grid>
                         <Grid item xs={12}>
                           <InputField field={this.form.$('value')} fullWidth={true} />
+                          <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                          <Typography type="caption"> Hide value after saving </Typography>
                         </Grid>
                       </Grid>
                     }
@@ -412,14 +411,12 @@ export default class EnvironmentVariables extends React.Component {
                     {this.form.$('type').value === 'file' &&
                       <Grid item xs={12}>
                         <Grid item xs={12}>
-                          <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                        </Grid>
-                        <Grid item xs={12}>
                           <InputField field={this.form.$('key')} fullWidth={true} />
                         </Grid>
-                        <br/>
                         <Grid item xs={12}>
                           <TextareaField field={this.form.$('value')} fullWidth={true} />
+                          <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                          <Typography type="caption"> Hide value after saving </Typography>
                         </Grid>
                       </Grid>
                     }
