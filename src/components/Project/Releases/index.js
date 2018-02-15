@@ -121,6 +121,7 @@ class ReleaseView extends React.Component {
       }
       releases {
         id
+        artifacts
         state
         stateMessage
         created
@@ -135,6 +136,7 @@ class ReleaseView extends React.Component {
         }        
         releaseExtensions {
             id
+            artifacts
             extension {
               extensionSpec {
                 name
@@ -284,7 +286,6 @@ export default class Releases extends React.Component {
   }
 
   releaseAction(){
-    console.log('releaseAction')
     const { deployAction } = this.state;
     const { rollbackRelease, createRelease } = this.props;
     const { project, refetch } = this.props.data;
@@ -297,7 +298,6 @@ export default class Releases extends React.Component {
         refetch()
       })
     } else if(deployAction == 'Redeploy') {
-      console.log('redeploying...', release)
       createRelease({
         variables: { id: release.id, headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
       }).then(({data}) => {
@@ -323,7 +323,6 @@ export default class Releases extends React.Component {
     if(loading){
       return (<div>Loading...</div>);
     }
-    console.log(this.props)
     return (
       <div>
         <Grid container spacing={16}>
@@ -443,6 +442,49 @@ export default class Releases extends React.Component {
                     </div>
                   </Paper>
                 </Grid>
+                {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()["index"]].artifacts).length > 0 &&
+                    <Grid item xs={12}>                
+                      <Paper className={styles.root}>
+                        <div className={styles.tableWrapper}>
+                          <Toolbar>
+                            <div>
+                              <Typography type="title">
+                                Artifacts
+                              </Typography>
+                            </div>
+                          </Toolbar>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>
+                                  Key
+                                </TableCell>
+                                <TableCell>
+                                  Value
+                                </TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()['index']].artifacts).map(artifactKey => {
+                                return (
+                                      <TableRow
+                                        tabIndex={-1}
+                                        key={this.form.values()['index'] + "-" + artifactKey}>
+                                        <TableCell>
+                                            {artifactKey}
+                                        </TableCell>
+                                        <TableCell>
+                                            {project.releases[this.form.values()["index"]].artifacts[artifactKey]}
+                                        </TableCell>
+                                      </TableRow>
+                                  )
+                              })}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </Paper>
+                    </Grid>
+                }
                 <Grid item xs={12}>
                   {project.releases[this.form.values()['index']] &&
                    project.releases[this.form.values()['index']].state === "complete" &&
