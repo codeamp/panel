@@ -75,7 +75,11 @@ export default class TopNav extends React.Component {
   }
 
   renderBookmarks(e){
-    const suggestions = this.getSuggestions(e.target.value)
+    let query = e.target.value
+    if query === "" {
+      query = "/"
+    }
+    const suggestions = this.getSuggestions(query)
     this.setState({ suggestions: suggestions, showSuggestions: true })
   }
 
