@@ -190,12 +190,11 @@ export default class TopNav extends React.Component {
 			{window.location.href.includes('projects') &&
 				<Grid item xs={2}>
 				  <FormControl>
-					<InputLabel>Current Environment</InputLabel>
 
 					<Select
 					  classes={{
-						select: styles.currentEnv,
-						root: styles.currentEnv,
+  						select: styles.currentEnv,
+  						root: styles.currentEnv,
 					  }}
 					  style={{ width: 200 }}
 
@@ -226,7 +225,6 @@ export default class TopNav extends React.Component {
             open={this.state.open}
             onRequestClose={this.handleRequestClose}
           >
-            <MenuItem onClick={this.handleRequestClose}>My account</MenuItem>
             <MenuItem onClick={this.logout}>Logout</MenuItem>
           </Menu>
         </Toolbar>

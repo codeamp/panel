@@ -2,6 +2,12 @@
 
 }
 
+.currentEnv {
+  background-color: #e0e0e0;
+  padding-left: 4px;
+  color: black;
+}
+
 .center {
     text-align: center;
 }
