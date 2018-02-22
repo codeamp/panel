@@ -23,7 +23,7 @@ import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
+import Form from 'mobx-react-form';
 import styles from './style.module.css';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -228,7 +228,7 @@ export default class Services extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
+    this.form = new Form({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
 
   }
 
@@ -490,7 +490,7 @@ export default class Services extends React.Component {
                         </Button>
                         <Button
                           disabled={this.state.saving}
-                          color="accent"
+                          color="inherit"
                           onClick={()=>this.setState({ dialogOpen: true })}>
                           Delete
                         </Button>
