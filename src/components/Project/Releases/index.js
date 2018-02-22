@@ -249,8 +249,7 @@ export default class Releases extends React.Component {
   };
 
   setupSocketHandlers(){
-    const { socket, match, data } = this.props;
-    const { refetch } = data;
+    const { socket, match } = this.props;
     
     socket.on(match.url.substring(1, match.url.length), (data) => {
       this.props.data.refetch()
@@ -291,13 +290,13 @@ export default class Releases extends React.Component {
     const { project, refetch } = this.props.data;
     const release = project.releases[this.form.values()['index']];
 
-    if(deployAction == 'Rollback') {
+    if(deployAction === 'Rollback') {
       rollbackRelease({variables: { releaseId: release.id }}).then(function(res){
         refetch()
       }).catch(function(err){
         refetch()
       })
-    } else if(deployAction == 'Redeploy') {
+    } else if(deployAction === 'Redeploy') {
       createRelease({
         variables: { id: release.id, headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
       }).then(({data}) => {

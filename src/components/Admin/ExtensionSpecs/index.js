@@ -335,7 +335,7 @@ export default class ExtensionSpecs extends React.Component {
             </Paper>
           </Grid>
         </Grid>
-        <Button fab aria-label="Add" type="submit" raised color="primary"
+        <Button aria-label="Add" type="submit" color="primary"
               style={inlineStyles.addButton}
               onClick={this.openDrawer.bind(this)}>
               <AddIcon />
@@ -393,7 +393,7 @@ export default class ExtensionSpecs extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="default" onClick={this.form.$('config').onAdd}>
+                    <Button color="default" onClick={this.form.$('config').onAdd}>
                       Add Config
                     </Button>
                   </Grid>

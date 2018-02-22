@@ -196,7 +196,7 @@ export default class Environments extends React.Component {
         <Paper className={styles.tablePaper}>
           <Toolbar>
             <div>
-              <Typography type="title">
+              <Typography variant="title">
                 Environments
               </Typography>
             </div>
@@ -257,7 +257,7 @@ export default class Environments extends React.Component {
             <div tabIndex={0} className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                   <Toolbar>
-                  <Typography type="title" color="inherit">
+                  <Typography variant="title" color="inherit">
                       Environment
                   </Typography>
                   </Toolbar>

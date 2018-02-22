@@ -312,7 +312,7 @@ export default class EnvironmentVariables extends React.Component {
         <Paper className={styles.tablePaper}>
           <Toolbar>
             <div>
-              <Typography type="title">
+              <Typography variant="title">
                 Environment Variables
               </Typography>
             </div>
@@ -418,7 +418,7 @@ export default class EnvironmentVariables extends React.Component {
           <div tabIndex={0} className={styles.createServiceBar}>
             <AppBar position="static" color="default">
               <Toolbar>
-                <Typography type="title" color="inherit">
+                <Typography variant="title" color="inherit">
                   Environment Variable
                 </Typography>
               </Toolbar>
@@ -441,7 +441,7 @@ export default class EnvironmentVariables extends React.Component {
                     <Grid item xs={12}>
                       <InputField field={this.form.$('value')} fullWidth={true} />
                       <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                      <Typography type="caption"> Hide value after saving </Typography>
+                      <Typography variant="caption"> Hide value after saving </Typography>
                     </Grid>
                   </Grid>
                   }
@@ -455,7 +455,7 @@ export default class EnvironmentVariables extends React.Component {
                     <Grid item xs={12}>
                       <TextareaField field={this.form.$('value')} fullWidth={true} />
                       <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                      <Typography type="caption"> Hide value after saving </Typography>
+                      <Typography variant="caption"> Hide value after saving </Typography>
                     </Grid>
                   </Grid>
                   }

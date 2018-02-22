@@ -11,10 +11,6 @@ import SupervisorAccountIcon from 'material-ui-icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
 import Collapse from 'material-ui/transitions/Collapse';
-import { FormControl } from 'material-ui/Form';
-import Input, { InputLabel } from 'material-ui/Input';
-import Select from 'material-ui/Select';
-import { MenuItem } from 'material-ui/Menu';
 import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import ServiceSpecIcon from 'material-ui-icons/Description';
@@ -40,8 +36,6 @@ export default class LeftNav extends React.Component {
   }
 
   render() {
-  const { environments, handleEnvChange } = this.props;
-
     let projectTitleItem = ""
     if(this.props.store.app.leftNavProjectTitle !== ''){
       projectTitleItem = (
@@ -53,7 +47,7 @@ export default class LeftNav extends React.Component {
     }
 
     return (
-      <Drawer type="persistent" open={true} className={styles.root}>
+      <Drawer variant="persistent" open={true} className={styles.root}>
         <div className={styles.drawer}>
           <List>
             <NavLink to="/" exact activeClassName={styles.active}>
