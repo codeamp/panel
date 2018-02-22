@@ -382,7 +382,7 @@ export default class EnvironmentVariables extends React.Component {
         <div className={styles.addButton}>
           <Manager>
             <Target>
-              <Button fab aria-label="Add" type="submit" raised color="primary"
+              <Button variant="fab" aria-label="Add" type="submit" color="primary"
                 aria-owns={this.state.addEnvVarMenuOpen ? 'menu-list' : null}
                 aria-haspopup="true"
                 onClick={this.handleAddClick.bind(this)}>
@@ -474,7 +474,7 @@ export default class EnvironmentVariables extends React.Component {
                       className={styles.buttonSpacing}
                       disabled={this.state.loading}
                       type="submit"
-                      raised
+                      variant="raised"
                       onClick={e => this.onSubmit(e)}>
                       Save
                     </Button>

@@ -134,7 +134,7 @@ export default class TopNav extends React.Component {
         <Toolbar>
           <Grid container spacing={24}>
             <Grid item xs={2}>
-              <Typography type="title" color="inherit" className={styles.flex}>
+              <Typography variant="title" color="inherit">
                 CodeAmp
               </Typography>
             </Grid>
@@ -237,7 +237,7 @@ export default class TopNav extends React.Component {
             <Toolbar>
                 <Grid container spacin={24}>
                     <Grid item xs={1}>
-                    <Typography type="body1">
+                    <Typography variant="body1">
                         <a href={window.location.href}>
                         try refreshing
                         </a>

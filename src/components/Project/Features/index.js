@@ -23,7 +23,7 @@ class InitPrivateProjectComponent extends React.Component {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent>
-          <Typography variant="headline" component="h3">
+          <Typography type="headline" component="h3">
             Setup the Git Deploy Key
           </Typography>
           <br/>
@@ -33,7 +33,7 @@ class InitPrivateProjectComponent extends React.Component {
             {this.props.rsaPublicKey}
           </Typography>
           <br/><br/>
-          <Typography variant="body1">
+          <Typography type="body1">
             <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
               Click here to learn how to add deploy keys to Github.
             </a>
@@ -49,7 +49,7 @@ class InitPublicProjectComponent extends React.Component {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent className={styles.progress}>
-          <Typography variant="subheading" component="h3">
+          <Typography type="subheading" component="h3">
             Currently pulling features down...
           </Typography>
           <br/>
@@ -302,7 +302,7 @@ export default class Features extends React.Component {
         <Grid container spacing={16}>
           <Grid container xs={12} className={styles.feature}>
             <Grid item xs={3}>
-              <Typography variant="headline" component="h3">
+              <Typography type="headline" component="h3">
                 Features
               </Typography>
             </Grid>

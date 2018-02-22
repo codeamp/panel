@@ -201,7 +201,7 @@ export default class Settings extends React.Component {
 
     return (
       <div className={styles.root}>
-        <Grid container spacing={24}>
+        <Grid container spacing={24}> 
           <Grid item sm={3}>
             <Typography variant="title" className={styles.settingsDescription}>
               Repository Settings
@@ -237,7 +237,7 @@ export default class Settings extends React.Component {
             <Grid item xs={12}>
               <Button color="primary"
                 type="submit"
-                raised
+                variant="raised"
                 onClick={(e) => this.onUpdateEnvironmentBasedProjectBranch(e)}>
                   Save
               </Button>

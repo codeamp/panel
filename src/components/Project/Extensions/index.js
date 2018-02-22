@@ -554,7 +554,7 @@ export default class Extensions extends React.Component {
           }
 
           <Grid item xs={12}>
-            <Button raised color="primary" className={styles.rightPad}
+            <Button variant="raised" color="primary" className={styles.rightPad}
               onClick={(event) => this.saveExtension(event)}
             >
               Save

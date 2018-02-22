@@ -264,7 +264,7 @@ export default class Create extends React.Component {
             <Button
               disabled={!this.state.urlIsValid}
               onClick={this.onProjectCreate.bind(this)}
-              raised color="primary">
+              variant="raised" color="primary">
               {this.props.type}
             </Button>
           </CardActions>
