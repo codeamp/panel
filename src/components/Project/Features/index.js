@@ -302,7 +302,7 @@ export default class Features extends React.Component {
         <Grid container spacing={16}>
           <Grid container xs={12} className={styles.feature}>
             <Grid item xs={3}>
-              <Typography type="headline" component="h3">
+              <Typography variant="headline" component="h3">
                 Features
               </Typography>
             </Grid>
