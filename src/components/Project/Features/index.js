@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
@@ -86,11 +87,11 @@ class FeatureView extends React.Component {
 
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <div
-          style={{ visibility: 'hidden', display: 'none' }}
-          id={"git-hash-" + this.props.feature.id}>
-            {this.props.feature.hash}
-        </div>
+          <div
+            style={{ visibility: 'hidden', display: 'none' }}
+            id={"git-hash-" + this.props.feature.id}>
+              {this.props.feature.hash}
+          </div> 
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
             <Typography component="body1" style={{ fontSize: 14 }}>
@@ -101,11 +102,11 @@ class FeatureView extends React.Component {
             </Typography>
           </CardContent>
           <CardActions style={{ position: "absolute", right: 10, top: 10 }}>
-          <IconButton color="primary"
-              onClick={() => this.props.copyGitHash(this.props.feature.id)}
-              className={this.props.showFullView === false ? styles.hide : '' }>
-              <CopyGitHashIcon />
-            </IconButton>
+            <CopyToClipboard text={this.props.feature.hash} onCopy={() => this.props.copyGitHash(this.props.feature.hash)} className={this.props.showFullView === false ? styles.hide : '' }>
+              <IconButton color="primary" className={this.props.showFullView === false ? styles.hide : '' }>
+                <CopyGitHashIcon />
+              </IconButton>
+            </CopyToClipboard>       
             <Button raised color="primary"
               disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
               onClick={this.handleDeploy.bind(this)}
@@ -207,16 +208,8 @@ export default class Features extends React.Component {
     };
   }
 
-  copyGitHash(featureId){
-    var gitHash = document.querySelector('#git-hash-' + featureId);
-    var range = document.createRange();
-    range.selectNode(gitHash);
-    window.getSelection().addRange(range);
-
-    var successful = document.execCommand('copy')
-    if(successful){
-      this.props.store.app.setSnackbar({msg: "Git hash copied."});
-    }
+  copyGitHash(featureHash){
+    this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash});
   }
 
   renderFeatureList = (project) => {
