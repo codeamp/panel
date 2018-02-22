@@ -8,6 +8,7 @@ import ServiceSpecs from './ServiceSpecs';
 import ExtensionSpecs from './ExtensionSpecs';
 import EnvironmentVariables from './EnvironmentVariables';
 import Environments from './Environments';
+import Users from './Users';
 
 @inject("store") @observer
 
@@ -28,6 +29,10 @@ export default class Admin extends React.Component {
           <Route path='/admin/extensionSpecs' render={(props) => (
             <ExtensionSpecs/>
           )}/>
+          
+          <Route path='/admin/users' render={(props) => (
+            <Users data={this.props.data} socket={this.props.socket} />
+          )}/>          
 
           <Route path='/admin/environments' render={(props) => (
             <Environments/>
