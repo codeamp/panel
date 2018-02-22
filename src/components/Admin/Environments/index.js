@@ -196,7 +196,7 @@ export default class Environments extends React.Component {
         <Paper className={styles.tablePaper}>
           <Toolbar>
             <div>
-              <Typography type="title">
+              <Typography variant="title">
                 Environments
               </Typography>
             </div>
@@ -241,7 +241,7 @@ export default class Environments extends React.Component {
           </Table>
         </Paper>
 
-        <Button fab aria-label="Add" type="submit" raised color="primary"
+        <Button variant="fab" aria-label="Add" type="submit" color="primary"
             style={inlineStyles.addButton}
             onClick={this.openDrawer.bind(this)}>
             <AddIcon />
@@ -257,7 +257,7 @@ export default class Environments extends React.Component {
             <div tabIndex={0} className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                   <Toolbar>
-                  <Typography type="title" color="inherit">
+                  <Typography variant="title" color="inherit">
                       Environment
                   </Typography>
                   </Toolbar>
@@ -276,7 +276,7 @@ export default class Environments extends React.Component {
                         className={styles.buttonSpacing}
                         disabled={this.state.saving}
                         type="submit"
-                        raised
+                        variant="raised"
                         onClick={(e) => this.onSubmit(e)}>
                           Save
                       </Button>

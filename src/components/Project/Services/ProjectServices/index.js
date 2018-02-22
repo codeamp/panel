@@ -250,7 +250,7 @@ class ProjectServices extends React.Component {
           <Paper className={styles.tablePaper}>
             <Toolbar>
               <div>
-                <Typography type="title">
+                <Typography variant="title">
                   Services
                 </Typography>
               </div>
@@ -305,7 +305,7 @@ class ProjectServices extends React.Component {
           <div className={styles.addButton}>
           <Manager>
             <Target>
-              <Button fab aria-label="Add" type="submit" raised color="primary"
+              <Button fab aria-label="Add" type="submit" variant="raised" color="primary"
                 aria-owns={this.state.addServiceMenuOpen ? 'menu-list' : null}
                 aria-haspopup="true"              
                 onClick={this.handleClick.bind(this)}>
@@ -340,7 +340,7 @@ class ProjectServices extends React.Component {
               <div tabIndex={0} className={styles.createServiceBar}>
                 <AppBar position="static" color="default">
                     <Toolbar>
-                    <Typography type="title" color="inherit">
+                    <Typography variant="title" color="inherit">
                         Service
                     </Typography>
                     </Toolbar>
@@ -366,7 +366,7 @@ class ProjectServices extends React.Component {
                             <Grid container spacing={24}>
                                 { this.form.$('containerPorts').value.length > 0 &&
                                 <Grid item xs={12}>
-                                <Typography type="subheading"> Container Ports </Typography>
+                                <Typography variant="subheading"> Container Ports </Typography>
                                 </Grid>
                                 }
                                 { this.form.$('containerPorts').value.length > 0 &&
@@ -393,7 +393,7 @@ class ProjectServices extends React.Component {
 
 
                                 <Grid item xs={12}>
-                                <Button raised type="secondary" onClick={this.form.$('containerPorts').onAdd}>
+                                <Button variant="raised" type="secondary" onClick={this.form.$('containerPorts').onAdd}>
                                     Add container port
                                 </Button>
                                 </Grid>
@@ -406,7 +406,7 @@ class ProjectServices extends React.Component {
                             className={styles.buttonSpacing}
                             disabled={this.state.saving}
                             type="submit"
-                            raised
+                            variant="raised"
                             onClick={e => this.onSubmit(e)}>
                               Save
                         </Button>

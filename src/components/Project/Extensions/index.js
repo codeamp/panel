@@ -337,7 +337,7 @@ export default class Extensions extends React.Component {
     return (<Paper>
       <Toolbar>
         <div>
-          <Typography type="title">
+          <Typography variant="title">
             Available extensions
           </Typography>
         </div>
@@ -366,7 +366,7 @@ export default class Extensions extends React.Component {
 
     return (<Paper>
       <Toolbar>
-        <div> <Typography type="title">
+        <div> <Typography variant="title">
             Enabled extensions
           </Typography>
         </div>
@@ -427,7 +427,6 @@ export default class Extensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
-    let artifacts = null
  
     if(extension.__typename === "ExtensionSpec"){
       const extensionSpec = extension
@@ -491,7 +490,7 @@ export default class Extensions extends React.Component {
     return (<div className={styles.createServiceBar}>
       <AppBar position="static" color="default">
         <Toolbar>
-          <Typography type="title" color="inherit">
+          <Typography variant="title" color="inherit">
             { name } extension ({ type })
           </Typography>
         </Toolbar>
@@ -499,7 +498,7 @@ export default class Extensions extends React.Component {
       <div className={styles.drawerBody}>
         <Grid container spacing={24}>
           <Grid item xs={12}>
-            <Typography type="subheading"><b>Config</b></Typography>
+            <Typography variant="subheading"><b>Config</b></Typography>
             <br/>
             {config_jsx}
           </Grid>
@@ -510,10 +509,10 @@ export default class Extensions extends React.Component {
 
           {extension.stateMessage &&
             <Grid item xs={12}>
-              <Typography type="title">
+              <Typography variant="title">
                   Status
               </Typography> 
-              <Typography type="subheading">
+              <Typography variant="subheading">
                   {extension.stateMessage}
               </Typography>                 
             </Grid>
@@ -523,7 +522,7 @@ export default class Extensions extends React.Component {
             <Grid item xs={12}>
               <Paper>
                 <Toolbar>
-                  <div> <Typography type="title">
+                  <div> <Typography variant="title">
                       Artifacts
                     </Typography>
                   </div>
@@ -555,7 +554,7 @@ export default class Extensions extends React.Component {
           }
 
           <Grid item xs={12}>
-            <Button raised color="primary" className={styles.rightPad}
+            <Button variant="raised" color="primary" className={styles.rightPad}
               onClick={(event) => this.saveExtension(event)}
             >
               Save

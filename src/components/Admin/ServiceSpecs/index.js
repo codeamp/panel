@@ -237,7 +237,7 @@ export default class ServiceSpecs extends React.Component {
             <Paper>
               <Toolbar>
                 <div>
-                  <Typography type="title">
+                  <Typography variant="title">
                     Service Specs
                   </Typography>
                 </div>
@@ -289,7 +289,7 @@ export default class ServiceSpecs extends React.Component {
             </Paper>
           </Grid>
         </Grid>
-        <Button fab aria-label="Add" type="submit" raised color="primary"
+        <Button variant="fab" aria-label="Add" type="submit" color="primary"
               style={inlineStyles.addButton}
               onClick={this.openDrawer.bind(this)}>
               <AddIcon />
@@ -304,7 +304,7 @@ export default class ServiceSpecs extends React.Component {
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                 <Toolbar>
-                  <Typography type="title" color="inherit">
+                  <Typography variant="title" color="inherit">
                     Service Spec
                   </Typography>
                 </Toolbar>
@@ -312,7 +312,7 @@ export default class ServiceSpecs extends React.Component {
               <form onSubmit={(e) => e.preventDefault()}>
                 <Grid container spacing={24} className={styles.grid}>
                   <Grid item xs={12}>
-                    <Typography type="body1">
+                    <Typography variant="body1">
                       Requests and Limits are measured in megabytes.
                     </Typography>
                   </Grid>
@@ -339,7 +339,7 @@ export default class ServiceSpecs extends React.Component {
                         className={styles.buttonSpacing}
                         disabled={this.state.saving}
                         type="submit"
-                        raised
+                        variant="raised"
                         onClick={this.onSubmit.bind(this)}>
                         Save
                     </Button>

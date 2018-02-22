@@ -305,7 +305,7 @@ export default class EnvironmentVariables extends React.Component {
         <Paper className={styles.tablePaper}>
           <Toolbar>
             <div>
-              <Typography type="title">
+              <Typography variant="title">
                 Environment Variables
               </Typography>
             </div>
@@ -360,7 +360,7 @@ export default class EnvironmentVariables extends React.Component {
           </Table>
         </Paper>
 
-        <Button fab aria-label="Add" type="submit" raised color="primary"
+        <Button variant="fab" aria-label="Add" type="submit" color="primary"
             style={inlineStyles.addButton}
             onClick={this.handleAddClick.bind(this)}>
             <AddIcon />
@@ -387,7 +387,7 @@ export default class EnvironmentVariables extends React.Component {
             <div tabIndex={0} className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                   <Toolbar>
-                  <Typography type="title" color="inherit">
+                  <Typography variant="title" color="inherit">
                       Environment Variable
                   </Typography>
                   </Toolbar>
@@ -403,7 +403,7 @@ export default class EnvironmentVariables extends React.Component {
                         <Grid item xs={12}>
                           <InputField field={this.form.$('value')} fullWidth={true} />
                           <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                          <Typography type="caption"> Hide value after saving </Typography>
+                          <Typography variant="caption"> Hide value after saving </Typography>
                         </Grid>
                       </Grid>
                     }
@@ -416,7 +416,7 @@ export default class EnvironmentVariables extends React.Component {
                         <Grid item xs={12}>
                           <TextareaField field={this.form.$('value')} fullWidth={true} />
                           <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
-                          <Typography type="caption"> Hide value after saving </Typography>
+                          <Typography variant="caption"> Hide value after saving </Typography>
                         </Grid>
                       </Grid>
                     }
@@ -433,7 +433,7 @@ export default class EnvironmentVariables extends React.Component {
                           className={styles.buttonSpacing}
                           disabled={this.state.saving}
                           type="submit"
-                          raised
+                          variant="raised"
                           onClick={e => this.onSubmit(e)}>
                           Save
                       </Button>

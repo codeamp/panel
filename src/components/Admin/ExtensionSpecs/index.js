@@ -293,7 +293,7 @@ export default class ExtensionSpecs extends React.Component {
             <Paper>
               <Toolbar>
                 <div>
-                  <Typography type="title">
+                  <Typography variant="title">
                     Extension Specs
                   </Typography>
                 </div>
@@ -335,7 +335,7 @@ export default class ExtensionSpecs extends React.Component {
             </Paper>
           </Grid>
         </Grid>
-        <Button fab aria-label="Add" type="submit" raised color="primary"
+        <Button variant="fab" aria-label="Add" type="submit" color="primary"
               style={inlineStyles.addButton}
               onClick={this.openDrawer.bind(this)}>
               <AddIcon />
@@ -350,7 +350,7 @@ export default class ExtensionSpecs extends React.Component {
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                 <Toolbar>
-                  <Typography type="title" color="inherit">
+                  <Typography variant="title" color="inherit">
                     Extension Spec
                   </Typography>
                 </Toolbar>
@@ -373,7 +373,7 @@ export default class ExtensionSpecs extends React.Component {
                     <InputField field={this.form.$('component')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography type="title">Config</Typography>
+                    <Typography variant="title">Config</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     {this.form.$('config').map((kv) => {
@@ -393,12 +393,12 @@ export default class ExtensionSpecs extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised color="default" onClick={this.form.$('config').onAdd}>
+                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd}>
                       Add Config
                     </Button>
                   </Grid>
                   {/* <Grid item xs={12}>
-                    <Typography type="subheading"> Environment Variables </Typography>
+                    <Typography variant="subheading"> Environment Variables </Typography>
                   </Grid>
                   <Grid item xs={12}>
                     {this.form.$('config').map(function(kv){
@@ -415,7 +415,7 @@ export default class ExtensionSpecs extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button raised type="secondary" onClick={this.form.$('config').onAdd}>
+                    <Button variant="raised" type="secondary" onClick={this.form.$('config').onAdd}>
                       Add env var
                     </Button>
                   </Grid> */}
@@ -424,7 +424,7 @@ export default class ExtensionSpecs extends React.Component {
                         className={styles.buttonSpacing}
                         disabled={this.state.saving}
                         type="submit"
-                        raised
+                        variant="raised"
                         onClick={this.onSubmit.bind(this)}>
                           Save
                     </Button>

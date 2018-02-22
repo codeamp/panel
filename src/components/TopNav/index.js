@@ -12,7 +12,6 @@ import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 import { FormControl } from 'material-ui/Form';
-import Input, { InputLabel } from 'material-ui/Input';
 
 import styles from './style.module.css';
 
@@ -104,20 +103,18 @@ export default class TopNav extends React.Component {
   }
 
   handleEnvChange(e){
-    console.log('hdndleEnvChange')
-	const { environments } = this.props.data;
-	var color = "gray"
+  	const { environments } = this.props.data;
+  	var color = "gray"
 
-	environments.map(function(env){
-		console.log(env.id, e.target.value)
-		if(env.id === e.target.value){
-			color = env.color
-		}
-	})
-
-	console.log(color)
+    environments.map(function(env){
+    	if(env.id === e.target.value){
+    		color = env.color
+        return
+      }
+    })
 
     this.props.store.app.setCurrentEnv({id: e.target.value, color: color })
+    return
   }
 
   render() {
@@ -137,7 +134,7 @@ export default class TopNav extends React.Component {
         <Toolbar>
           <Grid container spacing={24}>
             <Grid item xs={2}>
-              <Typography type="title" color="inherit" className={styles.flex}>
+              <Typography variant="title" color="inherit">
                 CodeAmp
               </Typography>
             </Grid>
@@ -210,9 +207,6 @@ export default class TopNav extends React.Component {
 						id: 'age-simple',
 					  }}
 					>
-					  <MenuItem value="">
-						<em>None</em>
-					  </MenuItem>
 					  {environments.map(function(env){
 						return (
 							<MenuItem value={env.id}>{env.name}</MenuItem>
@@ -243,7 +237,7 @@ export default class TopNav extends React.Component {
             <Toolbar>
                 <Grid container spacin={24}>
                     <Grid item xs={1}>
-                    <Typography type="body1">
+                    <Typography variant="body1">
                         <a href={window.location.href}>
                         try refreshing
                         </a>

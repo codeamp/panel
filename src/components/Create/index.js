@@ -13,7 +13,6 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-import InputField from 'components/Form/input-field';
 
 @inject("store") @observer
 
@@ -215,7 +214,7 @@ export default class Create extends React.Component {
           <CardContent>
             <Grid container spacing={24}>
               <Grid item xs={12}>
-                <Typography type="subheading" className={styles.title}>
+                <Typography variant="subheading" className={styles.title}>
                   {this.state.title}
                 </Typography>
               </Grid>
@@ -265,7 +264,7 @@ export default class Create extends React.Component {
             <Button
               disabled={!this.state.urlIsValid}
               onClick={this.onProjectCreate.bind(this)}
-              raised color="primary">
+              variant="raised" color="primary">
               {this.props.type}
             </Button>
           </CardActions>

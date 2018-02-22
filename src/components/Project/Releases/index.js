@@ -32,7 +32,7 @@ class ReleaseView extends React.Component {
     }
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
+        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } variant="raised" disabled={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
               <ForkIcon />
@@ -50,12 +50,12 @@ class ReleaseView extends React.Component {
             <br/>
             <Grid item xs={12}>
               {releaseStateIcon}
-              <Typography type="subheading">
+              <Typography variant="subheading">
                 {this.props.release.releaseExtensions.filter(re => re.state === "complete").length} / {this.props.release.releaseExtensions.length}
               </Typography>
             </Grid>
             <Grid item xs={12}>
-              <Typography type="subheading">
+              <Typography variant="subheading">
                 {this.props.release.stateMessage}
               </Typography>
             </Grid>            
@@ -249,8 +249,7 @@ export default class Releases extends React.Component {
   };
 
   setupSocketHandlers(){
-    const { socket, match, data } = this.props;
-    const { refetch } = data;
+    const { socket, match } = this.props;
     
     socket.on(match.url.substring(1, match.url.length), (data) => {
       this.props.data.refetch()
@@ -291,13 +290,13 @@ export default class Releases extends React.Component {
     const { project, refetch } = this.props.data;
     const release = project.releases[this.form.values()['index']];
 
-    if(deployAction == 'Rollback') {
+    if(deployAction === 'Rollback') {
       rollbackRelease({variables: { releaseId: release.id }}).then(function(res){
         refetch()
       }).catch(function(err){
         refetch()
       })
-    } else if(deployAction == 'Redeploy') {
+    } else if(deployAction === 'Redeploy') {
       createRelease({
         variables: { id: release.id, headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
       }).then(({data}) => {
@@ -327,7 +326,7 @@ export default class Releases extends React.Component {
       <div>
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.title}>
-            <Typography type="subheading">
+            <Typography variant="subheading">
               <b> Current Release </b>
             </Typography>
           </Grid>
@@ -343,7 +342,7 @@ export default class Releases extends React.Component {
         </Grid>
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.title}>
-            <Typography type="subheading">
+            <Typography variant="subheading">
               <b> Releases </b>
             </Typography>
           </Grid>
@@ -368,19 +367,19 @@ export default class Releases extends React.Component {
               <AppBar position="static" color="default">
                 <Toolbar>
 
-                  <Typography type="title" color="inherit">
+                  <Typography variant="title" color="inherit">
                     Release Information
                   </Typography>
                 </Toolbar>
               </AppBar>
               <Grid container spacing={24} className={styles.grid}>
                 <Grid item xs={12}>
-                    <Typography type="body2">
+                    <Typography variant="body2">
                     <b> head </b> : {project.releases !== undefined &&
                       project.releases[this.form.values()['index']] &&
                       project.releases[this.form.values()['index']].headFeature.hash }
                     </Typography>
-                    <Typography type="body2">
+                    <Typography variant="body2">
                     <b> tail </b> : {project.releases !== undefined &&
                       project.releases[this.form.values()['index']] &&
                       project.releases[this.form.values()['index']].tailFeature.hash }
@@ -391,7 +390,7 @@ export default class Releases extends React.Component {
                     <div className={styles.tableWrapper}>
                       <Toolbar>
                         <div>
-                          <Typography type="title">
+                          <Typography variant="title">
                             Extensions
                           </Typography>
                         </div>
@@ -448,7 +447,7 @@ export default class Releases extends React.Component {
                         <div className={styles.tableWrapper}>
                           <Toolbar>
                             <div>
-                              <Typography type="title">
+                              <Typography variant="title">
                                 Artifacts
                               </Typography>
                             </div>
@@ -489,7 +488,7 @@ export default class Releases extends React.Component {
                   {project.releases[this.form.values()['index']] &&
                    project.releases[this.form.values()['index']].state === "complete" &&
                     <Button
-                      raised
+                      variant="raised"
                       disabled={project.releases.length > 0 && project.currentRelease && project.currentRelease.state !== "complete"}
                       color="primary"
                       onClick={this.releaseAction.bind(this)}>

@@ -2,7 +2,6 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
-import Card, {CardContent, CardActions} from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
 import { graphql } from 'react-apollo';
@@ -189,7 +188,7 @@ export default class Settings extends React.Component {
       this.form.$('id').set(project.id)
       this.form.$('gitProtocol').set(project.gitProtocol)
       this.form.$('gitUrl').set(project.gitUrl)
-      this.form.$('environmentId').set(currentEnvironment.id),
+      this.form.$('environmentId').set(currentEnvironment.id)
       this.setState({ notSet: false })
     }
 
@@ -202,12 +201,12 @@ export default class Settings extends React.Component {
 
     return (
       <div className={styles.root}>
-        <Grid container spacing={24}>
+        <Grid container spacing={24}> 
           <Grid item sm={3}>
-            <Typography type="title" className={styles.settingsDescription}>
+            <Typography variant="title" className={styles.settingsDescription}>
               Repository Settings
             </Typography>
-            <Typography type="caption" className={styles.settingsCaption}>
+            <Typography variant="caption" className={styles.settingsCaption}>
               You can update your project settings to point to a different url
               or make appropriate cascading modifications (e.g. if your project became private).
             </Typography>
@@ -222,10 +221,10 @@ export default class Settings extends React.Component {
             </Grid>
           </Grid>  
           <Grid item sm={3}>
-            <Typography type="title" className={styles.settingsDescription}>
+            <Typography variant="title" className={styles.settingsDescription}>
               Branch Settings
             </Typography>
-            <Typography type="caption" className={styles.settingsCaption}>
+            <Typography variant="caption" className={styles.settingsCaption}>
               Updating your branch will update the Features page to show commits from the
               chosen branch. Make sure the selected branch exists.
             </Typography>
@@ -238,7 +237,7 @@ export default class Settings extends React.Component {
             <Grid item xs={12}>
               <Button color="primary"
                 type="submit"
-                raised
+                variant="raised"
                 onClick={(e) => this.onUpdateEnvironmentBasedProjectBranch(e)}>
                   Save
               </Button>

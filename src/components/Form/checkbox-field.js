@@ -4,7 +4,7 @@ import styles from './style.module.css';
 import Checkbox from 'material-ui/Checkbox';
 import Grid from 'material-ui/Grid';
 import FormHelperText from 'material-ui/Form/FormHelperText';
-import { FormGroup, FormControlLabel } from 'material-ui/Form';
+import { FormControlLabel } from 'material-ui/Form';
 
 export default observer(({field}) => {
 return (

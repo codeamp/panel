@@ -9,7 +9,6 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Snackbar from 'material-ui/Snackbar';
 import IconButton from 'material-ui/IconButton';
-import Card, {CardContent, CardActions} from 'material-ui/Card';
 import CloseIcon from 'material-ui-icons/Close';
 import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';
@@ -99,7 +98,7 @@ export default class App extends React.Component {
       return (
         <div className={styles.root}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={new Array()} {...this.props} />
+              <TopNav projects={[]} {...this.props} />
             </Grid>
             <Grid item xs={4}></Grid>
             <Grid item xs={5} className={styles.center}>
@@ -153,7 +152,7 @@ export default class App extends React.Component {
                     <Admin data={this.props.data} projects={projects} {...props} />
                   )} />
                   <Route path='/projects/:slug' render={(props) => (
-                    <Project socket={socket} socket={socket} {...props} />
+                    <Project socket={socket} {...props} />
                   )} />
                 </Switch>
               </div>
