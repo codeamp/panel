@@ -561,7 +561,7 @@ export default class Extensions extends React.Component {
             </Button>
             { extension.extensionSpec && <Button
               onClick={() => this.setState({ dialogOpen: true })}
-              color="accent"
+              style={{ color: "red" }}
             >
               Delete
             </Button> }

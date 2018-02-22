@@ -519,7 +519,7 @@ export default class Services extends React.Component {
                 <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
                   Cancel
                 </Button>
-                <Button onClick={this.handleDeleteService.bind(this)} color="accent">
+                <Button onClick={this.handleDeleteService.bind(this)} style={{ color: "red" }}>
                   Confirm
                 </Button>
               </DialogActions>

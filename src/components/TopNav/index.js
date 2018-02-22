@@ -252,7 +252,7 @@ export default class TopNav extends React.Component {
                     </Grid>
                 </Grid>
             </Toolbar>
-            <LinearProgress color="accent" />
+            <LinearProgress style={{ color: "red" }} />
           </AppBar>
       }
     </div>

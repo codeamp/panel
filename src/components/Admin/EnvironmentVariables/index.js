@@ -481,7 +481,7 @@ export default class EnvironmentVariables extends React.Component {
                     {this.form.values()['id'] &&
                       <Button
                         disabled={this.state.saving}
-                        color="accent"
+                        style={{ color: "red" }}
                         onClick={()=>this.setState({ dialogOpen: true })}>
                         Delete
                       </Button>

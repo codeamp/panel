@@ -6,6 +6,7 @@ import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
+import Toolbar from 'material-ui/Toolbar';
 import { CircularProgress } from 'material-ui/Progress';
 import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql } from 'react-apollo';
@@ -301,16 +302,18 @@ export default class Features extends React.Component {
       <div className={styles.root}>
         <Grid container spacing={16}>
           <Grid container xs={12} className={styles.feature}>
-            <Grid item xs={3}>
-              <Typography variant="headline" component="h3">
-                Features
-              </Typography>
-            </Grid>
             {/* <Grid item xs={4}>
               <SelectField field={this.form.$('branch')} fullWidth={true} />
             </Grid>             */}
           </Grid>
           <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="title">
+                  Features
+                </Typography>
+              </CardContent>
+            </Card>
             {defaultComponent}
           </Grid>
         </Grid>

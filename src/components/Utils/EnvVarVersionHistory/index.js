@@ -18,7 +18,7 @@ export default class EnvVarVersionHistory extends React.Component {
           <div className={styles.tableWrapper}>
             <Toolbar>
               <div>
-                <Typography type="title">
+                <Typography variant="title">
                   Version History
                 </Typography>
               </div>
