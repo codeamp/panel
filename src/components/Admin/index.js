@@ -14,28 +14,23 @@ import Environments from './Environments';
 export default class Admin extends React.Component {
 
   render() {
-    const { serviceSpecs, extensionSpecs, environmentVariables, environments } = this.props;
-
     return (
       <div className={styles.root}>
         <Switch>
           <Route path='/admin/serviceSpecs' render={(props) => (
-            <ServiceSpecs data={this.props.data} serviceSpecs={serviceSpecs} socket={this.props.socket} />
+            <ServiceSpecs/>
           )}/>
 
           <Route path='/admin/envVars' render={(props) => (
-              <EnvironmentVariables data={this.props.data}
-                environmentVariables={environmentVariables}
-                environments={environments}
-                socket={this.props.socket} />
+            <EnvironmentVariables/>
           )} />
 
           <Route path='/admin/extensionSpecs' render={(props) => (
-            <ExtensionSpecs data={this.props.data} extensionSpecs={extensionSpecs} environmentVariables={environmentVariables} socket={this.props.socket} />
+            <ExtensionSpecs/>
           )}/>
 
           <Route path='/admin/environments' render={(props) => (
-            <Environments data={this.props.data} environments={environments} environmentVariables={environmentVariables} socket={this.props.socket} {...this.props} />
+            <Environments/>
           )}/>
         </Switch>
       </div>
