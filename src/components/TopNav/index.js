@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavLink } from "react-router-dom";
 import { observer, inject } from 'mobx-react';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
@@ -140,11 +139,9 @@ export default class TopNav extends React.Component {
         <Toolbar>
           <Grid container spacing={24}>
             <Grid item xs={2}>
-              <NavLink to="/">            
-                <Typography variant="title" style={{ color: "white" }}>
-                  CodeAmp
-                </Typography>
-              </NavLink>
+              <Typography variant="title" color="inherit">
+                CodeAmp
+              </Typography>
             </Grid>
             <Grid item xs={6}>
               <div style={{position: "relative"}}>
@@ -255,7 +252,7 @@ export default class TopNav extends React.Component {
                     </Grid>
                 </Grid>
             </Toolbar>
-            <LinearProgress style={{ color: "red" }} />
+            <LinearProgress color="accent" />
           </AppBar>
       }
     </div>

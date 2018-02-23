@@ -107,7 +107,7 @@ class FeatureView extends React.Component {
                 <CopyGitHashIcon />
               </IconButton>
             </CopyToClipboard>       
-            <Button raised color="primary"
+            <Button variant="raised" color="primary"
               disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
