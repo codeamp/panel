@@ -173,8 +173,8 @@ export default class EnvironmentVariables extends React.Component {
       'index',
     ];
     const rules = {
-    'key': 'string|required',
-    'value': 'string|required',
+      'key': 'string|required',
+      'value': 'string|required',
     };
     const labels = {
       'key': 'Key',
@@ -304,11 +304,9 @@ export default class EnvironmentVariables extends React.Component {
       <div>
         <Paper className={styles.tablePaper}>
           <Toolbar>
-            <div>
-              <Typography variant="title">
-                Environment Variables
-              </Typography>
-            </div>
+            <Typography variant="title">
+              Environment Variables
+            </Typography>
           </Toolbar>
           <Table>
             <TableHead>
@@ -387,9 +385,9 @@ export default class EnvironmentVariables extends React.Component {
             <div tabIndex={0} className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                   <Toolbar>
-                  <Typography variant="title" color="inherit">
-                      Environment Variable
-                  </Typography>
+                    <Typography variant="title" color="inherit">
+                        Environment Variable
+                    </Typography>
                   </Toolbar>
               </AppBar>
               <form>
