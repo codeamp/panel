@@ -25,7 +25,7 @@
   z-index: 100;
   border-radius: 0px;
   width: 100%;
-  top: 35px;
+  top: 38px;
 }
 
 .suggestion { 
@@ -67,7 +67,7 @@
   background: #ffffff;
   border: 1px solid #ced4da;
   font-size: 16px;
-  padding: 10px 12px;
+  padding: 12px 12px;
   width: calc(100% - 24px);
 }
 

@@ -3,15 +3,13 @@ import { observer, inject } from 'mobx-react';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
-import Chip from 'material-ui/Chip';
-import Select from 'material-ui/Select';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
-import { FormControl } from 'material-ui/Form';
+import Button from 'material-ui/Button';
 
 import styles from './style.module.css';
 
@@ -19,21 +17,21 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 @graphql(gql`
-    query {
-      environments {
-        id
-        name
-		color
-        created
-      }
-    }
+         query {
+           environments {
+             id
+             name
+             color
+             created
+           }
+         }
 `)
 
 @inject("store") @observer
 export default class TopNav extends React.Component {
   state = {
-    anchorEl: undefined,
-    open: false,
+    userAnchorEl: undefined,
+    environmentAnchorEl: undefined,
     originalSuggestions: [],
     suggestions: [],
     value: '',
@@ -47,16 +45,38 @@ export default class TopNav extends React.Component {
     this.setState({ originalSuggestions: originalSuggestions })
   }
 
-  handleClick = event => {
-    this.setState({ open: true, anchorEl: event.currentTarget });
+  handleUserClick = event => {
+    this.setState({ userAnchorEl: event.currentTarget });
   };
 
-  handleRequestClose = () => {
-    this.setState({ open: false });
+  handleEnvironmentClick = event => {
+    this.setState({ environmentAnchorEl: event.currentTarget });
   };
+
+  handleUserClose = () => {
+    this.setState({ userAnchorEl: null });
+  };
+
+  handleEnvironmentClose = (event, id) => {
+    this.setState({ environmentAnchorEl: null });
+  };
+
+  handleEnvironmentSelect = (id) => {
+  	const { environments } = this.props.data;
+
+    environments.map((env) => {
+    	if(env.id === id){
+        this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name })
+        return null
+      }
+      return null
+    })
+
+    this.setState({ environmentAnchorEl: null });
+  }
 
   logout = () => {
-    this.handleRequestClose();
+    this.handleUserClose();
     window.location.href = '/login';
   }
 
@@ -102,30 +122,15 @@ export default class TopNav extends React.Component {
     this.setState({ suggestions: suggestions, showSuggestions: true })
   }
 
-  handleEnvChange(e){
-  	const { environments } = this.props.data;
-  	var color = "gray"
-
-    environments.map(function(env){
-    	if(env.id === e.target.value){
-    		color = env.color
-        return
-      }
-    })
-
-    this.props.store.app.setCurrentEnv({id: e.target.value, color: color })
-    return
-  }
-
   render() {
     var self = this
     const { store } = this.props
-	const { loading, environments } = this.props.data;
+    const { loading, environments } = this.props.data;
     const { app } = this.props.store;
 
-	if(loading){
-		return (<div>Loading</div>)
-	}
+    if(loading){
+      return (<div>Loading</div>)
+    }
 
 
     return (
@@ -180,51 +185,48 @@ export default class TopNav extends React.Component {
                   </div>
               </div>
             </Grid>
-            <Grid item xs={2}>
-              <Chip
-                label={store.app.user.profile.email}
-                onClick={this.handleClick}
-                aria-owns={this.state.open ? 'simple-menu' : null}
+            <Grid item xs={4} style={{textAlign: "right"}}>
+              <Button
+                style={{margin: "0 8px"}}
+                variant="raised"
+                aria-owns={this.state.anchorEl ? 'user-menu' : null}
                 aria-haspopup="true"
-              />
+                onClick={this.handleUserClick}>
+                {store.app.user.profile.email}
+              </Button>
+              <Menu
+                id="user-menu"
+                anchorEl={this.state.userAnchorEl}
+                open={Boolean(this.state.userAnchorEl)}
+                onClose={this.handleUserClose}>
+                <MenuItem onClick={this.logout}>Logout</MenuItem>
+              </Menu>
+              {window.location.href.includes('projects') &&
+                  <span>
+                    <Button
+                      style={{margin: "0 8px"}}
+                      variant="raised"
+                      aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+                      aria-haspopup="true"
+                      onClick={this.handleEnvironmentClick.bind(this)}>
+                      {app.currentEnvironment.name}
+                    </Button>
+                    <Menu
+                      id="environment-menu"
+                      anchorEl={this.state.environmentAnchorEl}
+                      open={Boolean(this.state.environmentAnchorEl)}
+                      onClose={this.handleEnvironmentClose.bind(this)}>
+                      {environments.map((env) => {
+                      return (<MenuItem 
+                        onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
+                        {env.name}
+                      </MenuItem>)
+                      })}
+                    </Menu>
+                  </span>
+              }
             </Grid>
-			{window.location.href.includes('projects') &&
-				<Grid item xs={2}>
-				  <FormControl>
-
-					<Select
-					  classes={{
-  						select: styles.currentEnv,
-  						root: styles.currentEnv,
-					  }}
-					  style={{ width: 200 }}
-
-					  fullWidth={true}
-					  value={this.props.store.app.currentEnvironment.id}
-					  onChange={this.handleEnvChange.bind(this)}
-					  inputProps={{
-						name: 'age',
-						id: 'age-simple',
-					  }}
-					>
-					  {environments.map(function(env){
-						return (
-							<MenuItem value={env.id}>{env.name}</MenuItem>
-						)
-					  })}
-				  </Select>
-				 </FormControl>
-				</Grid>
-			}
           </Grid>
-          <Menu
-            id="simple-menu"
-            anchorEl={this.state.anchorEl}
-            open={this.state.open}
-            onRequestClose={this.handleRequestClose}
-          >
-            <MenuItem onClick={this.logout}>Logout</MenuItem>
-          </Menu>
         </Toolbar>
 		{window.location.href.includes('projects') &&
 			<div style={{ border: "3px solid " + app.currentEnvironment.color }}>

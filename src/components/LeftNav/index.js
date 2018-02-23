@@ -36,16 +36,6 @@ export default class LeftNav extends React.Component {
   }
 
   render() {
-    let projectTitleItem = ""
-    if(this.props.store.app.leftNavProjectTitle !== ''){
-      projectTitleItem = (
-        <ListItem button onClick={() => this.setState({ openProject: !this.state.openProject })}>
-          <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-          {this.state.openProject ? <ExpandLess /> : <ExpandMore />}
-        </ListItem>
-      )
-    }
-
     return (
       <Drawer variant="persistent" open={true} className={styles.root}>
         <div className={styles.drawer}>
@@ -112,24 +102,24 @@ export default class LeftNav extends React.Component {
           </List>
           <Divider/>
           <List>
-          { projectTitleItem }
-          <Collapse in={this.state.openProject} unmountOnExit>
+            <ListItem>
+              <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
+            </ListItem>
             {this.props.store.app.leftNavItems.map(nav =>
-              <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
-                <ListItem button>
-                    {nav.icon && !nav.count && <ListItemIcon>
-                      {nav.icon}
-                    </ListItemIcon>}
-                    {nav.icon && nav.count > 0 &&  <ListItemIcon>
-                      <Badge className={styles.badge} badgeContent={4} color="primary">
-                        {nav.icon}
-                      </Badge>
-                    </ListItemIcon>}
-                    <ListItemText primary={nav.name} />
-                </ListItem>
-              </NavLink>
-              )}
-          </Collapse>
+            <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
+              <ListItem button>
+                {nav.icon && !nav.count && <ListItemIcon>
+                  {nav.icon}
+                </ListItemIcon>}
+                {nav.icon && nav.count > 0 &&  <ListItemIcon>
+                  <Badge className={styles.badge} badgeContent={4} color="primary">
+                    {nav.icon}
+                  </Badge>
+                </ListItemIcon>}
+                <ListItemText primary={nav.name} />
+              </ListItem>
+            </NavLink>
+            )}
          </List>
         </div>
       </Drawer>

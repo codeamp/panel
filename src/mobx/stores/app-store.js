@@ -6,7 +6,7 @@ class AppStore {
     const user = JSON.parse(localStorage.getItem('user'));
     var currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
     if(!currentEnv){
-      currentEnv = {id: '', color: 'gray'};
+      currentEnv = {id: null, name: null, color: 'gray'};
     }
     var projectTitle = '';    
     if(!projectTitle){
@@ -76,6 +76,7 @@ class AppStore {
 
   setCurrentEnv = action(params => {
     this.currentEnvironment.id = params.id;
+    this.currentEnvironment.name = params.name;
     if(params.color){ this.currentEnvironment.color = params.color; }
 
     localStorage.setItem('currentEnv', JSON.stringify(params));
