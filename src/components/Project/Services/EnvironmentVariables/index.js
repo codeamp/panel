@@ -173,8 +173,8 @@ export default class EnvironmentVariables extends React.Component {
       'index',
     ];
     const rules = {
-    'key': 'string|required',
-    'value': 'string|required',
+      'key': 'string|required',
+      'value': 'string|required',
     };
     const labels = {
       'key': 'Key',
@@ -304,11 +304,9 @@ export default class EnvironmentVariables extends React.Component {
       <div>
         <Paper className={styles.tablePaper}>
           <Toolbar>
-            <div>
-              <Typography variant="title">
-                Environment Variables
-              </Typography>
-            </div>
+            <Typography variant="title">
+              Environment Variables
+            </Typography>
           </Toolbar>
           <Table>
             <TableHead>
@@ -387,9 +385,9 @@ export default class EnvironmentVariables extends React.Component {
             <div tabIndex={0} className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                   <Toolbar>
-                  <Typography variant="title" color="inherit">
-                      Environment Variable
-                  </Typography>
+                    <Typography variant="title" color="inherit">
+                        Environment Variable
+                    </Typography>
                   </Toolbar>
               </AppBar>
               <form>
@@ -441,7 +439,7 @@ export default class EnvironmentVariables extends React.Component {
                       {this.form.values()['id'] !== "" &&
                         <Button
                           disabled={this.state.saving}
-                          color="accent"
+                          style={{ color: "red" }}
                           onClick={()=>this.setState({ dialogOpen: true })}>
                           Delete
                         </Button>
@@ -470,7 +468,7 @@ export default class EnvironmentVariables extends React.Component {
                 <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
                   Cancel
                 </Button>
-                <Button onClick={this.handleDeleteEnvVar.bind(this)} color="accent">
+                <Button onClick={this.handleDeleteEnvVar.bind(this)} style={{ color: "red" }}>
                   Confirm
                 </Button>
               </DialogActions>

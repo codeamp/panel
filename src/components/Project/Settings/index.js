@@ -166,6 +166,7 @@ export default class Settings extends React.Component {
     } else {
       this.envBasedProjectBranchForm.onSubmit(e, { onSuccess: this.updateEnvBasedProjectBranch.bind(this), onError: this.onError.bind(this) })
     }
+    this.props.store.app.setSnackbar({msg: "Branch successfully changed to " + this.envBasedProjectBranchForm.$('gitBranch').value });    
   }
 
   componentWillUpdate(nextProps, nextState){

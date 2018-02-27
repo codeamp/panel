@@ -38,15 +38,8 @@ export default class Services extends React.Component {
             <Tab label="Environment" />
           </Tabs>
         </AppBar>
-
-        <Grid container spacing={24}>
-          <Grid item sm={12}>
-            {value === 0 && <TabContainer> <ServicesComponent match={match} /> </TabContainer>}
-          </Grid>
-          <Grid item sm={12}>
-            {value === 1 && <TabContainer><EnvironmentVariables match={match} /></TabContainer>}
-          </Grid>
-        </Grid>
+        {value === 0 && <TabContainer><ServicesComponent match={match} /></TabContainer>}
+        {value === 1 && <TabContainer><EnvironmentVariables match={match} /></TabContainer>}
       </div>
       )
     }
