@@ -75,7 +75,7 @@ class FeatureView extends React.Component {
   handleDeploy(){
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
-      variables: { headFeatureId: this.props.feature.id, projectId: this.props.project.id, environmentId: this.props.store.app.currentEnvironment.id },
+      variables: { headFeatureID: this.props.feature.id, projectID: this.props.project.id, environmentID: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
       this.props.data.refetch()
       this.props.history.push(this.props.match.url.replace('features', 'releases'))
@@ -122,8 +122,8 @@ class FeatureView extends React.Component {
 @inject("store") @observer
 
 @graphql(gql`
-  query Project($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
+  query Project($slug: String, $environmentID: String){
+    project(slug: $slug, environmentID: $environmentID) {
       id
       name
       slug
@@ -179,14 +179,14 @@ class FeatureView extends React.Component {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
 
 @graphql(gql`
-mutation Mutation($headFeatureId: String!, $projectId: String!, $environmentId: String!) {
-  createRelease(release: { headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
+mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: String!) {
+  createRelease(release: { headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID }) {
     headFeature {
       message
     }

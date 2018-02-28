@@ -28,8 +28,8 @@ import _ from "lodash"
 @inject("store") 
 
 @graphql(gql`
-  query ProjectExtensions($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
+  query ProjectExtensions($slug: String, $environmentID: String){
+    project(slug: $slug, environmentID: $environmentID) {
       id
       name
       slug
@@ -50,7 +50,7 @@ import _ from "lodash"
         artifacts
         created
       }
-      environmentVariables {
+      secrets {
         id
         key
         value
@@ -80,18 +80,18 @@ import _ from "lodash"
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
 
 @graphql(gql`
-  mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $config: Json!, $environmentId: String!) {
+  mutation CreateExtension ($projectID: String!, $extensionSpecID: String!, $config: JSON!, $environmentID: String!) {
       createExtension(extension:{
-        projectId: $projectId,
-        extensionSpecId: $extensionSpecId,
+        projectID: $projectID,
+        extensionSpecID: $extensionSpecID,
         config: $config,
-        environmentId: $environmentId,
+        environmentID: $environmentID,
       }) {
           id
       }
@@ -99,13 +99,13 @@ import _ from "lodash"
 )
 
 @graphql(gql`
-  mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $config: Json!, $environmentId: String!) {
+  mutation UpdateExtension ($id: String, $projectID: String!, $extensionSpecID: String!, $config: JSON!, $environmentID: String!) {
       updateExtension(extension:{
         id: $id,
-        projectId: $projectId,
-        extensionSpecId: $extensionSpecId,
+        projectID: $projectID,
+        extensionSpecID: $extensionSpecID,
         config: $config,
-        environmentId: $environmentId,
+        environmentID: $environmentID,
       }) {
           id
       }
@@ -113,13 +113,13 @@ import _ from "lodash"
 )
 
 @graphql(gql`
-  mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $config: Json!, $environmentId: String!) {
+  mutation DeleteExtension ($id: String, $projectID: String!, $extensionSpecID: String!, $config: JSON!, $environmentID: String!) {
       deleteExtension(extension:{
         id: $id,
-        projectId: $projectId,
-        extensionSpecId: $extensionSpecId,
+        projectID: $projectID,
+        extensionSpecID: $extensionSpecID,
         config: $config,
-        environmentId: $environmentId,
+        environmentID: $environmentID,
       }) {
           id
       }
@@ -210,10 +210,10 @@ export default class Extensions extends React.Component {
       this.props.updateExtension({
         variables: {
           'id': extension.id,
-          'projectId': this.props.data.project.id,
-          'extensionSpecId': extension.extensionSpec.id,
+          'projectID': this.props.data.project.id,
+          'extensionSpecID': extension.extensionSpec.id,
           'config': formValues,
-          'environmentId': this.props.store.app.currentEnvironment.id,
+          'environmentID': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
         this.props.data.refetch()
@@ -222,10 +222,10 @@ export default class Extensions extends React.Component {
     } else {
       this.props.createExtension({
         variables: {
-          'projectId': this.props.data.project.id,
-          'extensionSpecId': extension.id,
+          'projectID': this.props.data.project.id,
+          'extensionSpecID': extension.id,
           'config': formValues,
-          'environmentId': this.props.store.app.currentEnvironment.id,
+          'environmentID': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
         this.props.data.refetch()
@@ -244,10 +244,10 @@ export default class Extensions extends React.Component {
     this.props.deleteExtension({
       variables: {
         'id': extension.id,
-        'projectId': this.props.data.project.id,
-        'extensionSpecId': extension.extensionSpec.id,
+        'projectID': this.props.data.project.id,
+        'extensionSpecID': extension.extensionSpec.id,
         'config': extension.config,
-        'environmentId': this.props.store.app.currentEnvironment.id,
+        'environmentID': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
       this.props.data.refetch()
@@ -467,15 +467,15 @@ export default class Extensions extends React.Component {
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
     this.form.update({ config: config })
 
-    const envVarOptions = this.props.data.project.environmentVariables.map(function(envVar){
+    const secretOptions = this.props.data.project.secrets.map(function(secret){
       return {
-        key: envVar.id,
-        value: "(" + envVar.key + ") => " + envVar.value,
+        key: secret.id,
+        value: "(" + secret.key + ") => " + secret.value,
       }
     })
 
     this.form.state.extra({
-      config: envVarOptions,
+      config: secretOptions,
     })
 
     

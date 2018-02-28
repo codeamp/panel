@@ -15,7 +15,7 @@ import ExpandLess from 'material-ui-icons/ExpandLess';
 import ExpandMore from 'material-ui-icons/ExpandMore';
 import ServiceSpecIcon from 'material-ui-icons/Description';
 import ExtensionIcon from 'material-ui-icons/Extension';
-import EnvironmentVariableIcon from 'material-ui-icons/VpnKey';
+import SecretIcon from 'material-ui-icons/VpnKey';
 import EnvironmentIcon from 'material-ui-icons/Public';
 
 @withRouter
@@ -74,10 +74,10 @@ export default class LeftNav extends React.Component {
                   <ListItemText inset primary="Environments" />
                 </ListItem>
               </NavLink>
-              <NavLink to="/admin/envVars" exact activeClassName={styles.active}>
+              <NavLink to="/admin/secrets" exact activeClassName={styles.active}>
                 <ListItem button>
                   <ListItemIcon>
-                    <EnvironmentVariableIcon />
+                    <SecretIcon />
                   </ListItemIcon>
                   <ListItemText inset primary="Environment Variables" />
                 </ListItem>

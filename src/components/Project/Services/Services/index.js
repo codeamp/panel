@@ -33,8 +33,8 @@ import Grow from 'material-ui/transitions/Grow';
 
 @inject("store") 
 @graphql(gql`
-query Project($slug: String, $environmentId: String) {
-  project(slug: $slug, environmentId: $environmentId) {
+query Project($slug: String, $environmentID: String) {
+  project(slug: $slug, environmentID: $environmentID) {
     id
     services {
       id
@@ -46,10 +46,7 @@ query Project($slug: String, $environmentId: String) {
       }
       count
       type
-      containerPorts {
-        port
-        protocol
-      }
+      ports
       created
     }
   }
@@ -66,60 +63,60 @@ query Project($slug: String, $environmentId: String) {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
 
 // Mutations
 @graphql(gql`
-mutation CreateService($projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!) {
     createService(service:{
-    projectId: $projectId,
+    projectID: $projectID,
     command: $command,
     name: $name,
-    serviceSpecId: $serviceSpecId,
+    serviceSpecID: $serviceSpecID,
     count: $count,
     type: $type,
-    containerPorts: $containerPorts,
-    environmentId: $environmentId,
+    ports: $ports,
+    environmentID: $environmentID,
     }) {
       id
     }
 }`, { name: "createService" })
 
 @graphql(gql`
-mutation UpdateService($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-    $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!) {
     updateService(service:{
     id: $id,
-    projectId: $projectId,
+    projectID: $projectID,
     command: $command,
     name: $name,
-    serviceSpecId: $serviceSpecId,
+    serviceSpecID: $serviceSpecID,
     count: $count,
     type: $type,
-    containerPorts: $containerPorts,
-    environmentId: $environmentId,
+    ports: $ports,
+    environmentID: $environmentID,
     }) {
       id
     }
 }`, { name: "updateService" })
 
 @graphql(gql`
-mutation DeleteService ($id: String, $projectId: String!, $command: String!, $name: String!, $serviceSpecId: String!,
-  $count: String!, $type: String!, $containerPorts: [ContainerPortInput!], $environmentId: String!) {
+mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+  $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!) {
   deleteService(service:{
   id: $id,
-  projectId: $projectId,
+  projectID: $projectID,
   command: $command,
   name: $name,
-  serviceSpecId: $serviceSpecId,
+  serviceSpecID: $serviceSpecID,
   count: $count,
   type: $type,
-  containerPorts: $containerPorts,
-  environmentId: $environmentId,
+  ports: $ports,
+  environmentID: $environmentID,
   }) {
     id
   }
@@ -146,57 +143,57 @@ export default class Services extends React.Component {
     const fields = [
       'id',
       'name',
-      'serviceSpecId',
+      'serviceSpecID',
       'count',
       'command',
       'type',
-      'projectId',
-      'containerPorts',
-      'containerPorts[]',
-      'containerPorts[].port',
-      'containerPorts[].protocol',
-      'environmentId',
+      'projectID',
+      'ports',
+      'ports[]',
+      'ports[].port',
+      'ports[].protocol',
+      'environmentID',
       'index',
     ];
 
     const rules = {
       'name': 'string|required',
-      'serviceSpecId': 'string|required',
+      'serviceSpecID': 'string|required',
       'command': 'string|required',
       'count': 'numeric|required|min:0',
-      'containerPorts[].port': 'numeric|required|between:1,65535',
-      'containerPorts[].protocol': 'required',
+      'ports[].port': 'numeric|required|between:1,65535',
+      'ports[].protocol': 'required',
     };
 
     const labels = {
       'name': 'Name',
-      'serviceSpecId': 'Service Spec',
+      'serviceSpecID': 'Service Spec',
       'count': 'Count',
       'command': 'Command',
-      'containerPorts': 'Container Ports',
-      'containerPorts[].port': 'Port',
-      'containerPorts[].protocol': 'Protocol',
+      'ports': 'Container Ports',
+      'ports[].port': 'Port',
+      'ports[].protocol': 'Protocol',
     };
 
     const initials = {
       'name': '',
       'command': '',
-      'projectId': '',
+      'projectID': '',
       'type': 'general',
-      'containerPorts[].protocol': 'TCP',
+      'ports[].protocol': 'TCP',
       'count': 0,
-      'environmentId': this.props.store.app.currentEnvironment.id,
+      'environmentID': this.props.store.app.currentEnvironment.id,
     }
 
     const types = {
       'count': 'number',
-      'containerPorts[].port': 'number',
+      'ports[].port': 'number',
     };
 
     const keys = {};
 
     const extra = {
-      'containerPorts[].protocol': ['TCP', 'UDP']
+      'ports[].protocol': ['TCP', 'UDP']
     };
 
     const $hooks = {
@@ -221,9 +218,9 @@ export default class Services extends React.Component {
     };
 
     const hooks = {
-      'containerPorts': $hooks,
-      'serviceSpecId': $hooks,
-      'containerPorts[]': $hooks,
+      'ports': $hooks,
+      'serviceSpecID': $hooks,
+      'ports[]': $hooks,
     };
 
     const plugins = { dvr: validatorjs };
@@ -277,14 +274,14 @@ export default class Services extends React.Component {
     this.form.$('name').set(service.name);
     this.form.$('count').set(service.count);
     this.form.$('command').set(service.command);
-    this.form.$('serviceSpecId').set(service.serviceSpec.id);
-    this.form.$('containerPorts').set(service.containerPorts);
+    this.form.$('serviceSpecID').set(service.serviceSpec.id);
+    this.form.$('ports').set(service.ports);
     this.form.$('type').set(service.type);
     this.form.$('id').set(service.id);
     this.form.$('index').set(index);
 
     var that = this
-    that.form.update({ containerPorts: service.containerPorts });
+    that.form.update({ ports: service.ports });
 
     this.setState({ drawerOpen: true })
   }
@@ -316,7 +313,7 @@ export default class Services extends React.Component {
         </div>
       )
     }
-    this.form.$('projectId').set(project.id)
+    this.form.$('projectID').set(project.id)
     this.form.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
         return {
@@ -371,7 +368,7 @@ export default class Services extends React.Component {
                     <TableCell> { service.count } </TableCell>
                     <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
                     <TableCell> { service.type }</TableCell>
-                    <TableCell> { service.containerPorts.length}</TableCell>
+                    <TableCell> { service.ports.length}</TableCell>
                     <TableCell> { service.serviceSpec.name}</TableCell>
                     <TableCell> { service.created}</TableCell>
                   </TableRow>
@@ -436,20 +433,20 @@ export default class Services extends React.Component {
                       <InputField field={this.form.$('count')} fullWidth={true}/>
                     </Grid>
                     <Grid item xs={9}>
-                      <SelectField field={this.form.$('serviceSpecId')} extraKey={"serviceSpecs"} fullWidth={true} />
+                      <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true} />
                     </Grid>
                     <Grid item xs={12}>
                         <div>
                           <Grid container spacing={24}>
-                              { this.form.$('containerPorts').value.length > 0 &&
+                              { this.form.$('ports').value.length > 0 &&
                               <Grid item xs={12}>
                               <Typography variant="subheading"> Container Ports </Typography>
                               </Grid>
                               }
-                              { this.form.$('containerPorts').value.length > 0 &&
+                              { this.form.$('ports').value.length > 0 &&
                               <Grid item xs={12}>
                               <div>
-                                  {this.form.$('containerPorts').map(port =>
+                                  {this.form.$('ports').map(port =>
                                     <Grid key={port.id} container spacing={24}>
                                       <Grid item xs={4}>
                                         <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
@@ -470,7 +467,7 @@ export default class Services extends React.Component {
 
 
                               <Grid item xs={12}>
-                              <Button variant="raised" type="secondary" onClick={this.form.$('containerPorts').onAdd}>
+                              <Button variant="raised" type="secondary" onClick={this.form.$('ports').onAdd}>
                                   Add container port
                               </Button>
                               </Grid>

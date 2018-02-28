@@ -13,8 +13,8 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 @graphql(gql`
-query Project($slug: String, $environmentId: String){
-  project(slug: $slug, environmentId: $environmentId) {
+query Project($slug: String, $environmentID: String){
+  project(slug: $slug, environmentID: $environmentID) {
     id
     services {
       id
@@ -38,7 +38,7 @@ query Project($slug: String, $environmentId: String){
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
@@ -142,10 +142,10 @@ export default class LoadBalancer extends React.Component {
 
     // this.props.createExtension({
     //   variables: {
-    //     'projectId': this.props.project.id,
-    //     'extensionSpecId': this.props.extensionSpec.id,
+    //     'projectID': this.props.project.id,
+    //     'extensionSpecID': this.props.extensionSpec.id,
     //     'config': userConfig,
-    //     'environmentId': this.props.store.app.currentEnvironment.id,
+    //     'environmentID': this.props.store.app.currentEnvironment.id,
     //   }
     // }).then(({ data }) => {
     //   this.setState({ addButtonDisabled: false })

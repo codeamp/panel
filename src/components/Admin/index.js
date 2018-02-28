@@ -6,7 +6,7 @@ import styles from './style.module.css';
 
 import ServiceSpecs from './ServiceSpecs';
 import ExtensionSpecs from './ExtensionSpecs';
-import EnvironmentVariables from './EnvironmentVariables';
+import Secrets from './Secrets';
 import Environments from './Environments';
 
 @inject("store") @observer
@@ -21,8 +21,8 @@ export default class Admin extends React.Component {
             <ServiceSpecs/>
           )}/>
 
-          <Route path='/admin/envVars' render={(props) => (
-            <EnvironmentVariables/>
+          <Route path='/admin/secrets' render={(props) => (
+            <Secrets/>
           )} />
 
           <Route path='/admin/extensionSpecs' render={(props) => (

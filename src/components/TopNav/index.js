@@ -218,6 +218,7 @@ export default class TopNav extends React.Component {
                       onClose={this.handleEnvironmentClose.bind(this)}>
                       {environments.map((env) => {
                       return (<MenuItem 
+                        key={env.id}
                         onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
                         {env.name}
                       </MenuItem>)

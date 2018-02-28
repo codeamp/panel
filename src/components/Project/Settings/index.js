@@ -14,8 +14,8 @@ import CreateProject from '../../Create';
 @inject("store") @observer
 
 @graphql(gql`
-  query Project($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
+  query Project($slug: String, $environmentID: String){
+    project(slug: $slug, environmentID: $environmentID) {
       id
       name
       slug
@@ -37,14 +37,14 @@ import CreateProject from '../../Create';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentId: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentId: $environmentId}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID}) {
       id
       name
       slug
@@ -57,8 +57,8 @@ import CreateProject from '../../Create';
 `, { name: "updateProject"})
 
 @graphql(gql`
-  mutation Mutation($id: String!, $environmentId: String!, $projectId: String!,  $gitBranch: String!) {
-    createEnvironmentBasedProjectBranch(environmentBasedProjectBranch: { id: $id, projectId: $projectId, environmentId: $environmentId, gitBranch: $gitBranch}) {
+  mutation Mutation($id: String!, $environmentID: String!, $projectID: String!,  $gitBranch: String!) {
+    createEnvironmentBasedProjectBranch(environmentBasedProjectBranch: { id: $id, projectID: $projectID, environmentID: $environmentID, gitBranch: $gitBranch}) {
       id
       gitBranch
     }
@@ -66,8 +66,8 @@ import CreateProject from '../../Create';
 `, { name: "createEnvironmentBasedProjectBranch"})
 
 @graphql(gql`
-  mutation Mutation($id: String!, $environmentId: String!, $projectId: String!,  $gitBranch: String!) {
-    updateEnvironmentBasedProjectBranch(environmentBasedProjectBranch: { id: $id, projectId: $projectId, environmentId: $environmentId, gitBranch: $gitBranch}) {
+  mutation Mutation($id: String!, $environmentID: String!, $projectID: String!,  $gitBranch: String!) {
+    updateEnvironmentBasedProjectBranch(environmentBasedProjectBranch: { id: $id, projectID: $projectID, environmentID: $environmentID, gitBranch: $gitBranch}) {
       id
       gitBranch
     }
@@ -84,7 +84,7 @@ export default class Settings extends React.Component {
       'id',
       'gitProtocol',
       'gitUrl',
-      'environmentId',
+      'environmentID',
     ];
     const rules = {};
     const labels = {
@@ -104,8 +104,8 @@ export default class Settings extends React.Component {
     const fields = [
       'id',
       'gitBranch',
-      'environmentId',
-      'projectId',
+      'environmentID',
+      'projectID',
     ];
     const rules = {
       'gitBranch': 'string|required',
@@ -137,7 +137,7 @@ export default class Settings extends React.Component {
   }
 
   createEnvBasedProjectBranch(form){
-    if(form.values()['gitBranch'] !== "" && form.values()['projectId'] !== "" && form.values()['environmentId'] !== ""){
+    if(form.values()['gitBranch'] !== "" && form.values()['projectID'] !== "" && form.values()['environmentID'] !== ""){
       this.props.createEnvironmentBasedProjectBranch({
         variables: form.values(),
       }).then(({data}) => {
@@ -160,8 +160,8 @@ export default class Settings extends React.Component {
 
   onUpdateEnvironmentBasedProjectBranch(e){
     if(!this.envBasedProjectBranchForm.$('id').value){
-      this.envBasedProjectBranchForm.$('environmentId').set(this.props.store.app.currentEnvironment.id)
-      this.envBasedProjectBranchForm.$('projectId').set(this.props.data.project.id)
+      this.envBasedProjectBranchForm.$('environmentID').set(this.props.store.app.currentEnvironment.id)
+      this.envBasedProjectBranchForm.$('projectID').set(this.props.data.project.id)
       this.envBasedProjectBranchForm.onSubmit(e, { onSuccess: this.createEnvBasedProjectBranch.bind(this), onError: this.onError.bind(this) })
     } else {
       this.envBasedProjectBranchForm.onSubmit(e, { onSuccess: this.updateEnvBasedProjectBranch.bind(this), onError: this.onError.bind(this) })
@@ -189,14 +189,14 @@ export default class Settings extends React.Component {
       this.form.$('id').set(project.id)
       this.form.$('gitProtocol').set(project.gitProtocol)
       this.form.$('gitUrl').set(project.gitUrl)
-      this.form.$('environmentId').set(currentEnvironment.id)
+      this.form.$('environmentID').set(currentEnvironment.id)
       this.setState({ notSet: false })
     }
 
     if(project.environmentBasedProjectBranch){
       this.envBasedProjectBranchForm.$('id').set(project.environmentBasedProjectBranch.id)
-      this.envBasedProjectBranchForm.$('environmentId').set(project.environmentBasedProjectBranch.environmentId)
-      this.envBasedProjectBranchForm.$('projectId').set(project.environmentBasedProjectBranch.projectId)
+      this.envBasedProjectBranchForm.$('environmentID').set(project.environmentBasedProjectBranch.environmentID)
+      this.envBasedProjectBranchForm.$('projectID').set(project.environmentBasedProjectBranch.projectID)
       this.envBasedProjectBranchForm.$('gitBranch').set(project.environmentBasedProjectBranch.gitBranch)
     }
 

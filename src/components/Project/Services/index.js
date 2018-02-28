@@ -5,7 +5,7 @@ import AppBar from 'material-ui/AppBar';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import ServicesComponent from './Services';
-import EnvironmentVariables from './EnvironmentVariables';
+import Secrets from './Secrets';
 
 
 function TabContainer(props) {
@@ -39,7 +39,7 @@ export default class Services extends React.Component {
           </Tabs>
         </AppBar>
         {value === 0 && <TabContainer><ServicesComponent match={match} /></TabContainer>}
-        {value === 1 && <TabContainer><EnvironmentVariables match={match} /></TabContainer>}
+        {value === 1 && <TabContainer><Secrets match={match} /></TabContainer>}
       </div>
       )
     }

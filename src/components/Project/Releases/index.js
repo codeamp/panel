@@ -68,8 +68,8 @@ class ReleaseView extends React.Component {
 
 @inject("store") @observer
 @graphql(gql`
-  query Project($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
+  query Project($slug: String, $environmentID: String){
+    project(slug: $slug, environmentID: $environmentID) {
       id
       name
       slug
@@ -171,14 +171,14 @@ class ReleaseView extends React.Component {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
 
 @graphql(gql`
-mutation Mutation($id: String, $headFeatureId: String!, $projectId: String!, $environmentId: String!) {
-  createRelease(release: { id: $id, headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
+mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $environmentID: String!) {
+  createRelease(release: { id: $id, headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID }) {
     headFeature {
       message
     }
@@ -298,7 +298,7 @@ export default class Releases extends React.Component {
       })
     } else if(deployAction === 'Redeploy') {
       createRelease({
-        variables: { id: release.id, headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
+        variables: { id: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
       }).then(({data}) => {
         refetch()
       }).catch(function(err){
