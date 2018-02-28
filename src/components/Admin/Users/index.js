@@ -122,8 +122,6 @@ export default class Users extends React.Component {
   }
 
   onSuccess(form){
-    console.log('onSuccess', form.values())
-    console.log(form.$('id').value, form.$('permissions').value)
     this.props.updateUserPermissions({
       variables: { userId: form.$('id').value, permissions: form.$('permissions').value },
     }).then(({data}) => {
@@ -141,10 +139,6 @@ export default class Users extends React.Component {
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false })
   }
 
-  handleDelete(){
-    console.log('handleDelete')
-  }
-
   // This creates a map of all available permissions
   // for the user to checkbox for a given user and checks
   // any permissions that the given user already has
@@ -153,7 +147,6 @@ export default class Users extends React.Component {
     let checked = false
     var self = this
     permissions.map(function(permission){
-      console.log(permission)
       // insert into form fields with user permission value 
       checked = false
       if(userPermissions.includes(permission)){
@@ -172,8 +165,6 @@ export default class Users extends React.Component {
         </div>
       )
     }
-
-    console.log(users)
 
     var self = this;
     return (
