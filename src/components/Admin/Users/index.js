@@ -14,6 +14,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import InputField from 'components/Form/input-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
 import validatorjs from 'validatorjs';
@@ -30,53 +31,26 @@ const inlineStyles = {
 }
 
 @graphql(gql`
-    query {
-      users {
-        id
-        email
-        permissions
-        created
-      }
+  query {
+    users {
+      id
+      email
+      permissions
+      created
     }
+    permissions
+  }
 `)
 
-// @graphql(gql`
-//   mutation CreateUser($name: String!, $color: String!) {
-//       createEnvironment(environment:{
-//         name: $name
-//         color: $color,
-//       }) {
-//           id
-//           name
-//       }
-//   }
-// `, { name: "createEnvironment" })
+@graphql(gql`
+mutation UpdateUserPermissions($userId: String!, $permissions:[Json!]!) {
+    updateUserPermissions(userPermissions:{
+      userId: $userId,
+      permissions: $permissions,
+    })
+}
+`, { name: "updateUserPermissions" })
 
-// @graphql(gql`
-// mutation UpdateEnvironment($id: String!, $name: String!, $color: String!) {
-//     updateEnvironment(environment:{
-//     id: $id,
-//     name: $name,
-//     color: $color,
-//     }) {
-//         id
-//         name
-//     }
-// }
-// `, { name: "updateEnvironment" })
-
-// @graphql(gql`
-// mutation DeleteEnvironment ($id: String!, $name: String!, $color: String!) {
-//     deleteEnvironment(environment:{
-//     id: $id,
-//     name: $name,
-//     color: $color,
-//     }) {
-//         id
-//         name
-//     }
-// }
-// `, { name: "deleteEnvironment" })
 
 @observer
 export default class Users extends React.Component {
@@ -86,64 +60,76 @@ export default class Users extends React.Component {
       saving: false,
       drawerOpen: false,
       dialogOpen: false,
+      currentUserPermissionsMap: {},
     }
   }
 
-  componentWillMount(){
-    const initials = {}
+  createUsersForm(){
     const fields = [
       'id',
       'email',
-      'value',
       'created',
+      'permissions',
+      'permissions[].permission',
+      'permissions[].checked',
     ];
     const rules = {
       'email': 'string|required',
     };
     const labels = {
       'email': 'Email',
-      'value': 'Permissions',
     };
     const types = {
+      'permissions[].checked': 'checkbox',
     };
-    const keys = {
-    };
+    const keys = {};
     const disabled = {
       'name': false,
-      'value': false,
+    }
+    const initials = {
+      'permissions': [],
+    }    
+    const defaults = {
+      'permissions': [],
     }
     const extra = {}
     const hooks = {};
     const plugins = { dvr: validatorjs };
 
-    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
+    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, defaults, extra, hooks, types, keys }, { plugins });    
+  }
+
+  componentWillMount(){
+    this.createUsersForm()
   }
 
   onSubmit(e) {
     this.setState({ saving: true })
-    console.log(this.form.values())
-    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
-  }
-
-  onError(form){
-    this.setState({ saving: false })
+    this.onSuccess(this.form)
   }
 
   onClick(envIdx){
-
-    this.form.clear()
-
+    this.createUsersForm()
     if(envIdx >= 0){
       this.form.$('email').set(this.props.data.users[envIdx].email)
       this.form.$('email').set('disabled', true)
-      this.form.$('value').set(this.props.data.users[envIdx].permissions.slice(1))
+      // Create permissions map
+      // permission -> does user have this permission checked?
+      this.createPermissionsMap(this.props.data.permissions, this.props.data.users[envIdx].permissions)
       this.form.$('id').set(this.props.data.users[envIdx].id)
       this.openDrawer()
     }
   }
 
   onSuccess(form){
-    console.log('onSuccess')
+    console.log('onSuccess', form.values())
+    console.log(form.$('id').value, form.$('permissions').value)
+    this.props.updateUserPermissions({
+      variables: { userId: form.$('id').value, permissions: form.$('permissions').value },
+    }).then(({data}) => {
+      this.props.data.refetch()
+      this.closeDrawer()
+    });
   }
 
   openDrawer(){
@@ -151,7 +137,7 @@ export default class Users extends React.Component {
   }
 
   closeDrawer(){
-    this.form.clear()
+    this.form = null
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false })
   }
 
@@ -159,8 +145,26 @@ export default class Users extends React.Component {
     console.log('handleDelete')
   }
 
+  // This creates a map of all available permissions
+  // for the user to checkbox for a given user and checks
+  // any permissions that the given user already has
+  createPermissionsMap(permissions, userPermissions) {
+    let permissionsMap = {}
+    let checked = false
+    var self = this
+    permissions.map(function(permission){
+      console.log(permission)
+      // insert into form fields with user permission value 
+      checked = false
+      if(userPermissions.includes(permission)){
+        checked = true
+      }
+      self.form.$('permissions').add({ "permission": permission, "checked": checked})
+    })
+  }
+
   render() {
-    const { loading, users } = this.props.data;
+    const { loading, users, permissions } = this.props.data;
     if(loading){
       return (
         <div>
@@ -169,8 +173,9 @@ export default class Users extends React.Component {
       )
     }
 
-    var self = this;
+    console.log(users)
 
+    var self = this;
     return (
       <div>
         <Paper className={styles.tablePaper}>
@@ -237,12 +242,20 @@ export default class Users extends React.Component {
               <form>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
-                    <Grid item xs={12}>
-                      <InputField field={this.form.$('email')} fullWidth={true} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <InputField field={this.form.$('value')} fullWidth={true} />
-                    </Grid>
+                    {this.form && 
+                      <Grid item xs={12}>
+                        <Grid item xs={12}>
+                          <InputField field={this.form.$('email')} fullWidth={true} />
+                        </Grid>
+                        {this.form.$('permissions').map(function(permission){
+                          return (
+                            <Grid item xs={12}>
+                              <CheckboxField field={permission.$('checked')} label={permission.value["permission"]} fullWidth={true} />
+                            </Grid>                        
+                          )
+                        })}
+                      </Grid>
+                    }
                     <Grid item xs={12}>
                       <Button color="primary"
                         className={styles.buttonSpacing}
@@ -263,23 +276,24 @@ export default class Users extends React.Component {
               </form>
             </div>
         </Drawer>
-
-        <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-          <DialogTitle>{"Are you sure you want to delete " + this.form.values()['name'] + "?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {"This will delete the environment " + this.form.values()['name'] + "."}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=>this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={()=>this.handleDelete()} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {this.form &&
+          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+            <DialogTitle>{"Are you sure you want to delete " + this.form.values()['name'] + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"This will delete the environment " + this.form.values()['name'] + "."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=>this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={()=>this.handleDelete()} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
       </div>
     )
   }

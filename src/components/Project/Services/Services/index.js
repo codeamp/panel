@@ -444,37 +444,35 @@ export default class Services extends React.Component {
                           <div>
                             <Grid container spacing={24}>
                                 { this.form.$('containerPorts').value.length > 0 &&
-                                <Grid item xs={12}>
-                                <Typography variant="subheading"> Container Ports </Typography>
-                                </Grid>
+                                  <Grid item xs={12}>
+                                    <Typography variant="subheading"> Container Ports </Typography>
+                                  </Grid>
                                 }
                                 { this.form.$('containerPorts').value.length > 0 &&
-                                <Grid item xs={12}>
-                                <div>
-                                    {this.form.$('containerPorts').map(port =>
-                                      <Grid key={port.id} container spacing={24}>
-                                        <Grid item xs={4}>
-                                          <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                          <RadioField field={port.$('protocol')} />
-                                        </Grid>
-                                        <Grid item xs={1}>
-                                          <IconButton>
-                                            <CloseIcon onClick={port.onDel} />
-                                          </IconButton>
-                                        </Grid>
-                                      </Grid>
-                                    )}
-                                </div>
-                                </Grid>
+                                  <Grid item xs={12}>
+                                    <div>
+                                        {this.form.$('containerPorts').map(port =>
+                                          <Grid key={port.id} container spacing={24}>
+                                            <Grid item xs={4}>
+                                              <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                              <RadioField field={port.$('protocol')} />
+                                            </Grid>
+                                            <Grid item xs={1}>
+                                              <IconButton>
+                                                <CloseIcon onClick={port.onDel} />
+                                              </IconButton>
+                                            </Grid>
+                                          </Grid>
+                                        )}
+                                    </div>
+                                  </Grid>
                                 }
-
-
                                 <Grid item xs={12}>
-                                <Button variant="raised" type="secondary" onClick={this.form.$('containerPorts').onAdd}>
-                                    Add container port
-                                </Button>
+                                  <Button variant="raised" type="secondary" onClick={this.form.$('containerPorts').onAdd}>
+                                      Add container port
+                                  </Button>
                                 </Grid>
                             </Grid>
                           </div>
