@@ -36,7 +36,7 @@ const inlineStyles = {
 
 @graphql(gql`
 query {
-  extensionSpecs {
+  extensions {
     id
     type
     key
@@ -70,8 +70,8 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
-    createExtensionSpec(extensionSpec:{
+mutation CreateExtension ($name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+    createExtension(extension:{
       name: $name,
       key: $key,
       type: $type,
@@ -83,12 +83,12 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $en
         name
     }
 }
-`, { name: "createExtensionSpec" })
+`, { name: "createExtension" })
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
-    updateExtensionSpec(extensionSpec:{
+mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+    updateExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
@@ -101,12 +101,12 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type:
         name
     }
 }
-`, { name: "updateExtensionSpec" })
+`, { name: "updateExtension" })
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
-    deleteExtensionSpec(extensionSpec:{
+mutation DeleteExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+    deleteExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
@@ -119,13 +119,13 @@ mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type:
         name
     }
 }
-`, { name: "deleteExtensionSpec" })
+`, { name: "deleteExtension" })
 
 
 
 @inject("store") @observer
 
-export default class ExtensionSpecs extends React.Component {
+export default class Extensions extends React.Component {
   constructor(props){
     super(props)
     this.state = {
@@ -221,14 +221,14 @@ export default class ExtensionSpecs extends React.Component {
     this.setState({ saving: true })
 
     if(this.form.values().id === ''){
-      this.props.createExtensionSpec({
+      this.props.createExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer()
       });
     } else {
-      this.props.updateExtensionSpec({
+      this.props.updateExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
@@ -240,7 +240,7 @@ export default class ExtensionSpecs extends React.Component {
   handleDeleteExtension() {
     this.setState({ saving: true })
     var that = this
-    this.props.deleteExtensionSpec({
+    this.props.deleteExtension({
       variables: this.form.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
@@ -257,7 +257,7 @@ export default class ExtensionSpecs extends React.Component {
   }
 
   render() {
-    const { loading, extensionSpecs, environments, secrets } = this.props.data;
+    const { loading, extensions, environments, secrets } = this.props.data;
 
     if(loading){
       return (
@@ -294,7 +294,7 @@ export default class ExtensionSpecs extends React.Component {
               <Toolbar>
                 <div>
                   <Typography variant="title">
-                    Extension Specs
+                    Extensions
                   </Typography>
                 </div>
               </Toolbar>
@@ -316,7 +316,7 @@ export default class ExtensionSpecs extends React.Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {extensionSpecs.map( (extension, index) => {
+                  {extensions.map( (extension, index) => {
                     return (
                       <TableRow
                         hover
@@ -351,7 +351,7 @@ export default class ExtensionSpecs extends React.Component {
               <AppBar position="static" color="default">
                 <Toolbar>
                   <Typography variant="title" color="inherit">
-                    Extension Spec
+                    Extensions
                   </Typography>
                 </Toolbar>
               </AppBar>
@@ -398,7 +398,7 @@ export default class ExtensionSpecs extends React.Component {
                     </Button>
                   </Grid>
                   {/* <Grid item xs={12}>
-                    <Typography variant="subheading"> Environment Variables </Typography>
+                    <Typography variant="subheading">Secrets</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     {this.form.$('config').map(function(kv){
@@ -447,9 +447,9 @@ export default class ExtensionSpecs extends React.Component {
               </form>
             </div>
         </Drawer>
-        {extensionSpecs[this.form.values()['index']] != null &&
+        {extensions[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + extensionSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogTitle>{"Ae you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will delete the extension spec.

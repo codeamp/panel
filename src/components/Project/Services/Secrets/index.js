@@ -305,7 +305,7 @@ export default class Secrets extends React.Component {
         <Paper className={styles.tablePaper}>
           <Toolbar>
             <Typography variant="title">
-              Environment Variables
+              Secrets
             </Typography>
           </Toolbar>
           <Table>

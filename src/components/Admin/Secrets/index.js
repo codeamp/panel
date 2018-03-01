@@ -313,7 +313,7 @@ export default class Secrets extends React.Component {
           <Toolbar>
             <div>
               <Typography variant="title">
-                Environment Variables
+                Secrets
               </Typography>
             </div>
           </Toolbar>

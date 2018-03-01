@@ -89,7 +89,7 @@ class ReleaseView extends React.Component {
         releaseExtensions {
             id
             extension {
-                extensionSpec {
+                extension {
                     name
                 }
             }
@@ -138,7 +138,7 @@ class ReleaseView extends React.Component {
             id
             artifacts
             extension {
-              extensionSpec {
+              extension {
                 name
               }
             }
@@ -425,7 +425,7 @@ export default class Releases extends React.Component {
                               <TableRow
                                 tabIndex={-1}
                                 key={re.id}>
-                                <TableCell> { re.extension.extensionSpec.name } </TableCell>
+                                <TableCell> { re.extension.extension.name } </TableCell>
                                 <TableCell> { stateIcon } </TableCell>
                                 <TableCell>
                                     {re.stateMessage}

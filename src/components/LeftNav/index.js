@@ -80,7 +80,7 @@ export default class LeftNav extends React.Component {
                   <ListItemIcon>
                     <SecretIcon />
                   </ListItemIcon>
-                  <ListItemText inset primary="Environment Variables" />
+                  <ListItemText inset primary="Secrets" />
                 </ListItem>
               </NavLink>
               <NavLink to="/admin/serviceSpecs" exact activeClassName={styles.active}>
@@ -91,12 +91,12 @@ export default class LeftNav extends React.Component {
                   <ListItemText inset primary="Service Specs" />
                 </ListItem>
               </NavLink>
-              <NavLink to="/admin/extensionSpecs" exact activeClassName={styles.active}>
+              <NavLink to="/admin/extensions" exact activeClassName={styles.active}>
                 <ListItem button>
                   <ListItemIcon>
                     <ExtensionIcon />
                   </ListItemIcon>
-                  <ListItemText inset primary="Extension Specs" />
+                  <ListItemText inset primary="Extensions" />
                 </ListItem>
               </NavLink>
               <NavLink to="/admin/users" exact activeClassName={styles.active}>

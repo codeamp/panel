@@ -5,7 +5,7 @@ import { Route, Switch } from "react-router-dom";
 import styles from './style.module.css';
 
 import ServiceSpecs from './ServiceSpecs';
-import ExtensionSpecs from './ExtensionSpecs';
+import Extensions from './Extensions';
 import Secrets from './Secrets';
 import Environments from './Environments';
 import Users from './Users';
@@ -26,8 +26,8 @@ export default class Admin extends React.Component {
             <Secrets/>
           )} />
 
-          <Route path='/admin/extensionSpecs' render={(props) => (
-            <ExtensionSpecs/>
+          <Route path='/admin/extensions' render={(props) => (
+            <Extensions/>
           )}/>
 
           <Route path='/admin/users' render={(props) => (

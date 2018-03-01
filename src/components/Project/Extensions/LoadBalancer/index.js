@@ -140,7 +140,7 @@ export default class LoadBalancer extends React.Component {
     // this.props.createExtension({
     //   variables: {
     //     'projectID': this.props.project.id,
-    //     'extensionSpecID': this.props.extensionSpec.id,
+    //     'extensionID': this.props.extension.id,
     //     'config': userConfig,
     //     'environmentID': this.props.store.app.currentEnvironment.id,
     //   }
