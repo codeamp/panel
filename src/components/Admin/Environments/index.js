@@ -232,7 +232,7 @@ export default class Environments extends React.Component {
                         </svg>
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toString()}
+                      {new Date(env.created).toDateString()}
                     </TableCell>
                   </TableRow>
                 )
@@ -250,7 +250,7 @@ export default class Environments extends React.Component {
         <Drawer
             anchor="right"
             classes={{
-            paper: styles.list,
+              paper: styles.list,
             }}
             open={this.state.drawerOpen}
         >

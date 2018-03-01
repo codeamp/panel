@@ -10,6 +10,7 @@ import Typography from 'material-ui/Typography';
 import Snackbar from 'material-ui/Snackbar';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
+import Button from 'material-ui/Button';
 import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';
 import Dashboard from 'components/Dashboard';
@@ -44,10 +45,6 @@ export default class App extends React.Component {
     super(props)
     this.state = {
       redirectToLogin: false,
-      snackbar: {
-        open: false,
-        lastCreated: null,
-      },
       drawer: {
         open: false,
         component: null,
@@ -73,22 +70,6 @@ export default class App extends React.Component {
     socket.on('projects', (data) => {
       this.props.data.refetch();
     });
-  }
-
-  handleRequestClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    this.setState({ snackbar: { open: false, lastCreated: this.state.snackbar.lastCreated } });
-  };
-
-  componentDidUpdate = (prevProps, prevState) => {
-    if(prevProps.store.app.snackbar.created !== prevState.snackbar.lastCreated){
-      this.setState({snackbar: {
-        open: true,
-        lastCreated: this.props.store.app.snackbar.created
-      }})
-    }
   }
 
   render() {
@@ -136,7 +117,7 @@ export default class App extends React.Component {
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} {...this.props} />
+              <TopNav projects={projects} {...this.props} />              
             </Grid>
             <Grid item xs={12} className={styles.center}>
               <LeftNav environments={environments} />
@@ -158,23 +139,20 @@ export default class App extends React.Component {
               </div>
             </Grid>
           </Grid>
-
           <Snackbar
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            open={this.state.snackbar.open}
-            autoHideDuration={6000}
+            open={this.props.store.app.snackbar.open}
+            className={styles.snackbar}
+            onClose={() => {this.props.store.app.setSnackbar({ open: false })}}
             SnackbarContentProps={{
               'aria-describedby': 'message-id',
+              className: styles.snackbarContent,
             }}
             message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
-            action={[
-              <IconButton key="close" aria-label="Close" color="inherit" onClick={this.handleRequestClose}>
-                <CloseIcon />
-              </IconButton>,
-            ]}
+            action={
+              <Button color="inherit" size="small" onClick={() => {this.props.store.app.setSnackbar({ open: false })}}>
+                Close
+              </Button>              
+            }
           />
         </div>
 

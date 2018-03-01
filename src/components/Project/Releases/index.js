@@ -45,7 +45,7 @@ class ReleaseView extends React.Component {
               { this.props.release.headFeature.message}
             </Typography>
             <Typography component="p" className={styles.featureAuthor}>
-              by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toString() }
+              by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toDateString() }
             </Typography>
             <br/>
             <Grid item xs={12}>
@@ -172,7 +172,7 @@ class ReleaseView extends React.Component {
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
-    }
+    },
   })
 })
 
@@ -318,6 +318,7 @@ export default class Releases extends React.Component {
 
   render() {
     const { loading, project } = this.props.data;
+    console.log(this.props.data)
 
     if(loading){
       return (<div>Loading...</div>);
@@ -325,36 +326,61 @@ export default class Releases extends React.Component {
     return (
       <div>
         <Grid container spacing={16}>
-          <Grid item xs={12} className={styles.title}>
-            <Typography variant="subheading">
-              <b> Current Release </b>
-            </Typography>
-          </Grid>
           <Grid item xs={12} className={styles.feature}>
-          {project.currentRelease != null &&
-            <ReleaseView
-            key={project.currentRelease.id}
-            release={project.currentRelease}
-            handleOnClick={() => this.handleToggleDrawer(-1)}
-            showFullView={this.state.showCurrentReleaseFullView}
-            />}
+            <Card>
+              <CardContent>
+                <Typography variant="title">
+                  Current Release
+                </Typography>
+              </CardContent>
+            </Card>              
+            {project.currentRelease ?
+              <ReleaseView
+              key={project.currentRelease.id}
+              release={project.currentRelease}
+              handleOnClick={() => this.handleToggleDrawer(-1)}
+              showFullView={this.state.showCurrentReleaseFullView}
+              /> :
+              <Card>
+                <CardContent>
+                  <Typography variant="subheading" style={{ textAlign: "center" }}>
+                    This project has no deployed releases yet.
+                  </Typography>
+                </CardContent>
+              </Card>                          
+              }
           </Grid>
         </Grid>
         <Grid container spacing={16}>
-          <Grid item xs={12} className={styles.title}>
-            <Typography variant="subheading">
-              <b> Releases </b>
-            </Typography>
-          </Grid>
           <Grid item xs={12} className={styles.feature}>
-            {[...Array(project.releases.length)].map((x, i) =>
-              <ReleaseView
-                key={project.releases[i].id}
-                release={project.releases[i]}
-                handleOnClick={() => this.handleToggleDrawer(i)}
-                showFullView={this.state.activeFeatureKey === i} />
-            )}
-          </Grid>
+            <Card>
+              <CardContent>
+                <Typography variant="title">
+                  Releases
+                </Typography>
+              </CardContent>
+            </Card>              
+            {project.releases.length > 0 ?
+              [...Array(project.releases.length)].map((x, i) =>
+                <ReleaseView
+                  key={project.releases[i].id}
+                  release={project.releases[i]}
+                  handleOnClick={() => this.handleToggleDrawer(i)}
+                  showFullView={this.state.activeFeatureKey === i} />
+              )
+              :
+              <Card>
+                <CardContent>
+                  <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                    There are no releases.
+                  </Typography>
+                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+                  Do some work and deploy a feature <strong><a href={"/projects/" + project.slug + "/features"}>here.</a></strong>
+                  </Typography>                  
+                </CardContent>
+              </Card>                          
+              }
+            </Grid>
         </Grid>
         <Drawer
           anchor="right"

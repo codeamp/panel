@@ -26,6 +26,7 @@ class AppStore {
       snackbar: {
         created: null,
         msg: null,
+        open: false,
       },
       url: '',
       connectionHeader: {
@@ -62,6 +63,7 @@ class AppStore {
   setSnackbar = action(params => {
     this.snackbar.created = new Date();
     this.snackbar.msg = params.msg;
+    this.snackbar.open = params.open;
   })
 
   setUser = action(user => {

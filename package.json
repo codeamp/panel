@@ -6,7 +6,7 @@
     "apollo-client-preset": ">=1.0.5",
     "apollo-fetch": ">=0.6.0",
     "apollo-link-context": ">=1.0.3",
-    "apollo-link-error": ">=1.0.3",
+    "apollo-link-error": "^1.0.7",
     "autosuggest-highlight": ">=3.1.1",
     "css-loader": ">=0.28.4",
     "custom-react-scripts": ">=0.1.4",

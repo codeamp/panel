@@ -25,6 +25,10 @@
 	font-size: 12px;
 }
 
+.featureTitle {
+	margin-top: 20px;
+}
+
 .feature {
 	margin-top: -1px;
 	cursor: pointer;

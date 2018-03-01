@@ -133,7 +133,7 @@ export default class ProjectExtensions extends React.Component {
     this.state = {
       extensionDrawer: {
         open: false,
-        extension: null,
+        projectExtension: null,
         formType: "",
       },
       dialogOpen: false,
@@ -155,7 +155,6 @@ export default class ProjectExtensions extends React.Component {
   async openExtensionDrawer(e, extension){
     let component = null
     let formType = null
-    console.log(extension)
     // check typename to know if Extension or ProjectExtension
     if(extension.__typename === "ProjectExtension"){
       component = extension.extension.component;

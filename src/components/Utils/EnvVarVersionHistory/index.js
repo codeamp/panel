@@ -52,7 +52,7 @@ export default class EnvVarVersionHistory extends React.Component {
                         {secret.user.email}
                       </TableCell>
                       <TableCell>
-                        {new Date(secret.created).toString()}
+                        {new Date(secret.created).toDateString()}
                       </TableCell>
                     </TableRow>
                   )
