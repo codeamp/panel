@@ -330,6 +330,10 @@ export default class Secrets extends React.Component {
             </TableHead>
             <TableBody>
               {project.secrets.map(function(secret, idx){
+                let emptyValue
+                if (secret.value == '') {
+                  emptyValue = styles.emptyValue
+                }
                 return (
                   <TableRow
                     hover
@@ -337,7 +341,7 @@ export default class Secrets extends React.Component {
                     onClick={()=> self.onClick(idx)}
                     key={secret.id}>
                     <TableCell>
-                      {secret.key}
+                      <span className={emptyValue}>{secret.key}</span>
                     </TableCell>
                     <TableCell>
                       {secret.type}

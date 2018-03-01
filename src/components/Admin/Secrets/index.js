@@ -345,13 +345,18 @@ export default class Secrets extends React.Component {
             </TableHead>
             <TableBody>
               {secrets.map(function(secret, idx){
+              console.log(secret)
+                let emptyValue
+                if (secret.value == '') {
+                  emptyValue = styles.emptyValue
+                }
                 return (
                   <TableRow
                     hover
                     tabIndex={-1}
                     onClick={()=> self.onClick(idx)}
                     key={secret.id}>
-                    <TableCell>
+                    <TableCell className={emptyValue}>
                       {secret.key}
                     </TableCell>
                     <TableCell>
