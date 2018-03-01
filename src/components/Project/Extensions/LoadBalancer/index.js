@@ -26,10 +26,7 @@ query Project($slug: String, $environmentID: String){
       }
       count
       type
-      containerPorts {
-        port
-        protocol
-      }
+      ports
       created
     }
   }
@@ -246,7 +243,7 @@ export default class LoadBalancer extends React.Component {
     if(this.form.$('service').value){
       project.services.map(function(service){
         if(service.name === self.form.$('service').value){
-          containerPortOptions = service.containerPorts.map(function(cPort){
+          containerPortOptions = service.ports.map(function(cPort){
             return {
               key: cPort.port,
               value: cPort.port

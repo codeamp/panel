@@ -17,6 +17,7 @@ import ServiceSpecIcon from 'material-ui-icons/Description';
 import ExtensionIcon from 'material-ui-icons/Extension';
 import SecretIcon from 'material-ui-icons/VpnKey';
 import EnvironmentIcon from 'material-ui-icons/Public';
+import UsersIcon from 'material-ui-icons/AccountCircle';
 
 @withRouter
 @inject("store") @observer
@@ -98,6 +99,14 @@ export default class LeftNav extends React.Component {
                   <ListItemText inset primary="Extension Specs" />
                 </ListItem>
               </NavLink>
+              <NavLink to="/admin/users" exact activeClassName={styles.active}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <UsersIcon />
+                  </ListItemIcon>
+                  <ListItemText inset primary="Users" />
+                </ListItem>
+              </NavLink>                
             </Collapse>
           </List>
           <Divider/>

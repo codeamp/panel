@@ -1,13 +1,11 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 import Typography from 'material-ui/Typography';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
-import Toolbar from 'material-ui/Toolbar';
 import { CircularProgress } from 'material-ui/Progress';
 import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql } from 'react-apollo';
@@ -25,7 +23,7 @@ class InitPrivateProjectComponent extends React.Component {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent>
-          <Typography type="headline" component="h3">
+          <Typography variant="headline">
             Setup the Git Deploy Key
           </Typography>
           <br/>
@@ -35,7 +33,7 @@ class InitPrivateProjectComponent extends React.Component {
             {this.props.rsaPublicKey}
           </Typography>
           <br/><br/>
-          <Typography type="body1">
+          <Typography variant="body1">
             <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
               Click here to learn how to add deploy keys to Github.
             </a>
@@ -51,7 +49,7 @@ class InitPublicProjectComponent extends React.Component {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent className={styles.progress}>
-          <Typography type="subheading" component="h3">
+          <Typography variant="subheading" component="h3">
             Currently pulling features down...
           </Typography>
           <br/>
@@ -75,7 +73,7 @@ class FeatureView extends React.Component {
   handleDeploy(){
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
-      variables: { headFeatureID: this.props.feature.id, projectID: this.props.project.id, environmentID: this.props.store.app.currentEnvironment.id },
+      variables: { headFeatureId: this.props.feature.id, projectID: this.props.project.id, environmentID: this.props.store.app.currentEnvironment.id },
     }).then(({data}) => {
       this.props.data.refetch()
       this.props.history.push(this.props.match.url.replace('features', 'releases'))
@@ -87,27 +85,27 @@ class FeatureView extends React.Component {
 
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-          <div
-            style={{ visibility: 'hidden', display: 'none' }}
-            id={"git-hash-" + this.props.feature.id}>
-              {this.props.feature.hash}
-          </div> 
+        <div
+          style={{ visibility: 'hidden', display: 'none' }}
+          id={"git-hash-" + this.props.feature.id}>
+            {this.props.feature.hash}
+        </div>
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
-            <Typography component="body1" style={{ fontSize: 14 }}>
+            <Typography variant="body1" style={{ fontSize: 14 }}>
               <b> { this.props.feature.message } </b>
             </Typography>
-            <Typography component="body2" style={{ fontSize: 12 }}>
+            <Typography variant="body2" style={{ fontSize: 12 }}>
               { this.props.feature.user } created on { new Date(this.props.feature.created).toDateString() } at { new Date(this.props.feature.created).toTimeString() }
             </Typography>
           </CardContent>
           <CardActions style={{ position: "absolute", right: 10, top: 10 }}>
-            <CopyToClipboard text={this.props.feature.hash} onCopy={() => this.props.copyGitHash(this.props.feature.hash)} className={this.props.showFullView === false ? styles.hide : '' }>
-              <IconButton color="primary" className={this.props.showFullView === false ? styles.hide : '' }>
-                <CopyGitHashIcon />
-              </IconButton>
-            </CopyToClipboard>       
-            <Button variant="raised" color="primary"
+          <IconButton color="primary"
+              onClick={() => this.props.copyGitHash(this.props.feature.id)}
+              className={this.props.showFullView === false ? styles.hide : '' }>
+              <CopyGitHashIcon />
+            </IconButton>
+            <Button raised color="primary"
               disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
               onClick={this.handleDeploy.bind(this)}
               className={this.props.showFullView === false ? styles.hide : '' }>
@@ -185,8 +183,8 @@ class FeatureView extends React.Component {
 })
 
 @graphql(gql`
-mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: String!) {
-  createRelease(release: { headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID }) {
+mutation Mutation($headFeatureId: String!, $projectID: String!, $environmentID: String!) {
+  createRelease(release: { headFeatureId: $headFeatureId, projectID: $projectID, environmentID: $environmentID }) {
     headFeature {
       message
     }
@@ -208,8 +206,16 @@ export default class Features extends React.Component {
     };
   }
 
-  copyGitHash(featureHash){
-    this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash});
+  copyGitHash(featureId){
+    var gitHash = document.querySelector('#git-hash-' + featureId);
+    var range = document.createRange();
+    range.selectNode(gitHash);
+    window.getSelection().addRange(range);
+
+    var successful = document.execCommand('copy')
+    if(successful){
+      this.props.store.app.setSnackbar({msg: "Git hash copied."});
+    }
   }
 
   renderFeatureList = (project) => {
@@ -295,18 +301,16 @@ export default class Features extends React.Component {
       <div className={styles.root}>
         <Grid container spacing={16}>
           <Grid container xs={12} className={styles.feature}>
+            <Grid item xs={3}>
+              <Typography variant="headline">
+                Features
+              </Typography>
+            </Grid>
             {/* <Grid item xs={4}>
               <SelectField field={this.form.$('branch')} fullWidth={true} />
             </Grid>             */}
           </Grid>
           <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="title">
-                  Features
-                </Typography>
-              </CardContent>
-            </Card>
             {defaultComponent}
           </Grid>
         </Grid>

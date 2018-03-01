@@ -427,7 +427,12 @@ export default class Extensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
- 
+    
+    if(extension.__typename === "Extension"){
+      name = extension.extensionSpec.name
+      type = extension.extensionSpec.type
+    }
+
     if(extension.__typename === "ExtensionSpec"){
       const extensionSpec = extension
       name = extensionSpec.name

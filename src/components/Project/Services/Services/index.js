@@ -297,6 +297,7 @@ export default class Services extends React.Component {
       variables: this.form.values(),
     }).then(({data}) => {
       this.props.data.refetch()
+      this.closeDrawer()
     });
   }
 
@@ -324,202 +325,202 @@ export default class Services extends React.Component {
     })
     return (
       <div>
-        <Paper className={styles.tablePaper}>
-          <Toolbar>
-            <Typography variant="title">
-              Services
-            </Typography>
-          </Toolbar>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  Name
-                </TableCell>
-                <TableCell>
-                  Count
-                </TableCell>
-                <TableCell>
-                  Command
-                </TableCell>
-                <TableCell>
-                  Type
-                </TableCell>
-                <TableCell>
-                  Open Ports
-                </TableCell>
-                <TableCell>
-                  Service Spec
-                </TableCell>
-                <TableCell>
-                  Created
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {project.services.map( (service, index) => {
-                return (
-                  <TableRow
-                    hover
-                    onClick={event => this.editService(service, index)}
-                    tabIndex={-1}
-                    key={service.id}>
-                    <TableCell> { service.name } </TableCell>
-                    <TableCell> { service.count } </TableCell>
-                    <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
-                    <TableCell> { service.type }</TableCell>
-                    <TableCell> { service.ports.length}</TableCell>
-                    <TableCell> { service.serviceSpec.name}</TableCell>
-                    <TableCell> { service.created}</TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
-        <div className={styles.addButton}>
-        <Manager>
-          <Target>
-            <Button variant="fab" aria-label="Add" type="submit" color="primary"
-              aria-owns={this.state.addServiceMenuOpen ? 'menu-list' : null}
-              aria-haspopup="true"
-              onClick={this.handleClick.bind(this)}>
-              <AddIcon />
-            </Button>
-          </Target>
-          <Popper
-            placement="bottom-start"
-            eventsEnabled={this.state.addServiceMenuOpen}
+          <Paper className={styles.tablePaper}>
+            <Toolbar>
+              <div>
+                <Typography variant="title">
+                  Services
+                </Typography>
+              </div>
+            </Toolbar>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    Name
+                  </TableCell>
+                  <TableCell>
+                    Count
+                  </TableCell>
+                  <TableCell>
+                    Command
+                  </TableCell>
+                  <TableCell>
+                    Type
+                  </TableCell>
+                  <TableCell>
+                    Open Ports
+                  </TableCell>
+                  <TableCell>
+                    Service Spec
+                  </TableCell>
+                  <TableCell>
+                    Created
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {project.services.map( (service, index) => {
+                  return (
+                    <TableRow
+                      hover
+                      onClick={event => this.editService(service, index)}
+                      tabIndex={-1}
+                      key={service.id}>
+                      <TableCell> { service.name } </TableCell>
+                      <TableCell> { service.count } </TableCell>
+                      <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
+                      <TableCell> { service.type }</TableCell>
+                      <TableCell> { service.ports.length}</TableCell>
+                      <TableCell> { service.serviceSpec.name}</TableCell>
+                      <TableCell> { service.created}</TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </Paper>
+          <div className={styles.addButton}>
+          <Manager>
+            <Target>
+              <Button variant="fab" aria-label="Add" type="submit" color="primary"
+                aria-owns={this.state.addServiceMenuOpen ? 'menu-list' : null}
+                aria-haspopup="true"
+                onClick={this.handleClick.bind(this)}>
+                <AddIcon />
+              </Button>
+            </Target>
+            <Popper
+              placement="bottom-start"
+              eventsEnabled={this.state.addServiceMenuOpen}
+            >
+              <ClickAwayListener onClickAway={()=>this.setState({ addServiceMenuOpen: false })}>
+                <Grow in={this.state.addServiceMenuOpen} id="menu-list">
+                  <Paper>
+                    <MenuList role="menu">
+                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
+                    </MenuList>
+                  </Paper>
+                </Grow>
+              </ClickAwayListener>
+            </Popper>
+          </Manager>
+        </div>
+
+          <Drawer
+              anchor="right"
+              classes={{
+              paper: styles.list,
+              }}
+              open={this.state.drawerOpen}
           >
-            <ClickAwayListener onClickAway={()=>this.setState({ addServiceMenuOpen: false })}>
-              <Grow in={this.state.addServiceMenuOpen} id="menu-list">
-                <Paper>
-                  <MenuList role="menu">
-                    <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
-                    <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
-                  </MenuList>
-                </Paper>
-              </Grow>
-            </ClickAwayListener>
-          </Popper>
-        </Manager>
-      </div>
-
-        <Drawer
-            anchor="right"
-            classes={{
-            paper: styles.list,
-            }}
-            open={this.state.drawerOpen}
-        >
-            <div tabIndex={0} className={styles.createServiceBar}>
-              <AppBar position="static" color="default">
-                  <Toolbar>
-                  <Typography variant="title" color="inherit">
-                      Service
-                  </Typography>
-                  </Toolbar>
-              </AppBar>
-              <form onSubmit={this.form.onSubmit}>
-                <div className={styles.drawerBody}>
-                  <Grid container spacing={24} className={styles.grid}>
-                    <Grid item xs={12}>
-                      <InputField field={this.form.$('name')} fullWidth={true} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <InputField field={this.form.$('command')} fullWidth={true}/>
-                    </Grid>
-                    <Grid item xs={3}>
-                      <InputField field={this.form.$('count')} fullWidth={true}/>
-                    </Grid>
-                    <Grid item xs={9}>
-                      <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true} />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <div>
-                          <Grid container spacing={24}>
-                              { this.form.$('ports').value.length > 0 &&
-                              <Grid item xs={12}>
-                              <Typography variant="subheading"> Container Ports </Typography>
-                              </Grid>
-                              }
-                              { this.form.$('ports').value.length > 0 &&
-                              <Grid item xs={12}>
-                              <div>
-                                  {this.form.$('ports').map(port =>
-                                    <Grid key={port.id} container spacing={24}>
-                                      <Grid item xs={4}>
-                                        <InputField field={port.$('port')} fullWidth={false} className={styles.containerPortFormInput} />
-                                      </Grid>
-                                      <Grid item xs={6}>
-                                        <RadioField field={port.$('protocol')} />
-                                      </Grid>
-                                      <Grid item xs={1}>
-                                        <IconButton>
-                                          <CloseIcon onClick={port.onDel} />
-                                        </IconButton>
-                                      </Grid>
-                                    </Grid>
-                                  )}
-                              </div>
-                              </Grid>
-                              }
-
-
-                              <Grid item xs={12}>
-                              <Button variant="raised" type="secondary" onClick={this.form.$('ports').onAdd}>
-                                  Add container port
-                              </Button>
-                              </Grid>
-                          </Grid>
-                        </div>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Button color="primary"
-                          className={styles.buttonSpacing}
+              <div tabIndex={0} className={styles.createServiceBar}>
+                <AppBar position="static" color="default">
+                    <Toolbar>
+                    <Typography variant="title" color="inherit">
+                        Service
+                    </Typography>
+                    </Toolbar>
+                </AppBar>
+                <form onSubmit={this.form.onSubmit}>
+                  <div className={styles.drawerBody}>
+                    <Grid container spacing={24} className={styles.grid}>
+                      <Grid item xs={12}>
+                        <InputField field={this.form.$('name')} fullWidth={true} />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <InputField field={this.form.$('command')} fullWidth={true}/>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <InputField field={this.form.$('count')} fullWidth={true}/>
+                      </Grid>
+                      <Grid item xs={9}>
+                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true} />
+                      </Grid>
+                      <Grid item xs={12}>
+                          <div>
+                            <Grid container spacing={24}>
+                                { this.form.$('ports').value.length > 0 &&
+                                  <Grid item xs={12}>
+                                    <Typography variant="subheading"> Container Ports </Typography>
+                                  </Grid>
+                                }
+                                { this.form.$('ports').value.length > 0 &&
+                                  <Grid item xs={12}>
+                                    <div>
+                                        {this.form.$('ports').map(port =>
+                                          <Grid key={port.id} container spacing={24}>
+                                            <Grid item xs={4}>
+                                              <InputField field={port.$('port')} fullWidth={false} className={styles.portFormInput} />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                              <RadioField field={port.$('protocol')} />
+                                            </Grid>
+                                            <Grid item xs={1}>
+                                              <IconButton>
+                                                <CloseIcon onClick={port.onDel} />
+                                              </IconButton>
+                                            </Grid>
+                                          </Grid>
+                                        )}
+                                    </div>
+                                  </Grid>
+                                }
+                                <Grid item xs={12}>
+                                  <Button variant="raised" type="secondary" onClick={this.form.$('ports').onAdd}>
+                                      Add container port
+                                  </Button>
+                                </Grid>
+                            </Grid>
+                          </div>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Button color="primary"
+                            className={styles.buttonSpacing}
+                            disabled={this.state.saving}
+                            type="submit"
+                            variant="raised"
+                            onClick={e => this.onSubmit(e)}>
+                              Save
+                        </Button>
+                        <Button
                           disabled={this.state.saving}
-                          type="submit"
-                          variant="raised"
-                          onClick={e => this.onSubmit(e)}>
-                            Save
-                      </Button>
-                      <Button
-                        disabled={this.state.saving}
-                        color="inherit"
-                        onClick={()=>this.setState({ dialogOpen: true })}>
-                        Delete
-                      </Button>
-                      <Button
-                        color="primary"
-                        onClick={this.closeDrawer.bind(this)}>
-                        Cancel
-                      </Button>
+                          color="inherit"
+                          onClick={()=>this.setState({ dialogOpen: true })}>
+                          Delete
+                        </Button>
+                        <Button
+                          color="primary"
+                          onClick={this.closeDrawer.bind(this)}>
+                          Cancel
+                        </Button>
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </div>
-              </form>
-            </div>
-        </Drawer>
+                  </div>
+                </form>
+              </div>
+          </Drawer>
 
-        {project.services[this.form.values()['index']] &&
-          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']].name + "?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
-                with this service.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={this.handleDeleteService.bind(this)} style={{ color: "red" }}>
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
-        }
+          {project.services[this.form.values()['index']] &&
+            <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+              <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']].name + "?"}</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
+                  with this service.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={this.handleDeleteService.bind(this)} color="accent">
+                  Confirm
+                </Button>
+              </DialogActions>
+            </Dialog>
+          }
       </div>
     )
   }

@@ -22,16 +22,7 @@ import CreateProject from '../../Create';
       repository
       gitUrl
       gitProtocol
-      environmentBasedProjectBranch {
-        id
-        environment {
-          id
-        }
-        project {
-          id
-        }
-        gitBranch
-      }
+      gitBranch
     }
   }`, {
   options: (props) => ({
@@ -43,41 +34,26 @@ import CreateProject from '../../Create';
 })
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
       id
       name
       slug
       repository
       gitUrl
+      gitBranch
       gitProtocol
-      rsaPublicKey
     }
   }
 `, { name: "updateProject"})
 
-@graphql(gql`
-  mutation Mutation($id: String!, $environmentID: String!, $projectID: String!,  $gitBranch: String!) {
-    createEnvironmentBasedProjectBranch(environmentBasedProjectBranch: { id: $id, projectID: $projectID, environmentID: $environmentID, gitBranch: $gitBranch}) {
-      id
-      gitBranch
-    }
-  }
-`, { name: "createEnvironmentBasedProjectBranch"})
-
-@graphql(gql`
-  mutation Mutation($id: String!, $environmentID: String!, $projectID: String!,  $gitBranch: String!) {
-    updateEnvironmentBasedProjectBranch(environmentBasedProjectBranch: { id: $id, projectID: $projectID, environmentID: $environmentID, gitBranch: $gitBranch}) {
-      id
-      gitBranch
-    }
-  }
-`, { name: "updateEnvironmentBasedProjectBranch"})
-
 export default class Settings extends React.Component {
-  state = {
-    notSet: true,    
-  };
+  constructor(props){
+    super(props)
+    this.state = {
+      settingsSet: false
+    }
+  }
 
   createProjectForm(){
     const fields = [
@@ -85,6 +61,7 @@ export default class Settings extends React.Component {
       'gitProtocol',
       'gitUrl',
       'environmentID',
+      'gitBranch',
     ];
     const rules = {};
     const labels = {
@@ -99,33 +76,9 @@ export default class Settings extends React.Component {
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })    
   }
-  
-  createEnvironmentBasedProjectBranchForm(){
-    const fields = [
-      'id',
-      'gitBranch',
-      'environmentID',
-      'projectID',
-    ];
-    const rules = {
-      'gitBranch': 'string|required',
-    };
-    const labels = {
-      'gitBranch': 'Git Branch',
-    };
-    const initials = {
-    };
-    const types = {};
-    const extra = {};
-    const hooks = {};
-    const handlers = {};
-    const plugins = { dvr: validatorjs };
-    this.envBasedProjectBranchForm = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })        
-  }
 
   componentWillMount(){
     this.createProjectForm()
-    this.createEnvironmentBasedProjectBranchForm()
   }
 
   updateProject(form){
@@ -136,18 +89,9 @@ export default class Settings extends React.Component {
     });
   }
 
-  createEnvBasedProjectBranch(form){
-    if(form.values()['gitBranch'] !== "" && form.values()['projectID'] !== "" && form.values()['environmentID'] !== ""){
-      this.props.createEnvironmentBasedProjectBranch({
-        variables: form.values(),
-      }).then(({data}) => {
-        this.props.data.refetch()
-      });
-    }
-  }
-
-  updateEnvBasedProjectBranch(form){
-    this.props.updateEnvironmentBasedProjectBranch({
+  updateSettings(form){
+    console.log(form.values())
+    this.props.updateProject({
       variables: form.values(),
     }).then(({data}) => {
       this.props.data.refetch()
@@ -158,46 +102,37 @@ export default class Settings extends React.Component {
     console.log('onError')
   }
 
-  onUpdateEnvironmentBasedProjectBranch(e){
-    if(!this.envBasedProjectBranchForm.$('id').value){
-      this.envBasedProjectBranchForm.$('environmentID').set(this.props.store.app.currentEnvironment.id)
-      this.envBasedProjectBranchForm.$('projectID').set(this.props.data.project.id)
-      this.envBasedProjectBranchForm.onSubmit(e, { onSuccess: this.createEnvBasedProjectBranch.bind(this), onError: this.onError.bind(this) })
-    } else {
-      this.envBasedProjectBranchForm.onSubmit(e, { onSuccess: this.updateEnvBasedProjectBranch.bind(this), onError: this.onError.bind(this) })
-    }
-    this.props.store.app.setSnackbar({msg: "Branch successfully changed to " + this.envBasedProjectBranchForm.$('gitBranch').value });    
+  onUpdateSettings(e){
+    this.form.onSubmit(e, { onSuccess: this.updateSettings.bind(this), onError: this.onError.bind(this) })
   }
 
-  componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
-    this.envBasedProjectBranchForm.reset()
-    this.form.reset()
-  } 
+  setFormValues(){
+    console.log('setFormValues')
+    if(!this.props.data.loading){
+      const { project } = this.props.data;
+      const { currentEnvironment } = this.props.store.app;
 
-  render() {
-    const { loading, project } = this.props.data;
-    const { notSet } = this.state;    
-    const { currentEnvironment } = this.props.store.app;
-
-    if(loading){
-      return (<div>Loading</div>)
-    }
-
-
-    if(notSet){
       this.form.$('id').set(project.id)
       this.form.$('gitProtocol').set(project.gitProtocol)
       this.form.$('gitUrl').set(project.gitUrl)
       this.form.$('environmentID').set(currentEnvironment.id)
-      this.setState({ notSet: false })
+      this.form.$('gitBranch').set(project.gitBranch)      
+      this.setState({ settingsSet: true })
     }
+  }
 
-    if(project.environmentBasedProjectBranch){
-      this.envBasedProjectBranchForm.$('id').set(project.environmentBasedProjectBranch.id)
-      this.envBasedProjectBranchForm.$('environmentID').set(project.environmentBasedProjectBranch.environmentID)
-      this.envBasedProjectBranchForm.$('projectID').set(project.environmentBasedProjectBranch.projectID)
-      this.envBasedProjectBranchForm.$('gitBranch').set(project.environmentBasedProjectBranch.gitBranch)
+  componentWillUpdate(nextProps, nextState){
+    nextProps.data.refetch()
+  } 
+
+  render() {
+    const { loading, project } = this.props.data;
+
+    if(loading){
+      return (<div>Loading</div>)
+    }
+    if(!this.state.settingsSet){
+      this.setFormValues()
     }
 
     return (
@@ -233,13 +168,13 @@ export default class Settings extends React.Component {
 
           <Grid item sm={9}>
             <Grid xs={12}>
-              <InputField field={this.envBasedProjectBranchForm.$('gitBranch')} fullWidth={true} />            
+              <InputField field={this.form.$('gitBranch')} fullWidth={true} />            
             </Grid>
             <Grid item xs={12}>
               <Button color="primary"
                 type="submit"
                 variant="raised"
-                onClick={(e) => this.onUpdateEnvironmentBasedProjectBranch(e)}>
+                onClick={(e) => this.onUpdateSettings(e)}>
                   Save
               </Button>
             </Grid>            
