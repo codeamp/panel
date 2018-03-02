@@ -24,12 +24,11 @@ import UsersIcon from 'material-ui-icons/AccountCircle';
 
 export default class LeftNav extends React.Component {
   state = {
-    open: false,
     openProject: true,
   }
 
   handleClick = () => {
-    this.setState({ open: !this.state.open });
+    this.props.store.app.setAdminLeftNav(!this.props.store.app.adminLeftNavOpen)
   };
 
   handleEnvChange(e){
@@ -64,9 +63,9 @@ export default class LeftNav extends React.Component {
                 <SupervisorAccountIcon />
               </ListItemIcon>
               <ListItemText primary="Admin" />
-              {this.state.open ? <ExpandLess /> : <ExpandMore />}
+              {this.props.store.app.adminLeftNavOpen ? <ExpandLess /> : <ExpandMore />}
             </ListItem>
-            <Collapse in={this.state.open} unmountOnExit>
+            <Collapse in={this.props.store.app.adminLeftNavOpen} unmountOnExit>
               <NavLink to="/admin/environments" exact activeClassName={styles.active}>
                 <ListItem button>
                   <ListItemIcon>

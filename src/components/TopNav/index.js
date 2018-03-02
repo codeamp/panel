@@ -115,7 +115,11 @@ export default class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
-    this.props.history.push('/projects/' + suggestion.project.slug)
+    if(this.props.data.environments.length > 0){
+      this.props.history.push('/projects/' + suggestion.project.slug)      
+    } else {
+      this.props.store.app.setSnackbar({ msg: "Please create atleast one environment to enter into a project. Message an admin if you can't do that.", open: true })      
+    }
     this.hideSuggestions(true)
   }
 
@@ -143,7 +147,9 @@ export default class TopNav extends React.Component {
       }
     })
     if(!found){
-      this.props.store.app.setCurrentEnv({id: environments[0].id, color: environments[0].color, name: environments[0].name })
+      if(environments.length > 0) {
+        this.props.store.app.setCurrentEnv({id: environments[0].id, color: environments[0].color, name: environments[0].name })
+      }
     }
 
     return (

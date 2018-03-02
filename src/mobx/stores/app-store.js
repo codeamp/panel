@@ -5,6 +5,7 @@ class AppStore {
   constructor() {
     const user = JSON.parse(localStorage.getItem('user'));
     var currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
+    var adminLeftNavOpen = JSON.parse(localStorage.getItem('adminLeftNavOpen'));
     if(!currentEnv){
       currentEnv = {id: null, name: null, color: 'gray'};
     }
@@ -13,12 +14,17 @@ class AppStore {
       projectTitle = '';
     }
 
+    if(!adminLeftNavOpen){
+      adminLeftNavOpen = false
+    }
+
     extendObservable(this, {
       title: 'CodeAmp Panel',
       user: user,
       leftNavItems: [],
       leftNavProjectTitle: projectTitle,
       bookmarks: [],
+      adminLeftNavOpen: adminLeftNavOpen,
       ws: {
         channel: null,
         data: null,
@@ -38,6 +44,11 @@ class AppStore {
 
   setTitle = action(title => {
     this.title = title;
+  });
+
+  setAdminLeftNav = action(open => {
+    this.adminLeftNavOpen = open;
+    localStorage.setItem('adminLeftNavOpen', open);    
   });
 
   setNavProjects = action(projects => {
