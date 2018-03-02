@@ -14,7 +14,6 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import AddIcon from 'material-ui-icons/Add';
-import { CircularProgress } from 'material-ui/Progress';
 import InputField from 'components/Form/input-field';
 import Loading from 'components/Utils/Loading';
 import styles from './style.module.css';

@@ -3,7 +3,6 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import AppBar from 'material-ui/AppBar';
-import { CircularProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
 import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';

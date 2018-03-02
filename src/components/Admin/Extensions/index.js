@@ -18,7 +18,6 @@ import AddIcon from 'material-ui-icons/Add';
 import CloseIcon from 'material-ui-icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
-import { CircularProgress } from 'material-ui/Progress';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
 import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
@@ -169,6 +168,7 @@ export default class Extensions extends React.Component {
     };
     const initials = {
       'type': 'Workflow',
+      'environmentID': null,
     };
 
     const types = {
@@ -214,14 +214,13 @@ export default class Extensions extends React.Component {
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
 
-    console.log(extension)
+    this.setOptions()
 
     this.openDrawer()
   }
 
   onSuccess(form){
     this.setState({ saving: true })
-
     if(this.form.values().id === ''){
       this.props.createExtension({
         variables: this.form.values(),
@@ -258,16 +257,21 @@ export default class Extensions extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
-  render() {
-    const { loading, extensions, environments, secrets } = this.props.data;
-
-    if(loading){
-      return (
-        <Loading />
-      )
+  setOptions(){
+    const { secrets, environments } = this.props.data    
+    // filter secrets by env of current extension if exists
+    var self = this
+    var envSecrets = secrets    
+    if(this.form.$('environmentID').value){
+      envSecrets = secrets.filter(function(secret){
+        if(self.form.$('environmentID').value === secret.environment.id){
+          return true
+        }
+        return false
+      })
     }
 
-    const secretOptions = secrets.map(function(secret){
+    const secretOptions = envSecrets.map(function(secret){
       return {
         key: secret.id,
         value: "(" + secret.key + ") => " + secret.value,
@@ -279,12 +283,22 @@ export default class Extensions extends React.Component {
         key: env.id,
         value: env.name,
       }
-    })
+    })    
 
     this.form.state.extra({
       config: secretOptions,
-      environmentID: envOptions,
-    })
+      environmentID: envOptions,      
+    })    
+  }
+
+  render() {
+    const { loading, extensions } = this.props.data;
+
+    if(loading){
+      return (
+        <Loading />
+      )
+    }    
 
     return (
       <div className={styles.root}>
@@ -397,28 +411,6 @@ export default class Extensions extends React.Component {
                       Add Config
                     </Button>
                   </Grid>
-                  {/* <Grid item xs={12}>
-                    <Typography variant="subheading">Secrets</Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {this.form.$('config').map(function(kv){
-                        return (
-                        <Grid container spacing={24}>
-                            <Grid item xs={10}>
-                                <SelectField field={kv.$('secret')} autoWidth={true} extraKey="config" />
-                            </Grid>
-                            <Grid item xs={2}>
-                            <IconButton>
-                                <CloseIcon onClick={kv.onDel} />
-                            </IconButton>
-                            </Grid>
-                        </Grid>
-                        )
-                    })}
-                    <Button variant="raised" type="secondary" onClick={this.form.$('config').onAdd}>
-                      Add env var
-                    </Button>
-                  </Grid> */}
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}

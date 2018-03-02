@@ -6,7 +6,6 @@ import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';
-import { CircularProgress } from 'material-ui/Progress';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
@@ -140,6 +139,7 @@ export default class TopNav extends React.Component {
     environments.map(function(env){
       if(env.id === self.props.store.app.currentEnvironment.id){
         found = true
+        return
       }
     })
     if(!found){

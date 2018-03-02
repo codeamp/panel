@@ -13,7 +13,6 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import { CircularProgress } from 'material-ui/Progress';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
@@ -23,14 +22,6 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-
-const inlineStyles = {
-  addButton: {
-    position: 'absolute',
-    bottom: 25,
-    right: 25,
-  }
-}
 
 @graphql(gql`
   query {
@@ -52,7 +43,6 @@ mutation UpdateUserPermissions($userID: String!, $permissions: [UserPermissionIn
     })
 }
 `, { name: "updateUserPermissions" })
-
 
 @observer
 export default class Users extends React.Component {
@@ -152,7 +142,7 @@ export default class Users extends React.Component {
   }
 
   render() {
-    const { loading, users, permissions } = this.props.data;
+    const { loading, users } = this.props.data;
 
     if(loading){
       return (
@@ -200,7 +190,7 @@ export default class Users extends React.Component {
                       {env.permissions.length}
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toString()}
+                      {new Date(env.created).toDateString()}
                     </TableCell>
                   </TableRow>
                 )

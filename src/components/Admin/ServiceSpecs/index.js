@@ -3,7 +3,6 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import { CircularProgress } from 'material-ui/Progress';
 import Toolbar from 'material-ui/Toolbar';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';

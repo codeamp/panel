@@ -1,7 +1,6 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
-import { CircularProgress } from 'material-ui/Progress';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
 import Typography from 'material-ui/Typography';

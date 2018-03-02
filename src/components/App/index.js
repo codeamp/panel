@@ -8,8 +8,6 @@ import io from 'socket.io-client';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Snackbar from 'material-ui/Snackbar';
-import IconButton from 'material-ui/IconButton';
-import CloseIcon from 'material-ui-icons/Close';
 import Button from 'material-ui/Button';
 import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';

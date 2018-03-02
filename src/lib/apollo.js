@@ -45,8 +45,11 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
         console.log(
           `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
         ),
-      );
-    if (networkError) console.log(`[Network error]: ${networkError}`);
+      )
+    if (networkError){
+      console.log(`[Network error]: ${networkError}`)
+    }
+    return graphQLErrors
   });
 
   return new ApolloClient({

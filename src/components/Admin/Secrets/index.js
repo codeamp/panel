@@ -7,7 +7,6 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import { CircularProgress } from 'material-ui/Progress';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -347,9 +346,8 @@ export default class Secrets extends React.Component {
             </TableHead>
             <TableBody>
               {secrets.map(function(secret, idx){
-              console.log(secret)
                 let emptyValue
-                if (secret.value == '') {
+                if (secret.value === '') {
                   emptyValue = styles.emptyValue
                 }
                 return (

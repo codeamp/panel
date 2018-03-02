@@ -1,5 +1,4 @@
 import React from 'react';
-import Grid from 'material-ui/Grid';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import AppBar from 'material-ui/AppBar';
 import { observer, inject } from 'mobx-react';
