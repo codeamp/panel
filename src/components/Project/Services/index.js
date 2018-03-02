@@ -35,7 +35,7 @@ export default class Services extends React.Component {
         <AppBar position="static" className={styles.appBar}>
           <Tabs value={value} onChange={this.handleChange.bind(this)}>
             <Tab label="Services" />
-            <Tab label="Environment" />
+            <Tab label="Secrets" />
           </Tabs>
         </AppBar>
         {value === 0 && <TabContainer><ServicesComponent match={match} /></TabContainer>}

@@ -9,6 +9,7 @@ import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import { CircularProgress } from 'material-ui/Progress';
+import Loading from 'components/Utils/Loading';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -133,7 +134,7 @@ export default class ProjectExtensions extends React.Component {
     this.state = {
       extensionDrawer: {
         open: false,
-        projectExtension: null,
+        extension: null,
         formType: "",
       },
       dialogOpen: false,
@@ -263,12 +264,12 @@ export default class ProjectExtensions extends React.Component {
     const { loading, project } = this.props.data;
 
     if(loading) {
-      return (<div>Loading...</div>);
+      return (<Loading />)
     }
 
     return (
       <div>
-        <Grid container spacing={24}>
+        <Grid container spacing={24} style={{ marginTop: 1 }}>
           <Grid item xs={12}>
             {this.renderEnabledExtensions()}
           </Grid>
@@ -276,23 +277,24 @@ export default class ProjectExtensions extends React.Component {
             {this.renderAvailableExtensions()}
           </Grid>
         </Grid>
-
-        <Dialog open={this.state.dialogOpen}>
-          <DialogTitle>{"Are you sure you want to delete"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {"This will delete the extension and all its generated environment variables and cloud resources associated with " + project.name + "."}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.deleteExtension.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {this.state.extensionDrawer.extension && this.state.extensionDrawer.extension.extension &&
+          <Dialog open={this.state.dialogOpen}>
+            <DialogTitle>{"Are you sure you want to delete " + this.state.extensionDrawer.extension.extension.name + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"This will delete the extension and all its generated environment variables and cloud resources associated with " + project.name + "."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.deleteExtension.bind(this)} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
 
         <Drawer
           anchor="right"

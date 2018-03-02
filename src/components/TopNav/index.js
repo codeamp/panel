@@ -6,11 +6,13 @@ import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import TextField from 'material-ui/TextField';
+import { CircularProgress } from 'material-ui/Progress';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 import Button from 'material-ui/Button';
+import Loading from 'components/Utils/Loading';
 
 import styles from './style.module.css';
 
@@ -130,9 +132,19 @@ export default class TopNav extends React.Component {
     const { app } = this.props.store;
 
     if(loading){
-      return (<div>Loading</div>)
+      return (<Loading />)
     }
-
+    
+    // make sure mobx env id exists
+    var found = false
+    environments.map(function(env){
+      if(env.id === self.props.store.app.currentEnvironment.id){
+        found = true
+      }
+    })
+    if(!found){
+      this.props.store.app.setCurrentEnv({id: environments[0].id, color: environments[0].color, name: environments[0].name })
+    }
 
     return (
     <div>

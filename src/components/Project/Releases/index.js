@@ -17,6 +17,7 @@ import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
 import ReleaseStateFailedIcon from 'material-ui-icons/Error';
+import Loading from 'components/Utils/Loading';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
@@ -32,7 +33,7 @@ class ReleaseView extends React.Component {
     }
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } variant="raised" disabled={this.props.showFullView}>
+        <Card variant="raised" disabled={this.props.showFullView}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
               <ForkIcon />
@@ -321,7 +322,7 @@ export default class Releases extends React.Component {
     console.log(this.props.data)
 
     if(loading){
-      return (<div>Loading...</div>);
+      return (<Loading />)
     }
     return (
       <div>
@@ -343,7 +344,7 @@ export default class Releases extends React.Component {
               /> :
               <Card>
                 <CardContent>
-                  <Typography variant="subheading" style={{ textAlign: "center" }}>
+                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
                     This project has no deployed releases yet.
                   </Typography>
                 </CardContent>
@@ -359,7 +360,7 @@ export default class Releases extends React.Component {
                   Releases
                 </Typography>
               </CardContent>
-            </Card>              
+            </Card>
             {project.releases.length > 0 ?
               [...Array(project.releases.length)].map((x, i) =>
                 <ReleaseView

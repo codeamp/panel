@@ -13,8 +13,10 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import { CircularProgress } from 'material-ui/Progress';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
+import Loading from 'components/Utils/Loading';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
 import validatorjs from 'validatorjs';
@@ -154,9 +156,7 @@ export default class Users extends React.Component {
 
     if(loading){
       return (
-        <div>
-          Loading ...
-        </div>
+        <Loading />
       )
     }
 

@@ -1,11 +1,13 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
+import { CircularProgress } from 'material-ui/Progress';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from 'material-ui-icons/Close';
 import Typography from 'material-ui/Typography';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
+import Loading from 'components/Utils/Loading';
 import validatorjs from 'validatorjs';
 import { observer, inject } from 'mobx-react';
 import MobxReactForm from 'mobx-react-form';
@@ -227,7 +229,9 @@ export default class LoadBalancer extends React.Component {
     const { type } = this.props;
 
     if(loading){
-      return (<div>Loading...</div>)
+      return (
+        <Loading />
+      );
     }
     
     var self = this

@@ -17,6 +17,7 @@ import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
 import Project from 'components/Project';
 import Admin from 'components/Admin';
+import Loading from 'components/Utils/Loading';
 
 const socket = io(process.env.REACT_APP_CIRCUIT_URI);
 
@@ -34,6 +35,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_URI);
     environments {
       id
       name
+      color
     }
   }
 `)
@@ -103,13 +105,12 @@ export default class App extends React.Component {
     }
 
     if (loading) {
-      return (<div>Loading...</div>);
+      return (
+        <Loading />
+      );
     } else if (this.state.redirectToLogin) {
       return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
     } else {
-      if(environments.length > 0 && this.props.store.app.currentEnvironment.id === ''){
-        this.props.store.app.setCurrentEnv({ id: environments[0].id })
-      }
       if(!user){
           return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
       }

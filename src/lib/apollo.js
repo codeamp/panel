@@ -41,7 +41,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
 
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
-      graphQLErrors.map(({ message, locations, path }) =>
+      graphQLErrors.map(({ message, locations, path }) =>  
         console.log(
           `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
         ),

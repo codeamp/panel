@@ -13,6 +13,7 @@ import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql } from 'react-apollo';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
+import Loading from 'components/Utils/Loading';
 import gql from 'graphql-tag';
 
 class InitPrivateProjectComponent extends React.Component {
@@ -51,11 +52,11 @@ class InitPublicProjectComponent extends React.Component {
     return (
       <Card className={styles.card} raised={false}>
         <CardContent className={styles.progress}>
-          <Typography type="subheading" component="h3">
-            Currently pulling features down...
+          <Typography type="subheading" component="h3" style={{ color: "gray" }}>
+            Currently pulling features down
           </Typography>
           <br/>
-          <CircularProgress size={50} />
+          <Loading />
         </CardContent>
       </Card>
     )
@@ -209,7 +210,7 @@ export default class Features extends React.Component {
   }
 
   copyGitHash(featureHash){
-    this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash});
+    this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash, open: true });
   }
 
   renderFeatureList = (project) => {
@@ -277,11 +278,13 @@ export default class Features extends React.Component {
     const { loading, project } = this.props.data;
 
     if(loading){
-      return (<div>Loading...</div>)
+      return (
+        <Loading />
+      );
     }
 
     this.props.store.app.setProjectTitle(project.slug)
-    let defaultComponent = (<Typography>Loading...</Typography>)
+    let defaultComponent = (<Loading />)
 
     if(project.features.length > 0) {
       defaultComponent = this.renderFeatureList(project);

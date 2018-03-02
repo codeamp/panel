@@ -18,7 +18,9 @@ import AddIcon from 'material-ui-icons/Add';
 import CloseIcon from 'material-ui-icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
+import { CircularProgress } from 'material-ui/Progress';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
+import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import validatorjs from 'validatorjs';
@@ -261,9 +263,7 @@ export default class Extensions extends React.Component {
 
     if(loading){
       return (
-        <div>
-          Loading ...
-        </div>
+        <Loading />
       )
     }
 

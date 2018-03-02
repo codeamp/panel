@@ -7,6 +7,7 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
+import { CircularProgress } from 'material-ui/Progress';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -17,6 +18,7 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import TextareaField from 'components/Form/textarea-field';
+import Loading from 'components/Utils/Loading';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
@@ -294,9 +296,7 @@ export default class Secrets extends React.Component {
     const { loading, project } = this.props.data;
     if(loading){
       return (
-        <div>
-          Loading ...
-        </div>
+        <Loading />
       )
     }
     var self = this;

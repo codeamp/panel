@@ -3,6 +3,7 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import AppBar from 'material-ui/AppBar';
+import { CircularProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
 import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';
@@ -21,6 +22,7 @@ import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Ta
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
+import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import Form from 'mobx-react-form';
@@ -309,9 +311,7 @@ export default class Services extends React.Component {
     const { loading, project, serviceSpecs } = this.props.data;
     if(loading){
       return (
-        <div>
-          Loading ...
-        </div>
+        <Loading />
       )
     }
     this.form.$('projectID').set(project.id)
