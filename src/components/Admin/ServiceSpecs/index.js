@@ -43,7 +43,11 @@ query {
     terminationGracePeriod
   }
 }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
 mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: String!,

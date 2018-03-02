@@ -40,7 +40,11 @@ const inlineStyles = {
         created
       }
     }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
   mutation CreateEnvironment($name: String!, $color: String!) {

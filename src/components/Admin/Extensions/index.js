@@ -68,7 +68,11 @@ query {
     }
   }
 }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
 mutation CreateExtension ($name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {

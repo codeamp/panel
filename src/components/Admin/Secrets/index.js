@@ -69,7 +69,11 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
       }
     }
   }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
 mutation CreateSecret($key: String!, $value: String!,  $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
