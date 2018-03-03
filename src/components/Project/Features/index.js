@@ -281,9 +281,7 @@ export default class Features extends React.Component {
       );
     }
 
-    this.props.store.app.setProjectTitle(project.slug)
     let defaultComponent = (<Loading />)
-
     if(project.features.length > 0) {
       defaultComponent = this.renderFeatureList(project);
     } else if(project.gitProtocol === "SSH"){

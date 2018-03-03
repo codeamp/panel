@@ -201,10 +201,12 @@ export default class Extensions extends React.Component {
 
   openDrawer(){
     this.form.showErrors(false)
+    this.setOptions()
     this.setState({ drawerOpen: true, dialogOpen: false })
   }
 
   closeDrawer(){
+    this.form.reset()
     this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
   }
 
@@ -217,9 +219,6 @@ export default class Extensions extends React.Component {
     this.form.update({ config: extension.config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
-
-    this.setOptions()
-
     this.openDrawer()
   }
 
@@ -263,9 +262,10 @@ export default class Extensions extends React.Component {
 
   setOptions(){
     const { secrets, environments } = this.props.data    
+    console.log(secrets, environments)
     // filter secrets by env of current extension if exists
     var self = this
-    var envSecrets = secrets    
+    var envSecrets = secrets
     if(this.form.$('environmentID').value){
       envSecrets = secrets.filter(function(secret){
         if(self.form.$('environmentID').value === secret.environment.id){
@@ -275,14 +275,16 @@ export default class Extensions extends React.Component {
       })
     }
 
-    const secretOptions = envSecrets.map(function(secret){
+    var secretOptions = []
+    secretOptions = envSecrets.map(function(secret){
       return {
         key: secret.id,
         value: "(" + secret.key + ") => " + secret.value,
       }
     })
 
-    const envOptions = environments.map(function(env){
+    var envOptions = []
+    envOptions = environments.map(function(env){
       return {
         key: env.id,
         value: env.name,
@@ -297,6 +299,7 @@ export default class Extensions extends React.Component {
 
   render() {
     const { loading, extensions } = this.props.data;
+    console.log(this.props.data)
 
     if(loading){
       return (
@@ -382,7 +385,7 @@ export default class Extensions extends React.Component {
                     <InputField field={this.form.$('key')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentID')} autoWidth={true} extraKey='environmentID' fullWidth={true} />
+                    <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID'/>
                   </Grid>
                   <Grid item xs={12}>
                     <SelectField field={this.form.$('type')} fullWidth={true} />

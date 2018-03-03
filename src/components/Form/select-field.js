@@ -10,9 +10,12 @@ import Select from 'material-ui/Select';
 
 export default observer(({field, autoWidth, extraKey, fullWidth }) => {
   let extraOptions = field.extra
-
   if(extraKey){
-    extraOptions = field.state.extra()[extraKey]
+    if(field.state.extra()){
+      extraOptions = field.state.extra()[extraKey]
+    } else {
+      extraOptions = []
+    }
   }
 
   return (
