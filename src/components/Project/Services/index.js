@@ -209,6 +209,7 @@ export default class Services extends React.Component {
       },
       onSuccess(instance){
         // console.log('Form Values!', instance.values())
+      },
       sync(instance){
         // console.log('sync', instance)
       },
