@@ -5,18 +5,15 @@ import Typography from 'material-ui/Typography';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import { CircularProgress } from 'material-ui/Progress';
-import Card, { CardHeader, CardContent } from 'material-ui/Card';
+import Card, { CardContent } from 'material-ui/Card';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
-import ForkIcon from 'react-icons/lib/fa/code-fork';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
-import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
-import ReleaseStateFailedIcon from 'material-ui-icons/Error';
 import Loading from 'components/Utils/Loading';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -45,6 +42,8 @@ class ReleaseView extends React.Component {
             return (<div className={styles.innerComplete}></div>)
             case "failed":
             return (<div className={styles.innerFailed}></div>)                        
+            default:
+            return (<div className={styles.innerWaiting}></div>)
           }
         }
       }
@@ -58,13 +57,6 @@ class ReleaseView extends React.Component {
     )
   }
   render() {
-    let releaseStateIcon = <CircularProgress size={25} />
-    if(this.props.release.state === "complete"){
-        releaseStateIcon = <ReleaseStateCompleteIcon color={'green'} />
-    }
-    if(this.props.release.state === "failed"){
-        releaseStateIcon = <ReleaseStateFailedIcon color={'red'} />
-    }
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>

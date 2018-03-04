@@ -120,6 +120,7 @@ export default class Users extends React.Component {
         } else {
             self.form.$('permissions').add({ "value": permission, "grant": false })
         }
+        return true
       })
       this.form.$('id').set(this.props.data.users[envIdx].id)
       this.openDrawer()

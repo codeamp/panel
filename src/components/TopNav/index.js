@@ -143,8 +143,9 @@ export default class TopNav extends React.Component {
     environments.map(function(env){
       if(env.id === self.props.store.app.currentEnvironment.id){
         found = true
-        return
+        return true
       }
+      return false
     })
     if(!found){
       if(environments.length > 0) {
