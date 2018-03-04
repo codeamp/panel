@@ -303,7 +303,7 @@ export default class Services extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   }  
 
   render() {

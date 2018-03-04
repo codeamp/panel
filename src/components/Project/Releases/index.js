@@ -340,7 +340,7 @@ export default class Releases extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   }
 
   render() {

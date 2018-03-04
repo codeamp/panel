@@ -257,7 +257,7 @@ export default class ProjectExtensions extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   } 
 
   render() {

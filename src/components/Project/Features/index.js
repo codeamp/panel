@@ -34,7 +34,7 @@ class InitPrivateProjectComponent extends React.Component {
             {this.props.rsaPublicKey}
           </Typography>
           <br/><br/>
-          <Typography type="body1">
+          <Typography variant="body1">
             <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
               Click here to learn how to add deploy keys to Github.
             </a>
@@ -93,10 +93,10 @@ class FeatureView extends React.Component {
           </div> 
         <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
           <CardContent>
-            <Typography component="body1" style={{ fontSize: 14 }}>
+            <Typography variant="body1" style={{ fontSize: 14 }}>
               <b> { this.props.feature.message } </b>
             </Typography>
-            <Typography component="body2" style={{ fontSize: 12 }}>
+            <Typography variant="body2" style={{ fontSize: 12 }}>
               { this.props.feature.user } created on { new Date(this.props.feature.created).toDateString() } at { new Date(this.props.feature.created).toTimeString() }
             </Typography>
           </CardContent>
@@ -265,10 +265,8 @@ export default class Features extends React.Component {
       });
   }
 
-
-
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   }
 
   render() {
@@ -292,7 +290,7 @@ export default class Features extends React.Component {
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
-          <Grid container xs={12} className={styles.featureTitle}>
+          <Grid container className={styles.featureTitle}>
             {/* <Grid item xs={4}>
               <SelectField field={this.form.$('branch')} fullWidth={true} />
             </Grid>             */}

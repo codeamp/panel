@@ -25,6 +25,9 @@ import Loading from 'components/Utils/Loading';
     project(slug: $slug, environmentID: $environmentID) {
       id
       slug
+      features{
+        id
+      }
     }
   }`, {
   options: (props) => ({
@@ -59,7 +62,7 @@ export default class Project extends React.Component {
         icon: <FeaturesIcon />,
         name: "Features",
         slug: this.props.match.url + "/features",
-        count: 0,
+        count: 10,
       },
       {
         key: "40",

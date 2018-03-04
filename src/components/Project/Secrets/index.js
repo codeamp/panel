@@ -288,7 +288,7 @@ export default class Secrets extends React.Component {
   }
   
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   }  
 
   render() {

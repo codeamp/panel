@@ -120,7 +120,7 @@ export default class Settings extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   } 
 
   render() {
