@@ -12,6 +12,7 @@ import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 import Button from 'material-ui/Button';
 import Loading from 'components/Utils/Loading';
+import Logo from './logo.png';
 
 import styles from './style.module.css';
 
@@ -160,9 +161,7 @@ export default class TopNav extends React.Component {
           <Grid container spacing={24}>
             <Grid item xs={2}>
               <NavLink to="/" exact style={{ color: "white" }}>
-                <Typography variant="title" color="inherit">
-                  CodeAmp
-                </Typography>
+                <img src={Logo} alt="Codeamp" className={styles.logo}/>
               </NavLink>
             </Grid>
             <Grid item xs={6}>
