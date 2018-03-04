@@ -30,7 +30,6 @@ class ReleaseView extends React.Component {
       } 
       return true
     })
-    console.log(release.releaseExtensions)
     const projectExtensionLights = filteredExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
         console.log(release.releaseExtensions[i].extension.id, extension.id)

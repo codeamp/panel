@@ -214,7 +214,7 @@ export default class Create extends React.Component {
           <CardContent>
             <Grid container spacing={24}>
               <Grid item xs={12}>
-                <Typography variant="subheading" className={styles.title}>
+                <Typography variant="title">
                   {this.state.title}
                 </Typography>
               </Grid>

@@ -8,3 +8,7 @@
   background-color: rgba(33, 150, 243, 0.12);
   display: block;
 }
+
+.drawer {
+ padding-bottom: 80px;
+}

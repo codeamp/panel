@@ -198,11 +198,9 @@ export default class Environments extends React.Component {
       <div>
         <Paper className={styles.tablePaper}>
           <Toolbar>
-            <div>
-              <Typography variant="title">
-                Environments
-              </Typography>
-            </div>
+            <Typography variant="title">
+              Environments
+            </Typography>
           </Toolbar>
           <Table>
             <TableHead>
