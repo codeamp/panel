@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
+import { NavLink } from 'react-router-dom';
 import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -405,7 +406,7 @@ export default class Releases extends React.Component {
                     There are no releases.
                   </Typography>
                   <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
-                  Do some work and deploy a feature <strong><a href={"/projects/" + project.slug + "/features"}>here.</a></strong>
+                  Do some work and deploy a feature <NavLink to={"/projects/" + project.slug + "/features"}><strong>here.</strong></NavLink>
                   </Typography>                  
                 </CardContent>
               </Card>                          
