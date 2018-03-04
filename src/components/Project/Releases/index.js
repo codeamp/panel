@@ -32,7 +32,6 @@ class ReleaseView extends React.Component {
     })
     const projectExtensionLights = filteredExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
-        console.log(release.releaseExtensions[i].extension.id, extension.id)
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
           switch(release.releaseExtensions[i].state){  
@@ -346,7 +345,6 @@ export default class Releases extends React.Component {
 
   render() {
     const { loading, project } = this.props.data;
-    console.log(this.props.data)
 
     if(loading){
       return (<Loading />)

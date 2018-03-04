@@ -136,8 +136,6 @@ export default class LoadBalancer extends React.Component {
       })
     }
 
-    console.log(userConfig)
-
     // this.props.createExtension({
     //   variables: {
     //     'projectID': this.props.project.id,

@@ -127,7 +127,6 @@ export default class Environments extends React.Component {
 
   onSubmit(e) {
     this.setState({ saving: true })
-    console.log(this.form.values())
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
@@ -156,7 +155,6 @@ export default class Environments extends React.Component {
         this.props.data.refetch()
       });
     } else {
-      console.log(form.values())
       this.props.createEnvironment({
         variables: form.values(),
       }).then(({data}) => {

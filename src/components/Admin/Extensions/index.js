@@ -262,7 +262,6 @@ export default class Extensions extends React.Component {
 
   setOptions(){
     const { secrets, environments } = this.props.data    
-    console.log(secrets, environments)
     // filter secrets by env of current extension if exists
     var self = this
     var envSecrets = secrets
@@ -299,7 +298,6 @@ export default class Extensions extends React.Component {
 
   render() {
     const { loading, extensions } = this.props.data;
-    console.log(this.props.data)
 
     if(loading){
       return (

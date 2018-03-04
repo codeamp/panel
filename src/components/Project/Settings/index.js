@@ -90,7 +90,6 @@ export default class Settings extends React.Component {
   }
 
   updateSettings(form){
-    console.log(form.values())
     this.props.updateProject({
       variables: form.values(),
     }).then(({data}) => {
@@ -107,7 +106,6 @@ export default class Settings extends React.Component {
   }
 
   setFormValues(){
-    console.log('setFormValues')
     if(!this.props.data.loading){
       const { project } = this.props.data;
       const { currentEnvironment } = this.props.store.app;

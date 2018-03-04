@@ -128,7 +128,6 @@ export default class Users extends React.Component {
   }
 
   onSuccess(form){
-    console.log(this.props)
     this.props.updateUserPermissions({
       variables: { userID: form.$('id').value, permissions: form.$('permissions').value },
     }).then(({data}) => {

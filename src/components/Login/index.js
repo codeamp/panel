@@ -3,8 +3,6 @@ import { observer, inject } from 'mobx-react';
 import { Switch, Route } from "react-router-dom";
 import Oidc from 'oidc-client'
 
-console.log(process.env)
-
 var settings = {
   authority: process.env.REACT_APP_DEX_URI + '/dex',
   client_id: process.env.REACT_APP_CLIENT_ID,
