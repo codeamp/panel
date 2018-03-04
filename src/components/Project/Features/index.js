@@ -13,11 +13,17 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import Loading from 'components/Utils/Loading';
 import gql from 'graphql-tag';
+import ExpansionPanel, {
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+} from 'material-ui/ExpansionPanel';
+import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 
 class InitPrivateProjectComponent extends React.Component {
   state = {
     open: false,
     message: null,
+    expanded: null,
   };
 
   render() {
@@ -61,63 +67,6 @@ class InitPublicProjectComponent extends React.Component {
   }
 }
 
-class FeatureView extends React.Component {
-
-  constructor(props){
-      super(props)
-      this.state = {
-        disableDeployBtn: false,
-        text: 'Deploy',
-      }
-  }
-
-  handleDeploy(){
-    this.setState({ disabledDeployBtn: true, text: 'Deploying'})
-    this.props.createRelease({
-      variables: { headFeatureID: this.props.feature.id, projectID: this.props.project.id, environmentID: this.props.store.app.currentEnvironment.id },
-    }).then(({data}) => {
-      this.props.data.refetch()
-      this.props.history.push(this.props.match.url.replace('features', 'releases'))
-    });
-  }
-
-  render() {
-    const { project } = this.props;
-
-    return (
-      <Grid item xs={12} onClick={this.props.handleOnClick}>
-          <div
-            style={{ visibility: 'hidden', display: 'none' }}
-            id={"git-hash-" + this.props.feature.id}>
-              {this.props.feature.hash}
-          </div> 
-        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } raised={this.props.showFullView}>
-          <CardContent>
-            <Typography variant="body1" style={{ fontSize: 14 }}>
-              <b> { this.props.feature.message } </b>
-            </Typography>
-            <Typography variant="body2" style={{ fontSize: 12 }}>
-              { this.props.feature.user } created on { new Date(this.props.feature.created).toDateString() } at { new Date(this.props.feature.created).toTimeString() }
-            </Typography>
-          </CardContent>
-          <CardActions style={{ position: "absolute", right: 10, top: 10 }}>
-            <CopyToClipboard text={this.props.feature.hash} onCopy={() => this.props.copyGitHash(this.props.feature.hash)} className={this.props.showFullView === false ? styles.hide : '' }>
-              <IconButton color="primary" className={this.props.showFullView === false ? styles.hide : '' }>
-                <CopyGitHashIcon />
-              </IconButton>
-            </CopyToClipboard>       
-            <Button variant="raised" color="primary"
-              disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-              onClick={this.handleDeploy.bind(this)}
-              className={this.props.showFullView === false ? styles.hide : '' }>
-              { this.state.text }
-            </Button>
-          </CardActions>
-        </Card>
-      </Grid>
-    );
-  }
-}
 @inject("store") @observer
 
 @graphql(gql`
@@ -199,70 +148,89 @@ mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: 
 `, { name: "createRelease" })
 
 export default class Features extends React.Component {
-
   constructor(props){
     super(props)
     this.state = {
       activeFeatureKey: -1,
+      disableDeployBtn: false,
+      text: 'Deploy',
+      expanded: null,
     };
   }
+
+  handleChange = panel => (event, expanded) => {
+    this.setState({
+      expanded: expanded ? panel : false,
+    });
+  };
 
   copyGitHash(featureHash){
     this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash, open: true });
   }
 
+  handleDeploy(feature, project){
+    this.setState({ disabledDeployBtn: true, text: 'Deploying'})
+    this.props.createRelease({
+      variables: { headFeatureID: feature.id, projectID: project.id, environmentID: this.props.store.app.currentEnvironment.id },
+    }).then(({data}) => {
+      this.props.data.refetch()
+      this.props.history.push(this.props.match.url.replace('features', 'releases'))
+    });
+  }
+
   renderFeatureList = (project) => {
     var self = this
+    let { expanded } = this.state;
+
+    if (expanded === null) {
+      expanded = project.features[0].id
+    }
+
     return (
       <div>
-        {project.features.map(function(feature, idx) {
-            let featureView = (
-              <FeatureView
-              {...self.props}
-              copyGitHash={self.copyGitHash.bind(self)}
-              key={feature.hash}
-              createRelease={self.props.createRelease.bind(self)}
-              feature={feature}
-              project={project}
-              handleOnClick={() => self.setState({ activeFeatureKey: idx })}
-              showFullView={self.state.activeFeatureKey === idx} />
-            )
-            return featureView
+        {project.features.map((feature, idx) => {
+        return (<ExpansionPanel key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}>
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+            <div>
+              <Typography variant="body1" style={{ fontSize: 14 }}>
+                <b> { feature.message } </b>
+              </Typography>
+              <Typography variant="body2" style={{ fontSize: 12 }}>
+                { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() }
+              </Typography>
+            </div>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <Grid container spacing={24}>
+              <Grid item xs={12} style={{textAlign: "right"}}>
+                <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
+                  <IconButton color="primary">
+                    <CopyGitHashIcon />
+                  </IconButton>
+                </CopyToClipboard>       
+                  <Button variant="raised" color="primary" size="small"
+                    disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+                    onClick={this.handleDeploy.bind(this, feature, project)}>
+                    { this.state.text }
+                  </Button>
+              </Grid>
+            </Grid>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>)
         })}
-          <br/>
-        </div>
+      </div>
       )
   }
 
   componentWillMount(){
     this.setupSocketHandlers();
-    const fields = [
-      'branch[]',
-      'branch[].key',
-      'branch[].value',
-    ];
-    const rules = {};
-    const labels = {};
-    const initials = {};
-    const types = {};
-    const extra = {
-      'branch': [
-        { key: 1, value: 'dev'},
-        { key: 2, value: 'prod'},
-      ],
-    };
-    const hooks = {};
-    const handlers = {};
-    const plugins = { dvr: validatorjs };
-    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
   }
 
   setupSocketHandlers(){
-      const { socket, match } = this.props;
-
-      socket.on(match.url.substring(1, match.url.length), (data) => {
-        this.props.data.refetch()
-      });
+    const { socket, match } = this.props;
+    socket.on(match.url.substring(1, match.url.length), (data) => {
+      this.props.data.refetch()
+    });
   }
 
   componentWillUpdate(nextProps, nextState){
@@ -290,11 +258,6 @@ export default class Features extends React.Component {
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
-          <Grid container className={styles.featureTitle}>
-            {/* <Grid item xs={4}>
-              <SelectField field={this.form.$('branch')} fullWidth={true} />
-            </Grid>             */}
-          </Grid>
           <Grid item xs={12}>
             <Card>
               <CardContent>

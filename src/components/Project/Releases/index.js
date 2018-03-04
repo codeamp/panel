@@ -36,17 +36,17 @@ class ReleaseView extends React.Component {
           // get state { waiting => yellow, failed => red, complete => green}
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-            return (<div className={styles.innerWaiting}></div>)
+            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}></div>)
             case "complete":
-            return (<div className={styles.innerComplete}></div>)
+            return (<div key={"complete"+release.releaseExtensions[i].id} className={styles.innerComplete}></div>)
             case "failed":
-            return (<div className={styles.innerFailed}></div>)                        
+            return (<div key={"failed"+release.releaseExtensions[i].id} className={styles.innerFailed}></div>)                        
             default:
-            return (<div className={styles.innerWaiting}></div>)
+            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}></div>)
           }
         }
       }
-      return (<div className={styles.innerNotStarted}></div>)
+      return (<div key="notStarted" className={styles.innerNotStarted}></div>)
     })
     
     return (
