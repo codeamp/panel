@@ -12,7 +12,7 @@ import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 import Button from 'material-ui/Button';
 import Loading from 'components/Utils/Loading';
-import Logo from './logo.png';
+import Logo from './logo_white.png';
 
 import styles from './style.module.css';
 
