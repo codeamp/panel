@@ -3,21 +3,20 @@ import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import Typography from 'material-ui/Typography';
-import Card, { CardActions, CardContent } from 'material-ui/Card';
+import Card, { CardContent } from 'material-ui/Card';
 import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
+//import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
-import CopyGitHashIcon from 'material-ui-icons/ContentCopy';
 import { graphql } from 'react-apollo';
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
 import Loading from 'components/Utils/Loading';
 import gql from 'graphql-tag';
 import ExpansionPanel, {
-  ExpansionPanelDetails,
+  //  ExpansionPanelDetails,
   ExpansionPanelSummary,
+  ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import Divider from 'material-ui/Divider';
 
 class InitPrivateProjectComponent extends React.Component {
   state = {
@@ -179,7 +178,6 @@ export default class Features extends React.Component {
   }
 
   renderFeatureList = (project) => {
-    var self = this
     let { expanded } = this.state;
 
     if (expanded === null) {
@@ -200,22 +198,19 @@ export default class Features extends React.Component {
               </Typography>
             </div>
           </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
-            <Grid container spacing={24}>
-              <Grid item xs={12} style={{textAlign: "right"}}>
-                <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
-                  <IconButton color="primary">
-                    <CopyGitHashIcon />
-                  </IconButton>
-                </CopyToClipboard>       
-                  <Button variant="raised" color="primary" size="small"
-                    disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-                    onClick={this.handleDeploy.bind(this, feature, project)}>
-                    { this.state.text }
-                  </Button>
-              </Grid>
-            </Grid>
-          </ExpansionPanelDetails>
+          <Divider />
+          <ExpansionPanelActions>
+            <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
+              <Button color="primary" size="small">
+                Copy Git Hash
+              </Button>
+            </CopyToClipboard>       
+            <Button color="primary" size="small"
+              disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+              onClick={this.handleDeploy.bind(this, feature, project)}>
+              { this.state.text }
+            </Button>
+          </ExpansionPanelActions>
         </ExpansionPanel>)
         })}
       </div>
