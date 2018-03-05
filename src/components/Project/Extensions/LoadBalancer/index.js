@@ -6,6 +6,7 @@ import CloseIcon from 'material-ui-icons/Close';
 import Typography from 'material-ui/Typography';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
+import Loading from 'components/Utils/Loading';
 import validatorjs from 'validatorjs';
 import { observer, inject } from 'mobx-react';
 import MobxReactForm from 'mobx-react-form';
@@ -13,8 +14,8 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 @graphql(gql`
-query Project($slug: String, $environmentId: String){
-  project(slug: $slug, environmentId: $environmentId) {
+query Project($slug: String, $environmentID: String){
+  project(slug: $slug, environmentID: $environmentID) {
     id
     services {
       id
@@ -26,10 +27,7 @@ query Project($slug: String, $environmentId: String){
       }
       count
       type
-      containerPorts {
-        port
-        protocol
-      }
+      ports
       created
     }
   }
@@ -38,7 +36,7 @@ query Project($slug: String, $environmentId: String){
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
@@ -138,14 +136,12 @@ export default class LoadBalancer extends React.Component {
       })
     }
 
-    console.log(userConfig)
-
     // this.props.createExtension({
     //   variables: {
-    //     'projectId': this.props.project.id,
-    //     'extensionSpecId': this.props.extensionSpec.id,
+    //     'projectID': this.props.project.id,
+    //     'extensionID': this.props.extension.id,
     //     'config': userConfig,
-    //     'environmentId': this.props.store.app.currentEnvironment.id,
+    //     'environmentID': this.props.store.app.currentEnvironment.id,
     //   }
     // }).then(({ data }) => {
     //   this.setState({ addButtonDisabled: false })
@@ -230,7 +226,9 @@ export default class LoadBalancer extends React.Component {
     const { type } = this.props;
 
     if(loading){
-      return (<div>Loading...</div>)
+      return (
+        <Loading />
+      );
     }
     
     var self = this
@@ -246,7 +244,7 @@ export default class LoadBalancer extends React.Component {
     if(this.form.$('service').value){
       project.services.map(function(service){
         if(service.name === self.form.$('service').value){
-          containerPortOptions = service.containerPorts.map(function(cPort){
+          containerPortOptions = service.ports.map(function(cPort){
             return {
               key: cPort.port,
               value: cPort.port

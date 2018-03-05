@@ -38,21 +38,21 @@ export default class EnvVarVersionHistory extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-              {versions.map(function(envVar, idx){
+              {versions.map(function(secret, idx){
                   return (
                     <TableRow
                       hover
                       tabIndex={-1}
                       onClick={() => onClickVersion(idx)}
-                      key={envVar.id}>
+                      key={secret.id}>
                       <TableCell>
                         {versions.length - idx}
                       </TableCell>
                       <TableCell>
-                        {envVar.user.email}
+                        {secret.user.email}
                       </TableCell>
                       <TableCell>
-                        {new Date(envVar.created).toString()}
+                        {new Date(secret.created).toDateString()}
                       </TableCell>
                     </TableRow>
                   )

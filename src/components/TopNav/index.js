@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
@@ -10,6 +11,8 @@ import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 import Button from 'material-ui/Button';
+import Loading from 'components/Utils/Loading';
+import Logo from './logo_white.png';
 
 import styles from './style.module.css';
 
@@ -113,7 +116,11 @@ export default class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
-    this.props.history.push('/projects/' + suggestion.project.slug)
+    if(this.props.data.environments.length > 0){
+      this.props.history.push('/projects/' + suggestion.project.slug)      
+    } else {
+      this.props.store.app.setSnackbar({ msg: "Please create atleast one environment to enter into a project. Message an admin if you can't do that.", open: true })      
+    }
     this.hideSuggestions(true)
   }
 
@@ -129,9 +136,23 @@ export default class TopNav extends React.Component {
     const { app } = this.props.store;
 
     if(loading){
-      return (<div>Loading</div>)
+      return (<Loading />)
     }
-
+    
+    // make sure mobx env id exists
+    var found = false
+    environments.map(function(env){
+      if(env.id === self.props.store.app.currentEnvironment.id){
+        found = true
+        return true
+      }
+      return false
+    })
+    if(!found){
+      if(environments.length > 0) {
+        this.props.store.app.setCurrentEnv({id: environments[0].id, color: environments[0].color, name: environments[0].name })
+      }
+    }
 
     return (
     <div>
@@ -139,9 +160,9 @@ export default class TopNav extends React.Component {
         <Toolbar>
           <Grid container spacing={24}>
             <Grid item xs={2}>
-              <Typography variant="title" color="inherit">
-                CodeAmp
-              </Typography>
+              <NavLink to="/" exact style={{ color: "white" }}>
+                <img src={Logo} alt="Codeamp" className={styles.logo}/>
+              </NavLink>
             </Grid>
             <Grid item xs={6}>
               <div style={{position: "relative"}}>
@@ -218,6 +239,7 @@ export default class TopNav extends React.Component {
                       onClose={this.handleEnvironmentClose.bind(this)}>
                       {environments.map((env) => {
                       return (<MenuItem 
+                        key={env.id}
                         onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
                         {env.name}
                       </MenuItem>)

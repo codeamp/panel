@@ -37,3 +37,19 @@
 .currentEnv {
  width: 150px;
 }
+
+.snackbar {
+  min-width: 95%;
+  max-width: 95%;
+  padding-left: 2%;
+  padding-right: 2%;
+  text-align: center;
+}
+
+.snackbarContent {
+  min-width: 95%;
+  max-width: 95%;
+  padding-left: 2%;
+  padding-right: 2%;
+  text-align: center;
+}

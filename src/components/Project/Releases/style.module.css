@@ -57,7 +57,7 @@
 }
 
 .feature {
-    margin-top: -1px;
+    margin-top: 10px;
     cursor: pointer;
 }
 
@@ -89,4 +89,113 @@
 
 .root {
     overflow: auto;
+}
+
+/* @-webkit-keyframes pulseWaiting {
+    0% { box-shadow:0 0 8px yellow, inset 0 0 8px yellow; }
+    50% { box-shadow:0 0 16px yellow, inset 0 0 14px yellow; }
+    100% { box-shadow:0 0 8px yellow, inset 0 0 8px yellow; }
+} */
+  
+.innerWaiting {
+    display:inline-block;
+    margin-right: 5px;
+    background-color: yellow;
+    width:15px;
+    height:15px;
+    border: 1px solid #70705c;
+    border-radius:50px;
+    /* -webkit-animation: pulseWaiting 2s linear 1s infinite; */
+}
+
+.innerWaiting p {
+    display:inline-block;
+    text-align: center;
+    line-height: 100px;
+    font-family:sans-serif;
+    font-weight:100;
+    font-size:24px;
+    color: yellow;
+    text-shadow: 0 0 4px yellow;
+}
+
+.innerNotStarted {
+    display:inline-block;
+    margin-right: 5px;
+    background-color:gainsboro;
+    width:15px;
+    border: 1px solid #70705c;
+    height:15px;
+    border-radius:50px;
+}
+
+.innerNotStarted p {
+    display:inline-block;
+    text-align: center;
+    line-height: 100px;
+    font-family:sans-serif;
+    font-weight:100;
+    font-size:24px;
+    color: gray;
+    text-shadow: 0 0 4px gray;
+}
+
+/* @-webkit-keyframes pulseFailed {
+    0% { box-shadow:0 0 8px #ea4c89, inset 0 0 8px #ea4c89; }
+    50% { box-shadow:0 0 16px #ea4c89, inset 0 0 14px #ea4c89; }
+    100% { box-shadow:0 0 8px #ea4c89, inset 0 0 8px #ea4c89; }
+} */
+
+.innerFailed {
+    display:inline-block;
+    margin-right: 5px;
+    background-color:red;
+    width:15px;
+    height:15px;
+    border: 1px solid #70705c;
+    border-radius:50px;
+    /* -webkit-animation: pulseFailed 2s linear 1s infinite; */
+}
+
+.innerFailed p {
+    display:inline-block;
+    text-align: center;
+    line-height: 100px;
+    font-family:sans-serif;
+    font-weight:100;
+    font-size:24px;
+    color: #ea4c89;
+    text-shadow: 0 0 4px #ea4c89;
+}
+
+/* @-webkit-keyframes pulseComplete {
+    0% { box-shadow:0 0 8px green, inset 0 0 8px green; }
+    50% { box-shadow:0 0 16px green, inset 0 0 14px green; }
+    100% { box-shadow:0 0 8px green, inset 0 0 8px green; }
+} */
+
+.innerComplete {
+    display:inline-block;
+    margin-right: 5px;
+    background-color:green;
+    width:15px;
+    height:15px;
+    border: 1px solid #70705c;
+    border-radius:50px;
+    /* -webkit-animation: pulseComplete 2s linear 1s infinite; */
+}
+
+.innerComplete p {
+    display:inline-block;
+    text-align: center;
+    line-height: 100px;
+    font-family:sans-serif;
+    font-weight:100;
+    font-size:24px;
+    color: green;
+    text-shadow: 0 0 4px green;
+}
+
+.statusLights {
+    margin-top: 5px;
 }

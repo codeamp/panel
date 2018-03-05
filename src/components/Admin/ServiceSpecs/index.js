@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
@@ -14,16 +13,13 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-
 import AddIcon from 'material-ui-icons/Add';
-
 import InputField from 'components/Form/input-field';
-
+import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -47,7 +43,11 @@ query {
     terminationGracePeriod
   }
 }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
 mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: String!,
@@ -224,10 +224,8 @@ export default class ServiceSpecs extends React.Component {
 
     if(loading){
       return (
-        <div>
-          Loading ...
-        </div>
-      )
+        <Loading />
+      );
     }
 
     return (
@@ -311,11 +309,6 @@ export default class ServiceSpecs extends React.Component {
               </AppBar>
               <form onSubmit={(e) => e.preventDefault()}>
                 <Grid container spacing={24} className={styles.grid}>
-                  <Grid item xs={12}>
-                    <Typography variant="body1">
-                      Requests and Limits are measured in megabytes.
-                    </Typography>
-                  </Grid>
                   <Grid item xs={12}>
                     <InputField field={this.form.$('name')} fullWidth={true} />
                   </Grid>

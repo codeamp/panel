@@ -17,8 +17,8 @@ import MobxReactForm from 'mobx-react-form';
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $environmentId: String!) {
-    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentId: $environmentId }) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $environmentID: String!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentID: $environmentID }) {
       id
       name
       slug
@@ -31,8 +31,8 @@ import MobxReactForm from 'mobx-react-form';
 `, {name: "createProject"})
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $environmentId: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentId: $environmentId}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $environmentID: String!) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID}) {
       id
       name
       slug
@@ -76,7 +76,7 @@ export default class Create extends React.Component {
       'id',
       'gitProtocol',
       'gitUrl',
-      'environmentId',
+      'environmentID',
     ];
     const rules = {};
     const types = {};
@@ -167,7 +167,7 @@ export default class Create extends React.Component {
     // Post to graphql
     var self = this
     this.props.createProject({
-      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentId: this.props.store.app.currentEnvironment.id  }
+      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentID: this.props.store.app.currentEnvironment.id  }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)
     }).catch(error => {
@@ -213,11 +213,11 @@ export default class Create extends React.Component {
         <Card className={styles.card}>
           <CardContent>
             <Grid container spacing={24}>
-              <Grid item xs={12}>
-                <Typography variant="subheading" className={styles.title}>
+              {this.state.title != "" && <Grid item xs={12}>
+                <Typography variant="title">
                   {this.state.title}
                 </Typography>
-              </Grid>
+              </Grid>}
 
               <Grid item xs={12}>
                 {urlTextField}

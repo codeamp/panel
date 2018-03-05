@@ -9,6 +9,7 @@ import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import { CircularProgress } from 'material-ui/Progress';
+import Loading from 'components/Utils/Loading';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -28,14 +29,14 @@ import _ from "lodash"
 @inject("store") 
 
 @graphql(gql`
-  query ProjectExtensions($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
+  query ProjectExtensions($slug: String, $environmentID: String){
+    project(slug: $slug, environmentID: $environmentID) {
       id
       name
       slug
       extensions {
         id
-        extensionSpec {
+        extension {
           id
           name
           component
@@ -50,7 +51,7 @@ import _ from "lodash"
         artifacts
         created
       }
-      environmentVariables {
+      secrets {
         id
         key
         value
@@ -64,7 +65,7 @@ import _ from "lodash"
         }        
       }
     }
-    extensionSpecs {
+    extensions {
       id
       name
       component
@@ -80,32 +81,32 @@ import _ from "lodash"
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,
     }
   })
 })
 
 @graphql(gql`
-  mutation CreateExtension ($projectId: String!, $extensionSpecId: String!, $config: Json!, $environmentId: String!) {
-      createExtension(extension:{
-        projectId: $projectId,
-        extensionSpecId: $extensionSpecId,
+  mutation CreateProjectExtension ($projectID: String!, $extensionID: String!, $config: JSON!, $environmentID: String!) {
+      createProjectExtension(projectExtension:{
+        projectID: $projectID,
+        extensionID: $extensionID,
         config: $config,
-        environmentId: $environmentId,
+        environmentID: $environmentID,
       }) {
           id
       }
-  }`, { name: "createExtension" }
+  }`, { name: "createProjectExtension" }
 )
 
 @graphql(gql`
-  mutation UpdateExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $config: Json!, $environmentId: String!) {
-      updateExtension(extension:{
+  mutation UpdateProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $environmentID: String!) {
+      updateProjectExtension(projectExtension:{
         id: $id,
-        projectId: $projectId,
-        extensionSpecId: $extensionSpecId,
+        projectID: $projectID,
+        extensionID: $extensionID,
         config: $config,
-        environmentId: $environmentId,
+        environmentID: $environmentID,
       }) {
           id
       }
@@ -113,13 +114,13 @@ import _ from "lodash"
 )
 
 @graphql(gql`
-  mutation DeleteExtension ($id: String, $projectId: String!, $extensionSpecId: String!, $config: Json!, $environmentId: String!) {
-      deleteExtension(extension:{
+  mutation DeleteProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $environmentID: String!) {
+      deleteProjectExtension(projectExtension:{
         id: $id,
-        projectId: $projectId,
-        extensionSpecId: $extensionSpecId,
+        projectID: $projectID,
+        extensionID: $extensionID,
         config: $config,
-        environmentId: $environmentId,
+        environmentID: $environmentID,
       }) {
           id
       }
@@ -127,7 +128,7 @@ import _ from "lodash"
 )
 
 @observer
-export default class Extensions extends React.Component {
+export default class ProjectExtensions extends React.Component {
   constructor(props){
     super(props)
     this.state = {
@@ -155,11 +156,11 @@ export default class Extensions extends React.Component {
   async openExtensionDrawer(e, extension){
     let component = null
     let formType = null
-    // check typename to know if Extension or ExtensionSpec
-    if(extension.__typename === "Extension"){
-      component = extension.extensionSpec.component;
+    // check typename to know if Extension or ProjectExtension
+    if(extension.__typename === "ProjectExtension"){
+      component = extension.extension.component;
       formType = "enabled";
-    } else if(extension.__typename === "ExtensionSpec") {
+    } else if(extension.__typename === "Extension") {
       component = extension.component;
       formType = "available";
     } else {
@@ -206,26 +207,26 @@ export default class Extensions extends React.Component {
       formValues.custom = {}
     }
 
-    if (extension.extensionSpec) {
+    if (extension.extension) {
       this.props.updateExtension({
         variables: {
           'id': extension.id,
-          'projectId': this.props.data.project.id,
-          'extensionSpecId': extension.extensionSpec.id,
+          'projectID': this.props.data.project.id,
+          'extensionID': extension.extension.id,
           'config': formValues,
-          'environmentId': this.props.store.app.currentEnvironment.id,
+          'environmentID': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
         this.props.data.refetch()
         this.closeExtensionDrawer()
       })      
     } else {
-      this.props.createExtension({
+      this.props.createProjectExtension({
         variables: {
-          'projectId': this.props.data.project.id,
-          'extensionSpecId': extension.id,
+          'projectID': this.props.data.project.id,
+          'extensionID': extension.id,
           'config': formValues,
-          'environmentId': this.props.store.app.currentEnvironment.id,
+          'environmentID': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
         this.props.data.refetch()
@@ -237,17 +238,17 @@ export default class Extensions extends React.Component {
   deleteExtension(){
     let { extension } = this.state.extensionDrawer
 
-    if (!extension.extensionSpec) {
+    if (!extension.extension) {
       return;
     }
 
     this.props.deleteExtension({
       variables: {
         'id': extension.id,
-        'projectId': this.props.data.project.id,
-        'extensionSpecId': extension.extensionSpec.id,
+        'projectID': this.props.data.project.id,
+        'extensionID': extension.extension.id,
         'config': extension.config,
-        'environmentId': this.props.store.app.currentEnvironment.id,
+        'environmentID': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
       this.props.data.refetch()
@@ -256,19 +257,19 @@ export default class Extensions extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   } 
 
   render() {
     const { loading, project } = this.props.data;
 
     if(loading) {
-      return (<div>Loading...</div>);
+      return (<Loading />)
     }
 
     return (
       <div>
-        <Grid container spacing={24}>
+        <Grid container spacing={24} style={{ marginTop: 1 }}>
           <Grid item xs={12}>
             {this.renderEnabledExtensions()}
           </Grid>
@@ -276,23 +277,24 @@ export default class Extensions extends React.Component {
             {this.renderAvailableExtensions()}
           </Grid>
         </Grid>
-
-        <Dialog open={this.state.dialogOpen}>
-          <DialogTitle>{"Are you sure you want to delete"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {"This will delete the extension and all its generated environment variables and cloud resources associated with " + project.name + "."}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.deleteExtension.bind(this)} color="accent">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {this.state.extensionDrawer.extension && this.state.extensionDrawer.extension.extension &&
+          <Dialog open={this.state.dialogOpen}>
+            <DialogTitle>{"Are you sure you want to delete " + this.state.extensionDrawer.extension.extension.name + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"This will delete the extension and all its generated environment variables and cloud resources associated with " + project.name + "."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.deleteExtension.bind(this)} color="accent">
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+        }
 
         <Drawer
           anchor="right"
@@ -308,25 +310,25 @@ export default class Extensions extends React.Component {
   }
 
   renderAvailableExtensions() {
-    const { extensionSpecs, project } = this.props.data;
+    const { extensions, project } = this.props.data;
 
-    let extensions = extensionSpecs.reduce((extensions, extensionSpec) => {
+    let availableExtensions = extensions.reduce((extensions, extension) => {
       let found = false
-      project.extensions.forEach(function(extension) {
-        if (extension.extensionSpec.id === extensionSpec.id && extension.extensionSpec.type !== 'once') {
+      project.extensions.forEach(function(projectExtension) {
+        if (projectExtension.extension.id === extension.id && projectExtension.extension.type !== 'once') {
           found = true 
         }
       })
       
-      if (!found && extensionSpec.environment.id === this.props.store.app.currentEnvironment.id) {
+      if (!found && extension.environment.id === this.props.store.app.currentEnvironment.id) {
         extensions.push(
           <TableRow
             hover
-            onClick={event => this.openExtensionDrawer(event, extensionSpec)}
-            key={extensionSpec.id}
+            onClick={event => this.openExtensionDrawer(event, extension)}
+            key={extension.id}
           >
-            <TableCell> { extensionSpec.name } </TableCell>
-            <TableCell> { extensionSpec.type } </TableCell>
+            <TableCell> { extension.name } </TableCell>
+            <TableCell> { extension.type } </TableCell>
           </TableRow>
         );
       }
@@ -354,7 +356,7 @@ export default class Extensions extends React.Component {
           </TableRow>
         </TableHead>
         <TableBody>
-          {extensions}
+          {availableExtensions}
         </TableBody>
       </Table>
     </Paper>
@@ -403,8 +405,8 @@ export default class Extensions extends React.Component {
               onClick={event => this.openExtensionDrawer(event, extension)}
               tabIndex={-1}
               key={extension.id}>
-              <TableCell> { extension.extensionSpec.name } </TableCell>
-              <TableCell> { extension.extensionSpec.type } </TableCell>
+              <TableCell> { extension.extension.name } </TableCell>
+              <TableCell> { extension.extension.type } </TableCell>
               <TableCell> { stateIcon } </TableCell>
               <TableCell> { new Date(extension.created).toDateString() }</TableCell>
             </TableRow>
@@ -427,13 +429,13 @@ export default class Extensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
- 
-    if(extension.__typename === "ExtensionSpec"){
-      const extensionSpec = extension
-      name = extensionSpec.name
-      type = extensionSpec.type
-      extensionSpec.config.map(function(obj){
-          let _obj = _.find(extensionSpec.config.config, {key: obj.key, value: obj.value });
+    
+    if(extension.__typename === "Extension"){
+      const ext = extension
+      name = ext.name
+      type = ext.type
+      ext.config.map(function(obj){
+          let _obj = _.find(ext.config.config, {key: obj.key, value: obj.value });
           if (_obj) {
               config.push(_obj) 
           } else {
@@ -441,8 +443,10 @@ export default class Extensions extends React.Component {
           }
           return null
       })
-    } else if(extension.__typename === "Extension"){
+    } else if(extension.__typename === "ProjectExtension"){
         config = []
+        name = extension.extension.name
+        type = extension.extension.type
         extension.config.config.map(function(obj){
           let _obj = _.clone(obj)
           _obj.value = obj.value
@@ -467,15 +471,15 @@ export default class Extensions extends React.Component {
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
     this.form.update({ config: config })
 
-    const envVarOptions = this.props.data.project.environmentVariables.map(function(envVar){
+    const secretOptions = this.props.data.project.secrets.map(function(secret){
       return {
-        key: envVar.id,
-        value: "(" + envVar.key + ") => " + envVar.value,
+        key: secret.id,
+        value: "(" + secret.key + ") => " + secret.value,
       }
     })
 
     this.form.state.extra({
-      config: envVarOptions,
+      config: secretOptions,
     })
 
     
@@ -559,7 +563,7 @@ export default class Extensions extends React.Component {
             >
               Save
             </Button>
-            { extension.extensionSpec && <Button
+            { extension.extension && <Button
               onClick={() => this.setState({ dialogOpen: true })}
               style={{ color: "red" }}
             >

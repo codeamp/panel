@@ -18,6 +18,7 @@ import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import TextareaField from 'components/Form/textarea-field';
 import SelectField from 'components/Form/select-field';
+import Loading from 'components/Utils/Loading';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
@@ -37,7 +38,7 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
       name
       created
     }
-    environmentVariables {
+    secrets {
       id
       key
       value
@@ -68,17 +69,21 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
       }
     }
   }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
-mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
-  createEnvironmentVariable(environmentVariable:{
+mutation CreateSecret($key: String!, $value: String!,  $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
+  createSecret(secret:{
   key: $key,
   value: $value,
   type: $type,
   scope: $scope,
   isSecret: $isSecret,
-  environmentId: $environmentId,
+  environmentID: $environmentID,
   }) {
       id
       key
@@ -90,19 +95,19 @@ mutation CreateEnvironmentVariable($key: String!, $value: String!,  $type: Strin
       created
   }
 }
-`, { name: "createEnvironmentVariable" })
+`, { name: "createSecret" })
 
 
 @graphql(gql`
-mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
-  updateEnvironmentVariable(environmentVariable:{
+mutation UpdateSecret($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
+  updateSecret(secret:{
   id: $id,
   key: $key,
   value: $value,
   type: $type,
   scope: $scope,
   isSecret: $isSecret,
-  environmentId: $environmentId,
+  environmentID: $environmentID,
   }) {
       id
       key
@@ -114,18 +119,18 @@ mutation UpdateEnvironmentVariable($id: String!, $key: String!, $value: String!,
       created
   }
 }
-`, { name: "updateEnvironmentVariable" })
+`, { name: "updateSecret" })
 
 @graphql(gql`
-mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentId: String!) {
-  deleteEnvironmentVariable(environmentVariable:{
+mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
+  deleteSecret(secret:{
   id: $id,
   key: $key,
   value: $value,
   type: $type,
   scope: $scope,
   isSecret: $isSecret,
-  environmentId: $environmentId,
+  environmentID: $environmentID,
   }) {
       id
       key
@@ -137,10 +142,10 @@ mutation DeleteEnvironmentVariable ($id: String!, $key: String!, $value: String!
       created
   }
 }
-`, { name: "deleteEnvironmentVariable" })
+`, { name: "deleteSecret" })
 
 @observer
-export default class EnvironmentVariables extends React.Component {
+export default class Secrets extends React.Component {
   constructor(props){
     super(props)
     this.state = {
@@ -161,11 +166,11 @@ export default class EnvironmentVariables extends React.Component {
       'type',
       'scope',
       'isSecret',
-      'environmentId',
-      'projectId',
+      'environmentID',
+      'projectID',
     ];
     const initials = {
-      'projectId': '',
+      'projectID': '',
     }
     const rules = {
       'key': 'string|required',
@@ -175,7 +180,7 @@ export default class EnvironmentVariables extends React.Component {
       'key': 'Key',
       'value': 'Value',
       'scope': 'Scope',
-      'environmentId': 'Environment',
+      'environmentID': 'Environment',
       'isSecret': "Protected"
     };
     const types = {
@@ -189,7 +194,7 @@ export default class EnvironmentVariables extends React.Component {
     const extra = {
       'type': [{key: 'build', value: 'Build'}, {key: 'env', value: 'Normal' },{key: 'file', value: 'File'}],
       'scope': [{key: 'global', value: 'Global'}, {key: 'extension', value: 'Extension'}],
-      'environmentId': [],
+      'environmentID': [],
     };
     const hooks = {};
     const plugins = { dvr: validatorjs };
@@ -206,22 +211,22 @@ export default class EnvironmentVariables extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
-  onClick(envVarIdx){
-    const envVar = this.props.data.environmentVariables[envVarIdx]
-    if(envVar !== undefined){
-        this.form.$('key').set(envVar.key)
+  onClick(secretIdx){
+    const secret = this.props.data.secrets[secretIdx]
+    if(secret !== undefined){
+        this.form.$('key').set(secret.key)
         
         this.form.$('key').set('disabled', true)
-        this.form.$('environmentId').set('disabled', true)
+        this.form.$('environmentID').set('disabled', true)
         this.form.$('scope').set('disabled', true)
 
-        this.form.$('value').set(envVar.value)
-        this.form.$('type').set(envVar.type)
-        this.form.$('environmentId').set(envVar.environment.id)
-        this.form.$('scope').set(envVar.scope)
-        this.form.$('id').set(envVar.id)
-        this.form.$('index').set(envVarIdx)
-        this.form.$('isSecret').set(envVar.isSecret)
+        this.form.$('value').set(secret.value)
+        this.form.$('type').set(secret.type)
+        this.form.$('environmentID').set(secret.environment.id)
+        this.form.$('scope').set(secret.scope)
+        this.form.$('id').set(secret.id)
+        this.form.$('index').set(secretIdx)
+        this.form.$('isSecret').set(secret.isSecret)
         this.form.$('isSecret').set('disabled', true)
 
         this.openDrawer()
@@ -229,7 +234,7 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   onClickVersion(versionIdx) {
-    this.form.$('value').set(this.props.data.environmentVariables[this.form.values()['index']].versions[versionIdx].value)
+    this.form.$('value').set(this.props.data.secrets[this.form.values()['index']].versions[versionIdx].value)
   }
 
   onError(form){
@@ -238,7 +243,7 @@ export default class EnvironmentVariables extends React.Component {
   onSuccess(form){
     this.form.$('key').set('disabled', false)
     if(this.form.values()['id'] === ""){
-      this.props.createEnvironmentVariable({
+      this.props.createSecret({
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
@@ -246,11 +251,11 @@ export default class EnvironmentVariables extends React.Component {
         this.closeDrawer()
       });
     } else {
-      this.props.updateEnvironmentVariable({
+      this.props.updateSecret({
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.form.$('id').set(data.updateEnvironmentVariable.id)
+        this.form.$('id').set(data.updateSecret.id)
         this.form.$('key').set('disabled', true)
         this.setState({ saving: false })
       });
@@ -272,7 +277,7 @@ export default class EnvironmentVariables extends React.Component {
 
   closeDrawer(){
     this.form.$('key').set('disabled', false)
-    this.form.$('environmentId').set('disabled', false)
+    this.form.$('environmentID').set('disabled', false)
     this.form.$('scope').set('disabled', false)
 
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false, addEnvVarMenuOpen: false })
@@ -280,7 +285,7 @@ export default class EnvironmentVariables extends React.Component {
 
   handleDeleteEnvVar(){
     if(this.form.values()['id'] !== ''){
-      this.props.deleteEnvironmentVariable({
+      this.props.deleteSecret({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
@@ -291,11 +296,11 @@ export default class EnvironmentVariables extends React.Component {
   }
 
   render() {
-    let { loading, environmentVariables, environments } = this.props.data;
+    let { loading, secrets, environments } = this.props.data;
 
     var self = this;
     if(loading){
-      return null;
+      return <Loading />;
     }
     const extraOptions = environments.map(function(env){
       return {
@@ -304,7 +309,7 @@ export default class EnvironmentVariables extends React.Component {
       }
     })
     this.form.state.extra({
-      environmentId: extraOptions,
+      environmentID: extraOptions,
     })
 
     return (
@@ -313,7 +318,7 @@ export default class EnvironmentVariables extends React.Component {
           <Toolbar>
             <div>
               <Typography variant="title">
-                Environment Variables
+                Secrets
               </Typography>
             </div>
           </Toolbar>
@@ -344,33 +349,37 @@ export default class EnvironmentVariables extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {environmentVariables.map(function(envVar, idx){
+              {secrets.map(function(secret, idx){
+                let emptyValue
+                if (secret.value === '') {
+                  emptyValue = styles.emptyValue
+                }
                 return (
                   <TableRow
                     hover
                     tabIndex={-1}
                     onClick={()=> self.onClick(idx)}
-                    key={envVar.id}>
-                    <TableCell>
-                      {envVar.key}
+                    key={secret.id}>
+                    <TableCell className={emptyValue}>
+                      {secret.key}
                     </TableCell>
                     <TableCell>
-                      {envVar.type}
+                      {secret.type}
                     </TableCell>
                     <TableCell>
-                      {envVar.isSecret ? "yes" : "no" }
+                      {secret.isSecret ? "yes" : "no" }
                     </TableCell>
                     <TableCell>
-                      {envVar.scope}
+                      {secret.scope}
                     </TableCell>
                     <TableCell>
-                      {envVar.environment.name}
+                      {secret.environment.name}
                     </TableCell>
                     <TableCell>
-                      {envVar.user.email}
+                      {secret.user.email}
                     </TableCell>
                     <TableCell>
-                      {new Date(envVar.created).toString()}
+                      {new Date(secret.created).toDateString()}
                     </TableCell>
                   </TableRow>
                 )
@@ -430,7 +439,7 @@ export default class EnvironmentVariables extends React.Component {
                     <SelectField field={this.form.$('scope')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentId')} fullWidth={true} extraKey='environmentId' />
+                    <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID' />
                   </Grid>
                   
                   {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
@@ -461,9 +470,9 @@ export default class EnvironmentVariables extends React.Component {
                   }
 
                   {/* Version History */}
-                  {this.form.values()['index'] >= 0 && environmentVariables[this.form.values()['index']] &&
+                  {this.form.values()['index'] >= 0 && secrets[this.form.values()['index']] &&
                     <EnvVarVersionHistory 
-                      versions={environmentVariables[this.form.values()['index']].versions}
+                      versions={secrets[this.form.values()['index']].versions}
                       onClickVersion={this.onClickVersion.bind(this)}
                     />
                   }       
@@ -497,9 +506,9 @@ export default class EnvironmentVariables extends React.Component {
             </form>
           </div>
         </Drawer>
-        {environmentVariables.length > 0 && environmentVariables[this.form.values()['index']] &&
+        {secrets.length > 0 && secrets[this.form.values()['index']] &&
         <Dialog open={this.state.dialogOpen}>
-          <DialogTitle>{"Are you sure you want to delete " + environmentVariables[this.form.values()['index']].key + "?"}</DialogTitle>
+          <DialogTitle>{"Are you sure you want to delete " + secrets[this.form.values()['index']].key + "?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
               {"This will delete the environment variable."}

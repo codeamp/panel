@@ -19,6 +19,7 @@ import CloseIcon from 'material-ui-icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
+import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import validatorjs from 'validatorjs';
@@ -36,7 +37,7 @@ const inlineStyles = {
 
 @graphql(gql`
 query {
-  extensionSpecs {
+  extensions {
     id
     type
     key
@@ -53,7 +54,7 @@ query {
     name
     created
   }
-  environmentVariables {
+  secrets {
     id
     key
     value
@@ -67,15 +68,19 @@ query {
     }
   }
 }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
-mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
-    createExtensionSpec(extensionSpec:{
+mutation CreateExtension ($name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+    createExtension(extension:{
       name: $name,
       key: $key,
       type: $type,
-      environmentId: $environmentId,
+      environmentID: $environmentID,
       config: $config,
       component: $component,
     }) {
@@ -83,17 +88,17 @@ mutation CreateExtensionSpec ($name: String!, $key: String!, $type: String!, $en
         name
     }
 }
-`, { name: "createExtensionSpec" })
+`, { name: "createExtension" })
 
 
 @graphql(gql`
-mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
-    updateExtensionSpec(extensionSpec:{
+mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+    updateExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
       type: $type,
-      environmentId: $environmentId,
+      environmentID: $environmentID,
       config: $config,
       component: $component,
     }) {
@@ -101,17 +106,17 @@ mutation UpdateExtensionSpec ($id: String, $name: String!, $key: String!, $type:
         name
     }
 }
-`, { name: "updateExtensionSpec" })
+`, { name: "updateExtension" })
 
 
 @graphql(gql`
-mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type: String!, $environmentId: String!, $config: Json!, $component: String!) {
-    deleteExtensionSpec(extensionSpec:{
+mutation DeleteExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+    deleteExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
       type: $type,
-      environmentId: $environmentId,
+      environmentID: $environmentID,
       config: $config,
       component: $component,
     }) {
@@ -119,13 +124,13 @@ mutation DeleteExtensionSpec ($id: String, $name: String!, $key: String!, $type:
         name
     }
 }
-`, { name: "deleteExtensionSpec" })
+`, { name: "deleteExtension" })
 
 
 
 @inject("store") @observer
 
-export default class ExtensionSpecs extends React.Component {
+export default class Extensions extends React.Component {
   constructor(props){
     super(props)
     this.state = {
@@ -144,7 +149,7 @@ export default class ExtensionSpecs extends React.Component {
       'config[]',
       'config[].key',
       'config[].value',
-      'environmentId',
+      'environmentID',
       'component',
     ];
     const rules = {
@@ -163,10 +168,11 @@ export default class ExtensionSpecs extends React.Component {
       'config[].key': 'Key',
       'config[].value': 'Value',
       'component': 'React Component',
-      'environmentId': 'Environment',
+      'environmentID': 'Environment',
     };
     const initials = {
       'type': 'Workflow',
+      'environmentID': null,
     };
 
     const types = {
@@ -195,10 +201,12 @@ export default class ExtensionSpecs extends React.Component {
 
   openDrawer(){
     this.form.showErrors(false)
+    this.setOptions()
     this.setState({ drawerOpen: true, dialogOpen: false })
   }
 
   closeDrawer(){
+    this.form.reset()
     this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
   }
 
@@ -207,28 +215,24 @@ export default class ExtensionSpecs extends React.Component {
     this.form.$('index').set(index)
     this.form.$('name').set(extension.name)
     this.form.$('key').set(extension.key)
-    this.form.$('environmentId').set(extension.environment.id)
+    this.form.$('environmentID').set(extension.environment.id)
     this.form.update({ config: extension.config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
-
-    console.log(extension)
-
     this.openDrawer()
   }
 
   onSuccess(form){
     this.setState({ saving: true })
-
     if(this.form.values().id === ''){
-      this.props.createExtensionSpec({
+      this.props.createExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer()
       });
     } else {
-      this.props.updateExtensionSpec({
+      this.props.updateExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
@@ -240,7 +244,7 @@ export default class ExtensionSpecs extends React.Component {
   handleDeleteExtension() {
     this.setState({ saving: true })
     var that = this
-    this.props.deleteExtensionSpec({
+    this.props.deleteExtension({
       variables: this.form.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
@@ -256,35 +260,50 @@ export default class ExtensionSpecs extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
-  render() {
-    const { loading, extensionSpecs, environments, environmentVariables } = this.props.data;
-
-    if(loading){
-      return (
-        <div>
-          Loading ...
-        </div>
-      )
+  setOptions(){
+    const { secrets, environments } = this.props.data    
+    // filter secrets by env of current extension if exists
+    var self = this
+    var envSecrets = secrets
+    if(this.form.$('environmentID').value){
+      envSecrets = secrets.filter(function(secret){
+        if(self.form.$('environmentID').value === secret.environment.id){
+          return true
+        }
+        return false
+      })
     }
 
-    const envVarOptions = environmentVariables.map(function(envVar){
+    var secretOptions = []
+    secretOptions = envSecrets.map(function(secret){
       return {
-        key: envVar.id,
-        value: "(" + envVar.key + ") => " + envVar.value,
+        key: secret.id,
+        value: "(" + secret.key + ") => " + secret.value,
       }
     })
 
-    const envOptions = environments.map(function(env){
+    var envOptions = []
+    envOptions = environments.map(function(env){
       return {
         key: env.id,
         value: env.name,
       }
-    })
+    })    
 
     this.form.state.extra({
-      config: envVarOptions,
-      environmentId: envOptions,
-    })
+      config: secretOptions,
+      environmentID: envOptions,      
+    })    
+  }
+
+  render() {
+    const { loading, extensions } = this.props.data;
+
+    if(loading){
+      return (
+        <Loading />
+      )
+    }    
 
     return (
       <div className={styles.root}>
@@ -294,7 +313,7 @@ export default class ExtensionSpecs extends React.Component {
               <Toolbar>
                 <div>
                   <Typography variant="title">
-                    Extension Specs
+                    Extensions
                   </Typography>
                 </div>
               </Toolbar>
@@ -316,7 +335,7 @@ export default class ExtensionSpecs extends React.Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {extensionSpecs.map( (extension, index) => {
+                  {extensions.map( (extension, index) => {
                     return (
                       <TableRow
                         hover
@@ -351,7 +370,7 @@ export default class ExtensionSpecs extends React.Component {
               <AppBar position="static" color="default">
                 <Toolbar>
                   <Typography variant="title" color="inherit">
-                    Extension Spec
+                    Extensions
                   </Typography>
                 </Toolbar>
               </AppBar>
@@ -364,7 +383,7 @@ export default class ExtensionSpecs extends React.Component {
                     <InputField field={this.form.$('key')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentId')} autoWidth={true} extraKey='environmentId' fullWidth={true} />
+                    <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID'/>
                   </Grid>
                   <Grid item xs={12}>
                     <SelectField field={this.form.$('type')} fullWidth={true} />
@@ -397,28 +416,6 @@ export default class ExtensionSpecs extends React.Component {
                       Add Config
                     </Button>
                   </Grid>
-                  {/* <Grid item xs={12}>
-                    <Typography variant="subheading"> Environment Variables </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {this.form.$('config').map(function(kv){
-                        return (
-                        <Grid container spacing={24}>
-                            <Grid item xs={10}>
-                                <SelectField field={kv.$('envVar')} autoWidth={true} extraKey="config" />
-                            </Grid>
-                            <Grid item xs={2}>
-                            <IconButton>
-                                <CloseIcon onClick={kv.onDel} />
-                            </IconButton>
-                            </Grid>
-                        </Grid>
-                        )
-                    })}
-                    <Button variant="raised" type="secondary" onClick={this.form.$('config').onAdd}>
-                      Add env var
-                    </Button>
-                  </Grid> */}
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
@@ -447,9 +444,9 @@ export default class ExtensionSpecs extends React.Component {
               </form>
             </div>
         </Drawer>
-        {extensionSpecs[this.form.values()['index']] != null &&
+        {extensions[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + extensionSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogTitle>{"Ae you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will delete the extension spec.

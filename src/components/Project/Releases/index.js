@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
+import { NavLink } from 'react-router-dom';
 import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -11,54 +12,68 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
-import ForkIcon from 'react-icons/lib/fa/code-fork';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
-import ReleaseStateCompleteIcon from 'material-ui-icons/CloudDone';
-import ReleaseStateFailedIcon from 'material-ui-icons/Error';
+import Loading from 'components/Utils/Loading';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
 
 class ReleaseView extends React.Component {
+  renderReleaseExtensionStatuses() {
+    const { release, extensions } = this.props;
+    // filter out 'once' types
+    const filteredExtensions = extensions.filter(function(extension){
+      if(extension.extension.type === "once") {
+        return false
+      } 
+      return true
+    })
+    const projectExtensionLights = filteredExtensions.map(function(extension){
+      for(var i = 0; i < release.releaseExtensions.length; i++){
+        if(release.releaseExtensions[i].extension.id === extension.id){
+          // get state { waiting => yellow, failed => red, complete => green}
+          switch(release.releaseExtensions[i].state){  
+            case "waiting":
+            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}></div>)
+            case "complete":
+            return (<div key={"complete"+release.releaseExtensions[i].id} className={styles.innerComplete}></div>)
+            case "failed":
+            return (<div key={"failed"+release.releaseExtensions[i].id} className={styles.innerFailed}></div>)                        
+            default:
+            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}></div>)
+          }
+        }
+      }
+      return (<div key="notStarted" className={styles.innerNotStarted}></div>)
+    })
+    
+    return (
+      <div style={{ display: "inline-block" }}>
+        { projectExtensionLights }
+      </div>
+    )
+  }
   render() {
-    let releaseStateIcon = <CircularProgress size={25} />
-    if(this.props.release.state === "complete"){
-        releaseStateIcon = <ReleaseStateCompleteIcon color={'green'} />
-    }
-    if(this.props.release.state === "failed"){
-        releaseStateIcon = <ReleaseStateFailedIcon color={'red'} />
-    }
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
-        <Card className={this.props.showFullView === false ? styles.feature : styles.fullFeature } variant="raised" disabled={this.props.showFullView}>
+        <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>
           <CardContent>
             <Typography className={styles.featureCommitMsg}>
-              <ForkIcon />
-              { this.props.release.headFeature.hash }
+              { this.props.release.headFeature.hash.slice(30) }
               <DoubleRightIcon />
-              { this.props.release.tailFeature.hash }
+              { this.props.release.tailFeature.hash.slice(30) }
             </Typography>
-            <br/>
             <Typography>
               { this.props.release.headFeature.message}
             </Typography>
             <Typography component="p" className={styles.featureAuthor}>
-              by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toString() }
+              by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toDateString() }
             </Typography>
-            <br/>
-            <Grid item xs={12}>
-              {releaseStateIcon}
-              <Typography variant="subheading">
-                {this.props.release.releaseExtensions.filter(re => re.state === "complete").length} / {this.props.release.releaseExtensions.length}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subheading">
-                {this.props.release.stateMessage}
-              </Typography>
-            </Grid>            
+            <div className={styles.statusLights}>
+              {this.renderReleaseExtensionStatuses()}
+            </div>
           </CardContent>
         </Card>
       </Grid>
@@ -68,14 +83,22 @@ class ReleaseView extends React.Component {
 
 @inject("store") @observer
 @graphql(gql`
-  query Project($slug: String, $environmentId: String){
-    project(slug: $slug, environmentId: $environmentId) {
+  query Project($slug: String, $environmentID: String){
+    project(slug: $slug, environmentID: $environmentID) {
       id
       name
       slug
       rsaPublicKey
       gitProtocol
       gitUrl
+      extensions {
+        id
+        extension {
+          id
+          name
+          type
+        }
+      }
       currentRelease {
         id
         state
@@ -87,14 +110,16 @@ class ReleaseView extends React.Component {
           id
         }
         releaseExtensions {
+          id
+          extension {
             id
             extension {
-                extensionSpec {
-                    name
-                }
+              id
+              name
             }
-            state
-            stateMessage
+          }
+          state
+          stateMessage
         }
         created
         user {
@@ -135,16 +160,18 @@ class ReleaseView extends React.Component {
           id
         }        
         releaseExtensions {
+          id
+          artifacts
+          extension {
             id
-            artifacts
             extension {
-              extensionSpec {
-                name
-              }
+              id
+              name
             }
-            type
-            state
-            stateMessage
+          }
+          type
+          state
+          stateMessage
         }
         headFeature {
           id
@@ -171,14 +198,14 @@ class ReleaseView extends React.Component {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentId: props.store.app.currentEnvironment.id,
-    }
+      environmentID: props.store.app.currentEnvironment.id,
+    },
   })
 })
 
 @graphql(gql`
-mutation Mutation($id: String, $headFeatureId: String!, $projectId: String!, $environmentId: String!) {
-  createRelease(release: { id: $id, headFeatureId: $headFeatureId, projectId: $projectId, environmentId: $environmentId }) {
+mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $environmentID: String!) {
+  createRelease(release: { id: $id, headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID }) {
     headFeature {
       message
     }
@@ -298,7 +325,7 @@ export default class Releases extends React.Component {
       })
     } else if(deployAction === 'Redeploy') {
       createRelease({
-        variables: { id: release.id, headFeatureId: release.headFeature.id, projectId: release.project.id, environmentId: release.environment.id },
+        variables: { id: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
       }).then(({data}) => {
         refetch()
       }).catch(function(err){
@@ -313,48 +340,75 @@ export default class Releases extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState){
-    nextProps.data.refetch()
+
   }
 
   render() {
     const { loading, project } = this.props.data;
 
     if(loading){
-      return (<div>Loading...</div>);
+      return (<Loading />)
     }
     return (
       <div>
         <Grid container spacing={16}>
-          <Grid item xs={12} className={styles.title}>
-            <Typography variant="subheading">
-              <b> Current Release </b>
-            </Typography>
-          </Grid>
           <Grid item xs={12} className={styles.feature}>
-          {project.currentRelease != null &&
-            <ReleaseView
-            key={project.currentRelease.id}
-            release={project.currentRelease}
-            handleOnClick={() => this.handleToggleDrawer(-1)}
-            showFullView={this.state.showCurrentReleaseFullView}
-            />}
+            <Card square={true}>
+              <CardContent>
+                <Typography variant="title">
+                  Current Release
+                </Typography>
+              </CardContent>
+            </Card>              
+            {project.currentRelease ?
+              <ReleaseView
+                key={project.currentRelease.id}
+                extensions={project.extensions}
+                release={project.currentRelease}
+                handleOnClick={() => this.handleToggleDrawer(-1)}
+                showFullView={this.state.showCurrentReleaseFullView}
+              /> :
+              <Card square={true}>
+                <CardContent>
+                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+                    This project has no deployed releases yet.
+                  </Typography>
+                </CardContent>
+              </Card>                          
+              }
           </Grid>
         </Grid>
         <Grid container spacing={16}>
-          <Grid item xs={12} className={styles.title}>
-            <Typography variant="subheading">
-              <b> Releases </b>
-            </Typography>
-          </Grid>
           <Grid item xs={12} className={styles.feature}>
-            {[...Array(project.releases.length)].map((x, i) =>
-              <ReleaseView
-                key={project.releases[i].id}
-                release={project.releases[i]}
-                handleOnClick={() => this.handleToggleDrawer(i)}
-                showFullView={this.state.activeFeatureKey === i} />
-            )}
-          </Grid>
+            <Card square={true}>
+              <CardContent>
+                <Typography variant="title">
+                  Releases
+                </Typography>
+              </CardContent>
+            </Card>
+            {project.releases.length > 0 ?
+              [...Array(project.releases.length)].map((x, i) =>
+                <ReleaseView
+                  key={project.releases[i].id}
+                  extensions={project.extensions}
+                  release={project.releases[i]}
+                  handleOnClick={() => this.handleToggleDrawer(i)}
+                  showFullView={this.state.activeFeatureKey === i} />
+              )
+              :
+              <Card square={true}>
+                <CardContent>
+                  <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                    There are no releases.
+                  </Typography>
+                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+                  Do some work and deploy a feature <NavLink to={"/projects/" + project.slug + "/features"}><strong>here.</strong></NavLink>
+                  </Typography>                  
+                </CardContent>
+              </Card>                          
+              }
+            </Grid>
         </Grid>
         <Drawer
           anchor="right"
@@ -366,7 +420,6 @@ export default class Releases extends React.Component {
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
                 <Toolbar>
-
                   <Typography variant="title" color="inherit">
                     Release Information
                   </Typography>
@@ -374,16 +427,27 @@ export default class Releases extends React.Component {
               </AppBar>
               <Grid container spacing={24} className={styles.grid}>
                 <Grid item xs={12}>
-                    <Typography variant="body2">
-                    <b> head </b> : {project.releases !== undefined &&
-                      project.releases[this.form.values()['index']] &&
-                      project.releases[this.form.values()['index']].headFeature.hash }
-                    </Typography>
-                    <Typography variant="body2">
-                    <b> tail </b> : {project.releases !== undefined &&
-                      project.releases[this.form.values()['index']] &&
-                      project.releases[this.form.values()['index']].tailFeature.hash }
-                    </Typography>
+                  <Card square={true}>
+                    <CardContent>
+                      <Typography variant="title">
+                        Git Info
+                      </Typography>
+                    </CardContent>
+                  </Card>                       
+                  <Card square={true}>
+                    <CardContent>                                     
+                      <Typography variant="body1">
+                        <b>HEAD</b> : {project.releases !== undefined && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].headFeature.hash }
+                      </Typography>                  
+                    </CardContent>
+                  </Card>                  
+                  <Card square={true}>
+                    <CardContent>                                               
+                      <Typography variant="body1">
+                        <b>TAIL</b> : {project.releases !== undefined && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].tailFeature.hash }
+                      </Typography>                                  
+                    </CardContent>
+                  </Card>                                    
                 </Grid>
                 <Grid item xs={12}>                
                   <Paper className={styles.root}>
@@ -425,7 +489,7 @@ export default class Releases extends React.Component {
                               <TableRow
                                 tabIndex={-1}
                                 key={re.id}>
-                                <TableCell> { re.extension.extensionSpec.name } </TableCell>
+                                <TableCell> { re.extension.extension.name } </TableCell>
                                 <TableCell> { stateIcon } </TableCell>
                                 <TableCell>
                                     {re.stateMessage}

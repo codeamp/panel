@@ -15,6 +15,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import AddIcon from 'material-ui-icons/Add';
 import InputField from 'components/Form/input-field';
+import Loading from 'components/Utils/Loading';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
 import validatorjs from 'validatorjs';
@@ -39,7 +40,11 @@ const inlineStyles = {
         created
       }
     }
-`)
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
 @graphql(gql`
   mutation CreateEnvironment($name: String!, $color: String!) {
@@ -122,7 +127,6 @@ export default class Environments extends React.Component {
 
   onSubmit(e) {
     this.setState({ saving: true })
-    console.log(this.form.values())
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
@@ -151,7 +155,6 @@ export default class Environments extends React.Component {
         this.props.data.refetch()
       });
     } else {
-      console.log(form.values())
       this.props.createEnvironment({
         variables: form.values(),
       }).then(({data}) => {
@@ -183,10 +186,8 @@ export default class Environments extends React.Component {
     const { loading, environments } = this.props.data;
     if(loading){
       return (
-        <div>
-          Loading ...
-        </div>
-      )
+        <Loading />
+      );
     }
 
     var self = this;
@@ -195,11 +196,9 @@ export default class Environments extends React.Component {
       <div>
         <Paper className={styles.tablePaper}>
           <Toolbar>
-            <div>
-              <Typography variant="title">
-                Environments
-              </Typography>
-            </div>
+            <Typography variant="title">
+              Environments
+            </Typography>
           </Toolbar>
           <Table>
             <TableHead>
@@ -232,7 +231,7 @@ export default class Environments extends React.Component {
                         </svg>
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toString()}
+                      {new Date(env.created).toDateString()}
                     </TableCell>
                   </TableRow>
                 )
@@ -250,7 +249,7 @@ export default class Environments extends React.Component {
         <Drawer
             anchor="right"
             classes={{
-            paper: styles.list,
+              paper: styles.list,
             }}
             open={this.state.drawerOpen}
         >
