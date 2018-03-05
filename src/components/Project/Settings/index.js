@@ -10,6 +10,7 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import InputField from 'components/Form/input-field';
 import CreateProject from '../../Create';
+import Card, {CardContent, CardActions} from 'material-ui/Card';
 
 @inject("store") @observer
 
@@ -148,8 +149,9 @@ export default class Settings extends React.Component {
 
           <Grid item sm={9}>
             <Grid xs={12}>
-              <CreateProject title={"Update Project"}
-                type={"save changes"}
+              <CreateProject 
+                title=""
+                type={"save"}
                 project={project}
                 loadLeftNavBar={false} />
             </Grid>
@@ -163,19 +165,22 @@ export default class Settings extends React.Component {
               chosen branch. Make sure the selected branch exists.
             </Typography>
           </Grid>
-
           <Grid item sm={9}>
-            <Grid xs={12}>
-              <InputField field={this.form.$('gitBranch')} fullWidth={true} />            
-            </Grid>
-            <Grid item xs={12}>
-              <Button color="primary"
-                type="submit"
-                variant="raised"
-                onClick={(e) => this.onUpdateSettings(e)}>
+            <Card className={styles.card}>
+              <CardContent>
+                <Grid xs={12}>
+                  <InputField field={this.form.$('gitBranch')} fullWidth={true} />            
+                </Grid>
+              </CardContent>
+              <CardActions>
+                <Button color="primary"
+                  type="submit"
+                  variant="raised"
+                  onClick={(e) => this.onUpdateSettings(e)}>
                   Save
-              </Button>
-            </Grid>            
+                </Button>
+              </CardActions>
+            </Card>
           </Grid>                   
         </Grid>
       </div>
