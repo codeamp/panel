@@ -310,11 +310,6 @@ export default class ServiceSpecs extends React.Component {
               <form onSubmit={(e) => e.preventDefault()}>
                 <Grid container spacing={24} className={styles.grid}>
                   <Grid item xs={12}>
-                    <Typography variant="body1">
-                      Requests and Limits are measured in megabytes.
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12}>
                     <InputField field={this.form.$('name')} fullWidth={true} />
                   </Grid>
                   <Grid item xs={6}>
