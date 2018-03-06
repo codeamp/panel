@@ -71,7 +71,6 @@ class TopNav extends React.Component {
     environments.map((env) => {
       if(env.id === id){
         this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name })
-        this.props.data.refetch();
         this.props.client.resetStore()
         return null
       }
