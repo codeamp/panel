@@ -140,8 +140,8 @@ export default class ServiceSpecs extends React.Component {
       'name': 'Name',
       'cpuRequest': 'CPU Request (millicpus)',
       'cpuLimit': 'CPU Limit (millicpus)',
-      'memoryRequest': 'Memory Request (gb)',
-      'memoryLimit': 'Memory Limit (gb)',
+      'memoryRequest': 'Memory Request (mb)',
+      'memoryLimit': 'Memory Limit (mb)',
       'terminationGracePeriod': 'Termination Grace Period (seconds)',
     };
 
@@ -253,10 +253,10 @@ export default class ServiceSpecs extends React.Component {
                       CPU Limit
                     </TableCell>
                     <TableCell>
-                      Memory Request (gb)
+                      Memory Request (mb)
                     </TableCell>
                     <TableCell>
-                      Memory Limit (gb)
+                      Memory Limit (mb)
                     </TableCell>
                     <TableCell>
                       Timeout (s)

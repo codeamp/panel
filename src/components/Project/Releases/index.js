@@ -84,6 +84,11 @@ class ReleaseView extends React.Component {
 @inject("store") @observer
 @graphql(gql`
   query Project($slug: String, $environmentID: String){
+    user {
+      id
+      email
+      permissions
+    }
     project(slug: $slug, environmentID: $environmentID) {
       id
       name
@@ -218,21 +223,6 @@ mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $en
 }
 `, { name: "createRelease" })
 
-@graphql(gql`
-mutation Mutation($releaseId: ID!) {
-  rollbackRelease(releaseId: $releaseId) {
-    headFeature {
-      message
-    }
-    tailFeature  {
-      message
-    }
-    state
-    stateMessage
-  }
-}
-`, { name: "rollbackRelease" })
-
 export default class Releases extends React.Component {
   state = {
     activeStep: 0,
@@ -318,14 +308,14 @@ export default class Releases extends React.Component {
     const release = project.releases[this.form.values()['index']];
 
     if(deployAction === 'Rollback') {
-      rollbackRelease({variables: { releaseId: release.id }}).then(function(res){
+      createRelease({variables: { releaseId: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id }}).then(function(res){
         refetch()
       }).catch(function(err){
         refetch()
       })
     } else if(deployAction === 'Redeploy') {
       createRelease({
-        variables: { id: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
+        variables: { headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
       }).then(({data}) => {
         refetch()
       }).catch(function(err){
@@ -344,7 +334,7 @@ export default class Releases extends React.Component {
   }
 
   render() {
-    const { loading, project } = this.props.data;
+    const { loading, project, user } = this.props.data;
 
     if(loading){
       return (<Loading />)
@@ -505,7 +495,7 @@ export default class Releases extends React.Component {
                     </div>
                   </Paper>
                 </Grid>
-                {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()["index"]].artifacts).length > 0 &&
+                {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()["index"]].artifacts).length > 0 && user.permissions.includes("admin") &&
                     <Grid item xs={12}>                
                       <Paper className={styles.root}>
                         <div className={styles.tableWrapper}>

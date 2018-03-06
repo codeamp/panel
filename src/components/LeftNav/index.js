@@ -18,10 +18,26 @@ import ExtensionIcon from 'material-ui-icons/Extension';
 import SecretIcon from 'material-ui-icons/VpnKey';
 import EnvironmentIcon from 'material-ui-icons/Public';
 import UsersIcon from 'material-ui-icons/AccountCircle';
+import Loading from 'components/Utils/Loading';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 
 @withRouter
-@inject("store") @observer
+@graphql(gql`
+  query {
+    user {
+      id
+      email
+      permissions
+    }
+  }
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
 
+@inject("store") @observer
 export default class LeftNav extends React.Component {
   state = {
     openProject: true,
@@ -36,6 +52,11 @@ export default class LeftNav extends React.Component {
   }
 
   render() {
+    const { loading, user } = this.props.data;
+    if(loading) {
+        return <Loading />
+    }
+
     return (
       <Drawer variant="persistent" open={true} className={styles.root}>
         <div className={styles.drawer}>
@@ -58,55 +79,59 @@ export default class LeftNav extends React.Component {
               </ListItem>
             </NavLink>
 
-            <ListItem button onClick={this.handleClick.bind(this)}>
-              <ListItemIcon>
-                <SupervisorAccountIcon />
-              </ListItemIcon>
-              <ListItemText primary="Admin" />
-              {this.props.store.app.adminLeftNavOpen ? <ExpandLess /> : <ExpandMore />}
-            </ListItem>
-            <Collapse in={this.props.store.app.adminLeftNavOpen} unmountOnExit>
-              <NavLink to="/admin/environments" exact activeClassName={styles.active}>
-                <ListItem button>
+            {user.permissions.includes("admin") &&
+              <div>
+                <ListItem button onClick={this.handleClick.bind(this)}>
                   <ListItemIcon>
-                    <EnvironmentIcon />
+                    <SupervisorAccountIcon />
                   </ListItemIcon>
-                  <ListItemText inset primary="Environments" />
+                  <ListItemText primary="Admin" />
+                  {this.props.store.app.adminLeftNavOpen ? <ExpandLess /> : <ExpandMore />}
                 </ListItem>
-              </NavLink>
-              <NavLink to="/admin/secrets" exact activeClassName={styles.active}>
-                <ListItem button>
-                  <ListItemIcon>
-                    <SecretIcon />
-                  </ListItemIcon>
-                  <ListItemText inset primary="Secrets" />
-                </ListItem>
-              </NavLink>
-              <NavLink to="/admin/serviceSpecs" exact activeClassName={styles.active}>
-                <ListItem button>
-                  <ListItemIcon>
-                    <ServiceSpecIcon />
-                  </ListItemIcon>
-                  <ListItemText inset primary="Service Specs" />
-                </ListItem>
-              </NavLink>
-              <NavLink to="/admin/extensions" exact activeClassName={styles.active}>
-                <ListItem button>
-                  <ListItemIcon>
-                    <ExtensionIcon />
-                  </ListItemIcon>
-                  <ListItemText inset primary="Extensions" />
-                </ListItem>
-              </NavLink>
-              <NavLink to="/admin/users" exact activeClassName={styles.active}>
-                <ListItem button>
-                  <ListItemIcon>
-                    <UsersIcon />
-                  </ListItemIcon>
-                  <ListItemText inset primary="Users" />
-                </ListItem>
-              </NavLink>                
-            </Collapse>
+                <Collapse in={this.props.store.app.adminLeftNavOpen} unmountOnExit>
+                  <NavLink to="/admin/environments" exact activeClassName={styles.active}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <EnvironmentIcon />
+                      </ListItemIcon>
+                      <ListItemText inset primary="Environments" />
+                    </ListItem>
+                  </NavLink>
+                  <NavLink to="/admin/secrets" exact activeClassName={styles.active}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <SecretIcon />
+                      </ListItemIcon>
+                      <ListItemText inset primary="Secrets" />
+                    </ListItem>
+                  </NavLink>
+                  <NavLink to="/admin/serviceSpecs" exact activeClassName={styles.active}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <ServiceSpecIcon />
+                      </ListItemIcon>
+                      <ListItemText inset primary="Service Specs" />
+                    </ListItem>
+                  </NavLink>
+                  <NavLink to="/admin/extensions" exact activeClassName={styles.active}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <ExtensionIcon />
+                      </ListItemIcon>
+                      <ListItemText inset primary="Extensions" />
+                    </ListItem>
+                  </NavLink>
+                  <NavLink to="/admin/users" exact activeClassName={styles.active}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <UsersIcon />
+                      </ListItemIcon>
+                      <ListItemText inset primary="Users" />
+                    </ListItem>
+                  </NavLink>                
+                </Collapse>
+              </div>
+            }
           </List>
           <Divider/>
           <List>
