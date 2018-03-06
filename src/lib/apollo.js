@@ -58,13 +58,14 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
     defaultOptions: {
       watchQuery: {
         errorPolicy: 'ignore',
+        fetchPolicy: 'network-only',
       },
       query: {
         errorPolicy: 'all',
       },
       mutate: {
-        errorPolicy: 'all'
-      }
+        errorPolicy: 'all',
+      },
     }
   });
 };

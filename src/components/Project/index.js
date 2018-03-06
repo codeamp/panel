@@ -85,10 +85,6 @@ export default class Project extends React.Component {
     ];
   }
 
-  componentWillUpdate(nextProps){
-      this.props.store.app.setUrl(nextProps.match.url)
-  }
-
   render() {
     const { history, socket } = this.props;
     const { loading, project } = this.props.data;

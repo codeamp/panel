@@ -13,6 +13,7 @@ import { LinearProgress } from 'material-ui/Progress';
 import Button from 'material-ui/Button';
 import Loading from 'components/Utils/Loading';
 import Logo from './logo_white.png';
+import { withApollo } from 'react-apollo';
 
 import styles from './style.module.css';
 
@@ -20,18 +21,18 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 @graphql(gql`
-         query {
-           environments {
-             id
-             name
-             color
-             created
-           }
-         }
+ query {
+   environments {
+     id
+     name
+     color
+     created
+   }
+ }
 `)
 
 @inject("store") @observer
-export default class TopNav extends React.Component {
+class TopNav extends React.Component {
   state = {
     userAnchorEl: undefined,
     environmentAnchorEl: undefined,
@@ -68,8 +69,9 @@ export default class TopNav extends React.Component {
   	const { environments } = this.props.data;
 
     environments.map((env) => {
-    	if(env.id === id){
+      if(env.id === id){
         this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name })
+        this.props.client.resetStore()
         return null
       }
       return null
@@ -281,3 +283,6 @@ export default class TopNav extends React.Component {
     );
   }
 }
+
+export default withApollo(TopNav)
+

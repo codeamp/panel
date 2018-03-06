@@ -287,10 +287,6 @@ export default class Secrets extends React.Component {
     });
   }
   
-  componentWillUpdate(nextProps, nextState){
-
-  }  
-
   render() {
     const { loading, project } = this.props.data;
     if(loading){

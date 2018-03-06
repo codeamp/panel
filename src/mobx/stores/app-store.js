@@ -34,7 +34,6 @@ class AppStore {
         msg: null,
         open: false,
       },
-      url: '',
       connectionHeader: {
           msg: "",
       },
@@ -61,10 +60,6 @@ class AppStore {
       })
     });
   });
-
-  setUrl = action(url => {
-      this.url = url
-  })
 
   setProjectTitle = action(title => {
     this.leftNavProjectTitle = title;
