@@ -187,7 +187,7 @@ export default class Features extends React.Component {
     return (
       <div>
         {project.features.map((feature, idx) => {
-            if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
+            if(!project.currentRelease || new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
                 return (<ExpansionPanel 
                     key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
