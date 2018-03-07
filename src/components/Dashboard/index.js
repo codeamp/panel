@@ -1,6 +1,25 @@
 import React from 'react';
 import { observer, inject } from 'mobx-react';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
 import styles from './style.module.css';
+
+@graphql(gql`
+  query {
+    projects {
+      id
+    }
+    releases {
+      id
+      state
+    }
+  }
+`,{
+  options: {
+    fetchPolicy: 'cache-and-network'
+  }
+})
+
 
 @inject("store") @observer
 
