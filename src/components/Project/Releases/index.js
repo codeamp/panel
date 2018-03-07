@@ -20,17 +20,26 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
 
-class ReleaseView extends React.Component {
-  renderReleaseExtensionStatuses() {
+class ReleaseView extends React.Component {  
+  renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
-      if(extension.extension.type === "once") {
-        return false
-      } 
-      return true
+        if(extension.extension.type === "once") {
+            return false
+        } 
+        return true
     })
-    const projectExtensionLights = filteredExtensions.map(function(extension){
+
+    const orderedExtensions = filteredExtensions.sort(function(a, b){
+        if(b.extension.type === "workflow"){
+            return 1
+        } else {
+            return -1
+        }
+    })
+
+    const projectExtensionLights = orderedExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
@@ -84,6 +93,11 @@ class ReleaseView extends React.Component {
 @inject("store") @observer
 @graphql(gql`
   query Project($slug: String, $environmentID: String){
+    user {
+      id
+      email
+      permissions
+    }
     project(slug: $slug, environmentID: $environmentID) {
       id
       name
@@ -218,21 +232,6 @@ mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $en
 }
 `, { name: "createRelease" })
 
-@graphql(gql`
-mutation Mutation($releaseId: ID!) {
-  rollbackRelease(releaseId: $releaseId) {
-    headFeature {
-      message
-    }
-    tailFeature  {
-      message
-    }
-    state
-    stateMessage
-  }
-}
-`, { name: "rollbackRelease" })
-
 export default class Releases extends React.Component {
   state = {
     activeStep: 0,
@@ -274,6 +273,109 @@ export default class Releases extends React.Component {
 
     this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   };
+
+  renderReleaseExtensionTable() {
+    const { project } = this.props.data;
+    const release = project.releases[this.form.values()['index']]
+    const extensions = project.extensions
+
+    // filter out 'once' types
+    const filteredExtensions = extensions.filter(function(extension){
+        if(extension.extension.type === "once") {
+            return false
+        } 
+        return true
+    })
+
+    const orderedExtensions = filteredExtensions.sort(function(a, b){
+        if(b.extension.type === "workflow"){
+            return 1
+        } else {
+            return -1
+        }
+    })
+
+    const releaseExtensions = orderedExtensions.map(function(extension){
+      let found = false
+      let stateIcon = <CircularProgress size={25} /> 
+
+      for(var i = 0; i < release.releaseExtensions.length; i++){
+        if(release.releaseExtensions[i].extension.id === extension.id){
+          found = true
+          if(release.releaseExtensions[i].state === "complete"){
+              stateIcon = <ExtensionStateCompleteIcon />
+          }
+          if(release.releaseExtensions[i].state === "failed"){
+              stateIcon = <ExtensionStateFailedIcon />
+          }
+          return (
+            <TableRow
+              tabIndex={-1}
+              key={release.releaseExtensions[i].id}>
+              <TableCell> { release.releaseExtensions[i].extension.extension.name } </TableCell>
+              <TableCell> { stateIcon } </TableCell>
+              <TableCell>
+                  {release.releaseExtensions[i].stateMessage}
+              </TableCell>
+              <TableCell>
+                  {release.releaseExtensions[i].type}
+              </TableCell>
+            </TableRow>)
+          }
+        }
+        if(!found){        
+            return (
+            <TableRow
+                tabIndex={-1}
+                key={extension.id}>
+                <TableCell> { extension.extension.name } </TableCell>
+                <TableCell> { stateIcon } </TableCell>
+                <TableCell>
+                    Not started
+                </TableCell>
+                <TableCell>
+                    {extension.extension.type}
+                </TableCell>
+            </TableRow>)
+        }
+    })
+    
+    return (
+      <Paper className={styles.root}>
+        <div className={styles.tableWrapper}>
+          <Toolbar>
+            <div>
+              <Typography variant="title">
+                Extensions
+              </Typography>
+            </div>
+          </Toolbar>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  Name
+                </TableCell>
+                <TableCell>
+                  State
+                </TableCell>
+                <TableCell>
+                  Message
+                </TableCell>
+                <TableCell>
+                  Type
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              { releaseExtensions }
+            </TableBody>
+          </Table>
+        </div>
+      </Paper>
+    )   
+  }
+
 
   setupSocketHandlers(){
     const { socket, match } = this.props;
@@ -318,14 +420,14 @@ export default class Releases extends React.Component {
     const release = project.releases[this.form.values()['index']];
 
     if(deployAction === 'Rollback') {
-      rollbackRelease({variables: { releaseId: release.id }}).then(function(res){
+      createRelease({variables: { releaseId: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id }}).then(function(res){
         refetch()
       }).catch(function(err){
         refetch()
       })
     } else if(deployAction === 'Redeploy') {
       createRelease({
-        variables: { id: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
+        variables: { headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
       }).then(({data}) => {
         refetch()
       }).catch(function(err){
@@ -338,13 +440,9 @@ export default class Releases extends React.Component {
   closeDrawer(){
     this.setState({ drawerOpen: false })
   }
-
-  componentWillUpdate(nextProps, nextState){
-
-  }
-
+  
   render() {
-    const { loading, project } = this.props.data;
+    const { loading, project, user } = this.props.data;
 
     if(loading){
       return (<Loading />)
@@ -450,62 +548,11 @@ export default class Releases extends React.Component {
                   </Card>                                    
                 </Grid>
                 <Grid item xs={12}>                
-                  <Paper className={styles.root}>
-                    <div className={styles.tableWrapper}>
-                      <Toolbar>
-                        <div>
-                          <Typography variant="title">
-                            Extensions
-                          </Typography>
-                        </div>
-                      </Toolbar>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
-                              Name
-                            </TableCell>
-                            <TableCell>
-                              State
-                            </TableCell>
-                            <TableCell>
-                              Message
-                            </TableCell>
-                            <TableCell>
-                              Type
-                            </TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].releaseExtensions.map(re => {
-                            let stateIcon = <CircularProgress size={25} />
-                            if(re.state === "complete"){
-                                stateIcon = <ExtensionStateCompleteIcon />
-                            }
-                            if(re.state === "failed"){
-                                stateIcon = <ExtensionStateFailedIcon />
-                            }
-                            return (
-                              <TableRow
-                                tabIndex={-1}
-                                key={re.id}>
-                                <TableCell> { re.extension.extension.name } </TableCell>
-                                <TableCell> { stateIcon } </TableCell>
-                                <TableCell>
-                                    {re.stateMessage}
-                                </TableCell>
-                                <TableCell>
-                                    {re.type}
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </Paper>
+                  {project.releases[this.form.values()['index']] &&
+                   this.renderReleaseExtensionTable()
+                  }
                 </Grid>
-                {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()["index"]].artifacts).length > 0 &&
+                {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()["index"]].artifacts).length > 0 && user.permissions.includes("admin") &&
                     <Grid item xs={12}>                
                       <Paper className={styles.root}>
                         <div className={styles.tableWrapper}>

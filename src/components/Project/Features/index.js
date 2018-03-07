@@ -187,31 +187,31 @@ export default class Features extends React.Component {
     return (
       <div>
         {project.features.map((feature, idx) => {
-        return (<ExpansionPanel key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}>
-          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-            <div>
-              <Typography variant="body1" style={{ fontSize: 14 }}>
-                <b> { feature.message } </b>
-              </Typography>
-              <Typography variant="body2" style={{ fontSize: 12 }}>
-                { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() }
-              </Typography>
-            </div>
-          </ExpansionPanelSummary>
-          <Divider />
-          <ExpansionPanelActions>
-            <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
-              <Button color="primary" size="small">
-                Copy Git Hash
-              </Button>
-            </CopyToClipboard>       
-            <Button color="primary" size="small"
-              disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-              onClick={this.handleDeploy.bind(this, feature, project)}>
-              { this.state.text }
-            </Button>
-          </ExpansionPanelActions>
-        </ExpansionPanel>)
+            if(!project.currentRelease || new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
+                return (<ExpansionPanel 
+                    key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+                    <div> 
+                    <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
+                    <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
+                  </ExpansionPanelSummary>
+                  <Divider />
+                  <ExpansionPanelActions>
+                    <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
+                      <Button color="primary" size="small">
+                        Copy Git Hash
+                      </Button>
+                    </CopyToClipboard>       
+                    <Button color="primary" size="small"
+                      disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+                      onClick={this.handleDeploy.bind(this, feature, project)}>
+                      { this.state.text }
+                    </Button>
+                  </ExpansionPanelActions>
+                </ExpansionPanel>)
+            } else {
+                return (<div></div>)
+            }
         })}
       </div>
       )

@@ -33,11 +33,7 @@ import gql from 'graphql-tag';
     }
     permissions
   }
-`,{
-  options: {
-    fetchPolicy: 'cache-and-network'
-  }
-})
+`)
 
 @graphql(gql`
 mutation UpdateUserPermissions($userID: String!, $permissions: [UserPermissionInput!]!) {

@@ -25,8 +25,17 @@ import Loading from 'components/Utils/Loading';
     project(slug: $slug, environmentID: $environmentID) {
       id
       slug
+      currentRelease {
+         id
+         created
+         headFeature {
+           id
+           created
+         }
+      }
       features{
         id
+        created
       }
     }
   }`, {
@@ -43,45 +52,62 @@ export default class Project extends React.Component {
     url: this.props.match.url,
   };
 
-  componentWillMount() {
+  setLeftNavProjectItems(){
+    const { loading, project } = this.props.data;
+    if(loading){
+        return
+    }
+
+    // count deployable features by comparing currentRelease created and feature created
+    var deployableFeatures = 0
+    if(project.currentRelease !== null){
+        project.features.map(function(feature){
+            if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
+                deployableFeatures += 1
+            }
+        })
+    } else {
+        deployableFeatures = project.features.length
+    }
+        
     this.props.store.app.leftNavItems = [
-      {
-        key: "10",
-        icon: <ServicesIcon />,
-        name: "Services",
-        slug: this.props.match.url + "/services",
-      },
-      {
-        key: "20",
-        icon: <SecretIcon />,
-        name: "Secrets",
-        slug: this.props.match.url + "/secrets",
-      },
-      {
-        key: "30",
-        icon: <FeaturesIcon />,
-        name: "Features",
-        slug: this.props.match.url + "/features",
-        count: 10,
-      },
-      {
-        key: "40",
-        icon: <ReleasesIcon />,
-        name: "Releases",
-        slug: this.props.match.url + "/releases",
-      },
-      {
-        key: "50",
-        icon: <ExtensionsIcon />,
-        name: "Extensions",
-        slug: this.props.match.url + "/extensions",
-      },
-      {
-        key: "60",
-        icon: <SettingsIcon />,
-        name: "Settings",
-        slug: this.props.match.url + "/settings",
-      },
+        {
+          key: "10",
+          icon: <ServicesIcon />,
+          name: "Services",
+          slug: this.props.match.url + "/services",
+        },
+        {
+          key: "20",
+          icon: <SecretIcon />,
+          name: "Secrets",
+          slug: this.props.match.url + "/secrets",
+        },
+        {
+          key: "30",
+          icon: <FeaturesIcon />,
+          name: "Features",
+          slug: this.props.match.url + "/features",
+          count: deployableFeatures,
+        },
+        {
+          key: "40",
+          icon: <ReleasesIcon />,
+          name: "Releases",
+          slug: this.props.match.url + "/releases",
+        },
+        {
+          key: "50",
+          icon: <ExtensionsIcon />,
+          name: "Extensions",
+          slug: this.props.match.url + "/extensions",
+        },
+        {
+          key: "60",
+          icon: <SettingsIcon />,
+          name: "Settings",
+          slug: this.props.match.url + "/settings",
+        },
     ];
   }
 
@@ -92,6 +118,8 @@ export default class Project extends React.Component {
       return (<Loading />)
     }
     this.props.store.app.setProjectTitle(project.slug)
+    this.setLeftNavProjectItems()
+
     return (
       <div className={styles.root}>
         <Switch>
