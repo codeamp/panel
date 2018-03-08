@@ -36,6 +36,7 @@ const inlineStyles = {
       environments {
         id
         name
+        key
         color
         created
       }
@@ -47,9 +48,10 @@ const inlineStyles = {
 })
 
 @graphql(gql`
-  mutation CreateEnvironment($name: String!, $color: String!) {
+  mutation CreateEnvironment($name: String!, $key: String!, $color: String!) {
       createEnvironment(environment:{
-        name: $name
+        name: $name,
+        key: $key,
         color: $color,
       }) {
           id
@@ -59,10 +61,11 @@ const inlineStyles = {
 `, { name: "createEnvironment" })
 
 @graphql(gql`
-mutation UpdateEnvironment($id: String!, $name: String!, $color: String!) {
+mutation UpdateEnvironment($id: String!, $name: String!, $key: String!, $color: String!) {
     updateEnvironment(environment:{
     id: $id,
     name: $name,
+    key: $key,
     color: $color,
     }) {
         id
@@ -72,10 +75,11 @@ mutation UpdateEnvironment($id: String!, $name: String!, $color: String!) {
 `, { name: "updateEnvironment" })
 
 @graphql(gql`
-mutation DeleteEnvironment ($id: String!, $name: String!, $color: String!) {
+mutation DeleteEnvironment ($id: String!, $name: String!, $key: String!, $color: String!) {
     deleteEnvironment(environment:{
     id: $id,
     name: $name,
+    key: $key,
     color: $color,
     }) {
         id
@@ -101,6 +105,7 @@ export default class Environments extends React.Component {
       'id',
       'name',
       'color',
+      'key',
       'created',
     ];
     const rules = {
@@ -109,6 +114,7 @@ export default class Environments extends React.Component {
     const labels = {
       'name': 'Name',
       'color': 'Color',
+      'key': 'Key',
     };
     const types = {
     };
@@ -117,6 +123,7 @@ export default class Environments extends React.Component {
     const disabled = {
       'name': false,
       'color': false,
+      'key': false,
     }
     const extra = {}
     const hooks = {};
@@ -139,6 +146,8 @@ export default class Environments extends React.Component {
     this.form.clear()
 
     if(envIdx >= 0){
+      this.form.$('key').set('disabled', true)
+      this.form.$('key').set(this.props.data.environments[envIdx].key)
       this.form.$('name').set(this.props.data.environments[envIdx].name)
       this.form.$('color').set(this.props.data.environments[envIdx].color)
       this.form.$('id').set(this.props.data.environments[envIdx].id)
@@ -170,6 +179,7 @@ export default class Environments extends React.Component {
 
   closeDrawer(){
     this.form.clear()
+    this.form.$('key').set('disabled', false)
     this.setState({ drawerOpen: false, saving: false, dialogOpen: false })
   }
 
@@ -266,6 +276,9 @@ export default class Environments extends React.Component {
                   <Grid container spacing={24} className={styles.grid}>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('name')} fullWidth={true} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('key')} fullWidth={true} />
                     </Grid>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('color')} fullWidth={true} />
