@@ -30,6 +30,9 @@ import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
+import AceEditor from 'react-ace';
+import 'brace/mode/yaml';
+import 'brace/theme/github';
 
 @graphql(gql`
   query {
@@ -291,6 +294,11 @@ export default class Secrets extends React.Component {
     }
   }
 
+  onFileEditorChange(newValue) {
+    console.log(newValue)
+    this.form.$('value').set(newValue)
+  }
+
   render() {
     let { loading, secrets, environments } = this.props.data;
 
@@ -458,7 +466,16 @@ export default class Secrets extends React.Component {
                     </Grid>
                     <br/>
                     <Grid item xs={12}>
-                      <TextareaField field={this.form.$('value')} fullWidth={true} />
+                      <AceEditor
+                        width="100%"
+                        mode="yaml"
+                        theme="github"
+                        onChange={this.onFileEditorChange.bind(this)}
+                        value={this.form.values()['value']}
+                        name="file-content"
+                        editorProps={{$blockScrolling: true}}
+                        focus="true"
+                      />
                       <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
                       <Typography variant="caption"> Hide value after saving </Typography>
                     </Grid>

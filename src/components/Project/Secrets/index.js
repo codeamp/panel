@@ -26,6 +26,10 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import brace from 'brace';
+import AceEditor from 'react-ace';
+import 'brace/mode/yaml';
+import 'brace/theme/github';
 
 const inlineStyles = {
   addButton: {
@@ -150,13 +154,13 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
 }`, {name: "deleteSecret"})
 
 export default class Secrets extends React.Component {
-
   constructor(props){
     super(props)
     this.state = {
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
+      dialogOpen: false,
     }
   }
 
@@ -204,6 +208,7 @@ export default class Secrets extends React.Component {
   }
 
   onSubmit(e) {
+    console.log(this.form.values())
     this.setState({ saving: true})
     this.form.$('key').set('disabled', false)
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
@@ -286,7 +291,12 @@ export default class Secrets extends React.Component {
       this.props.data.refetch()
     });
   }
-  
+
+  onFileEditorChange(newValue) {
+    console.log(newValue)
+    this.form.$('value').set(newValue)
+  }
+
   render() {
     const { loading, project } = this.props.data;
     if(loading){
@@ -411,7 +421,16 @@ export default class Secrets extends React.Component {
                           <InputField field={this.form.$('key')} fullWidth={true} />
                         </Grid>
                         <Grid item xs={12}>
-                          <TextareaField field={this.form.$('value')} fullWidth={true} />
+                          <AceEditor
+                            width="100%"
+                            mode="yaml"
+                            theme="github"
+                            onChange={this.onFileEditorChange.bind(this)}
+                            value={this.form.values()['value']}
+                            name="file-content"
+                            editorProps={{$blockScrolling: true}}
+                            focus="true"
+                          />
                           <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
                           <Typography variant="caption"> Hide value after saving </Typography>
                         </Grid>
