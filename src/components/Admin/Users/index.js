@@ -202,7 +202,7 @@ export default class Users extends React.Component {
         <Drawer
             anchor="right"
             classes={{
-            paper: styles.list,
+              paper: styles.list,
             }}
             open={this.state.drawerOpen}
         >

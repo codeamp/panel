@@ -21,15 +21,27 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 @graphql(gql`
- query {
-   environments {
-     id
-     name
-     color
-     created
-   }
- }
-`)
+query Project($slug: String, $environmentID: String){
+  environments {
+    id
+    name
+    color
+    created
+  }
+
+  project(slug: $slug, environmentID: $environmentID) {
+    id
+    permissions 
+  }
+}
+`, {
+  options: (props) => ({
+    variables: {
+      slug: props.slug,
+      environmentID: props.store.app.currentEnvironment.id,
+    }
+  })
+})
 
 @inject("store") @observer
 class TopNav extends React.Component {
@@ -134,7 +146,7 @@ class TopNav extends React.Component {
   render() {
     var self = this
     const { store } = this.props
-    const { loading, environments } = this.props.data;
+    const { loading, environments, project } = this.props.data;
     const { app } = this.props.store;
 
     if(loading){
@@ -157,129 +169,132 @@ class TopNav extends React.Component {
     }
 
     return (
-    <div>
-      <AppBar position="static" className={styles.appBar}>
-        <Toolbar>
-          <Grid container spacing={24}>
-            <Grid item xs={2}>
-              <NavLink to="/" exact style={{ color: "white" }}>
-                <img src={Logo} alt="Codeamp" className={styles.logo}/>
-              </NavLink>
+      <div>
+        <AppBar position="static" className={styles.appBar}>
+          <Toolbar>
+            <Grid container spacing={24}>
+              <Grid item xs={2}>
+                <NavLink to="/" exact style={{ color: "white" }}>
+                  <img src={Logo} alt="Codeamp" className={styles.logo}/>
+                </NavLink>
+              </Grid>
+              <Grid item xs={6}>
+                <div style={{position: "relative"}}>
+                <TextField
+                  fullWidth={true}
+                  className={styles.searchInput}
+                  autoFocus={false}
+                  value={this.state.projectQuery}
+                  placeholder="Search..."
+                  InputProps={{
+                    disableUnderline: true,
+                    classes: {
+                      root: styles.textFieldRoot,
+                      input: styles.textFieldInput,
+                    },
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                    className: styles.textFieldFormLabel,
+                  }}
+                  onClick={(e)=>this.renderBookmarks(e)}
+                  onChange={(e)=>this.onChange(e)}
+                  onBlur={(e)=>this.hideSuggestions()}
+                />
+                  <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
+                    {this.state.suggestions.map(function(suggestion){
+                      return (
+                        <Paper
+                          key={suggestion.id}
+                          className={styles.suggestion}
+                          square={true}>
+                          <ListItem
+                            onMouseEnter={() => self.setState({ hovering: true })}
+                            onMouseLeave={() => self.setState({ hovering: false })}
+                            onClick={()=>self.onSuggestionItemClick(suggestion)}>
+                            <ListItemText primary={suggestion.label} />
+                          </ListItem>
+                        </Paper>
+                      )
+                    })}
+                    </div>
+                </div>
+              </Grid>
+              <Grid item xs={4} style={{textAlign: "right"}}>
+                <Button
+                  style={{margin: "0 8px"}}
+                  variant="raised"
+                  aria-owns={this.state.anchorEl ? 'user-menu' : null}
+                  aria-haspopup="true"
+                  onClick={this.handleUserClick}>
+                  {store.app.user.profile.email}
+                </Button>
+                <Menu
+                  id="user-menu"
+                  anchorEl={this.state.userAnchorEl}
+                  open={Boolean(this.state.userAnchorEl)}
+                  onClose={this.handleUserClose}>
+                  <MenuItem onClick={this.logout}>Logout</MenuItem>
+                </Menu>
+                {window.location.href.includes('projects') &&
+                    <span>
+                      <Button
+                        style={{margin: "0 8px"}}
+                        variant="raised"
+                        aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+                        aria-haspopup="true"
+                        onClick={this.handleEnvironmentClick.bind(this)}>
+                        {app.currentEnvironment.name}
+                      </Button>
+                      <Menu
+                        id="environment-menu"
+                        anchorEl={this.state.environmentAnchorEl}
+                        open={Boolean(this.state.environmentAnchorEl)}
+                        onClose={this.handleEnvironmentClose.bind(this)}>
+                        {environments.map((env) => {
+                          // check if env is in project permissions
+                          if(project.permissions.includes(env.id)){
+                            return (<MenuItem 
+                              key={env.id}
+                              onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
+                              {env.name}
+                            </MenuItem>)
+                          }
+                        })}
+                      </Menu>
+                    </span>
+                }
+              </Grid>
             </Grid>
-            <Grid item xs={6}>
-              <div style={{position: "relative"}}>
-              <TextField
-                fullWidth={true}
-                className={styles.searchInput}
-                autoFocus={false}
-                value={this.state.projectQuery}
-                placeholder="Search..."
-                InputProps={{
-                  disableUnderline: true,
-                  classes: {
-                    root: styles.textFieldRoot,
-                    input: styles.textFieldInput,
-                  },
-                }}
-                InputLabelProps={{
-                  shrink: true,
-                  className: styles.textFieldFormLabel,
-                }}
-                onClick={(e)=>this.renderBookmarks(e)}
-                onChange={(e)=>this.onChange(e)}
-                onBlur={(e)=>this.hideSuggestions()}
-              />
-                <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
-                  {this.state.suggestions.map(function(suggestion){
-                    return (
-                      <Paper
-                        key={suggestion.id}
-                        className={styles.suggestion}
-                        square={true}>
-                        <ListItem
-                          onMouseEnter={() => self.setState({ hovering: true })}
-                          onMouseLeave={() => self.setState({ hovering: false })}
-                          onClick={()=>self.onSuggestionItemClick(suggestion)}>
-                          <ListItemText primary={suggestion.label} />
-                        </ListItem>
-                      </Paper>
-                    )
-                  })}
-                  </div>
-              </div>
-            </Grid>
-            <Grid item xs={4} style={{textAlign: "right"}}>
-              <Button
-                style={{margin: "0 8px"}}
-                variant="raised"
-                aria-owns={this.state.anchorEl ? 'user-menu' : null}
-                aria-haspopup="true"
-                onClick={this.handleUserClick}>
-                {store.app.user.profile.email}
-              </Button>
-              <Menu
-                id="user-menu"
-                anchorEl={this.state.userAnchorEl}
-                open={Boolean(this.state.userAnchorEl)}
-                onClose={this.handleUserClose}>
-                <MenuItem onClick={this.logout}>Logout</MenuItem>
-              </Menu>
-              {window.location.href.includes('projects') &&
-                  <span>
-                    <Button
-                      style={{margin: "0 8px"}}
-                      variant="raised"
-                      aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
-                      aria-haspopup="true"
-                      onClick={this.handleEnvironmentClick.bind(this)}>
-                      {app.currentEnvironment.name}
-                    </Button>
-                    <Menu
-                      id="environment-menu"
-                      anchorEl={this.state.environmentAnchorEl}
-                      open={Boolean(this.state.environmentAnchorEl)}
-                      onClose={this.handleEnvironmentClose.bind(this)}>
-                      {environments.map((env) => {
-                      return (<MenuItem 
-                        key={env.id}
-                        onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
-                        {env.name}
-                      </MenuItem>)
-                      })}
-                    </Menu>
-                  </span>
-              }
-            </Grid>
-          </Grid>
-        </Toolbar>
-		{window.location.href.includes('projects') &&
-			<div style={{ border: "3px solid " + app.currentEnvironment.color }}>
-			</div>
-		}
-      </AppBar>
-
-      {store.app.connectionHeader.msg !== "" &&
-          <AppBar position="absolute" color="default">
-            <Toolbar>
-                <Grid container spacin={24}>
-                    <Grid item xs={1}>
-                    <Typography variant="body1">
-                        <a href={window.location.href}>
-                        try refreshing
-                        </a>
-                    </Typography>
-                    </Grid>
-                    <Grid item xs={11} className={styles.center}>
-                        <Typography>
-                            { store.app.connectionHeader.msg }
-                        </Typography>
-                    </Grid>
-                </Grid>
-            </Toolbar>
-            <LinearProgress color="accent" />
-          </AppBar>
+          </Toolbar>
+      {window.location.href.includes('projects') &&
+        <div style={{ border: "3px solid " + app.currentEnvironment.color }}>
+        </div>
       }
-    </div>
+        </AppBar>
+
+        {store.app.connectionHeader.msg !== "" &&
+            <AppBar position="absolute" color="default">
+              <Toolbar>
+                  <Grid container spacin={24}>
+                      <Grid item xs={1}>
+                      <Typography variant="body1">
+                          <a href={window.location.href}>
+                          try refreshing
+                          </a>
+                      </Typography>
+                      </Grid>
+                      <Grid item xs={11} className={styles.center}>
+                          <Typography>
+                              { store.app.connectionHeader.msg }
+                          </Typography>
+                      </Grid>
+                  </Grid>
+              </Toolbar>
+              <LinearProgress color="accent" />
+            </AppBar>
+        }
+      </div>
     );
   }
 }
