@@ -113,22 +113,20 @@ export default class App extends React.Component {
           return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
       }
 
-      // parse slug from window.location since props.match is empty
-      let slug = ""
-      if(this.props.location.pathname.includes("projects")){
-        slug = this.props.location.pathname.split("/")[2]
-      }
-
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} {...this.props} slug={slug} />              
+              <Switch>
+                <Route path='/' render={(props) => (
+                  <TopNav projects={projects} {...props} /> 
+                )} />
+              </Switch>
             </Grid>
-            <Grid item xs={12} className={styles.center}>
+            <Grid item xs={12} className={styles.center}> 
               <LeftNav environments={environments} />
               <div className={styles.children}>
-                <Switch>
+                <Switch> 
                   <Route exact path='/' render={(props) => (
                     <Dashboard projects={projects} />
                   )} />

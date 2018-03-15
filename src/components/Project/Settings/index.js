@@ -115,7 +115,6 @@ export default class Settings extends React.Component {
   }
 
   updateSettings(form){
-    console.log(form.values())
     this.props.updateProject({
       variables: form.values(),
     }).then(({data}) => {
