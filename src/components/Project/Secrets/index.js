@@ -55,7 +55,6 @@ query Project($slug: String, $environmentID: String){
         email
       }
       versions {
-        id
         value
         created
         user {

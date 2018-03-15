@@ -62,7 +62,6 @@ import 'brace/theme/github';
         created
       }
       versions {
-        id
         value
         created
         user {
@@ -315,6 +314,8 @@ export default class Secrets extends React.Component {
     this.form.state.extra({
       environmentID: extraOptions,
     })
+
+    console.log(this.props.data)
 
     return (
       <div>
