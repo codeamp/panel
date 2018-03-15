@@ -120,8 +120,6 @@ export default class Project extends React.Component {
     this.props.store.app.setProjectTitle(project.slug)
     this.setLeftNavProjectItems()
 
-    console.log(this.props.data)
-
     return (
       <div className={styles.root}>
         <Switch>
