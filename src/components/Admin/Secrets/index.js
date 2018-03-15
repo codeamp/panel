@@ -294,7 +294,6 @@ export default class Secrets extends React.Component {
   }
 
   onFileEditorChange(newValue) {
-    console.log(newValue)
     this.form.$('value').set(newValue)
   }
 
@@ -314,8 +313,6 @@ export default class Secrets extends React.Component {
     this.form.state.extra({
       environmentID: extraOptions,
     })
-
-    console.log(this.props.data)
 
     return (
       <div>
