@@ -112,16 +112,21 @@ export default class App extends React.Component {
       if(!user){
           return <Redirect to={{pathname: '/login', state: { from: this.props.location }}}/>
       }
+
       return (
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} {...this.props} />              
+              <Switch>
+                <Route path='/' render={(props) => (
+                  <TopNav projects={projects} {...props} /> 
+                )} />
+              </Switch>
             </Grid>
-            <Grid item xs={12} className={styles.center}>
+            <Grid item xs={12} className={styles.center}> 
               <LeftNav environments={environments} />
               <div className={styles.children}>
-                <Switch>
+                <Switch> 
                   <Route exact path='/' render={(props) => (
                     <Dashboard projects={projects} />
                   )} />

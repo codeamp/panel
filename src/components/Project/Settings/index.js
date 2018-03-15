@@ -9,6 +9,7 @@ import gql from 'graphql-tag';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import InputField from 'components/Form/input-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import CreateProject from '../../Create';
 import Card, {CardContent, CardActions} from 'material-ui/Card';
 
@@ -24,6 +25,16 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
       gitUrl
       gitProtocol
       gitBranch
+      permissions
+    }
+    environments {
+      id
+      name
+      key
+    }
+    user {
+      id
+      permissions
     }
   }`, {
   options: (props) => ({
@@ -36,7 +47,7 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
 
 @graphql(gql`
   mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
+    updateProjectPermissions(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
       id
       name
       slug
@@ -47,6 +58,12 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
     }
   }
 `, { name: "updateProject"})
+
+@graphql(gql`
+  mutation Mutation($projectID: String!, $permissions: [ProjectPermissionInput!]!) {
+    updateProjectPermissions(projectPermissions: { projectID: $projectID, permissions: $permissions })
+  }
+`, { name: "updateProjectPermissions"})
 
 export default class Settings extends React.Component {
   constructor(props){
@@ -63,6 +80,11 @@ export default class Settings extends React.Component {
       'gitUrl',
       'environmentID',
       'gitBranch',
+      'permissions',
+      'permissions[]',
+      'permissions[].environmentID',
+      'permissions[].label',
+      'permissions[].grant',
     ];
     const rules = {};
     const labels = {
@@ -70,7 +92,9 @@ export default class Settings extends React.Component {
     };
     const initials = {
     };
-    const types = {};
+    const types = {
+      'permissions[].grant': 'checkbox',
+    };
     const extra = {};
     const hooks = {};
     const handlers = {};
@@ -106,26 +130,51 @@ export default class Settings extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.updateSettings.bind(this), onError: this.onError.bind(this) })
   }
 
+  updateProjectPermissions(form){
+    const { project } = this.props.data;
+    this.props.updateProjectPermissions({
+      variables: { 'projectID': project.id, 'permissions': form.values()['permissions'] }
+    }).then(({data}) => {
+      this.props.data.refetch()
+    });    
+  }
+
+  onUpdateProjectPermissions(e){
+    this.form.onSubmit(e, { onSuccess: this.updateProjectPermissions.bind(this), onError: this.onError.bind(this) })
+  }
+
   setFormValues(){
     if(!this.props.data.loading){
-      const { project } = this.props.data;
+      const { project, environments } = this.props.data;
       const { currentEnvironment } = this.props.store.app;
+      var self = this;
 
       this.form.$('id').set(project.id)
       this.form.$('gitProtocol').set(project.gitProtocol)
       this.form.$('gitUrl').set(project.gitUrl)
       this.form.$('environmentID').set(currentEnvironment.id)
       this.form.$('gitBranch').set(project.gitBranch)      
+
+      environments.map(function(environment){
+        var checked = false
+        project.permissions.map(function(envPermission){
+          if(envPermission === environment.id){
+            checked = true
+          }
+        })
+        self.form.$('permissions').add({ 
+          'grant': checked, 
+          'environmentID': environment.id, 
+          'label': environment.name + ' (' + environment.key +')' 
+        })
+      })
+
       this.setState({ settingsSet: true })
     }
   }
 
-  componentWillUpdate(nextProps, nextState){
-
-  } 
-
   render() {
-    const { loading, project } = this.props.data;
+    const { loading, project, user } = this.props.data;
 
     if(loading){
       return (<div>Loading</div>)
@@ -182,6 +231,39 @@ export default class Settings extends React.Component {
               </CardActions>
             </Card>
           </Grid>                   
+          {user.permissions.includes("admin") &&
+            <Grid container spacing={24} style={{ padding: 10 }}>
+              <Grid item sm={3}>
+                <Typography variant="title" className={styles.settingsDescription}>
+                  Permissions
+                </Typography>
+                <Typography variant="caption" className={styles.settingsCaption}>
+                  Update which environments this project has access to deploy and build objects within.
+                </Typography>
+              </Grid>
+              <Grid item sm={9}>
+                <Card className={styles.card}>
+                  <CardContent>
+                    <Grid xs={12}>
+                      {this.form.$('permissions').map(function(permission){
+                        return (
+                          <CheckboxField field={permission.$('grant')} label={permission.$('label').value} fullWidth={true} />            
+                        )
+                      })}
+                    </Grid>
+                  </CardContent>
+                  <CardActions>
+                    <Button color="primary"
+                      type="submit"
+                      variant="raised"
+                      onClick={(e) => this.onUpdateProjectPermissions(e)}>
+                      Save
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>                   
+            </Grid>
+          }
         </Grid>
       </div>
     );
