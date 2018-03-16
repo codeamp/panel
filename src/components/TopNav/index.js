@@ -22,7 +22,7 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 
-@inject("store") @observer
+@inject("store")
 @graphql(gql`
   query {
     environments {
@@ -138,8 +138,6 @@ class TopNav extends React.Component {
     return (
       <div>
         <AppBar position="static" className={styles.appBar}>
-
-          <Switch>
             <Toolbar>
               <Grid container spacing={24}>
                 <Grid item xs={2}>
@@ -206,12 +204,16 @@ class TopNav extends React.Component {
                     onClose={this.handleUserClose}>
                     <MenuItem onClick={this.logout}>Logout</MenuItem>
                   </Menu>
-                  <Route path='/projects/:slug' render={(props) => (
-                    <EnvDropdown client={this.props.client} {...props} />
-                  )} />
+                  <Switch>
+                    <Route path='/projects/:slug' render={(props) => (
+                      <EnvDropdown client={this.props.client} {...props} />
+                    )} />
+                  </Switch>
                 </Grid>
               </Grid>
             </Toolbar> 
+
+          <Switch>
             <Route path='/projects/:slug' render={(props) => (
               <div style={{ border: "3px solid " + app.currentEnvironment.color }}></div>
             )} />
