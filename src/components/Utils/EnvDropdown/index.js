@@ -95,7 +95,7 @@ export default class EnvDropdown extends React.Component {
  
     // make sure mobx env id exists
     var found = false
-    var defaultEnv = {}
+    var defaultEnv = null
     environments.map(function(env){
       if(project.permissions.includes(env.id)){
         if(!defaultEnv){
@@ -111,7 +111,7 @@ export default class EnvDropdown extends React.Component {
       return
     })
     if(!found){
-      if(environments.length > 0) {
+      if(environments.length > 0 && defaultEnv) {
         this.props.store.app.setCurrentEnv({id: defaultEnv.id, color: defaultEnv.color, name: defaultEnv.name })
       } else {
         this.props.history.push('/')
