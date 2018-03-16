@@ -79,7 +79,17 @@ export default class EnvDropdown extends React.Component {
     const { app } = this.props.store;
 
     if(loading){
-      return <Loading />
+      return (
+        <Grid style={{ display: 'inline-block'}}>
+          <Button
+          style={{margin: "0 8px"}}
+          variant="raised"
+          aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+          aria-haspopup="true">
+            <Loading size={17} />
+          </Button>
+        </Grid>
+      )
     }
 
     return (
