@@ -75,14 +75,15 @@ export default class EnvDropdown extends React.Component {
   }
 
   render() {
+    var self = this
     const { loading, project, environments } = this.props.data;
     const { app } = this.props.store;
 
     if(loading){
       return (
-        <Grid style={{ display: 'inline-block'}}>
+        <Grid className={styles.Grid}>
           <Button
-          style={{margin: "0 8px"}}
+          className={styles.EnvButton}
           variant="raised"
           aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
           aria-haspopup="true">
@@ -91,11 +92,37 @@ export default class EnvDropdown extends React.Component {
         </Grid>
       )
     }
+ 
+    // make sure mobx env id exists
+    var found = false
+    var defaultEnv = {}
+    environments.map(function(env){
+      if(project.permissions.includes(env.id)){
+        if(!defaultEnv){
+          defaultEnv = env
+        }
+
+        if(env.id === self.props.store.app.currentEnvironment.id){
+          self.props.store.app.setCurrentEnv({ id: env.id, color: env.color, name: env.name })
+          found = true
+          return
+        }
+      }
+      return
+    })
+    if(!found){
+      if(environments.length > 0) {
+        this.props.store.app.setCurrentEnv({id: defaultEnv.id, color: defaultEnv.color, name: defaultEnv.name })
+      } else {
+        this.props.history.push('/')
+        this.props.store.app.setSnackbar({ msg: "No envs. Please include one before selecting a project.", open: true})
+      }
+    }
 
     return (
-      <Grid style={{ display: 'inline-block'}}>
+      <Grid className={styles.Grid}>
         <Button
-        style={{margin: "0 8px"}}
+        className={styles.EnvButton}
         variant="raised"
         aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
         aria-haspopup="true"

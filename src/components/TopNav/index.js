@@ -22,7 +22,7 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 
-@inject("store") @observer
+@inject("store")
 @graphql(gql`
   query {
     environments {
