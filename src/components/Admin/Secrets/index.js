@@ -62,7 +62,6 @@ import 'brace/theme/github';
         created
       }
       versions {
-        id
         value
         created
         user {
@@ -295,7 +294,6 @@ export default class Secrets extends React.Component {
   }
 
   onFileEditorChange(newValue) {
-    console.log(newValue)
     this.form.$('value').set(newValue)
   }
 

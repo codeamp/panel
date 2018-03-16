@@ -44,7 +44,7 @@ export default class EnvVarVersionHistory extends React.Component {
                       hover
                       tabIndex={-1}
                       onClick={() => onClickVersion(idx)}
-                      key={secret.id}>
+                      key={idx}>
                       <TableCell>
                         {versions.length - idx}
                       </TableCell>
