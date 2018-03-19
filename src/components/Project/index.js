@@ -61,13 +61,14 @@ export default class Project extends React.Component {
     // count deployable features by comparing currentRelease created and feature created
     var deployableFeatures = 0
     if(project.currentRelease !== null){
-        project.features.map(function(feature){
-            if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
-                deployableFeatures += 1
-            }
-        })
+      project.features.map(function(feature){
+        if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
+          deployableFeatures += 1
+        }
+        return null
+      })
     } else {
-        deployableFeatures = project.features.length
+      deployableFeatures = project.features.length
     }
         
     this.props.store.app.leftNavItems = [

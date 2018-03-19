@@ -16,7 +16,6 @@ import Dialog, {
 import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
-import TextareaField from 'components/Form/textarea-field';
 import Loading from 'components/Utils/Loading';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
@@ -26,7 +25,6 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import brace from 'brace';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';

@@ -161,12 +161,14 @@ export default class Settings extends React.Component {
           if(envPermission === environment.id){
             checked = true
           }
+          return null
         })
         self.form.$('permissions').add({ 
           'grant': checked, 
           'environmentID': environment.id, 
           'label': environment.name + ' (' + environment.key +')' 
         })
+        return null
       })
 
       this.setState({ settingsSet: true })

@@ -1,5 +1,4 @@
 import React from 'react';
-import Typography from 'material-ui/Typography';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
@@ -8,15 +7,6 @@ import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-
-const inlineStyles = {
-  addButton: {
-    position: 'absolute',
-    bottom: 25,
-    right: 25,
-  }
-}
-
 
 @inject("store") @observer
 @graphql(gql`
@@ -105,10 +95,10 @@ export default class EnvDropdown extends React.Component {
         if(env.id === self.props.store.app.currentEnvironment.id){
           self.props.store.app.setCurrentEnv({ id: env.id, color: env.color, name: env.name })
           found = true
-          return
+          return null
         }
       }
-      return
+      return null
     })
     if(!found){
       if(environments.length > 0 && defaultEnv) {
@@ -143,6 +133,7 @@ export default class EnvDropdown extends React.Component {
                 {env.name}
                 </MenuItem>)
             }
+            return null
           })}
           </Menu>
       </Grid>

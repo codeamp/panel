@@ -338,6 +338,7 @@ export default class Releases extends React.Component {
                 </TableCell>
             </TableRow>)
         }
+        return null
     })
     
     return (
@@ -415,7 +416,7 @@ export default class Releases extends React.Component {
 
   releaseAction(){
     const { deployAction } = this.state;
-    const { rollbackRelease, createRelease } = this.props;
+    const { createRelease } = this.props;
     const { project, refetch } = this.props.data;
     const release = project.releases[this.form.values()['index']];
 
