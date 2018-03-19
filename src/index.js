@@ -25,7 +25,7 @@ import { createGenerateClassName } from 'material-ui/styles';
 
 const generateClassName = createGenerateClassName();
 const jss = create(preset());
-jss.options.insertionPoint = 'insertion-point-jss';
+jss.options.insertionPoint = document.getElementById('jss-insertion-point');
 
 const client = makeClient(process.env.REACT_APP_CIRCUIT_URI + '/query');
 const theme = createMuiTheme({

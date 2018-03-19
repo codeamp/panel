@@ -16,7 +16,6 @@ import Dialog, {
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
-import TextareaField from 'components/Form/textarea-field';
 import SelectField from 'components/Form/select-field';
 import Loading from 'components/Utils/Loading';
 import AddIcon from 'material-ui-icons/Add';

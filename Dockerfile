@@ -12,9 +12,11 @@ ENV PATH /usr/src/app/node_modules/.bin:$PATH
 ADD package.json /usr/src/app/package.json
 ADD package-lock.json /usr/src/app/package-lock.json
 RUN npm install
+RUN npm install -g serve
 
 ADD . /usr/src/app/
+RUN npm run build 
 
 EXPOSE 3010
 # start app
-CMD ["npm", "start"]
+CMD ["serve", "-s", "build", "-p", "3010"]

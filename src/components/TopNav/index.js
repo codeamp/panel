@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Route, Switch, Redirect } from 'react-router-dom';
+import { NavLink, Route, Switch } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';

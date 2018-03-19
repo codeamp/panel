@@ -213,7 +213,7 @@ export default class Create extends React.Component {
         <Card className={styles.card}>
           <CardContent>
             <Grid container spacing={24}>
-              {this.state.title != "" && <Grid item xs={12}>
+              {this.state.title !== "" && <Grid item xs={12}>
                 <Typography variant="title">
                   {this.state.title}
                 </Typography>
