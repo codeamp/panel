@@ -15,6 +15,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import AddIcon from 'material-ui-icons/Add';
 import InputField from 'components/Form/input-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
@@ -38,20 +39,18 @@ const inlineStyles = {
         name
         key
         color
+        isDefault
         created
       }
     }
-`,{
-  options: {
-    fetchPolicy: 'cache-and-network'
-  }
-})
+`)
 
 @graphql(gql`
-  mutation CreateEnvironment($name: String!, $key: String!, $color: String!) {
+  mutation CreateEnvironment($name: String!, $key: String!,$isDefault: Boolean!, $color: String!) {
       createEnvironment(environment:{
         name: $name,
         key: $key,
+        isDefault: $isDefault,
         color: $color,
       }) {
           id
@@ -61,11 +60,12 @@ const inlineStyles = {
 `, { name: "createEnvironment" })
 
 @graphql(gql`
-mutation UpdateEnvironment($id: String!, $name: String!, $key: String!, $color: String!) {
+mutation UpdateEnvironment($id: String!, $name: String!, $key: String!, $isDefault: Boolean!, $color: String!) {
     updateEnvironment(environment:{
     id: $id,
     name: $name,
     key: $key,
+    isDefault: $isDefault,
     color: $color,
     }) {
         id
@@ -75,11 +75,12 @@ mutation UpdateEnvironment($id: String!, $name: String!, $key: String!, $color: 
 `, { name: "updateEnvironment" })
 
 @graphql(gql`
-mutation DeleteEnvironment ($id: String!, $name: String!, $key: String!, $color: String!) {
+mutation DeleteEnvironment ($id: String!, $name: String!, $key: String!, $isDefault: Boolean!, $color: String!) {
     deleteEnvironment(environment:{
     id: $id,
     name: $name,
     key: $key,
+    isDefault: $isDefault,
     color: $color,
     }) {
         id
@@ -106,6 +107,7 @@ export default class Environments extends React.Component {
       'name',
       'color',
       'key',
+      'isDefault',
       'created',
     ];
     const rules = {
@@ -115,8 +117,10 @@ export default class Environments extends React.Component {
       'name': 'Name',
       'color': 'Color',
       'key': 'Key',
+      'isDefault': 'Should this be a default?',
     };
     const types = {
+      'isDefault': 'checkbox',
     };
     const keys = {
     };
@@ -127,9 +131,12 @@ export default class Environments extends React.Component {
     }
     const extra = {}
     const hooks = {};
+    const placeholders = {
+      'isDefault': 'Default envs are auto-added to a project on creation. Atleast 1 default is required at any time.',
+    };
     const plugins = { dvr: validatorjs };
 
-    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
+    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys, placeholders }, { plugins });
   }
 
   onSubmit(e) {
@@ -149,6 +156,7 @@ export default class Environments extends React.Component {
       this.form.$('key').set('disabled', true)
       this.form.$('key').set(this.props.data.environments[envIdx].key)
       this.form.$('name').set(this.props.data.environments[envIdx].name)
+      this.form.$('isDefault').set(this.props.data.environments[envIdx].isDefault)
       this.form.$('color').set(this.props.data.environments[envIdx].color)
       this.form.$('id').set(this.props.data.environments[envIdx].id)
       this.openDrawer()
@@ -220,6 +228,9 @@ export default class Environments extends React.Component {
                   Color
                 </TableCell>
                 <TableCell>
+                  Default
+                </TableCell>
+                <TableCell>
                   Created
                 </TableCell>
               </TableRow>
@@ -239,6 +250,9 @@ export default class Environments extends React.Component {
                         <svg height="10" width="10">
                           <circle cx="25" cy="25" r="40" fill={env.color} />
                         </svg>
+                    </TableCell>
+                    <TableCell>
+                      {env.isDefault.toString()}
                     </TableCell>
                     <TableCell>
                       {new Date(env.created).toDateString()}
@@ -279,6 +293,10 @@ export default class Environments extends React.Component {
                     </Grid>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('key')} fullWidth={true} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
+                      <Typography variant="caption"> {this.form.$('isDefault').placeholder} </Typography>
                     </Grid>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('color')} fullWidth={true} />
