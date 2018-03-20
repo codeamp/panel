@@ -73,18 +73,6 @@ export default class Project extends React.Component {
         
     this.props.store.app.leftNavItems = [
         {
-          key: "10",
-          icon: <ServicesIcon />,
-          name: "Services",
-          slug: this.props.match.url + "/services",
-        },
-        {
-          key: "20",
-          icon: <SecretIcon />,
-          name: "Secrets",
-          slug: this.props.match.url + "/secrets",
-        },
-        {
           key: "30",
           icon: <FeaturesIcon />,
           name: "Features",
@@ -96,6 +84,18 @@ export default class Project extends React.Component {
           icon: <ReleasesIcon />,
           name: "Releases",
           slug: this.props.match.url + "/releases",
+        },
+        {
+          key: "10",
+          icon: <ServicesIcon />,
+          name: "Services",
+          slug: this.props.match.url + "/services",
+        },
+        {
+          key: "20",
+          icon: <SecretIcon />,
+          name: "Secrets",
+          slug: this.props.match.url + "/secrets",
         },
         {
           key: "50",
@@ -124,6 +124,12 @@ export default class Project extends React.Component {
     return (
       <div className={styles.root}>
         <Switch>
+          <Route exact path='/projects/:slug/features' render={(props) => (
+            <ProjectFeatures history={history} {...props} socket={socket} />
+          )}/>
+          <Route exact path='/projects/:slug/releases' render={(props) => (
+            <ProjectReleases {...props} socket={socket} />
+          )}/>
           <Route exact path='/projects/:slug' render={(props) => (
             <ProjectFeatures history={history} {...props} socket={socket} />
           )}/>
@@ -132,12 +138,6 @@ export default class Project extends React.Component {
           )}/>
           <Route exact path='/projects/:slug/secrets' render={(props) => (
             <ProjectSecrets {...props} />
-          )}/>
-          <Route exact path='/projects/:slug/features' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
-          )}/>
-          <Route exact path='/projects/:slug/releases' render={(props) => (
-            <ProjectReleases {...props} socket={socket} />
           )}/>
           <Route exact path='/projects/:slug/extensions' render={(props) => (
             <ProjectExtensions {...props} socket={socket} />
