@@ -2,6 +2,7 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { Route, Switch } from "react-router-dom";
 import Loading from 'components/Utils/Loading';
+import DoesNotExist404 from 'components/Utils/DoesNotExist404';
 import styles from './style.module.css';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -61,6 +62,7 @@ export default class Admin extends React.Component {
           <Route path='/admin/environments' render={(props) => (
             <Environments/>
           )}/>
+          <Route component={DoesNotExist404} />
         </Switch>
       </div>
     );

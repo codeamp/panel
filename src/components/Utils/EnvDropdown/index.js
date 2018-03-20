@@ -69,7 +69,7 @@ export default class EnvDropdown extends React.Component {
     const { loading, project, environments } = this.props.data;
     const { app } = this.props.store;
 
-    if(loading){
+    if(loading || !project){
       return (
         <Grid className={styles.Grid}>
           <Button

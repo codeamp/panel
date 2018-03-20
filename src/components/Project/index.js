@@ -17,6 +17,7 @@ import ProjectSettings from 'components/Project/Settings';
 import ProjectServices from 'components/Project/Services';
 import ProjectExtensions from 'components/Project/Extensions';
 import Loading from 'components/Utils/Loading';
+import DoesNotExist404 from 'components/Utils/DoesNotExist404';
 
 @inject("store") @observer
 
@@ -118,6 +119,10 @@ export default class Project extends React.Component {
     if(loading){
       return (<Loading />)
     }
+    // handle invalid project
+    if(!project){
+      return (<DoesNotExist404 />)
+    }
     this.props.store.app.setProjectTitle(project.slug)
     this.setLeftNavProjectItems()
 
@@ -145,6 +150,7 @@ export default class Project extends React.Component {
           <Route exact path='/projects/:slug/settings' render={(props) => (
             <ProjectSettings {...props} />
           )}/>
+          <Route component={DoesNotExist404} />
         </Switch>
       </div>
     );
