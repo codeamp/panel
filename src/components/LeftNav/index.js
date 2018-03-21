@@ -18,25 +18,8 @@ import ExtensionIcon from 'material-ui-icons/Extension';
 import SecretIcon from 'material-ui-icons/VpnKey';
 import EnvironmentIcon from 'material-ui-icons/Public';
 import UsersIcon from 'material-ui-icons/AccountCircle';
-import Loading from 'components/Utils/Loading';
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
 
 @withRouter
-@graphql(gql`
-  query {
-    user {
-      id
-      email
-      permissions
-    }
-  }
-`,{
-  options: {
-    fetchPolicy: 'cache-and-network'
-  }
-})
-
 @inject("store") @observer
 export default class LeftNav extends React.Component {
   state = {
@@ -54,7 +37,7 @@ export default class LeftNav extends React.Component {
   render() {
     const { loading, user } = this.props.data;
     if(loading) {
-        return <Loading />
+        return null
     }
 
     return (
@@ -135,9 +118,6 @@ export default class LeftNav extends React.Component {
           </List>
           <Divider/>
           <List>
-            <ListItem>
-              <ListItemText primary={this.props.store.app.leftNavProjectTitle} />
-            </ListItem>
             {this.props.store.app.leftNavItems.map(nav =>
             <NavLink to={nav.slug} key={nav.key} exact activeClassName={styles.active}>
               <ListItem button>

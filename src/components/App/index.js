@@ -24,6 +24,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
     user {
       id
       email
+      permissions
     }
     projects {
       id
@@ -117,14 +118,10 @@ export default class App extends React.Component {
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <Switch>
-                <Route path='/' render={(props) => (
-                  <TopNav projects={projects} {...props} /> 
-                )} />
-              </Switch>
+              <TopNav projects={projects} {...this.props} /> 
             </Grid>
             <Grid item xs={12} className={styles.center}> 
-              <LeftNav environments={environments} />
+              <LeftNav environments={environments} {...this.props} />
               <div className={styles.children}>
                 <Switch> 
                   <Route exact path='/' render={(props) => (
