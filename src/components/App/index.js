@@ -17,7 +17,7 @@ import Project from 'components/Project';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
 
-const socket = io(process.env.REACT_APP_CIRCUIT_URI);
+const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
 
 @graphql(gql`
   query {
