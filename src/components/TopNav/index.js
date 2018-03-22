@@ -76,6 +76,20 @@ export default class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
+    let currentEnv = this.props.store.app.currentEnvironment
+    let matched = false
+    suggestion.project.environments.map((env) => {
+      if(env.id === currentEnv.id){
+        matched = true
+        return null
+      }
+      return null
+    })
+
+    if (!matched) {
+      this.props.store.app.setCurrentEnv({id: suggestion.project.environments[0].id, color: suggestion.project.environments[0].color, name: suggestion.project.environments[0].name })
+    }
+
     this.props.history.push('/projects/' + suggestion.project.slug)      
     this.hideSuggestions(true)
   }

@@ -30,11 +30,11 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
       id
       name
       slug
-    }
-    environments {
-      id
-      name
-      color
+      environments {
+        id
+        name
+        color
+      }
     }
   }
 `)
@@ -74,7 +74,7 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { loading, projects, user, environments } = this.props.data;
+    const { loading, projects, user } = this.props.data;
 
     if(this.props.data.networkStatus === 8){
       return (
@@ -121,7 +121,7 @@ export default class App extends React.Component {
               <TopNav projects={projects} {...this.props} /> 
             </Grid>
             <Grid item xs={12} className={styles.center}> 
-              <LeftNav environments={environments} {...this.props} />
+              <LeftNav {...this.props} />
               <div className={styles.children}>
                 <Switch> 
                   <Route exact path='/' render={(props) => (
