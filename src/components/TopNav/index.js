@@ -11,34 +11,13 @@ import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
 import Button from 'material-ui/Button';
-import Loading from 'components/Utils/Loading';
 import Logo from './logo_white.png';
-import { withApollo } from 'react-apollo';
-import EnvDropdown from 'components/Utils/EnvDropdown';
-
 import styles from './style.module.css';
 
-import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
-
-
-@inject("store")
-@graphql(gql`
-  query {
-    environments {
-      id
-      name
-      color
-      created
-    }
-  }
-`,)
-
-@observer
-class TopNav extends React.Component {
+@inject("store") @observer
+export default class TopNav extends React.Component {
   state = {
     userAnchorEl: undefined,
-    environmentAnchorEl: undefined,
     originalSuggestions: [],
     suggestions: [],
     value: '',
@@ -97,11 +76,7 @@ class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
-    if(this.props.data.environments.length > 0){
-      this.props.history.push('/projects/' + suggestion.project.slug)      
-    } else {
-      this.props.store.app.setSnackbar({ msg: "Please create atleast one environment to enter into a project. Message an admin if you can't do that.", open: true })      
-    }
+    this.props.history.push('/projects/' + suggestion.project.slug)      
     this.hideSuggestions(true)
   }
 
@@ -113,28 +88,8 @@ class TopNav extends React.Component {
   render() {
     var self = this
     const { store } = this.props
-    const { loading, environments } = this.props.data;
     const { app } = this.props.store;
-
-    if(loading){
-      return (<Loading />)
-    }
     
-    // make sure mobx env id exists
-    var found = false
-    environments.map(function(env){
-      if(env.id === self.props.store.app.currentEnvironment.id){
-        found = true
-        return true
-      }
-      return false
-    })
-    if(!found){
-      if(environments.length > 0) {
-        this.props.store.app.setCurrentEnv({id: environments[0].id, color: environments[0].color, name: environments[0].name })
-      }
-    }
-
     return (
       <div>
         <AppBar position="static" className={styles.appBar}>
@@ -204,11 +159,6 @@ class TopNav extends React.Component {
                     onClose={this.handleUserClose}>
                     <MenuItem onClick={this.logout}>Logout</MenuItem>
                   </Menu>
-                  <Switch>
-                    <Route path='/projects/:slug' render={(props) => (
-                      <EnvDropdown client={this.props.client} {...props} />
-                    )} />
-                  </Switch>
                 </Grid>
               </Grid>
             </Toolbar> 
@@ -245,6 +195,3 @@ class TopNav extends React.Component {
     );
   }
 }
-
-export default withApollo(TopNav)
-

@@ -269,7 +269,7 @@ export default class ProjectExtensions extends React.Component {
 
     return (
       <div>
-        <Grid container spacing={24} style={{ marginTop: 1 }}>
+        <Grid container spacing={24}>
           <Grid item xs={12}>
             {this.renderEnabledExtensions()}
           </Grid>

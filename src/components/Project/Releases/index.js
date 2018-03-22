@@ -342,8 +342,8 @@ export default class Releases extends React.Component {
     })
     
     return (
-      <Paper className={styles.root}>
-        <div className={styles.tableWrapper}>
+      <div>
+        <Paper className={styles.root}>
           <Toolbar>
             <div>
               <Typography variant="title">
@@ -372,8 +372,8 @@ export default class Releases extends React.Component {
               { releaseExtensions }
             </TableBody>
           </Table>
-        </div>
-      </Paper>
+        </Paper>
+      </div>
     )   
   }
 

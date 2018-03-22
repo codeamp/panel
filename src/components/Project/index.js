@@ -10,6 +10,7 @@ import ReleasesIcon from 'material-ui-icons/Timeline';
 import ServicesIcon from 'material-ui-icons/Widgets';
 import SecretIcon from 'material-ui-icons/VpnKey';
 import ExtensionsIcon from 'material-ui-icons/Extension';
+import StarBorderIcon from 'material-ui-icons/StarBorder';
 import ProjectFeatures from 'components/Project/Features';
 import ProjectSecrets from 'components/Project/Secrets';
 import ProjectReleases from 'components/Project/Releases';
@@ -18,6 +19,12 @@ import ProjectServices from 'components/Project/Services';
 import ProjectExtensions from 'components/Project/Extensions';
 import Loading from 'components/Utils/Loading';
 import DoesNotExist404 from 'components/Utils/DoesNotExist404';
+import Typography from 'material-ui/Typography';
+import Toolbar from 'material-ui/Toolbar';
+import Menu, { MenuItem } from 'material-ui/Menu';
+import Button from 'material-ui/Button';
+import { withApollo } from 'react-apollo';
+import Grid from 'material-ui/Grid';
 
 @inject("store") @observer
 
@@ -38,6 +45,12 @@ import DoesNotExist404 from 'components/Utils/DoesNotExist404';
         id
         created
       }
+      environments {
+        id
+        name
+        color
+        created
+      }
     }
   }`, {
   options: (props) => ({
@@ -47,16 +60,45 @@ import DoesNotExist404 from 'components/Utils/DoesNotExist404';
     }
   })
 })
-export default class Project extends React.Component {
-  state = {
-    fetchDelay: null,
-    url: this.props.match.url,
+
+class Project extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      fetchDelay: null,
+      url: this.props.match.url,
+      environmentAnchorEl: undefined,
+    }
+  }
+
+  handleEnvironmentClick = event => {
+    this.setState({ environmentAnchorEl: event.currentTarget });
   };
+
+  handleEnvironmentClose = (event, id) => {
+    this.setState({ environmentAnchorEl: null });
+  };
+
+  handleEnvironmentSelect = (id) => {
+  	const { project } = this.props.data;
+
+    project.environments.map((env) => {
+      if(env.id === id){
+        this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name })
+        this.props.client.resetStore()
+        return null
+      }
+      return null
+    })
+
+    this.setState({ environmentAnchorEl: null });
+  }
 
   setLeftNavProjectItems(){
     const { loading, project } = this.props.data;
+
     if(loading){
-        return
+        return null
     }
 
     // count deployable features by comparing currentRelease created and feature created
@@ -116,9 +158,12 @@ export default class Project extends React.Component {
   render() {
     const { history, socket } = this.props;
     const { loading, project } = this.props.data;
+    const { app } = this.props.store;
+
     if(loading){
       return (<Loading />)
     }
+
     // handle invalid project
     if(!project){
       return (<DoesNotExist404 />)
@@ -128,6 +173,41 @@ export default class Project extends React.Component {
 
     return (
       <div className={styles.root}>
+        <Grid container spacing={24}>
+          <Grid item xs={9}>
+            <Toolbar style={{paddingLeft: "0px"}}>
+              <StarBorderIcon/>
+              <Typography variant="title">
+                {project.slug}
+              </Typography>
+            </Toolbar>
+          </Grid>
+          <Grid item xs={3} style={{textAlign: "right"}}>
+            <Toolbar style={{textAlign: "right", display: "inline-flex"}}>
+              <Button
+                className={styles.EnvButton}
+                variant="raised"
+                aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+                aria-haspopup="true"
+                onClick={this.handleEnvironmentClick.bind(this)}>
+                {app.currentEnvironment.name}
+              </Button>
+              <Menu
+                id="environment-menu"
+                anchorEl={this.state.environmentAnchorEl}
+                open={Boolean(this.state.environmentAnchorEl)}
+                onClose={this.handleEnvironmentClose.bind(this)}>
+                {project.environments.map((env) => {
+                  return (<MenuItem 
+                    key={env.id}
+                    onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
+                    {env.name}
+                  </MenuItem>)
+                })}
+              </Menu>
+            </Toolbar>
+          </Grid>
+        </Grid>
         <Switch>
           <Route exact path='/projects/:slug/features' render={(props) => (
             <ProjectFeatures history={history} {...props} socket={socket} />
@@ -156,3 +236,5 @@ export default class Project extends React.Component {
     );
   }
 }
+
+export default withApollo(Project)

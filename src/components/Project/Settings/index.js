@@ -25,7 +25,11 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
       gitUrl
       gitProtocol
       gitBranch
-      permissions
+      environments {
+        id
+        name
+        key
+      }
     }
     environments {
       id
@@ -47,7 +51,7 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
 
 @graphql(gql`
   mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String) {
-    updateProjectPermissions(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
+    updateProjectEnvironments(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
       id
       name
       slug
@@ -60,10 +64,12 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
 `, { name: "updateProject"})
 
 @graphql(gql`
-  mutation Mutation($projectID: String!, $permissions: [ProjectPermissionInput!]!) {
-    updateProjectPermissions(projectPermissions: { projectID: $projectID, permissions: $permissions })
+  mutation Mutation($projectID: String!, $environments: [ProjectEnvironmentInput!]!) {
+    updateProjectEnvironments(projectEnvironments: { projectID: $projectID, permissions: $environments }){
+      id 
+    }
   }
-`, { name: "updateProjectPermissions"})
+`, { name: "updateProjectEnvironments"})
 
 export default class Settings extends React.Component {
   constructor(props){
@@ -80,11 +86,11 @@ export default class Settings extends React.Component {
       'gitUrl',
       'environmentID',
       'gitBranch',
-      'permissions',
-      'permissions[]',
-      'permissions[].environmentID',
-      'permissions[].label',
-      'permissions[].grant',
+      'environments',
+      'environments[]',
+      'environments[].environmentID',
+      'environments[].label',
+      'environments[].grant',
     ];
     const rules = {};
     const labels = {
@@ -93,7 +99,7 @@ export default class Settings extends React.Component {
     const initials = {
     };
     const types = {
-      'permissions[].grant': 'checkbox',
+      'environments[].grant': 'checkbox',
     };
     const extra = {};
     const hooks = {};
@@ -130,17 +136,17 @@ export default class Settings extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.updateSettings.bind(this), onError: this.onError.bind(this) })
   }
 
-  updateProjectPermissions(form){
+  updateProjectEnvironments(form){
     const { project } = this.props.data;
-    this.props.updateProjectPermissions({
-      variables: { 'projectID': project.id, 'permissions': form.values()['permissions'] }
+    this.props.updateProjectEnvironments({
+      variables: { 'projectID': project.id, 'environments': form.values()['environments'] }
     }).then(({data}) => {
       this.props.data.refetch()
     });    
   }
 
-  onUpdateProjectPermissions(e){
-    this.form.onSubmit(e, { onSuccess: this.updateProjectPermissions.bind(this), onError: this.onError.bind(this) })
+  onUpdateProjectEnvironments(e){
+    this.form.onSubmit(e, { onSuccess: this.updateProjectEnvironments.bind(this), onError: this.onError.bind(this) })
   }
 
   setFormValues(){
@@ -157,13 +163,13 @@ export default class Settings extends React.Component {
 
       environments.map(function(environment){
         var checked = false
-        project.permissions.map(function(envPermission){
-          if(envPermission === environment.id){
+        project.environments.map(function(projectEnvironment){
+          if(projectEnvironment.id === environment.id){
             checked = true
           }
           return null
         })
-        self.form.$('permissions').add({ 
+        self.form.$('environments').add({ 
           'grant': checked, 
           'environmentID': environment.id, 
           'label': environment.name + ' (' + environment.key +')' 
@@ -247,9 +253,9 @@ export default class Settings extends React.Component {
                 <Card className={styles.card}>
                   <CardContent>
                     <Grid xs={12}>
-                      {this.form.$('permissions').map(function(permission){
+                      {this.form.$('environments').map(function(projectEnvironment){
                         return (
-                          <CheckboxField field={permission.$('grant')} label={permission.$('label').value} fullWidth={true} />            
+                          <CheckboxField field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
                         )
                       })}
                     </Grid>
@@ -258,7 +264,7 @@ export default class Settings extends React.Component {
                     <Button color="primary"
                       type="submit"
                       variant="raised"
-                      onClick={(e) => this.onUpdateProjectPermissions(e)}>
+                      onClick={(e) => this.onUpdateProjectEnvironments(e)}>
                       Save
                     </Button>
                   </CardActions>
