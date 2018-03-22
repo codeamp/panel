@@ -34,7 +34,12 @@ import Grid from 'material-ui/Grid';
   query Project($slug: String, $environmentID: String){
     project(slug: $slug, environmentID: $environmentID) {
       id
+      name
       slug
+      repository
+      gitUrl
+      gitProtocol
+      gitBranch
       currentRelease {
          id
          created
