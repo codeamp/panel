@@ -10,8 +10,9 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
-import CreateProject from '../../Create';
 import Card, {CardContent, CardActions} from 'material-ui/Card';
+import { FormLabel, FormControl, FormControlLabel } from 'material-ui/Form';
+import Radio, {RadioGroup} from 'material-ui/Radio';
 
 @inject("store") @observer
 
@@ -51,7 +52,7 @@ import Card, {CardContent, CardActions} from 'material-ui/Card';
 
 @graphql(gql`
   mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String) {
-    updateProjectEnvironments(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
       id
       name
       slug
@@ -95,6 +96,7 @@ export default class Settings extends React.Component {
     const rules = {};
     const labels = {
       'gitBranch': 'Git Branch',
+      'gitUrl': 'Git Url',
     };
     const initials = {
     };
@@ -111,6 +113,12 @@ export default class Settings extends React.Component {
   componentWillMount(){
     this.createProjectForm()
   }
+
+  componentWillReceiveProps(nextProps){
+    if (!nextProps.data.loading && this.props.data.loading) {
+      this.setFormValues(nextProps)
+    }
+  } 
 
   updateProject(form){
     this.props.updateProject({
@@ -149,46 +157,100 @@ export default class Settings extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.updateProjectEnvironments.bind(this), onError: this.onError.bind(this) })
   }
 
-  setFormValues(){
-    if(!this.props.data.loading){
-      const { project, environments } = this.props.data;
-      const { currentEnvironment } = this.props.store.app;
-      var self = this;
+  setFormValues(props){
+    const { project, environments } = props.data;
+    const { currentEnvironment } = props.store.app;
+    var self = this;
 
-      this.form.$('id').set(project.id)
-      this.form.$('gitProtocol').set(project.gitProtocol)
-      this.form.$('gitUrl').set(project.gitUrl)
-      this.form.$('environmentID').set(currentEnvironment.id)
-      this.form.$('gitBranch').set(project.gitBranch)      
+    this.form.$('id').set(project.id)
+    this.form.$('gitProtocol').set(project.gitProtocol)
+    this.form.$('gitUrl').set(project.gitUrl)
+    this.form.$('environmentID').set(currentEnvironment.id)
+    this.form.$('gitBranch').set(project.gitBranch)      
 
-      environments.map(function(environment){
-        var checked = false
-        project.environments.map(function(projectEnvironment){
-          if(projectEnvironment.id === environment.id){
-            checked = true
-          }
-          return null
-        })
-        self.form.$('environments').add({ 
-          'grant': checked, 
-          'environmentID': environment.id, 
-          'label': environment.name + ' (' + environment.key +')' 
-        })
+    environments.map(function(environment){
+      var checked = false
+      project.environments.map(function(projectEnvironment){
+        if(projectEnvironment.id === environment.id){
+          checked = true
+        }
         return null
       })
+      self.form.$('environments').add({ 
+        'grant': checked, 
+        'environmentID': environment.id, 
+        'label': environment.name + ' (' + environment.key +')' 
+      })
+      return null
+    })
 
-      this.setState({ settingsSet: true })
+    this.validateUrl(project.gitUrl)
+    this.setState({ settingsSet: true })
+  }
+
+  handleUrlChange(event){
+    this.validateUrl(event.target.value)
+  }
+
+  handleRepoTypeChange(event){
+    let urlString = this.state.url
+    let msg = ""
+
+    if(event.currentTarget.value === 'public'){
+      urlString = "https://" + urlString.replace(':', '/').split("git@")[1]
+      msg = "This is a valid HTTPS url."
     }
+
+    if(event.currentTarget.value === 'private'){
+      urlString = "git@" + urlString.split('https://')[1].replace('/', ':')
+      msg = "This is a valid SSH url."
+    }
+
+    this.form.$('gitUrl').set(urlString)
+    this.form.$('gitProtocol').set(event.currentTarget.value)
+    this.setState({ repoType: event.currentTarget.value, url: urlString, msg: msg });
+  }
+
+  validateUrl(url){
+    let isHTTPS = /^https:\/\/[a-z,0-9,.]+\/.+\.git$/.test(url)
+    let isSSH = /^git@[a-z,0-9,.]+:.+.git$/.test(url)
+
+    if(isHTTPS) {
+      this.setState({
+        previousGitUrl: this.state.url,
+        repoType: "public",
+        urlIsValid: true,
+        url: url,
+        msg: "This is a valid HTTPS url.",
+      })
+      return
+    }
+
+    if (isSSH) {
+      this.setState({
+        previousGitUrl: this.state.url,
+        repoType: "private",
+        urlIsValid: true,
+        url: url,
+        msg: "This is a valid SSH url.",
+      })
+      return
+    }
+
+    this.setState({
+      urlIsValid: false,
+      url: url,
+      msg: '* URL must be a valid HTTPS or SSH url.',
+      repoType: ""
+    })
+    return
   }
 
   render() {
-    const { loading, project, user } = this.props.data;
+    const { loading, user } = this.props.data;
 
     if(loading){
       return (<div>Loading</div>)
-    }
-    if(!this.state.settingsSet){
-      this.setFormValues()
     }
 
     return (
@@ -205,13 +267,42 @@ export default class Settings extends React.Component {
           </Grid>
 
           <Grid item sm={9}>
-            <Grid xs={12}>
-              <CreateProject 
-                title=""
-                type={"save"}
-                project={project}
-                loadLeftNavBar={false} />
-            </Grid>
+            <Card className={styles.card}>
+              <CardContent>
+                <Grid container spacing={24}>
+                  <Grid item xs={12}>
+                    <InputField disabled={true} field={this.form.$('gitUrl')} fullWidth={true}/>            
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <FormControl
+                      className={styles.formControl}
+                      required>
+                      <FormLabel>
+                        Repository Type
+                      </FormLabel>
+                      <RadioGroup
+                        aria-label="repoType"
+                        name="repoType"
+                        value={this.state.value}
+                        onChange={this.handleRepoTypeChange.bind(this)}
+                      >
+                        <FormControlLabel disabled={!this.state.urlIsValid} value="public" control={<Radio checked={this.state.repoType === 'public'} />} label="Public" />
+                        <FormControlLabel disabled={!this.state.urlIsValid} value="private" control={<Radio checked={this.state.repoType === 'private'} />} label="Private" />
+                      </RadioGroup>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </CardContent>
+              <CardActions>
+                <Button
+                  disabled={!this.state.urlIsValid}
+                  onClick={(e) => this.onUpdateSettings(e)}
+                  variant="raised" color="primary">
+                  Save
+                </Button>
+              </CardActions>
+            </Card>
           </Grid>  
           <Grid item sm={3}>
             <Typography variant="title" className={styles.settingsDescription}>
@@ -225,7 +316,7 @@ export default class Settings extends React.Component {
           <Grid item sm={9}>
             <Card className={styles.card}>
               <CardContent>
-                <Grid xs={12}>
+                <Grid item xs={12}>
                   <InputField field={this.form.$('gitBranch')} fullWidth={true} />            
                 </Grid>
               </CardContent>
@@ -252,10 +343,10 @@ export default class Settings extends React.Component {
               <Grid item sm={9}>
                 <Card className={styles.card}>
                   <CardContent>
-                    <Grid xs={12}>
+                    <Grid item xs={12}>
                       {this.form.$('environments').map(function(projectEnvironment){
                         return (
-                          <CheckboxField field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
+                          <CheckboxField key={projectEnvironment.id} field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
                         )
                       })}
                     </Grid>

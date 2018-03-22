@@ -30,20 +30,6 @@ import MobxReactForm from 'mobx-react-form';
   }
 `, {name: "createProject"})
 
-@graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!, $environmentID: String!) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID}) {
-      id
-      name
-      slug
-      repository
-      gitUrl
-      gitProtocol
-      rsaPublicKey
-    }
-  }
-`, { name: "updateProject"})
-
 export default class Create extends React.Component {
   constructor(props){
     super(props)
@@ -51,8 +37,6 @@ export default class Create extends React.Component {
       repoType: "",
       url: "",
       msg: "",
-      title: "Create Project",
-      showBadUrlMsg: false,
       urlIsValid: false,
       projectType: "docker",
       bookmarked: true,
@@ -61,10 +45,6 @@ export default class Create extends React.Component {
   }
 
   componentWillMount() {
-    if(this.props.title != null){
-      this.setState({ title: this.props.title })
-    }
-
     if(this.props.project != null){
       this.setState({ url: this.props.project.gitUrl })
       this.validateUrl(this.props.project.gitUrl)
@@ -101,7 +81,6 @@ export default class Create extends React.Component {
   }
 
   handleRepoTypeChange(event){
-
     let urlString = this.state.url
     let msg = ""
 
@@ -119,20 +98,8 @@ export default class Create extends React.Component {
   }
 
   validateUrl(url){
-
     let isHTTPS = /^https:\/\/[a-z,0-9,.]+\/.+\.git$/.test(url)
     let isSSH = /^git@[a-z,0-9,.]+:.+.git$/.test(url)
-
-    if (!isHTTPS && !isSSH) {
-      this.setState({
-        urlIsValid: false,
-        url: url,
-        showBadUrlMsg: true,
-        msg: '* URL must be a valid HTTPS or SSH url.',
-        repoType: ""
-      })
-      return
-    }
 
     if(isHTTPS) {
       this.setState({
@@ -141,7 +108,6 @@ export default class Create extends React.Component {
         urlIsValid: true,
         url: url,
         msg: "This is a valid HTTPS url.",
-        showBadUrlMsg: false,
       })
       return
     }
@@ -153,10 +119,17 @@ export default class Create extends React.Component {
         urlIsValid: true,
         url: url,
         msg: "This is a valid SSH url.",
-        showBadUrlMsg: false,
       })
       return
     }
+
+    this.setState({
+      urlIsValid: false,
+      url: url,
+      msg: '* URL must be a valid HTTPS or SSH url.',
+      repoType: ""
+    })
+    return
   }
 
   handleUrlChange(event){
@@ -167,60 +140,48 @@ export default class Create extends React.Component {
     // Post to graphql
     var self = this
     this.props.createProject({
-      variables: { gitUrl: this.state.url, gitProtocol: this.state.repoType, bookmarked: this.state.bookmarked, environmentID: this.props.store.app.currentEnvironment.id  }
+      variables: { 
+        gitUrl: this.state.url, 
+        gitProtocol: this.state.repoType, 
+        bookmarked: this.state.bookmarked, 
+        environmentID: this.props.store.app.currentEnvironment.id  
+      }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
       if(Object.keys(obj).length > 0 && obj.constructor === Object){
-        self.setState({ showBadUrlMsg: true, urlIsValid: false,  msg: obj.graphQLErrors[0].message })
+        self.setState({ urlIsValid: false,  msg: obj.graphQLErrors[0].message })
       }
     });
   }
 
   onProjectCreate(event){
-    if(this.props.onProjectCreate != null){
-      this.props.onProjectCreate(this.state)
-    } else {
-      this.createProject();
-    }
+    this.createProject();
   }
 
   render() {
-    let urlTextField = (
-      <FormControl className={styles.formControl}>
-        <InputLabel htmlFor="name-simple">Git Url</InputLabel>
-        <Input
-          placeholder="Enter the git url for your project."
-          id="name-simple"
-          value={this.state.url}
-          onChange={this.handleUrlChange.bind(this)} />
-        <FormHelperText>{this.state.msg}</FormHelperText>
-      </FormControl>
-    )
-
-    if(this.state.showBadUrlMsg){
-      urlTextField = (
-        <FormControl  className={styles.formControl} error>
-          <InputLabel htmlFor="name-error">Git Url</InputLabel>
-          <Input id="name-error" value={this.state.url} onChange={this.handleUrlChange.bind(this)} />
-          <FormHelperText>{this.state.msg}</FormHelperText>
-        </FormControl>
-      )
-    }
     return (
       <div className={styles.root}>
         <Card className={styles.card}>
           <CardContent>
             <Grid container spacing={24}>
-              {this.state.title !== "" && <Grid item xs={12}>
+              <Grid item xs={12}>
                 <Typography variant="title">
-                  {this.state.title}
+                  Create project
                 </Typography>
-              </Grid>}
+              </Grid>
 
               <Grid item xs={12}>
-                {urlTextField}
+                <FormControl className={styles.formControl}>
+                  <InputLabel htmlFor="name-simple">Git Url</InputLabel>
+                  <Input
+                    placeholder="Enter the git url for your project."
+                    id="name-simple"
+                    value={this.state.url}
+                    onChange={this.handleUrlChange.bind(this)} />
+                  <FormHelperText>{this.state.msg}</FormHelperText>
+                </FormControl>
               </Grid>
 
               <Grid item xs={12}>
@@ -265,7 +226,7 @@ export default class Create extends React.Component {
               disabled={!this.state.urlIsValid}
               onClick={this.onProjectCreate.bind(this)}
               variant="raised" color="primary">
-              {this.props.type}
+              Create
             </Button>
           </CardActions>
         </Card>

@@ -4,6 +4,7 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
+import IconButton from 'material-ui/IconButton';
 import SettingsIcon from 'material-ui-icons/Settings';
 import FeaturesIcon from 'material-ui-icons/Input';
 import ReleasesIcon from 'material-ui-icons/Timeline';
@@ -11,6 +12,7 @@ import ServicesIcon from 'material-ui-icons/Widgets';
 import SecretIcon from 'material-ui-icons/VpnKey';
 import ExtensionsIcon from 'material-ui-icons/Extension';
 import StarBorderIcon from 'material-ui-icons/StarBorder';
+import StarIcon from 'material-ui-icons/Star';
 import ProjectFeatures from 'components/Project/Features';
 import ProjectSecrets from 'components/Project/Secrets';
 import ProjectReleases from 'components/Project/Releases';
@@ -51,6 +53,7 @@ import Grid from 'material-ui/Grid';
         color
         created
       }
+      bookmarked
     }
   }`, {
   options: (props) => ({
@@ -60,6 +63,12 @@ import Grid from 'material-ui/Grid';
     }
   })
 })
+
+@graphql(gql`
+  mutation BookmarkProject ($id: ID!) {
+    bookmarkProject(id: $id)
+  }`, { name: "bookmarkProject" }
+)
 
 class Project extends React.Component {
   constructor(props){
@@ -94,10 +103,20 @@ class Project extends React.Component {
     this.setState({ environmentAnchorEl: null });
   }
 
-  setLeftNavProjectItems(){
-    const { loading, project } = this.props.data;
+  handleBookmarkProject = () => {
+    this.props.bookmarkProject({
+      variables: {
+        'id': this.props.data.project.id,
+      }
+    }).then(({ data }) => {
+      this.props.data.refetch()
+    })      
+  }
 
-    if(loading){
+  setLeftNavProjectItems = (props) => {
+    const { loading, project } = props.data;
+
+    if(loading || !project){
         return null
     }
 
@@ -116,26 +135,26 @@ class Project extends React.Component {
         
     this.props.store.app.leftNavItems = [
         {
-          key: "30",
+          key: "10",
           icon: <FeaturesIcon />,
           name: "Features",
           slug: this.props.match.url + "/features",
           count: deployableFeatures,
         },
         {
-          key: "40",
+          key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
           slug: this.props.match.url + "/releases",
         },
         {
-          key: "10",
+          key: "30",
           icon: <ServicesIcon />,
           name: "Services",
           slug: this.props.match.url + "/services",
         },
         {
-          key: "20",
+          key: "40",
           icon: <SecretIcon />,
           name: "Secrets",
           slug: this.props.match.url + "/secrets",
@@ -155,6 +174,10 @@ class Project extends React.Component {
     ];
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setLeftNavProjectItems(nextProps)
+  }
+
   render() {
     const { history, socket } = this.props;
     const { loading, project } = this.props.data;
@@ -168,15 +191,26 @@ class Project extends React.Component {
     if(!project){
       return (<DoesNotExist404 />)
     }
-    this.props.store.app.setProjectTitle(project.slug)
-    this.setLeftNavProjectItems()
 
+    let bookmarked = (
+      <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+        <StarBorderIcon/>
+      </IconButton>
+    )
+
+    if(project.bookmarked) {
+      bookmarked = (
+        <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+          <StarIcon/>
+        </IconButton>
+      ) 
+    }
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
           <Grid item xs={9}>
             <Toolbar style={{paddingLeft: "0px"}}>
-              <StarBorderIcon/>
+              {bookmarked}
               <Typography variant="title">
                 {project.slug}
               </Typography>
