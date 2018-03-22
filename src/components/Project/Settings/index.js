@@ -26,6 +26,18 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitUrl
       gitProtocol
       gitBranch
+      currentRelease {
+         id
+         created
+         headFeature {
+           id
+           created
+         }
+      }
+      features{
+        id
+        created
+      }
       environments {
         id
         name
