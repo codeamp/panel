@@ -30,7 +30,10 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
         id
         name
         key
+        color
+        created
       }
+      bookmarked
     }
     environments {
       id
@@ -115,7 +118,7 @@ export default class Settings extends React.Component {
   }
 
   componentWillReceiveProps(nextProps){
-    if (!nextProps.data.loading && this.props.data.loading) {
+    if(!this.state.settingsSet){	
       this.setFormValues(nextProps)
     }
   } 
@@ -128,20 +131,12 @@ export default class Settings extends React.Component {
     });
   }
 
-  updateSettings(form){
-    this.props.updateProject({
-      variables: form.values(),
-    }).then(({data}) => {
-      this.props.data.refetch()
-    });    
-  }
-
   onError(form){
     console.log('onError')
   }
 
   onUpdateSettings(e){
-    this.form.onSubmit(e, { onSuccess: this.updateSettings.bind(this), onError: this.onError.bind(this) })
+    this.form.onSubmit(e, { onSuccess: this.updateProject.bind(this), onError: this.onError.bind(this) })
   }
 
   updateProjectEnvironments(form){
@@ -157,10 +152,13 @@ export default class Settings extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.updateProjectEnvironments.bind(this), onError: this.onError.bind(this) })
   }
 
-  setFormValues(props){
-    const { project, environments } = props.data;
+  setFormValues(props) {
+    const { project, environments, loading } = props.data;
     const { currentEnvironment } = props.store.app;
-    var self = this;
+
+    if(loading){
+      return null
+    }
 
     this.form.$('id').set(project.id)
     this.form.$('gitProtocol').set(project.gitProtocol)
@@ -168,15 +166,16 @@ export default class Settings extends React.Component {
     this.form.$('environmentID').set(currentEnvironment.id)
     this.form.$('gitBranch').set(project.gitBranch)      
 
-    environments.map(function(environment){
+    environments.map((environment) => {
       var checked = false
-      project.environments.map(function(projectEnvironment){
+      project.environments.map((projectEnvironment) =>{
         if(projectEnvironment.id === environment.id){
           checked = true
         }
         return null
       })
-      self.form.$('environments').add({ 
+
+      this.form.$('environments').add({ 
         'grant': checked, 
         'environmentID': environment.id, 
         'label': environment.name + ' (' + environment.key +')' 
@@ -250,7 +249,7 @@ export default class Settings extends React.Component {
     const { loading, user } = this.props.data;
 
     if(loading){
-      return (<div>Loading</div>)
+      return null
     }
 
     return (
@@ -344,7 +343,7 @@ export default class Settings extends React.Component {
                 <Card className={styles.card}>
                   <CardContent>
                     <Grid item xs={12}>
-                      {this.form.$('environments').map(function(projectEnvironment){
+                      {this.form.$('environments').map((projectEnvironment) => {
                         return (
                           <CheckboxField key={projectEnvironment.id} field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
                         )
