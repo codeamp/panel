@@ -435,13 +435,15 @@ export default class ProjectExtensions extends React.Component {
       name = ext.name
       type = ext.type
       ext.config.map(function(obj){
-          let _obj = _.find(ext.config.config, {key: obj.key, value: obj.value });
+        if (obj.allowOverride === true) {
+          let _obj = _.find(ext.config.config, {key: obj.key, value: obj.value, allowOverride: obj.allowOverride });
           if (_obj) {
-              config.push(_obj) 
+            config.push(_obj) 
           } else {
-              config.push(obj) 
+            config.push(obj) 
           }
-          return null
+        }
+        return null
       })
     } else if(extension.__typename === "ProjectExtension"){
         config = []
