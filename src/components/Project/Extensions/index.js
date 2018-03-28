@@ -48,6 +48,7 @@ import _ from "lodash"
         state
         stateMessage
         config
+        customConfig
         artifacts
         created
       }
@@ -87,11 +88,12 @@ import _ from "lodash"
 })
 
 @graphql(gql`
-  mutation CreateProjectExtension ($projectID: String!, $extensionID: String!, $config: JSON!, $environmentID: String!) {
+  mutation CreateProjectExtension ($projectID: String!, $extensionID: String!, $config: JSON!, $customConfig: JSON!, $environmentID: String!) {
       createProjectExtension(projectExtension:{
         projectID: $projectID,
         extensionID: $extensionID,
         config: $config,
+        customConfig: $customConfig,
         environmentID: $environmentID,
       }) {
           id
@@ -100,12 +102,13 @@ import _ from "lodash"
 )
 
 @graphql(gql`
-  mutation UpdateProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $environmentID: String!) {
+  mutation UpdateProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $customConfig: JSON!, $environmentID: String!) {
       updateProjectExtension(projectExtension:{
         id: $id,
         projectID: $projectID,
         extensionID: $extensionID,
         config: $config,
+        customConfig: $customConfig,
         environmentID: $environmentID,
       }) {
           id
@@ -114,12 +117,13 @@ import _ from "lodash"
 )
 
 @graphql(gql`
-  mutation DeleteProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $environmentID: String!) {
+  mutation DeleteProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $customConfig: JSON!, $environmentID: String!) {
       deleteProjectExtension(projectExtension:{
         id: $id,
         projectID: $projectID,
         extensionID: $extensionID,
         config: $config,
+        customConfig: $customConfig,
         environmentID: $environmentID,
       }) {
           id
@@ -201,10 +205,10 @@ export default class ProjectExtensions extends React.Component {
     let { extension } = this.state.extensionDrawer
     
     let formValues = this.form.values()
+    let customFormValues = {}
+
     if (this.customForm) {
-      formValues.custom = this.customForm.values()
-    } else {
-      formValues.custom = {}
+      customFormValues = this.customForm.values()
     }
 
     if (extension.extension) {
@@ -213,7 +217,8 @@ export default class ProjectExtensions extends React.Component {
           'id': extension.id,
           'projectID': this.props.data.project.id,
           'extensionID': extension.extension.id,
-          'config': formValues,
+          'config': formValues.config,
+          'customConfig': customFormValues,
           'environmentID': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -225,7 +230,8 @@ export default class ProjectExtensions extends React.Component {
         variables: {
           'projectID': this.props.data.project.id,
           'extensionID': extension.id,
-          'config': formValues,
+          'config': formValues.config,
+          'customConfig': customFormValues,
           'environmentID': this.props.store.app.currentEnvironment.id,
         }
       }).then(({ data }) => {
@@ -248,6 +254,7 @@ export default class ProjectExtensions extends React.Component {
         'projectID': this.props.data.project.id,
         'extensionID': extension.extension.id,
         'config': extension.config,
+        'customConfig': extension.customConfig,
         'environmentID': this.props.store.app.currentEnvironment.id,
       }
     }).then(({ data }) => {
@@ -437,12 +444,8 @@ export default class ProjectExtensions extends React.Component {
       type = ext.type
       ext.config.map(function(obj){
         if (obj.allowOverride === true) {
-          let _obj = _.find(ext.config.config, {key: obj.key, value: obj.value, allowOverride: obj.allowOverride });
-          if (_obj) {
-            config.push(_obj) 
-          } else {
-            config.push(obj) 
-          }
+          let _obj = _.find(ext.config, {key: obj.key, value: obj.value, allowOverride: obj.allowOverride });
+          config.push(_obj) 
         }
         return null
       })
@@ -451,7 +454,7 @@ export default class ProjectExtensions extends React.Component {
       config = []
       name = extension.extension.name
       type = extension.extension.type
-      extension.config.config.map(function(obj){
+      extension.config.map(function(obj){
         let _obj = _.clone(obj)
         _obj.value = obj.value
         config.push(_obj) 
@@ -464,6 +467,7 @@ export default class ProjectExtensions extends React.Component {
       'config[]',
       'config[].key',
       'config[].value',
+      'config[].allowOverride',
     ];
     const rules = {};
     const labels = {};
@@ -474,7 +478,7 @@ export default class ProjectExtensions extends React.Component {
     const handlers = {};
     const plugins = { dvr: validatorjs };
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
-    this.form.update({ config: config })
+    this.form.update({config: config})
 
     const secretOptions = this.props.data.project.secrets.map(function(secret){
       return {
@@ -511,7 +515,7 @@ export default class ProjectExtensions extends React.Component {
           </Grid>
 
           <Grid item xs={12}>
-            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.config.custom} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
 
           {extension.stateMessage &&
