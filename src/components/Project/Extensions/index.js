@@ -65,7 +65,7 @@ import _ from "lodash"
         }        
       }
     }
-    extensions {
+    extensions(environmentID: $environmentID) {
       id
       name
       component
@@ -320,7 +320,7 @@ export default class ProjectExtensions extends React.Component {
         }
       })
       
-      if (!found && extension.environment.id === this.props.store.app.currentEnvironment.id) {
+      if (!found) {
         extensions.push(
           <TableRow
             hover
