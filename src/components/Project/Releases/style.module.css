@@ -198,3 +198,12 @@
 .statusLights {
     margin-top: 5px;
 }
+
+.drawerButton {
+  margin-right: 10px;
+}
+
+.activeRelease {
+  background-color: #2196f3;
+  color: white;
+}

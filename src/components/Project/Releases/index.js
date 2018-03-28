@@ -19,6 +19,8 @@ import Loading from 'components/Utils/Loading';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
+import _ from "lodash"
+import Chip from 'material-ui/Chip';
 
 class ReleaseView extends React.Component {  
   renderReleaseExtensionStatuses() { 
@@ -64,25 +66,48 @@ class ReleaseView extends React.Component {
       </div>
     )
   }
+
   render() {
+    const { release, currentRelease } = this.props;
+    
+    let state
+    switch(release.state) {  
+      case "waiting":
+        state = (<CircularProgress className={styles.progress} />)
+      break;
+      case "running":
+        state = (<CircularProgress className={styles.progress} color="secondary" />)
+      break;
+      default:
+        state = null
+    }
+
     return (
       <Grid item xs={12} onClick={this.props.handleOnClick}>
         <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>
           <CardContent>
-            <Typography className={styles.featureCommitMsg}>
-              { this.props.release.headFeature.hash.slice(30) }
-              <DoubleRightIcon />
-              { this.props.release.tailFeature.hash.slice(30) }
-            </Typography>
-            <Typography>
-              { this.props.release.headFeature.message}
-            </Typography>
-            <Typography component="p" className={styles.featureAuthor}>
-              by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toDateString() }
-            </Typography>
-            <div className={styles.statusLights}>
-              {this.renderReleaseExtensionStatuses()}
-            </div>
+            <Grid container spacing={0}>
+              <Grid item xs={10}>
+                <Typography className={styles.featureCommitMsg}>
+                  { this.props.release.headFeature.hash.slice(30) }
+                  <DoubleRightIcon />
+                  { this.props.release.tailFeature.hash.slice(30) }
+                </Typography>
+                <Typography>
+                  { this.props.release.headFeature.message}
+                </Typography>
+                <Typography component="p" className={styles.featureAuthor}>
+                  by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toDateString() }
+                </Typography>
+                <div className={styles.statusLights}>
+                  {this.renderReleaseExtensionStatuses()}
+                </div>
+              </Grid>
+              <Grid item xs={2} style={{textAlign: "right"}}> 
+                {state}
+                {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
       </Grid>
@@ -234,28 +259,21 @@ mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $en
 
 export default class Releases extends React.Component {
   state = {
-    activeStep: 0,
-    showCurrentReleaseFullView: false,
-    currentRelease: 0,
-    dockerBuilderLogs: "No logs yet...",
-    deployAction: '',
-  };
-
-  handleNext = () => {
-    this.setState({
-      activeStep: this.state.activeStep + 1,
-    });
-  };
-
-  handleBack = () => {
-    this.setState({
-      activeStep: this.state.activeStep - 1,
-    });
+    drawerRelease: null,
   };
 
   componentWillMount() {    
     this.props.data.refetch()
-    this.setupSocketHandlers()    
+
+    const { socket, match } = this.props;
+    
+    socket.on(match.url.substring(1, match.url.length), (data) => {
+      this.props.data.refetch()
+    });    
+    
+    socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
+      this.props.data.refetch()
+    });        
 
     const fields = [
       'id',
@@ -275,8 +293,12 @@ export default class Releases extends React.Component {
   };
 
   renderReleaseExtensionTable() {
+		if (this.state.drawerRelease === null){
+			return null
+		}
+
     const { project } = this.props.data;
-    const release = project.releases[this.form.values()['index']]
+    const release = this.state.drawerRelease
     const extensions = project.extensions
 
     // filter out 'once' types
@@ -377,106 +399,192 @@ export default class Releases extends React.Component {
     )   
   }
 
-
-  setupSocketHandlers(){
-    const { socket, match } = this.props;
-    
-    socket.on(match.url.substring(1, match.url.length), (data) => {
-      this.props.data.refetch()
-    });    
-    
-    socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
-      this.props.data.refetch()
-    });        
+  handleToggleDrawer(release){
+    this.setState({ drawerOpen: true, dialogOpen: false, drawerRelease: release })
   }
 
-
-  handleToggleDrawer(releaseIdx){
-    let deployAction = 'Rollback'
-    if(releaseIdx === 0 && this.props.data.project.releases[0].state === "complete"){
-        deployAction = 'Redeploy'
-    }
-
-    if(releaseIdx === -1){
-        for(var i = 0; i < this.props.data.project.releases.length; i++){
-            let release = this.props.data.project.releases[i]
-            deployAction = 'Redeploy'
-            if(release.state === "complete"){
-                releaseIdx = i;
-                break;
-            }
-        }
-    }
-
-    this.form.$('index').set(releaseIdx)
-    this.form.$('id').set(this.props.data.project.releases[releaseIdx].id)
-
-    this.setState({ drawerOpen: true, dialogOpen: false, currentRelease: releaseIdx, deployAction: deployAction })
-  }
-
-  releaseAction(){
-    const { deployAction } = this.state;
+  redeployRelease(release){
     const { createRelease } = this.props;
-    const { project, refetch } = this.props.data;
-    const release = project.releases[this.form.values()['index']];
+    const { refetch } = this.props.data;
 
-    if(deployAction === 'Rollback') {
-      createRelease({variables: { releaseId: release.id, headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id }}).then(function(res){
-        refetch()
-      }).catch(function(err){
-        refetch()
-      })
-    } else if(deployAction === 'Redeploy') {
-      createRelease({
-        variables: { headFeatureID: release.headFeature.id, projectID: release.project.id, environmentID: release.environment.id },
-      }).then(({data}) => {
-        refetch()
-      }).catch(function(err){
-        refetch()
-      });
-    }
+    createRelease({
+      variables: { 
+        headFeatureID: release.headFeature.id, 
+        projectID: release.project.id, 
+        environmentID: release.environment.id 
+      },
+    }).then(({data}) => {
+      refetch()
+    }).catch(function(err){
+      refetch()
+    });
+
+    this.closeDrawer()
+  }
+
+  rollbackRelease(release){
+    const { createRelease } = this.props;
+    const { refetch } = this.props.data;
+
+    createRelease({
+      variables: { 
+        releaseId: release.id, 
+        headFeatureID: release.headFeature.id, 
+        projectID: release.project.id, 
+        environmentID: release.environment.id 
+      },
+    }).then(({data}) => {
+      refetch()
+    }).catch(function(err){
+      refetch()
+    });
+
     this.closeDrawer()
   }
 
   closeDrawer(){
-    this.setState({ drawerOpen: false })
+    this.setState({ drawerOpen: false, drawerRelease: null })
+  }
+  
+  releaseActionButton(release) {
+    let { currentRelease } = this.props.data.project;
+
+    if (release.state !== "complete"){
+      return null; 
+    }
+
+    if (_.has(currentRelease, 'id') && currentRelease.id === release.id) {
+      return (<Button
+        className={styles.drawerButton}
+        variant="raised"
+        color="primary"
+        onClick={()=> this.redeployRelease(release)}>
+        Redeploy
+      </Button>)
+    } else {
+      return (<Button
+        className={styles.drawerButton}
+        variant="raised"
+        color="secondary"
+        onClick={()=> this.rollbackRelease(release)}>
+        Rollback
+      </Button>)
+    }
+  }
+
+  renderDrawer(){
+		if (this.state.drawerRelease === null){
+			return null
+		}
+
+    let release = this.state.drawerRelease;
+    
+    return (
+			<Drawer
+				anchor="right"
+				classes={{
+				  paper: styles.drawer
+				}}
+				open={this.state.drawerOpen}>
+				<div className={styles.createServiceBar}>
+					<AppBar position="static" color="default">
+						<Toolbar>
+							<Typography variant="title" color="inherit">
+								Release Information
+							</Typography>
+						</Toolbar>
+					</AppBar>
+					<Grid container spacing={24} className={styles.grid}>
+						<Grid item xs={12}>
+							<Card square={true}>
+								<CardContent>
+									<Typography variant="title">
+										Git Info
+									</Typography>
+								</CardContent>
+							</Card>                       
+							<Card square={true}>
+								<CardContent>                                     
+									<Typography variant="body1">
+										<b>HEAD</b> : {release.headFeature.hash }
+									</Typography>                  
+								</CardContent>
+							</Card>                  
+							<Card square={true}>
+								<CardContent>                                               
+									<Typography variant="body1">
+										<b>TAIL</b> : {release.tailFeature.hash }
+									</Typography>                                  
+								</CardContent>
+							</Card>                                    
+						</Grid>
+						<Grid item xs={12}>                
+              {this.renderReleaseExtensionTable()}
+						</Grid>
+						<Grid item xs={12}>                
+							<Paper className={styles.root}>
+								<div className={styles.tableWrapper}>
+									<Toolbar>
+										<div>
+											<Typography variant="title">
+												Artifacts
+											</Typography>
+										</div>
+									</Toolbar>
+									<Table>
+										<TableHead>
+											<TableRow>
+												<TableCell>
+													Key
+												</TableCell>
+												<TableCell>
+													Value
+												</TableCell>
+											</TableRow>
+										</TableHead>
+										<TableBody>
+											{release.artifacts.map(artifact => {
+											return (
+											<TableRow
+												key={artifact.key}>
+												<TableCell>
+													{artifact.key}
+												</TableCell>
+												<TableCell>
+													{artifact.value}
+												</TableCell>
+											</TableRow>
+											)
+											})}
+										</TableBody>
+									</Table>
+								</div>
+							</Paper>
+						</Grid>
+						<Grid item xs={12}>
+              {this.releaseActionButton(release)}
+							<Button
+                className={styles.drawerButton}
+								color="primary"
+								onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
+								Cancel
+							</Button>
+						</Grid>
+					</Grid>
+				</div>
+			</Drawer>
+    ) 
   }
   
   render() {
-    const { loading, project, user } = this.props.data;
+    const { loading, project } = this.props.data;
 
     if(loading){
       return (<Loading />)
     }
+    
     return (
       <div>
-        <Grid container spacing={16}>
-          <Grid item xs={12} className={styles.feature}>
-            <Card square={true}>
-              <CardContent>
-                <Typography variant="title">
-                  Current Release
-                </Typography>
-              </CardContent>
-            </Card>              
-            {project.currentRelease ?
-              <ReleaseView
-                key={project.currentRelease.id}
-                extensions={project.extensions}
-                release={project.currentRelease}
-                handleOnClick={() => this.handleToggleDrawer(-1)}
-                showFullView={this.state.showCurrentReleaseFullView}
-              /> :
-              <Card square={true}>
-                <CardContent>
-                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
-                    This project has no deployed releases yet.
-                  </Typography>
-                </CardContent>
-              </Card>                          
-              }
-          </Grid>
-        </Grid>
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.feature}>
             <Card square={true}>
@@ -486,136 +594,28 @@ export default class Releases extends React.Component {
                 </Typography>
               </CardContent>
             </Card>
-            {project.releases.length > 0 ?
-              [...Array(project.releases.length)].map((x, i) =>
-                <ReleaseView
-                  key={project.releases[i].id}
-                  extensions={project.extensions}
-                  release={project.releases[i]}
-                  handleOnClick={() => this.handleToggleDrawer(i)}
-                  showFullView={this.state.activeFeatureKey === i} />
-              )
-              :
-              <Card square={true}>
-                <CardContent>
-                  <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
-                    There are no releases.
-                  </Typography>
-                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+            {project.releases.map((release) => {
+            return (<ReleaseView
+              key={release.id}
+              extensions={project.extensions}
+              release={release}
+              currentRelease={project.currentRelease}
+              handleOnClick={() => this.handleToggleDrawer(release)}/>
+            )})
+            }
+            {(project.releases.length === 0) && <Card square={true}>
+              <CardContent>
+                <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                  There are no releases.
+                </Typography>
+                <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
                   Do some work and deploy a feature <NavLink to={"/projects/" + project.slug + "/features"}><strong>here.</strong></NavLink>
-                  </Typography>                  
-                </CardContent>
-              </Card>                          
-              }
-            </Grid>
+                </Typography>                  
+              </CardContent>
+            </Card>}
+          </Grid>
         </Grid>
-        <Drawer
-          anchor="right"
-          classes={{
-            paper: styles.drawer
-          }}
-          open={this.state.drawerOpen}
-        >
-            <div className={styles.createServiceBar}>
-              <AppBar position="static" color="default">
-                <Toolbar>
-                  <Typography variant="title" color="inherit">
-                    Release Information
-                  </Typography>
-                </Toolbar>
-              </AppBar>
-              <Grid container spacing={24} className={styles.grid}>
-                <Grid item xs={12}>
-                  <Card square={true}>
-                    <CardContent>
-                      <Typography variant="title">
-                        Git Info
-                      </Typography>
-                    </CardContent>
-                  </Card>                       
-                  <Card square={true}>
-                    <CardContent>                                     
-                      <Typography variant="body1">
-                        <b>HEAD</b> : {project.releases !== undefined && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].headFeature.hash }
-                      </Typography>                  
-                    </CardContent>
-                  </Card>                  
-                  <Card square={true}>
-                    <CardContent>                                               
-                      <Typography variant="body1">
-                        <b>TAIL</b> : {project.releases !== undefined && project.releases[this.form.values()['index']] && project.releases[this.form.values()['index']].tailFeature.hash }
-                      </Typography>                                  
-                    </CardContent>
-                  </Card>                                    
-                </Grid>
-                <Grid item xs={12}>                
-                  {project.releases[this.form.values()['index']] &&
-                   this.renderReleaseExtensionTable()
-                  }
-                </Grid>
-                {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()["index"]].artifacts).length > 0 && user.permissions.includes("admin") &&
-                    <Grid item xs={12}>                
-                      <Paper className={styles.root}>
-                        <div className={styles.tableWrapper}>
-                          <Toolbar>
-                            <div>
-                              <Typography variant="title">
-                                Artifacts
-                              </Typography>
-                            </div>
-                          </Toolbar>
-                          <Table>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell>
-                                  Key
-                                </TableCell>
-                                <TableCell>
-                                  Value
-                                </TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {project.releases !== undefined && project.releases.length > 0 && project.releases[this.form.values()['index']] && Object.keys(project.releases[this.form.values()['index']].artifacts).map(artifactKey => {
-                                return (
-                                      <TableRow
-                                        tabIndex={-1}
-                                        key={this.form.values()['index'] + "-" + artifactKey}>
-                                        <TableCell>
-                                            {artifactKey}
-                                        </TableCell>
-                                        <TableCell>
-                                            {project.releases[this.form.values()["index"]].artifacts[artifactKey]}
-                                        </TableCell>
-                                      </TableRow>
-                                  )
-                              })}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </Paper>
-                    </Grid>
-                }
-                <Grid item xs={12}>
-                  {project.releases[this.form.values()['index']] &&
-                   project.releases[this.form.values()['index']].state === "complete" &&
-                    <Button
-                      variant="raised"
-                      disabled={project.releases.length > 0 && project.currentRelease && project.currentRelease.state !== "complete"}
-                      color="primary"
-                      onClick={this.releaseAction.bind(this)}>
-                      { this.state.deployAction }
-                    </Button>
-                  }
-                    <Button
-                      color="primary"
-                      onClick={()=>this.setState({ drawerOpen: false }) }>
-                      Cancel
-                    </Button>
-                </Grid>
-              </Grid>
-            </div>
-        </Drawer>
+        {this.renderDrawer()}
       </div>
     );
   }
