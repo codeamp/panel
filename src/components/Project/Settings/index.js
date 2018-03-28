@@ -95,6 +95,7 @@ export default class Settings extends React.Component {
       'environments[].environmentID',
       'environments[].label',
       'environments[].grant',
+      'continuousDeploy',
     ];
     const rules = {};
     const labels = {
@@ -105,6 +106,7 @@ export default class Settings extends React.Component {
     };
     const types = {
       'environments[].grant': 'checkbox',
+      'continuousDeploy': 'checkbox',
     };
     const extra = {};
     const hooks = {};
@@ -362,8 +364,36 @@ export default class Settings extends React.Component {
               </Grid>                   
             </Grid>
           }
+          <Grid container spacing={24} style={{ padding: 10 }}>
+            <Grid item sm={3}>
+              <Typography variant="title" className={styles.settingsDescription}>
+                Continuous Deploy
+              </Typography>
+              <Typography variant="caption" className={styles.settingsCaption}>
+                Check whether you want new features to automatically deploy. This only applies for the given environment.
+              </Typography>
+            </Grid>
+            <Grid item sm={9}>
+              <Card className={styles.card}>
+                <CardContent>
+                  <Grid item xs={12}>
+                    <CheckboxField field={this.form.$('continuousDeploy')} label={"Continuous Deploy"} fullWidth={true} />            
+                  </Grid>
+                </CardContent>
+                <CardActions>
+                  <Button color="primary"
+                    type="submit"
+                    variant="raised"
+                    onClick={(e) => this.onUpdateProjectEnvironments(e)}>
+                    Save
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>                   
+          </Grid>
         </Grid>
       </div>
     );
   }
+
 }
