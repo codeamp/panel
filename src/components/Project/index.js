@@ -217,7 +217,7 @@ class Project extends React.Component {
             <Toolbar style={{paddingLeft: "0px"}}>
               {bookmarked}
               <Typography variant="title">
-                {project.slug}
+                {project.slug} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
             </Toolbar>
           </Grid>
