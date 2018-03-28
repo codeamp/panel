@@ -26,6 +26,7 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import Switch from 'material-ui/Switch';
 
 const inlineStyles = {
   addButton: {
@@ -145,6 +146,7 @@ export default class Extensions extends React.Component {
       'config[]',
       'config[].key',
       'config[].value',
+      'config[].allowOverride',
       'environmentID',
       'component',
     ];
@@ -154,6 +156,7 @@ export default class Extensions extends React.Component {
       'type': 'required',
       'config[].key': 'required|string',
       'config[].value': 'required|string',
+      'config[].allowOverride': 'required|boolean',
       'component': 'required|string',
     };
     const labels = {
@@ -163,12 +166,14 @@ export default class Extensions extends React.Component {
       'config': 'Config',
       'config[].key': 'Key',
       'config[].value': 'Value',
+      'config[].allowOverride': 'Override',
       'component': 'React Component',
       'environmentID': 'Environment',
     };
     const initials = {
       'type': 'Workflow',
       'environmentID': null,
+      'config[].allowOverride': false,
     };
 
     const types = {
@@ -212,7 +217,16 @@ export default class Extensions extends React.Component {
     this.form.$('name').set(extension.name)
     this.form.$('key').set(extension.key)
     this.form.$('environmentID').set(extension.environment.id)
-    this.form.update({ config: extension.config })
+
+    let config = extension.config.map((c) => {
+      if (typeof c.allowOverride === 'undefined') {
+        return {key: c.key, value: c.value, allowOverride: false};
+      } else {
+        return c; 
+      }
+    })
+
+    this.form.update({ config: config })
     this.form.$('component').set(extension.component)
     this.form.$('type').set(extension.type)
     this.openDrawer()
@@ -290,6 +304,15 @@ export default class Extensions extends React.Component {
       config: secretOptions,
       environmentID: envOptions,      
     })    
+  }
+
+  handleSwitchChange(e, checked) {
+    this.form.$('config').map((kv, i) => {
+      if(i === parseInt(e.target.value, 10)) {
+        kv.set({allowOverride: checked}) 
+      }
+      return null
+    })
   }
 
   render() {
@@ -391,19 +414,22 @@ export default class Extensions extends React.Component {
                     <Typography variant="title">Config</Typography>
                   </Grid>
                   <Grid item xs={12}>
-                    {this.form.$('config').map((kv) => {
+                    {this.form.$('config').map((kv, i) => {
                         return (
                         <Grid container spacing={24} key={kv.id}>
                             <Grid item xs={5}>
                                 <InputField field={kv.$('key')} fullWidth={true} />
                             </Grid>
-                            <Grid item xs={5}>
+                            <Grid item xs={4}>
                                 <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
                             </Grid>
                             <Grid item xs={1}>
-                            <IconButton>
+                                <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
+                            </Grid>
+                            <Grid item xs={1}>
+                              <IconButton>
                                 <CloseIcon onClick={kv.onDel} />
-                            </IconButton>
+                              </IconButton>
                             </Grid>
                         </Grid>
                         )

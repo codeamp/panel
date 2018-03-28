@@ -429,30 +429,35 @@ export default class ProjectExtensions extends React.Component {
     let name = extension.name
     let type = extension.type
     let config = []
+    let saveButtonText = "Save"
     
     if(extension.__typename === "Extension"){
       const ext = extension
       name = ext.name
       type = ext.type
       ext.config.map(function(obj){
-          let _obj = _.find(ext.config.config, {key: obj.key, value: obj.value });
+        if (obj.allowOverride === true) {
+          let _obj = _.find(ext.config.config, {key: obj.key, value: obj.value, allowOverride: obj.allowOverride });
           if (_obj) {
-              config.push(_obj) 
+            config.push(_obj) 
           } else {
-              config.push(obj) 
+            config.push(obj) 
           }
-          return null
+        }
+        return null
       })
+      saveButtonText = "Add"
     } else if(extension.__typename === "ProjectExtension"){
-        config = []
-        name = extension.extension.name
-        type = extension.extension.type
-        extension.config.config.map(function(obj){
-          let _obj = _.clone(obj)
-          _obj.value = obj.value
-          config.push(_obj) 
-          return null
-        })
+      config = []
+      name = extension.extension.name
+      type = extension.extension.type
+      extension.config.config.map(function(obj){
+        let _obj = _.clone(obj)
+        _obj.value = obj.value
+        config.push(_obj) 
+        return null
+      })
+      saveButtonText = "Update"
     }
 
     const fields = [
@@ -502,8 +507,6 @@ export default class ProjectExtensions extends React.Component {
       <div className={styles.drawerBody}>
         <Grid container spacing={24}>
           <Grid item xs={12}>
-            <Typography variant="subheading"><b>Config</b></Typography>
-            <br/>
             {config_jsx}
           </Grid>
 
@@ -561,7 +564,7 @@ export default class ProjectExtensions extends React.Component {
             <Button variant="raised" color="primary" className={styles.rightPad}
               onClick={(event) => this.saveExtension(event)}
             >
-              Save
+              {saveButtonText}
             </Button>
             { extension.extension && <Button
               onClick={() => this.setState({ dialogOpen: true })}
