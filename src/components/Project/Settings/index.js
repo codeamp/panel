@@ -26,6 +26,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitUrl
       gitProtocol
       gitBranch
+      continuousDeploy
       environments {
         id
         name
@@ -54,8 +55,8 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
 })
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String, $continuousDeploy: Boolean) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch, continuousDeploy: $continuousDeploy}) {
       id
       name
       slug
@@ -63,6 +64,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitUrl
       gitBranch
       gitProtocol
+      continuousDeploy
     }
   }
 `, { name: "updateProject"})
@@ -79,6 +81,10 @@ export default class Settings extends React.Component {
   constructor(props){
     super(props)
     this.state = {
+      repositorySettingsSaving: false,
+      branchSettingsSaving: false,
+      permissionsSaving: false,
+      automationSaving: false,
       settingsSet: false
     }
   }
@@ -95,16 +101,19 @@ export default class Settings extends React.Component {
       'environments[].environmentID',
       'environments[].label',
       'environments[].grant',
+      'continuousDeploy',
     ];
     const rules = {};
     const labels = {
       'gitBranch': 'Git Branch',
       'gitUrl': 'Git Url',
+      'continuousDeploy': 'Continuous Deploy',
     };
     const initials = {
     };
     const types = {
       'environments[].grant': 'checkbox',
+      'continuousDeploy': 'checkbox',
     };
     const extra = {};
     const hooks = {};
@@ -127,6 +136,8 @@ export default class Settings extends React.Component {
     this.props.updateProject({
       variables: form.values(),
     }).then(({data}) => {
+      this.setState({ automationSaving: false, branchSettingsSaving: false, repositorySettingsSaving: false })
+      this.props.store.app.setSnackbar({ open: true, msg: this.props.store.app.currentEnvironment.name + " settings saved successfully."})
       this.props.data.refetch()
     });
   }
@@ -135,7 +146,18 @@ export default class Settings extends React.Component {
     console.log('onError')
   }
 
-  onUpdateSettings(e){
+  onUpdateSettings(e, settingsSection){
+    switch(settingsSection){
+      case "repositorySettings":
+        this.setState({ repositorySettingsSaving: true })
+        break
+      case "branchSettings":
+        this.setState({ branchSettingsSaving: true })
+        break
+      case "automation":
+        this.setState({ automationSaving: true })
+        break 
+    }
     this.form.onSubmit(e, { onSuccess: this.updateProject.bind(this), onError: this.onError.bind(this) })
   }
 
@@ -144,11 +166,14 @@ export default class Settings extends React.Component {
     this.props.updateProjectEnvironments({
       variables: { 'projectID': project.id, 'environments': form.values()['environments'] }
     }).then(({data}) => {
+      this.setState({ permissionsSaving: false })
+      this.props.store.app.setSnackbar({ open: true, msg: this.props.store.app.currentEnvironment.name + " permissions saved successfully" })
       this.props.data.refetch()
     });    
   }
 
   onUpdateProjectEnvironments(e){
+    this.setState({ permissionsSaving: true })
     this.form.onSubmit(e, { onSuccess: this.updateProjectEnvironments.bind(this), onError: this.onError.bind(this) })
   }
 
@@ -165,6 +190,7 @@ export default class Settings extends React.Component {
     this.form.$('gitUrl').set(project.gitUrl)
     this.form.$('environmentID').set(currentEnvironment.id)
     this.form.$('gitBranch').set(project.gitBranch)      
+    this.form.$('continuousDeploy').set(project.continuousDeploy)      
 
     environments.map((environment) => {
       var checked = false
@@ -295,8 +321,8 @@ export default class Settings extends React.Component {
               </CardContent>
               <CardActions>
                 <Button
-                  disabled={!this.state.urlIsValid}
-                  onClick={(e) => this.onUpdateSettings(e)}
+                  disabled={this.state.repositorySettingsSaving}
+                  onClick={(e) => this.onUpdateSettings(e, "repositorySettings")}
                   variant="raised" color="primary">
                   Save
                 </Button>
@@ -323,7 +349,8 @@ export default class Settings extends React.Component {
                 <Button color="primary"
                   type="submit"
                   variant="raised"
-                  onClick={(e) => this.onUpdateSettings(e)}>
+                  disabled={this.state.branchSettingsSaving}
+                  onClick={(e) => this.onUpdateSettings(e, "branchSettings")}>
                   Save
                 </Button>
               </CardActions>
@@ -354,6 +381,7 @@ export default class Settings extends React.Component {
                     <Button color="primary"
                       type="submit"
                       variant="raised"
+                      disabled={this.state.permissionsSaving}
                       onClick={(e) => this.onUpdateProjectEnvironments(e)}>
                       Save
                     </Button>
@@ -362,8 +390,37 @@ export default class Settings extends React.Component {
               </Grid>                   
             </Grid>
           }
+          <Grid container spacing={24} style={{ padding: 10 }}>
+            <Grid item sm={3}>
+              <Typography variant="title" className={styles.settingsDescription}>
+                Automation
+              </Typography>
+              <Typography variant="caption" className={styles.settingsCaption}>
+                Check whether you want new features to automatically deploy. This only applies for the given environment.
+              </Typography>
+            </Grid>
+            <Grid item sm={9}>
+              <Card className={styles.card}>
+                <CardContent>
+                  <Grid item xs={12}>
+                    <CheckboxField field={this.form.$('continuousDeploy')} label={this.form.$('continuousDeploy').label} fullWidth={true} />            
+                  </Grid>
+                </CardContent>
+                <CardActions>
+                  <Button color="primary"
+                    type="submit"
+                    variant="raised"
+                    disabled={this.state.automationSaving}
+                    onClick={(e) => this.onUpdateSettings(e, "automation")}>
+                    Save
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>                   
+          </Grid>
         </Grid>
       </div>
     );
   }
+
 }
