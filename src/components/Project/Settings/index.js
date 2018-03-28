@@ -26,6 +26,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitUrl
       gitProtocol
       gitBranch
+      continuousDeploy
       environments {
         id
         name
@@ -54,8 +55,8 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
 })
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String) {
-    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch}) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String, $continuousDeploy: Boolean) {
+    updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch, continuousDeploy: $continuousDeploy}) {
       id
       name
       slug
@@ -63,6 +64,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitUrl
       gitBranch
       gitProtocol
+      continuousDeploy
     }
   }
 `, { name: "updateProject"})
@@ -101,6 +103,7 @@ export default class Settings extends React.Component {
     const labels = {
       'gitBranch': 'Git Branch',
       'gitUrl': 'Git Url',
+      'continuousDeploy': 'Continuous Deploy',
     };
     const initials = {
     };
@@ -167,6 +170,7 @@ export default class Settings extends React.Component {
     this.form.$('gitUrl').set(project.gitUrl)
     this.form.$('environmentID').set(currentEnvironment.id)
     this.form.$('gitBranch').set(project.gitBranch)      
+    this.form.$('continuousDeploy').set(project.continuousDeploy)      
 
     environments.map((environment) => {
       var checked = false
@@ -377,14 +381,14 @@ export default class Settings extends React.Component {
               <Card className={styles.card}>
                 <CardContent>
                   <Grid item xs={12}>
-                    <CheckboxField field={this.form.$('continuousDeploy')} label={"Continuous Deploy"} fullWidth={true} />            
+                    <CheckboxField field={this.form.$('continuousDeploy')} label={this.form.$('continuousDeploy').label} fullWidth={true} />            
                   </Grid>
                 </CardContent>
                 <CardActions>
                   <Button color="primary"
                     type="submit"
                     variant="raised"
-                    onClick={(e) => this.onUpdateProjectEnvironments(e)}>
+                    onClick={(e) => this.onUpdateSettings(e)}>
                     Save
                   </Button>
                 </CardActions>
