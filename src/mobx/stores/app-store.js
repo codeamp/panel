@@ -37,7 +37,7 @@ class AppStore {
       connectionHeader: {
           msg: "",
       },
-      currentEnvironment: currentEnv,
+      currentEnvironment: currentEnv
     });
   }
 
