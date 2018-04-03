@@ -37,7 +37,6 @@ const GET_PROJECTS = gql`
 	options: (props) => ({
 		variables: {
 			projectSearch: {
-				repository: "",
 				bookmarked: true,
 			}
     },
@@ -70,6 +69,11 @@ class TopNav extends React.Component {
   }
 
   getSuggestions(projectQuery) {
+    if(!projectQuery){
+      this.props.data.refetch({ projectSearch: { bookmarked: true }})
+      return
+    }
+
     const cleanedValue = this.escapeRegExp(projectQuery.trim().toLowerCase());
     let re = new RegExp(cleanedValue, "i");
     
@@ -78,13 +82,11 @@ class TopNav extends React.Component {
       this.state.timeout = setTimeout(() => {
         this.props.data.refetch({ projectSearch: { repository: cleanedValue, bookmarked: false }})
       }, 300)
-		} else {
-			this.props.data.refetch({ projectSearch: { repository: "", bookmarked: true }})
 		}
   }
 
   renderBookmarks(e){
-    this.getSuggestions("/")
+    this.getSuggestions()
     this.setState({ showSuggestions: true })
   }
 
