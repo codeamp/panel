@@ -10,26 +10,48 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 import Paper from 'material-ui/Paper';
 import { ListItem, ListItemText } from 'material-ui/List';
 import { LinearProgress } from 'material-ui/Progress';
+import { graphql, withApollo } from 'react-apollo';
+import gql from 'graphql-tag';
 import Button from 'material-ui/Button';
+import _ from "lodash"
 import Logo from './logo_white.png';
 import styles from './style.module.css';
 
+const GET_PROJECTS = gql`
+  query Projects($projectSearch: ProjectSearchInput){
+    projects(projectSearch: $projectSearch){
+      id
+      name
+      slug
+      environments {
+        id
+        name
+        color
+      }
+    }
+  }
+`
+
 @inject("store") @observer
-export default class TopNav extends React.Component {
+@graphql(GET_PROJECTS, {
+	options: (props) => ({
+		variables: {
+			projectSearch: {
+				repository: "",
+				bookmarked: true,
+			}
+    },
+	})
+})
+
+class TopNav extends React.Component {
   state = {
     userAnchorEl: undefined,
-    originalSuggestions: [],
-    suggestions: [],
     value: '',
     hovering: false,
+    projects: [],
+    projectQuery: '',
   };
-
-  componentDidMount(){
-    const originalSuggestions = this.props.projects.map(function(project){
-        return { id: project.id, label: project.name, project: project }
-    })
-    this.setState({ originalSuggestions: originalSuggestions })
-  }
 
   handleUserClick = event => {
     this.setState({ userAnchorEl: event.currentTarget });
@@ -47,31 +69,32 @@ export default class TopNav extends React.Component {
     return str.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&");
   }
 
-  getSuggestions(value) {
-    const cleanedValue = this.escapeRegExp(value.trim().toLowerCase());
+  getSuggestions(projectQuery) {
+    const cleanedValue = this.escapeRegExp(projectQuery.trim().toLowerCase());
     let re = new RegExp(cleanedValue, "i");
-
-    return cleanedValue === '' ? [] : this.state.originalSuggestions.filter((project) => {
-      return project.label.toLowerCase().match(re)
-    });
+    
+    clearTimeout(this.state.timeout) 
+		if(cleanedValue !== ''){
+      this.state.timeout = setTimeout(() => {
+        this.props.data.refetch({ projectSearch: { repository: cleanedValue, bookmarked: false }})
+      }, 300)
+		} else {
+			this.props.data.refetch({ projectSearch: { repository: "", bookmarked: true }})
+		}
   }
 
   renderBookmarks(e){
-    let query = e.target.value
-    if (query === "") {
-      query = "/"
-    }
-    const suggestions = this.getSuggestions(query)
-    this.setState({ suggestions: suggestions, showSuggestions: true })
+    this.getSuggestions("/")
+    this.setState({ showSuggestions: true })
   }
 
   hideSuggestions(force=false){
     if(force){
-      this.setState({ showSuggestions: false, suggestions: [], hovering: false })
+      this.setState({ showSuggestions: false, hovering: false })
       return
     }
     if(!this.state.hovering){
-      this.setState({ showSuggestions: false, suggestions: [], hovering: false })
+      this.setState({ showSuggestions: false, hovering: false })
     }
   }
 
@@ -95,15 +118,25 @@ export default class TopNav extends React.Component {
   }
 
   onChange(e){
-    const suggestions = this.getSuggestions(e.target.value)
-    this.setState({ suggestions: suggestions, showSuggestions: true })
+    this.getSuggestions(e.target.value)
+    this.setState({ projectQuery: e.target.value, showSuggestions: true })
+  }
+
+  componentWillReceiveProps(nextProps){
+    if(_.has(nextProps.data, 'projects')){
+      const projects = nextProps.data.projects.map(function(project){
+        return { id: project.id, label: project.name, project: project }
+      })
+      this.setState({ projects: projects })
+    }
   }
 
   render() {
     var self = this
     const { store } = this.props
-    const { app } = this.props.store;
-    
+    const { app } = this.props.store; 
+    const { loading } = this.props.data;
+
     return (
       <div>
         <AppBar position="static" className={styles.appBar}>
@@ -137,23 +170,23 @@ export default class TopNav extends React.Component {
                     onChange={(e)=>this.onChange(e)}
                     onBlur={(e)=>this.hideSuggestions()}
                   />
-                    <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
-                      {this.state.suggestions.map(function(suggestion){
-                        return (
-                          <Paper
-                            key={suggestion.id}
-                            className={styles.suggestion}
-                            square={true}>
-                            <ListItem
-                              onMouseEnter={() => self.setState({ hovering: true })}
-                              onMouseLeave={() => self.setState({ hovering: false })}
-                              onClick={()=>self.onSuggestionItemClick(suggestion)}>
-                              <ListItemText primary={suggestion.label} />
-                            </ListItem>
-                          </Paper>
-                        )
-                      })}
-                      </div>
+                  <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
+                    {this.state.projects.map(function(project){
+                      return (
+                        <Paper
+                          key={project.id}
+                          className={styles.suggestion}
+                          square={true}>
+                          <ListItem
+                            onMouseEnter={() => self.setState({ hovering: true })}
+                            onMouseLeave={() => self.setState({ hovering: false })}
+                            onClick={()=>self.onSuggestionItemClick(project)}>
+                            <ListItemText primary={project.label} />
+                          </ListItem>
+                        </Paper>
+                      )
+                    })}
+                    </div>
                   </div>
                 </Grid>
 
@@ -209,3 +242,5 @@ export default class TopNav extends React.Component {
     );
   }
 }
+
+export default withApollo(TopNav)

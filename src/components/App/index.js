@@ -20,13 +20,13 @@ import Loading from 'components/Utils/Loading';
 const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
 
 @graphql(gql`
-  query {
+  query UserProjects($projectSearch: ProjectSearchInput){
     user {
       id
       email
       permissions
     }
-    projects {
+    projects(projectSearch: $projectSearch){
       id
       name
       slug
@@ -37,10 +37,17 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
       }
     }
   }
-`)
-
+`, {
+	options: (props) => ({
+		variables: {
+			projectSearch: {
+				repository: "",
+				bookmarked: true,
+			}
+		}
+	})
+})
 @inject("store") @observer
-
 export default class App extends React.Component {
   constructor(props) {
     super(props)
@@ -118,7 +125,7 @@ export default class App extends React.Component {
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav projects={projects} {...this.props} /> 
+              <TopNav {...this.props} /> 
             </Grid>
             <Grid item xs={12} className={styles.center}> 
               <LeftNav {...this.props} />
