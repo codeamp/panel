@@ -24,6 +24,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       slug
       repository
       gitUrl
+      rsaPublicKey
       gitProtocol
       gitBranch
       continuousDeploy
@@ -329,6 +330,39 @@ export default class Settings extends React.Component {
               </CardActions>
             </Card>
           </Grid>  
+          {this.state.repoType === "private" &&
+            <Grid container style={{ margin: 1 }}>
+              <Grid item sm={3}>
+                <Typography variant="title" className={styles.settingsDescription}>
+                  Deploy Key Setup
+                </Typography>
+                <Typography variant="caption" className={styles.settingsCaption}>
+                  Instructions for setting up a private project.
+                </Typography>            
+              </Grid>
+              <Grid item sm={9}>
+                  <Card className={styles.card} raised={false} style={{ width: "98%" }}>
+                  <CardContent>
+                    <Typography type="headline" component="h2">
+                      Setup the Git Deploy Key
+                    </Typography>
+                    <br/>
+                    <Typography
+                      id="ssh-key"
+                      component="p" className={styles.codeSnippet}>
+                      {this.props.data.project.rsaPublicKey}
+                    </Typography>
+                    <br/><br/>
+                    <Typography variant="body1">
+                      <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
+                        Click here to learn how to add deploy keys to Github.
+                      </a>
+                    </Typography>
+                  </CardContent>
+                </Card>          
+              </Grid>
+            </Grid>
+          }
           <Grid item sm={3}>
             <Typography variant="title" className={styles.settingsDescription}>
               Branch Settings
