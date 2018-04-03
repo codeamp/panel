@@ -4,6 +4,7 @@ import styles from './style.module.css';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import Typography from 'material-ui/Typography';
 import Card, { CardContent } from 'material-ui/Card';
+import { NavLink } from 'react-router-dom';
 import Button from 'material-ui/Button';
 //import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
@@ -17,38 +18,6 @@ import ExpansionPanel, {
 } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
-
-class InitPrivateProjectComponent extends React.Component {
-  state = {
-    open: false,
-    message: null,
-    expanded: null,
-  };
-
-  render() {
-    return (
-      <Card className={styles.card} raised={false}>
-        <CardContent>
-          <Typography type="headline" component="h3">
-            Setup the Git Deploy Key
-          </Typography>
-          <br/>
-          <Typography
-            id="ssh-key"
-            component="p" className={styles.codeSnippet}>
-            {this.props.rsaPublicKey}
-          </Typography>
-          <br/><br/>
-          <Typography variant="body1">
-            <a href="https://developer.github.com/v3/guides/managing-deploy-keys/#deploy-keys">
-              Click here to learn how to add deploy keys to Github.
-            </a>
-          </Typography>
-        </CardContent>
-      </Card>
-    )
-  }
-}
 
 class InitPublicProjectComponent extends React.Component {
   render() {
@@ -77,33 +46,7 @@ class InitPublicProjectComponent extends React.Component {
       rsaPublicKey
       gitProtocol
       gitUrl
-      currentRelease {
-        id
-        state
-        stateMessage
-        created
-        user {
-          email
-        }
-        headFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
-        }
-        tailFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
-        }
-      }
+      gitBranch
       features {
         id
         message
@@ -115,6 +58,15 @@ class InitPublicProjectComponent extends React.Component {
       }
       releases {
         id
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
         state
       }
       extensions {
@@ -178,8 +130,19 @@ export default class Features extends React.Component {
   }
 
   renderFeatureList = (project) => {
-    let { expanded } = this.state;
+    if(project.features.length === 0){
+      return (
+        <div>
+          <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+            There are no new features to deploy.
+          </Typography>
+          <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+            Make sure all relevant features are pushed into {project.gitBranch}. If you haven't done so already, <NavLink to={"/projects/" + project.slug + "/settings"}><strong> make sure your deploy key is added in your git settings.</strong></NavLink>
+          </Typography>                                 
+        </div>)
+    }
 
+    let { expanded } = this.state;
     if (expanded === null) {
       expanded = project.features[0].id
     }
@@ -217,6 +180,57 @@ export default class Features extends React.Component {
       )
   }
 
+  renderDeployedFeatureList = (project) => {
+    if(project.releases.length === 0){
+      return (
+        <div>
+          <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+            No features deployed yet.
+          </Typography>                
+        </div>)      
+    }
+
+    let { expanded } = this.state;
+    if (expanded === null) {
+      expanded = project.releases[0].headFeature.id
+    }
+
+    // get distinct from releases
+    project.releases.nao
+
+    return (
+      <div>
+        {project.releases.map((feature, idx) => {
+            if(!project.currentRelease || new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
+                return (<ExpansionPanel 
+                    key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
+                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+                    <div> 
+                    <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
+                    <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
+                  </ExpansionPanelSummary>
+                  <Divider />
+                  <ExpansionPanelActions>
+                    <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
+                      <Button color="primary" size="small">
+                        Copy Git Hash
+                      </Button>
+                    </CopyToClipboard>       
+                    <Button color="primary" size="small"
+                      disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+                      onClick={this.handleDeploy.bind(this, feature, project)}>
+                      { this.state.text }
+                    </Button>
+                  </ExpansionPanelActions>
+                </ExpansionPanel>)
+            } else {
+                return (<div></div>)
+            }
+        })}
+      </div>
+      )    
+  }
+
   componentWillMount(){
     this.setupSocketHandlers();
   }
@@ -241,15 +255,6 @@ export default class Features extends React.Component {
       );
     }
 
-    let defaultComponent = (<Loading />)
-    if(project.features.length > 0) {
-      defaultComponent = this.renderFeatureList(project);
-    } else if(project.gitProtocol === "SSH"){
-        defaultComponent = (<InitPrivateProjectComponent rsaPublicKey={project.rsaPublicKey}/>)
-    } else if(project.gitProtocol === "HTTPS"){
-        defaultComponent = (<InitPublicProjectComponent />)
-    }
-
     return (
       <div className={styles.root}>
         <Grid container spacing={16}>
@@ -257,12 +262,25 @@ export default class Features extends React.Component {
             <Card>
               <CardContent>
                 <Typography variant="title">
-                  Features
+                  New Features
                 </Typography>
               </CardContent>
-            </Card>
-            {defaultComponent}
+            </Card>            
+            {this.renderFeatureList(project)}            
           </Grid>
+          <Grid item xs={12}>
+            <hr/>
+          </Grid>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="title">
+                  Deployed Features
+                </Typography>
+              </CardContent>
+            </Card>            
+            {this.renderDeployedFeatureList(project)}
+          </Grid>          
         </Grid>
       </div>
     );
