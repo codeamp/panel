@@ -341,9 +341,9 @@ export default class Settings extends React.Component {
                 </Typography>            
               </Grid>
               <Grid item sm={9}>
-                  <Card className={styles.card} raised={false}>
+                  <Card className={styles.card} raised={false} style={{ width: "98%" }}>
                   <CardContent>
-                    <Typography type="headline" component="h3">
+                    <Typography type="headline" component="h2">
                       Setup the Git Deploy Key
                     </Typography>
                     <br/>

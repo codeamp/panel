@@ -16,6 +16,8 @@ import ExpansionPanel, {
   ExpansionPanelSummary,
   ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
+import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
+import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
 
@@ -133,13 +135,25 @@ export default class Features extends React.Component {
     if(project.features.length === 0){
       return (
         <div>
-          <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
-            There are no new features to deploy.
-          </Typography>
-          <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
-            Make sure all relevant features are pushed into {project.gitBranch}. If you haven't done so already, <NavLink to={"/projects/" + project.slug + "/settings"}><strong> make sure your deploy key is added in your git settings.</strong></NavLink>
-          </Typography>                                 
-        </div>)
+        <ExpansionPanel expanded={true}>
+          <ExpansionPanelSummary>
+            <Grid item xs={12}>
+              <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                There are no new features to deploy.
+              </Typography>
+              <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+                Make sure all relevant features are pushed into {project.gitBranch}. 
+                {project.gitProtocol === "SSH" &&
+                  <div>
+                  If you haven't done so already, <NavLink to={"/projects/" + project.slug + "/settings"}><strong> make sure your deploy key is added in your git settings.</strong></NavLink>
+                  </div>
+                }
+              </Typography>               
+            </Grid>
+          </ExpansionPanelSummary>                       
+        </ExpansionPanel>
+        </div>
+        )
     }
 
     let { expanded } = this.state;
@@ -184,10 +198,17 @@ export default class Features extends React.Component {
     if(project.releases.length === 0){
       return (
         <div>
-          <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
-            No features deployed yet.
-          </Typography>                
-        </div>)      
+          <ExpansionPanel expanded={true}>
+            <ExpansionPanelSummary>
+              <Grid item xs={12}>
+              <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                No features deployed yet.
+              </Typography>      
+              </Grid>    
+            </ExpansionPanelSummary>      
+          </ExpansionPanel>
+        </div>
+        )      
     }
 
     let { expanded } = this.state;
@@ -195,39 +216,47 @@ export default class Features extends React.Component {
       expanded = project.releases[0].headFeature.id
     }
 
-    // get distinct from releases
-    project.releases.nao
+    // get distinct features from releases
+    var distinctFeatures = {}
+    const deployedFeatures = project.releases.filter(function(release){
+      if(distinctFeatures[release.headFeature.id]){
+        return false
+      }
+      distinctFeatures[release.headFeature.id] = release.headFeature
+      return true
+    })
+
 
     return (
       <div>
-        {project.releases.map((feature, idx) => {
-            if(!project.currentRelease || new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
-                return (<ExpansionPanel 
-                    key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
-                    <div> 
-                    <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
-                    <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
-                  </ExpansionPanelSummary>
-                  <Divider />
-                  <ExpansionPanelActions>
-                    <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
-                      <Button color="primary" size="small">
-                        Copy Git Hash
-                      </Button>
-                    </CopyToClipboard>       
-                    <Button color="primary" size="small"
-                      disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-                      onClick={this.handleDeploy.bind(this, feature, project)}>
-                      { this.state.text }
+        {deployedFeatures.map((release, idx) => {
+        return (<ExpansionPanel 
+            key={release.headFeature.id} expanded={expanded === release.headFeature.id} onChange={this.handleChange(release.headFeature.id)}> 
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+            <div> 
+              {release.state === 'waiting' && <div key={"waiting"+release.id} className=  {styles.innerWaiting}></div>}  
+              {release.state === 'failed' && <div key={"failed"+release.id} className={styles.innerFailed}></div>}
+              {release.state === 'complete' && <div key={"complete"+release.id} className={styles.innerComplete}></div>}
+
+              <Typography variant="body1" style={{ fontSize: 14 }}> <b> { release.headFeature.message } </b> </Typography> 
+              <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toDateString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> </div>
+                </ExpansionPanelSummary>
+                <Divider />
+                <ExpansionPanelActions>
+                  <CopyToClipboard text={release.headFeature.hash} onCopy={() => this.copyGitHash(release.headFeature.hash)}>
+                    <Button color="primary" size="small">
+                      Copy Git Hash
                     </Button>
-                  </ExpansionPanelActions>
-                </ExpansionPanel>)
-            } else {
-                return (<div></div>)
-            }
-        })}
-      </div>
+                  </CopyToClipboard>       
+                  <Button color="primary" size="small"
+                    disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+                    onClick={this.handleDeploy.bind(this, release.headFeature, project)}>
+                    { this.state.text }
+                  </Button>
+                </ExpansionPanelActions>
+              </ExpansionPanel>)
+              })}
+            </div>
       )    
   }
 
