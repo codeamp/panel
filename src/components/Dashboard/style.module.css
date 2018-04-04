@@ -9,3 +9,99 @@
 .paper {
   padding: 16px 16px;
 }
+
+.info {
+  margin-top: 25px;
+}
+
+.bigNumber {
+  font-size: 80px;
+  color: white;
+}
+
+.title {
+  color: #faf1f1;
+  font-weight: 500;
+}
+
+.projectsCard{
+  background-color: #1bc98e;
+}
+
+.featuresCard{
+  background-color: #9f86ff;
+}
+
+.releasesCard{
+  background-color: #e64759;
+}
+
+.usersCard{
+  background-color: #e4d836;
+}
+
+.innerWaiting {
+  display:inline-block;
+  margin-right: 5px;
+  background-color: yellow;
+  width:15px;
+  height:15px;
+  border: 1px solid #70705c;
+  border-radius:50px;
+  /* -webkit-animation: pulseWaiting 2s linear 1s infinite; */
+}
+
+.innerWaiting p {
+  display:inline-block;
+  text-align: center;
+  line-height: 100px;
+  font-family:sans-serif;
+  font-weight:100;
+  font-size:24px;
+  color: yellow;
+  text-shadow: 0 0 4px yellow;
+}
+
+.innerFailed {
+  display:inline-block;
+  margin-right: 5px;
+  background-color:red;
+  width:15px;
+  height:15px;
+  border: 1px solid #70705c;
+  border-radius:50px;
+  /* -webkit-animation: pulseFailed 2s linear 1s infinite; */
+}
+
+.innerFailed p {
+  display:inline-block;
+  text-align: center;
+  line-height: 100px;
+  font-family:sans-serif;
+  font-weight:100;
+  font-size:24px;
+  color: #ea4c89;
+  text-shadow: 0 0 4px #ea4c89;
+}
+
+.innerComplete {
+  display:inline-block;
+  margin-right: 5px;
+  background-color:green;
+  width:15px;
+  height:15px;
+  border: 1px solid #70705c;
+  border-radius:50px;
+  /* -webkit-animation: pulseComplete 2s linear 1s infinite; */
+}
+
+.innerComplete p {
+  display:inline-block;
+  text-align: center;
+  line-height: 100px;
+  font-family:sans-serif;
+  font-weight:100;
+  font-size:24px;
+  color: green;
+  text-shadow: 0 0 4px green;
+}
