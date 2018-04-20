@@ -20,6 +20,10 @@ import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
+import IconButton from 'material-ui/IconButton';
+import Tooltip from 'material-ui/Tooltip';
+import FilterListIcon from 'material-ui-icons/FilterList';
+
 
 class InitPublicProjectComponent extends React.Component {
   render() {
@@ -134,7 +138,7 @@ export default class Features extends React.Component {
   renderFeatureList = (project) => {
     if(project.features.length === 0){
       return (
-        <div>
+        <div>          
         <ExpansionPanel expanded={true}>
           <ExpansionPanelSummary>
             <Grid item xs={12}>
@@ -162,7 +166,7 @@ export default class Features extends React.Component {
     }
 
     return (
-      <div>
+      <div> 
         {project.features.map((feature, idx) => {
             if(!project.currentRelease || new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
                 return (<ExpansionPanel 
@@ -193,73 +197,7 @@ export default class Features extends React.Component {
       </div>
       )
   }
-
-  renderDeployedFeatureList = (project) => {
-    if(project.releases.length === 0){
-      return (
-        <div>
-          <ExpansionPanel expanded={true}>
-            <ExpansionPanelSummary>
-              <Grid item xs={12}>
-              <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
-                No features deployed yet.
-              </Typography>      
-              </Grid>    
-            </ExpansionPanelSummary>      
-          </ExpansionPanel>
-        </div>
-        )      
-    }
-
-    let { expanded } = this.state;
-    if (expanded === null) {
-      expanded = project.releases[0].headFeature.id
-    }
-
-    // get distinct features from releases
-    var distinctFeatures = {}
-    const deployedFeatures = project.releases.filter(function(release){
-      if(distinctFeatures[release.headFeature.id]){
-        return false
-      }
-      distinctFeatures[release.headFeature.id] = release.headFeature
-      return true
-    })
-
-
-    return (
-      <div>
-        {deployedFeatures.map((release, idx) => {
-        return (<ExpansionPanel 
-            key={release.headFeature.id} expanded={expanded === release.headFeature.id} onChange={this.handleChange(release.headFeature.id)}> 
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
-            <div> 
-              {release.state === 'waiting' && <div key={"waiting"+release.id} className=  {styles.innerWaiting}></div>}  
-              {release.state === 'failed' && <div key={"failed"+release.id} className={styles.innerFailed}></div>}
-              {release.state === 'complete' && <div key={"complete"+release.id} className={styles.innerComplete}></div>}
-
-              <Typography variant="body1" style={{ fontSize: 14 }}> <b> { release.headFeature.message } </b> </Typography> 
-              <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toDateString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> </div>
-                </ExpansionPanelSummary>
-                <Divider />
-                <ExpansionPanelActions>
-                  <CopyToClipboard text={release.headFeature.hash} onCopy={() => this.copyGitHash(release.headFeature.hash)}>
-                    <Button color="primary" size="small">
-                      Copy Git Hash
-                    </Button>
-                  </CopyToClipboard>       
-                  <Button color="primary" size="small"
-                    disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-                    onClick={this.handleDeploy.bind(this, release.headFeature, project)}>
-                    { this.state.text }
-                  </Button>
-                </ExpansionPanelActions>
-              </ExpansionPanel>)
-              })}
-            </div>
-      )    
-  }
-
+  
   componentWillMount(){
     this.setupSocketHandlers();
   }
@@ -289,27 +227,19 @@ export default class Features extends React.Component {
         <Grid container spacing={16}>
           <Grid item xs={12}>
             <Card>
-              <CardContent>
+              <CardContent>                      
                 <Typography variant="title">
-                  New Features
+                  Features
                 </Typography>
+                <Tooltip title="Filter list">
+                  <IconButton aria-label="Filter list">
+                    <FilterListIcon />
+                  </IconButton>
+                </Tooltip>                 
               </CardContent>
             </Card>            
             {this.renderFeatureList(project)}            
-          </Grid>
-          <Grid item xs={12}>
-            <hr/>
-          </Grid>
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="title">
-                  Deployed Features
-                </Typography>
-              </CardContent>
-            </Card>            
-            {this.renderDeployedFeatureList(project)}
-          </Grid>          
+          </Grid>        
         </Grid>
       </div>
     );
