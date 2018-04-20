@@ -139,7 +139,6 @@ export default class Create extends React.Component {
   createProject(){
     // Post to graphql
     var self = this
-    console.log(this.state)
     this.props.createProject({
       variables: { 
         gitUrl: this.state.url, 
