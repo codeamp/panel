@@ -182,7 +182,7 @@ export default class Dashboard extends React.Component {
                     {release.state === 'complete' && <div key={"complete"+release.id} className={styles.innerComplete}></div>}
 
                     <Typography variant="body1" style={{ fontSize: 14 }}> <b> { release.headFeature.message } </b> </Typography> 
-                    <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toDateString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> 
+                    <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> 
                   </div>
                       </ExpansionPanelSummary>
                       <Divider />

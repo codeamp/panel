@@ -170,7 +170,7 @@ export default class Features extends React.Component {
                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
                     <div> 
                     <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
-                    <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
+                    <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
                   </ExpansionPanelSummary>
                   <Divider />
                   <ExpansionPanelActions>
@@ -239,7 +239,7 @@ export default class Features extends React.Component {
               {release.state === 'complete' && <div key={"complete"+release.id} className={styles.innerComplete}></div>}
 
               <Typography variant="body1" style={{ fontSize: 14 }}> <b> { release.headFeature.message } </b> </Typography> 
-              <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toDateString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> </div>
+              <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> </div>
                 </ExpansionPanelSummary>
                 <Divider />
                 <ExpansionPanelActions>

@@ -190,7 +190,7 @@ export default class Users extends React.Component {
                       {env.permissions.length}
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toDateString()}
+                      {new Date(env.created).toString()}
                     </TableCell>
                   </TableRow>
                 )

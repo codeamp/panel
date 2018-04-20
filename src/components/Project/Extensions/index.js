@@ -415,7 +415,7 @@ export default class ProjectExtensions extends React.Component {
               <TableCell> { extension.extension.name } </TableCell>
               <TableCell> { extension.extension.type } </TableCell>
               <TableCell> { stateIcon } </TableCell>
-              <TableCell> { new Date(extension.created).toDateString() }</TableCell>
+              <TableCell> { new Date(extension.created).toString() }</TableCell>
             </TableRow>
             )
           })}
