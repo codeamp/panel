@@ -255,9 +255,8 @@ export default class Features extends React.Component {
               <CardContent>                      
                 <Typography variant="title">
                   Features
-                  <form autoComplete="off" style={{ display: "inline-block", paddingLeft: 30 }}>                 
+                  <form autoComplete="off" style={{ display: "inline-block", float: "right" }}>                 
                     <FormControl>
-                      <InputLabel htmlFor="controlled-open-select">Filter</InputLabel>
                       <Select
                         open={this.state.filterOpen}
                         onClose={() => {this.setState({ filterOpen: false })}}
