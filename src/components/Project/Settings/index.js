@@ -201,13 +201,11 @@ export default class Settings extends React.Component {
         }
         return null
       })
-      console.log(environment)
       this.form.$('environments').add([{ 
         'grant': checked, 
         'environmentID': environment.id, 
         'label': environment.name + ' (' + environment.key +')' 
       }])
-      console.log(this.form.$('environments').values())
       return null
     })
 
@@ -406,7 +404,6 @@ export default class Settings extends React.Component {
                   <CardContent>
                     <Grid item xs={12}>
                       {this.form.$('environments').map((projectEnvironment) => {
-                        console.log(projectEnvironment.value)
                         return (
                           <CheckboxField key={projectEnvironment.id} field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
                         )

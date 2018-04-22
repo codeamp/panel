@@ -234,10 +234,6 @@ export default class Features extends React.Component {
     });
   }
 
-  filterFeatures(e){
-    console.log(e.target.value)
-  }
-
   render() {
     const { loading, project } = this.props.data;
 

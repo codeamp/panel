@@ -43,6 +43,9 @@ import styles from './style.module.css';
     features {
       id
     }
+    users {
+      id
+    }
   }
 `,{
   options: {
@@ -94,7 +97,7 @@ export default class Dashboard extends React.Component {
   }  
 
   render() {
-    const { loading, projects, releases, features } = this.props.data;
+    const { loading, projects, releases, features, users } = this.props.data;
     if(loading){
       return <Loading />
     }
@@ -146,7 +149,7 @@ export default class Dashboard extends React.Component {
             </Card>        
           </Grid>
             {/* Users */}
-          {/* <Grid item xs={3}>
+          <Grid item xs={3}>
             <Card className={styles.usersCard}>
               <CardContent>
                 <Typography variant="headline" component="h2" className={styles.title}>
@@ -157,7 +160,7 @@ export default class Dashboard extends React.Component {
                 </Typography>
               </CardContent>
             </Card>        
-          </Grid> */}
+          </Grid>
         </Grid>          
         <Grid item xs={12} style={{ margin: 15 }}>
           <hr/>
