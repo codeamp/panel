@@ -20,6 +20,14 @@ import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
+import IconButton from 'material-ui/IconButton';
+import Tooltip from 'material-ui/Tooltip';
+import FilterListIcon from 'material-ui-icons/FilterList';
+import { InputLabel } from 'material-ui/Input';
+import { MenuItem } from 'material-ui/Menu';
+import { FormControl } from 'material-ui/Form';
+import Select from 'material-ui/Select';
+
 
 class InitPublicProjectComponent extends React.Component {
   render() {
@@ -40,7 +48,7 @@ class InitPublicProjectComponent extends React.Component {
 @inject("store") @observer
 
 @graphql(gql`
-  query Project($slug: String, $environmentID: String){
+  query Project($slug: String, $environmentID: String, $showDeployed: Boolean){
     project(slug: $slug, environmentID: $environmentID) {
       id
       name
@@ -49,7 +57,7 @@ class InitPublicProjectComponent extends React.Component {
       gitProtocol
       gitUrl
       gitBranch
-      features {
+      features(showDeployed: $showDeployed) {
         id
         message
         user
@@ -81,6 +89,7 @@ class InitPublicProjectComponent extends React.Component {
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
+      showDeployed: false,
     }
   })
 })
@@ -108,7 +117,12 @@ export default class Features extends React.Component {
       disableDeployBtn: false,
       text: 'Deploy',
       expanded: null,
+      filterOpen: false,
+      filter: "new",
+      showDeployed: false,
     };
+
+    this.setFilterAndRefetchFeatures.bind(this);
   }
 
   handleChange = panel => (event, expanded) => {
@@ -134,13 +148,15 @@ export default class Features extends React.Component {
   renderFeatureList = (project) => {
     if(project.features.length === 0){
       return (
-        <div>
+        <div>          
         <ExpansionPanel expanded={true}>
           <ExpansionPanelSummary>
             <Grid item xs={12}>
-              <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
-                There are no new features to deploy.
-              </Typography>
+              {this.state.filter === "new" &&
+                <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                  There are no new features to deploy.
+                </Typography>
+              }
               <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
                 Make sure all relevant features are pushed into {project.gitBranch}. 
                 {project.gitProtocol === "SSH" &&
@@ -162,104 +178,51 @@ export default class Features extends React.Component {
     }
 
     return (
-      <div>
+      <div> 
         {project.features.map((feature, idx) => {
-            if(!project.currentRelease || new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
-                return (<ExpansionPanel 
-                    key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
-                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
-                    <div> 
-                    <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
-                    <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
-                  </ExpansionPanelSummary>
-                  <Divider />
-                  <ExpansionPanelActions>
-                    <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
-                      <Button color="primary" size="small">
-                        Copy Git Hash
-                      </Button>
-                    </CopyToClipboard>       
-                    <Button color="primary" size="small"
-                      disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-                      onClick={this.handleDeploy.bind(this, feature, project)}>
-                      { this.state.text }
-                    </Button>
-                  </ExpansionPanelActions>
-                </ExpansionPanel>)
-            } else {
-                return (<div></div>)
-            }
+          return (<ExpansionPanel 
+              key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
+              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+              <div> 
+              <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
+              <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
+            </ExpansionPanelSummary>
+            <Divider />
+            <ExpansionPanelActions>
+              <CopyToClipboard text={feature.hash} onCopy={() => this.copyGitHash(feature.hash)}>
+                <Button color="primary" size="small">
+                  Copy Git Hash
+                </Button>
+              </CopyToClipboard>       
+              <Button color="primary" size="small"
+                disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+                onClick={this.handleDeploy.bind(this, feature, project)}>
+                { this.state.text }
+              </Button>
+            </ExpansionPanelActions>
+          </ExpansionPanel>)         
         })}
       </div>
       )
   }
 
-  renderDeployedFeatureList = (project) => {
-    if(project.releases.length === 0){
-      return (
-        <div>
-          <ExpansionPanel expanded={true}>
-            <ExpansionPanelSummary>
-              <Grid item xs={12}>
-              <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
-                No features deployed yet.
-              </Typography>      
-              </Grid>    
-            </ExpansionPanelSummary>      
-          </ExpansionPanel>
-        </div>
-        )      
+  setFilterAndRefetchFeatures(e) {
+    if(e.target.value === "all") {
+      this.props.data.refetch({
+        slug: this.props.match.params.slug,
+        environmentID: this.props.store.app.currentEnvironment.id, 
+        showDeployed: true,
+      });
+    } else {
+      this.props.data.refetch({
+        slug: this.props.match.params.slug,
+        environmentID: this.props.store.app.currentEnvironment.id, 
+        showDeployed: false,
+      });      
     }
-
-    let { expanded } = this.state;
-    if (expanded === null) {
-      expanded = project.releases[0].headFeature.id
-    }
-
-    // get distinct features from releases
-    var distinctFeatures = {}
-    const deployedFeatures = project.releases.filter(function(release){
-      if(distinctFeatures[release.headFeature.id]){
-        return false
-      }
-      distinctFeatures[release.headFeature.id] = release.headFeature
-      return true
-    })
-
-
-    return (
-      <div>
-        {deployedFeatures.map((release, idx) => {
-        return (<ExpansionPanel 
-            key={release.headFeature.id} expanded={expanded === release.headFeature.id} onChange={this.handleChange(release.headFeature.id)}> 
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
-            <div> 
-              {release.state === 'waiting' && <div key={"waiting"+release.id} className=  {styles.innerWaiting}></div>}  
-              {release.state === 'failed' && <div key={"failed"+release.id} className={styles.innerFailed}></div>}
-              {release.state === 'complete' && <div key={"complete"+release.id} className={styles.innerComplete}></div>}
-
-              <Typography variant="body1" style={{ fontSize: 14 }}> <b> { release.headFeature.message } </b> </Typography> 
-              <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toDateString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> </div>
-                </ExpansionPanelSummary>
-                <Divider />
-                <ExpansionPanelActions>
-                  <CopyToClipboard text={release.headFeature.hash} onCopy={() => this.copyGitHash(release.headFeature.hash)}>
-                    <Button color="primary" size="small">
-                      Copy Git Hash
-                    </Button>
-                  </CopyToClipboard>       
-                  <Button color="primary" size="small"
-                    disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
-                    onClick={this.handleDeploy.bind(this, release.headFeature, project)}>
-                    { this.state.text }
-                  </Button>
-                </ExpansionPanelActions>
-              </ExpansionPanel>)
-              })}
-            </div>
-      )    
+    this.setState({ filter: e.target.value })
   }
-
+  
   componentWillMount(){
     this.setupSocketHandlers();
   }
@@ -271,8 +234,8 @@ export default class Features extends React.Component {
     });
   }
 
-  componentWillUpdate(nextProps, nextState){
-
+  filterFeatures(e){
+    console.log(e.target.value)
   }
 
   render() {
@@ -289,27 +252,31 @@ export default class Features extends React.Component {
         <Grid container spacing={16}>
           <Grid item xs={12}>
             <Card>
-              <CardContent>
+              <CardContent>                      
                 <Typography variant="title">
-                  New Features
-                </Typography>
+                  Features
+                  <form autoComplete="off" style={{ display: "inline-block", float: "right" }}>                 
+                    <FormControl>
+                      <Select
+                        open={this.state.filterOpen}
+                        onClose={() => {this.setState({ filterOpen: false })}}
+                        onOpen={() => {this.setState({ filterOpen: true })}}
+                        value={this.state.filter}
+                        onChange={(e) => {this.setFilterAndRefetchFeatures(e)} }
+                        inputProps={{
+                          name: 'featureFilter',
+                        }}
+                      >
+                        <MenuItem value={"new"}>New</MenuItem>
+                        <MenuItem value={"all"}>All</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </form>                         
+                </Typography>              
               </CardContent>
             </Card>            
             {this.renderFeatureList(project)}            
-          </Grid>
-          <Grid item xs={12}>
-            <hr/>
-          </Grid>
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="title">
-                  Deployed Features
-                </Typography>
-              </CardContent>
-            </Card>            
-            {this.renderDeployedFeatureList(project)}
-          </Grid>          
+          </Grid>        
         </Grid>
       </div>
     );
