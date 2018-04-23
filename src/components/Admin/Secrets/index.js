@@ -380,7 +380,7 @@ export default class Secrets extends React.Component {
                       {secret.user.email}
                     </TableCell>
                     <TableCell>
-                      {new Date(secret.created).toDateString()}
+                      {new Date(secret.created).toString()}
                     </TableCell>
                   </TableRow>
                 )

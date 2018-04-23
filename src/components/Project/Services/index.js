@@ -372,7 +372,7 @@ export default class Services extends React.Component {
                       <TableCell> { service.type }</TableCell>
                       <TableCell> { service.ports.length}</TableCell>
                       <TableCell> { service.serviceSpec.name}</TableCell>
-                      <TableCell> { new Date(service.created).toDateString()}</TableCell>
+                      <TableCell> { new Date(service.created).toString()}</TableCell>
                     </TableRow>
                   )
                 })}

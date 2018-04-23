@@ -255,7 +255,7 @@ export default class Environments extends React.Component {
                       {env.isDefault.toString()}
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toDateString()}
+                      {new Date(env.created).toString()}
                     </TableCell>
                   </TableRow>
                 )
