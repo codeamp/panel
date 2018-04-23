@@ -41,6 +41,14 @@
   background-color: lightsteelblue;
 }
 
+.selectedSuggestion {
+  background-color: lightsteelblue;
+}
+
+.selectedSuggestion > li {
+  padding: 10px 12px;
+}
+
 
 .showNone {
   visibility: hidden;
