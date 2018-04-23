@@ -23,6 +23,7 @@ const GET_PROJECTS = gql`
       id
       name
       slug
+      repository
       environments {
         id
         name
@@ -50,6 +51,7 @@ class TopNav extends React.Component {
     hovering: false,
     projects: [],
     projectQuery: '',
+    selectedSuggestionIndex: 0,
   };
 
   handleUserClick = event => {
@@ -86,8 +88,8 @@ class TopNav extends React.Component {
   }
 
   renderBookmarks(e){
-    this.getSuggestions()
-    this.setState({ showSuggestions: true })
+    this.getSuggestions(this.state.projectQuery)
+    this.setState({ showSuggestions: true, selectedSuggestionIndex: 0 })
   }
 
   hideSuggestions(force=false){
@@ -97,6 +99,23 @@ class TopNav extends React.Component {
     }
     if(!this.state.hovering){
       this.setState({ showSuggestions: false, hovering: false })
+    }
+  }
+
+  searchBarKeyPressHandler(e){
+    switch(e.key){
+      case "ArrowUp":
+        if(this.state.selectedSuggestionIndex > 0){
+          this.setState({ selectedSuggestionIndex: this.state.selectedSuggestionIndex - 1 })
+        }
+        break;
+      case "ArrowDown":
+        if(this.state.selectedSuggestionIndex < this.state.projects.length){
+          this.setState({ selectedSuggestionIndex: this.state.selectedSuggestionIndex + 1})
+        }
+        break;
+      case "Enter":
+        this.onSuggestionItemClick(this.state.projects[this.state.selectedSuggestionIndex])
     }
   }
 
@@ -117,6 +136,7 @@ class TopNav extends React.Component {
 
     this.props.history.push('/projects/' + suggestion.project.slug)      
     this.hideSuggestions(true)
+    this.setState({ projectQuery: "" })
   }
 
   onChange(e){
@@ -168,16 +188,17 @@ class TopNav extends React.Component {
                       shrink: true,
                       className: styles.textFieldFormLabel,
                     }}
+                    onKeyUp={(e) => this.searchBarKeyPressHandler(e)}
                     onClick={(e)=>this.renderBookmarks(e)}
                     onChange={(e)=>this.onChange(e)}
                     onBlur={(e)=>this.hideSuggestions()}
                   />
                   <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
-                    {this.state.projects.map(function(project){
+                    {this.state.projects.map(function(project, index){
                       return (
                         <Paper
                           key={project.id}
-                          className={styles.suggestion}
+                          className={index === self.state.selectedSuggestionIndex ? styles.selectedSuggestion : styles.suggestion}
                           square={true}>
                           <ListItem
                             onMouseEnter={() => self.setState({ hovering: true })}
