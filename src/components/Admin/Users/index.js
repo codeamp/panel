@@ -112,9 +112,9 @@ export default class Users extends React.Component {
       var self = this
       Object.keys(permissions).map(function(permission){
         if(userPermissions.includes(permission)){
-            self.form.$('permissions').add({ "value": permission, "grant": true })
+            self.form.$('permissions').add([{ "value": permission, "grant": true }])
         } else {
-            self.form.$('permissions').add({ "value": permission, "grant": false })
+            self.form.$('permissions').add([{ "value": permission, "grant": false }])
         }
         return true
       })

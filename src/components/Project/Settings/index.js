@@ -56,7 +56,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
 })
 
 @graphql(gql`
-  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String!, $gitBranch: String, $continuousDeploy: Boolean) {
+  mutation Mutation($id: String!, $gitProtocol: String!, $gitUrl: String!,  $environmentID: String, $gitBranch: String, $continuousDeploy: Boolean) {
     updateProject(project: { id: $id, gitProtocol: $gitProtocol, gitUrl: $gitUrl, environmentID: $environmentID, gitBranch: $gitBranch, continuousDeploy: $continuousDeploy}) {
       id
       name
@@ -201,12 +201,11 @@ export default class Settings extends React.Component {
         }
         return null
       })
-
-      this.form.$('environments').add({ 
+      this.form.$('environments').add([{ 
         'grant': checked, 
         'environmentID': environment.id, 
         'label': environment.name + ' (' + environment.key +')' 
-      })
+      }])
       return null
     })
 

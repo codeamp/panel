@@ -205,7 +205,7 @@ export default class Secrets extends React.Component {
   }
 
   onSubmit(e) {
-    console.log(this.form.values())
+
     this.setState({ saving: true})
     this.form.$('key').set('disabled', false)
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
@@ -290,7 +290,6 @@ export default class Secrets extends React.Component {
   }
 
   onFileEditorChange(newValue) {
-    console.log(newValue)
     this.form.$('value').set(newValue)
   }
 
