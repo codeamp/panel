@@ -110,7 +110,6 @@ class TopNav extends React.Component {
         }
         break;
       case "ArrowDown":
-        console.log(this.props.data.projects.length)
         if(this.state.selectedSuggestionIndex < this.props.data.projects.length - 1){
           this.setState({ selectedSuggestionIndex: this.state.selectedSuggestionIndex + 1})
         }
