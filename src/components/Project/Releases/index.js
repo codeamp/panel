@@ -555,19 +555,17 @@ export default class Releases extends React.Component {
 										</TableHead>
 										<TableBody>
 											{release.artifacts.map(artifact => {
-                        if(!artifact.secret){
-                          return (
-                            <TableRow
-                              key={artifact.key}>
-                              <TableCell>
-                                {artifact.key}
-                              </TableCell>
-                              <TableCell>
-                                {artifact.value}
-                              </TableCell>
-                            </TableRow>
-                            )
-                        }
+											return (
+											<TableRow
+												key={artifact.key}>
+												<TableCell>
+													{artifact.key}
+												</TableCell>
+												<TableCell>
+													{artifact.value}
+												</TableCell>
+											</TableRow>
+											)
 											})}
 										</TableBody>
 									</Table>
