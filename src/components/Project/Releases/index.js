@@ -22,6 +22,13 @@ import MobxReactForm from 'mobx-react-form';
 import _ from "lodash"
 import Chip from 'material-ui/Chip';
 
+const kibanaLinkTemplate = process.env.REACT_APP_KIBANA_LINK_TEMPLATE
+
+
+function generateKibanaLink(linkTemplate, slug, environment) {
+  return linkTemplate.replace(/##PROJECT-NAMESPACE##/g, `${environment}-${slug}`)
+}
+
 class ReleaseView extends React.Component {  
   renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
@@ -68,7 +75,7 @@ class ReleaseView extends React.Component {
   }
 
   render() {
-    const { release, currentRelease } = this.props;
+    const { release, currentRelease, project } = this.props;
     
     let state
     switch(release.state) {  
@@ -81,13 +88,12 @@ class ReleaseView extends React.Component {
       default:
         state = null
     }
-
     return (
-      <Grid item xs={12} onClick={this.props.handleOnClick}>
+      <Grid item xs={12} onClick={(e) => {this.props.handleOnClick(e)}}>
         <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>
           <CardContent>
             <Grid container spacing={0}>
-              <Grid item xs={10}>
+              <Grid item xs={12}>
                 <Typography className={styles.featureCommitMsg}>
                   { this.props.release.headFeature.hash.slice(30) }
                   <DoubleRightIcon />
@@ -147,6 +153,7 @@ class ReleaseView extends React.Component {
         }
         environment {
           id
+          key
         }
         releaseExtensions {
           id
@@ -197,6 +204,7 @@ class ReleaseView extends React.Component {
         }
         environment {
           id
+          key
         }        
         releaseExtensions {
           id
@@ -399,9 +407,12 @@ export default class Releases extends React.Component {
     )   
   }
 
-  handleToggleDrawer(release){
-    this.setState({ drawerOpen: true, dialogOpen: false, drawerRelease: release })
+  handleToggleDrawer(release, e){
+    if(e.target.id !== "kibana-log-link"){
+      this.setState({ drawerOpen: true, dialogOpen: false, drawerRelease: release })
+    }
   }
+
 
   redeployRelease(release, forceRebuild){
     const { createRelease } = this.props;
@@ -489,7 +500,6 @@ export default class Releases extends React.Component {
 		}
 
     let release = this.state.drawerRelease;
-    
     return (
 			<Drawer
 				anchor="right"
@@ -507,6 +517,15 @@ export default class Releases extends React.Component {
 					</AppBar>
 					<Grid container spacing={24} className={styles.grid}>
 						<Grid item xs={12}>
+              <Grid container>
+                <Grid item xs={12} style={{ textAlign: "right", padding: "1em" }}>
+                  <Typography>
+                    <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, release.environment.key)} target="_blank" className={styles.kibanaLogLink}>
+                        Application Logs
+                    </a>
+                  </Typography>
+              </Grid>
+              </Grid>
 							<Card square={true}>
 								<CardContent>
 									<Typography variant="title">
@@ -591,7 +610,6 @@ export default class Releases extends React.Component {
   
   render() {
     const { loading, project } = this.props.data;
-
     if(loading){
       return (<Loading />)
     }
@@ -613,7 +631,9 @@ export default class Releases extends React.Component {
               extensions={project.extensions}
               release={release}
               currentRelease={project.currentRelease}
-              handleOnClick={() => this.handleToggleDrawer(release)}/>
+              slug={project.slug}
+
+              handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
             )})
             }
             {(project.releases.length === 0) && <Card square={true}>
