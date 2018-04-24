@@ -24,6 +24,12 @@
     height: 30px;
 }
 
+.kibanaLogLink {
+    color: #2196f3;
+}
+.kibanaLogLink:visited {
+    color: #2196f3;
+}
 
 .drawerBody {
     flex-grow: 1;
