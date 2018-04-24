@@ -432,7 +432,8 @@ export default class Releases extends React.Component {
         releaseId: release.id, 
         headFeatureID: release.headFeature.id, 
         projectID: release.project.id, 
-        environmentID: release.environment.id 
+        environmentID: release.environment.id,
+        forceRebuild: false,
       },
     }).then(({data}) => {
       refetch()

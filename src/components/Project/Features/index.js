@@ -95,8 +95,8 @@ class InitPublicProjectComponent extends React.Component {
 })
 
 @graphql(gql`
-mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: String!) {
-  createRelease(release: { headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID }) {
+mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: String!, $forceRebuild: Boolean!) {
+  createRelease(release: { headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID, forceRebuild: $forceRebuild }) {
     headFeature {
       message
     }
@@ -138,7 +138,12 @@ export default class Features extends React.Component {
   handleDeploy(feature, project){
     this.setState({ disabledDeployBtn: true, text: 'Deploying'})
     this.props.createRelease({
-      variables: { headFeatureID: feature.id, projectID: project.id, environmentID: this.props.store.app.currentEnvironment.id },
+      variables: { 
+        headFeatureID: feature.id, 
+        projectID: project.id, 
+        environmentID: this.props.store.app.currentEnvironment.id,
+        forceRebuild: false,
+      },
     }).then(({data}) => {
       this.props.data.refetch()
       this.props.history.push(this.props.match.url.replace('features', 'releases'))
