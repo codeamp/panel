@@ -93,7 +93,7 @@ class ReleaseView extends React.Component {
         <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>
           <CardContent>
             <Grid container spacing={0}>
-              <Grid item xs={12}>
+              <Grid item xs={10}>
                 <Typography className={styles.featureCommitMsg}>
                   { this.props.release.headFeature.hash.slice(30) }
                   <DoubleRightIcon />
