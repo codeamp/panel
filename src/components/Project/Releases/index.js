@@ -243,8 +243,8 @@ class ReleaseView extends React.Component {
 })
 
 @graphql(gql`
-mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $environmentID: String!) {
-  createRelease(release: { id: $id, headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID }) {
+mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $environmentID: String!, $forceRebuild: Boolean!) {
+  createRelease(release: { id: $id, headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID, forceRebuild: $forceRebuild }) {
     headFeature {
       message
     }
@@ -403,7 +403,7 @@ export default class Releases extends React.Component {
     this.setState({ drawerOpen: true, dialogOpen: false, drawerRelease: release })
   }
 
-  redeployRelease(release){
+  redeployRelease(release, forceRebuild){
     const { createRelease } = this.props;
     const { refetch } = this.props.data;
 
@@ -411,7 +411,8 @@ export default class Releases extends React.Component {
       variables: { 
         headFeatureID: release.headFeature.id, 
         projectID: release.project.id, 
-        environmentID: release.environment.id 
+        environmentID: release.environment.id,
+        forceRebuild: forceRebuild,
       },
     }).then(({data}) => {
       refetch()
@@ -454,13 +455,22 @@ export default class Releases extends React.Component {
     }
 
     if (_.has(currentRelease, 'id') && currentRelease.id === release.id) {
-      return (<Button
-        className={styles.drawerButton}
-        variant="raised"
-        color="primary"
-        onClick={()=> this.redeployRelease(release)}>
-        Redeploy
-      </Button>)
+      return (<div>
+          <Button
+          className={styles.drawerButton}
+          variant="raised"
+          color="primary"
+          onClick={()=> this.redeployRelease(release, false)}>
+          Redeploy
+        </Button>
+        <Button
+          className={styles.drawerButton}
+          variant="raised"
+          color="secondary"
+          onClick={()=> this.redeployRelease(release, true)}>
+          Rebuild & Redeploy
+        </Button>        
+      </div>)
     } else {
       return (<Button
         className={styles.drawerButton}
