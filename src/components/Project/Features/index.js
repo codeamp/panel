@@ -89,7 +89,7 @@ class InitPublicProjectComponent extends React.Component {
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
-      showDeployed: false,
+      showDeployed: props.store.app.features.showDeployed,
     }
   })
 })
@@ -212,20 +212,23 @@ export default class Features extends React.Component {
   }
 
   setFilterAndRefetchFeatures(e) {
+    let showDeployed = false
     if(e.target.value === "all") {
+      showDeployed = true
       this.props.data.refetch({
         slug: this.props.match.params.slug,
         environmentID: this.props.store.app.currentEnvironment.id, 
-        showDeployed: true,
+        showDeployed: showDeployed,
       });
     } else {
       this.props.data.refetch({
         slug: this.props.match.params.slug,
         environmentID: this.props.store.app.currentEnvironment.id, 
-        showDeployed: false,
+        showDeployed: showDeployed,
       });      
     }
     this.setState({ filter: e.target.value })
+    this.props.store.app.setFeatures({ showDeployed: showDeployed })
   }
   
   componentWillMount(){

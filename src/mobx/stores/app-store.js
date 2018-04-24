@@ -37,10 +37,17 @@ class AppStore {
       connectionHeader: {
           msg: "",
       },
-      currentEnvironment: currentEnv
+      currentEnvironment: currentEnv,
+      features: {
+        showDeployed: false,
+      },
     });
   }
 
+  setFeatures = action(features => {
+    this.features = features;
+  })
+  
   setTitle = action(title => {
     this.title = title;
   });
