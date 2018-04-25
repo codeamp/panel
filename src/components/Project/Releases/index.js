@@ -64,7 +64,7 @@ class ReleaseView extends React.Component {
           }
         }
       }
-      return (<div key="notStarted" className={styles.innerNotStarted}></div>)
+      return null
     })
     
     return (
@@ -353,21 +353,7 @@ export default class Releases extends React.Component {
             </TableRow>)
           }
         }
-        if(!found){        
-            return (
-            <TableRow
-                tabIndex={-1}
-                key={extension.id}>
-                <TableCell> { extension.extension.name } </TableCell>
-                <TableCell> { stateIcon } </TableCell>
-                <TableCell>
-                    Not started
-                </TableCell>
-                <TableCell>
-                    {extension.extension.type}
-                </TableCell>
-            </TableRow>)
-        }
+
         return null
     })
     
