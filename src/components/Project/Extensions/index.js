@@ -491,7 +491,6 @@ export default class ProjectExtensions extends React.Component {
       config: secretOptions,
     })
 
-    
     let config_jsx = this.form.$('config').map((obj) => {
       return (
         <Grid key={obj.key} item xs={12}>

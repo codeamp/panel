@@ -51,7 +51,9 @@ export default class LoadBalancer extends React.Component {
 
   componentDidMount() {
     this.props.onRef(this)
-    this.form.update(this.props.init)
+    if(this.props.init){
+      this.form.update(this.props.init)
+    }
   }
 
   componentWillUnmount() {
