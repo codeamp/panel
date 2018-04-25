@@ -65,7 +65,6 @@ export default class LoadBalancer extends React.Component {
   componentWillMount(){
     const fields = [
         'service',
-        'name',
         'type',
         'listener_pairs',
         'listener_pairs[].port',
@@ -75,7 +74,6 @@ export default class LoadBalancer extends React.Component {
     const rules = {}
     const labels = {
         'service': 'SERVICE',
-        'name': 'SUBDOMAIN',
         'type': 'ACCESS',
         'listener_pairs': 'LISTENER PAIRS',
         'listener_pairs[].port': 'PORT',
@@ -163,12 +161,9 @@ export default class LoadBalancer extends React.Component {
       <div>
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('service')} extraKey={'service'} />
             </Grid>
-            <Grid item xs={6}>
-              <InputField fullWidth={true} field={this.form.$('name')} />
-            </Grid>        
             <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('type')} />
             </Grid>        
@@ -197,7 +192,7 @@ export default class LoadBalancer extends React.Component {
             )
             })}
             <Grid item xs={12}>
-              <Button raised type="secondary" onClick={this.form.$('listener_pairs').onAdd}>
+              <Button variant="raised" type="secondary" onClick={this.form.$('listener_pairs').onAdd}>
                 Add Port Map
               </Button>
             </Grid>        

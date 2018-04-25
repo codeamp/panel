@@ -550,11 +550,11 @@ export default class ProjectExtensions extends React.Component {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.keys(extension.artifacts).map(key => {
+                    {extension.artifacts.map(artifact => {
                       return (
                       <TableRow>
-                        <TableCell> { key } </TableCell>
-                        <TableCell> { extension.artifacts[key] } </TableCell>
+                        <TableCell> { artifact.key } </TableCell>
+                        <TableCell> { artifact.value } </TableCell>
                       </TableRow>
                       )
                     })}
