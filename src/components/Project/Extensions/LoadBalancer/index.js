@@ -64,7 +64,6 @@ export default class LoadBalancer extends React.Component {
 
   componentWillMount(){
     const fields = [
-        'name',
         'service',
         'type',
         'listener_pairs',
@@ -74,7 +73,6 @@ export default class LoadBalancer extends React.Component {
     ]
     const rules = {}
     const labels = {
-        'name': 'NAME',
         'service': 'SERVICE',
         'type': 'ACCESS',
         'listener_pairs': 'LISTENER PAIRS',
@@ -163,9 +161,6 @@ export default class LoadBalancer extends React.Component {
       <div>
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
-            <Grid item xs={12}>
-              <InputField fullWidth={true} field={this.form.$('name')} />
-            </Grid>
             <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('service')} extraKey={'service'} />
             </Grid>

@@ -87,11 +87,15 @@ export default class LoadBalancer extends React.Component {
     const fields = [
         'subdomain',
         'loadbalancer',
+        'loadbalancer_fqdn',
+        'loadbalancer_type',
     ]
     const rules = {}
     const labels = {
         'subdomain': 'SUBDOMAIN',
         'loadbalancer': 'LOADBALANCER',
+        'loadbalancer_fqdn': 'LOADBALANCER FQDN',
+        'loadbalancer_type': 'LOADBALANCER TYPE',
     }
     const initials = {}
     const types = {}
@@ -134,22 +138,21 @@ export default class LoadBalancer extends React.Component {
     }
 
     const { project } = this.props.data;
-    let FQDN = ""
 
-    project.extensions.map(function(extension){
+    project.extensions.map((extension) => {
       if(extension.id === extensionId) {
         let artifact = _.find(extension.artifacts, function(a) { return a.key === extension.extension.key.toUpperCase() + "_DNS" });
-        FQDN = artifact.value
+
+        this.form.$('loadbalancer_fqdn').set(artifact.value);
+        this.form.$('loadbalancer_type').set(extension.customConfig.type);
       }
       return null
     })
-
+    
     return (
       <Grid item xs={12}>
-        <FormControl fullWidth disabled>
-          <InputLabel htmlFor="fqdn-disabled">Load Balancer FQDN</InputLabel>
-          <Input id="name-disabled" value={FQDN} fullWidth/>
-        </FormControl>
+        <InputField fullWidth={true} field={this.form.$('loadbalancer_fqdn')} disabled/>
+        <InputField fullWidth={true} field={this.form.$('loadbalancer_type')} disabled/>
       </Grid>
     )
   }
@@ -200,7 +203,7 @@ export default class LoadBalancer extends React.Component {
       if(extension.extension.key.includes("loadbalancer") && extension.customConfig.type !== "internal") {
         extraOptions.push({
           key: extension.id,
-          value: extension.extension.name + " - " + extension.customConfig.name,
+          value: extension.extension.name,
         })
       }
       return null
