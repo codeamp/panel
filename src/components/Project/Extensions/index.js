@@ -509,14 +509,6 @@ export default class ProjectExtensions extends React.Component {
       </AppBar>
       <div className={styles.drawerBody}>
         <Grid container spacing={24}>
-          <Grid item xs={12}>
-            {config_jsx}
-          </Grid>
-
-          <Grid item xs={12}>
-            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
-          </Grid>
-
           {extension.stateMessage &&
             <Grid item xs={12}>
               <Typography variant="title">
@@ -527,7 +519,15 @@ export default class ProjectExtensions extends React.Component {
               </Typography>                 
             </Grid>
           }
-          
+
+          <Grid item xs={12}>
+            {config_jsx}
+          </Grid>
+
+          <Grid item xs={12}>
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+          </Grid>
+ 
           {extension.artifacts &&
             <Grid item xs={12}>
               <Paper>
