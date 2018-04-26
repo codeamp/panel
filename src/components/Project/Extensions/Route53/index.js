@@ -143,7 +143,7 @@ export default class LoadBalancer extends React.Component {
 
     project.extensions.map((extension) => {
       if(extension.id === extensionId) {
-        let artifact = _.find(extension.artifacts, function(a) { return a.key === extension.extension.key.toUpperCase() + "_DNS" });
+        let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
 
         this.form.$('loadbalancer_fqdn').set(artifact.value);
         this.form.$('loadbalancer_type').set(extension.customConfig.type);
