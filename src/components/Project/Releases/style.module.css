@@ -213,3 +213,7 @@
   background-color: #2196f3;
   color: white;
 }
+
+.inline {
+    display: inline-block;
+}

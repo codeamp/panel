@@ -136,14 +136,6 @@ class ReleaseView extends React.Component {
       rsaPublicKey
       gitProtocol
       gitUrl
-      extensions {
-        id
-        extension {
-          id
-          name
-          type
-        }
-      }
       currentRelease {
         id
         state
@@ -162,6 +154,7 @@ class ReleaseView extends React.Component {
             extension {
               id
               name
+              type
             }
           }
           state
@@ -307,7 +300,9 @@ export default class Releases extends React.Component {
 
     const { project } = this.props.data;
     const release = this.state.drawerRelease
-    const extensions = project.extensions
+    const extensions = release.releaseExtensions.map(function(releaseExtension){
+      return releaseExtension.extension
+    })
 
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
@@ -453,7 +448,7 @@ export default class Releases extends React.Component {
     }
 
     if (_.has(currentRelease, 'id') && currentRelease.id === release.id) {
-      return (<div>
+      return (<div className={styles.inline}>
           <Button
           className={styles.drawerButton}
           variant="raised"
@@ -598,7 +593,7 @@ export default class Releases extends React.Component {
     if(loading){
       return (<Loading />)
     }
-    
+
     return (
       <div>
         <Grid container spacing={16}>
@@ -611,15 +606,19 @@ export default class Releases extends React.Component {
               </CardContent>
             </Card>
             {project.releases.map((release) => {
-            return (<ReleaseView
-              key={release.id}
-              extensions={project.extensions}
-              release={release}
-              currentRelease={project.currentRelease}
-              slug={project.slug}
+              const extensions = release.releaseExtensions.map(function(releaseExtension){
+                return releaseExtension.extension
+              })
 
-              handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
-            )})
+              return (<ReleaseView
+                key={release.id}
+                extensions={extensions}
+                release={release}
+                currentRelease={project.currentRelease}
+                slug={project.slug}
+
+                handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
+              )})
             }
             {(project.releases.length === 0) && <Card square={true}>
               <CardContent>
