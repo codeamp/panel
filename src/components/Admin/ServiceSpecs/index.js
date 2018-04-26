@@ -297,6 +297,7 @@ export default class ServiceSpecs extends React.Component {
           classes={{
             paper: styles.drawer
           }}
+          onClose={() => {this.setState({ drawerOpen: false })}}          
           open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>

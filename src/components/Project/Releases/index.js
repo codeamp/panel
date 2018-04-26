@@ -491,7 +491,8 @@ export default class Releases extends React.Component {
 				anchor="right"
 				classes={{
 				  paper: styles.drawer
-				}}
+        }}
+        onClose={() => {this.setState({ drawerOpen: false })}}        
 				open={this.state.drawerOpen}>
 				<div className={styles.createServiceBar}>
 					<AppBar position="static" color="default">

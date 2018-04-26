@@ -235,6 +235,7 @@ export default class Secrets extends React.Component {
   }
 
   onError(form){
+    return
   }
 
   onSuccess(form){
@@ -423,6 +424,7 @@ export default class Secrets extends React.Component {
           classes={{
           paper: styles.list,
           }}
+          onClose={() => {this.setState({ drawerOpen: false })}}
           open={this.state.drawerOpen}
         >
           <div tabIndex={0} className={styles.createServiceBar}>
@@ -446,7 +448,7 @@ export default class Secrets extends React.Component {
                   {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                   <Grid item xs={12}>
                     <Grid item xs={12}>
-                      <InputField field={this.form.$('key')} fullWidth={true} />
+                      <InputField field={this.form.$('key')} fullWidth={true} disabled={this.form.$('key').disabled} />
                     </Grid>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('value')} fullWidth={true} />
