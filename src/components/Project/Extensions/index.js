@@ -25,6 +25,10 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import _ from "lodash"
+import Input, { InputLabel } from 'material-ui/Input';
+import { FormControl, FormHelperText } from 'material-ui/Form';
+import Card, { CardActions, CardContent } from 'material-ui/Card';
+import TextField from 'material-ui/TextField';
 
 @inject("store") 
 
@@ -425,6 +429,30 @@ export default class ProjectExtensions extends React.Component {
     )
   }
 
+  renderArtifact(artifact) {
+    let multiline = false
+    let rows = 1
+
+    if (artifact.value.includes("\n")) {
+      multiline = true
+      rows = 10
+    }
+
+    return (<FormControl fullWidth className={styles.artifactPlaceholder}>
+      <TextField
+        label={artifact.key}
+        InputLabelProps={{className: styles.artifactLabel}}
+        InputProps={{className: styles.artifactInput}}
+        helperText={artifact.source}
+        multiline={multiline}
+        rows={rows}
+        value={artifact.value}
+        margin="normal"
+        disabled
+      />
+    </FormControl>)
+  }
+
   renderExtensionsDrawer() {
     if (!this.state.extensionDrawer.extension) {
       return null 
@@ -529,38 +557,25 @@ export default class ProjectExtensions extends React.Component {
           </Grid>
  
           {extension.artifacts &&
-            <Grid item xs={12}>
-              <Paper>
-                <Toolbar>
-                  <div> <Typography variant="title">
-                      Artifacts
-                    </Typography>
-                  </div>
-                </Toolbar>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        Key
-                      </TableCell>
-                      <TableCell>
-                        Value
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {extension.artifacts.map(artifact => {
-                      return (
-                      <TableRow>
-                        <TableCell> { artifact.key } </TableCell>
-                        <TableCell> { artifact.value } </TableCell>
-                      </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </Paper>
-            </Grid>
+          <Grid item xs={12}>
+            <Card className={styles.card}>
+              <CardContent>
+                <Typography variant="headline" component="h2">
+                  Artifacts
+                </Typography>
+                <br/>
+                <Grid container spacing={24}>
+                  {extension.artifacts.map(artifact => {
+                  return (
+                  <Grid item xs={12}>
+                    {this.renderArtifact(artifact)}
+                  </Grid>
+                  )
+                  })}
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
           }
 
           <Grid item xs={12}>

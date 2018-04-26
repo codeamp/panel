@@ -6,7 +6,6 @@ import Typography from 'material-ui/Typography';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import { CircularProgress } from 'material-ui/Progress';
-import Card, { CardContent } from 'material-ui/Card';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
@@ -21,6 +20,10 @@ import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
 import _ from "lodash"
 import Chip from 'material-ui/Chip';
+import Input, { InputLabel } from 'material-ui/Input';
+import { FormControl, FormHelperText } from 'material-ui/Form';
+import Card, { CardActions, CardContent } from 'material-ui/Card';
+import TextField from 'material-ui/TextField';
 
 const kibanaLinkTemplate = process.env.REACT_APP_KIBANA_LINK_TEMPLATE
 
@@ -449,7 +452,14 @@ export default class Releases extends React.Component {
     let { currentRelease } = this.props.data.project;
 
     if (release.state !== "complete"){
-      return null; 
+      return (
+        <Button
+          className={styles.drawerButton}
+          color="primary"
+          onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
+          Cancel
+        </Button>
+      ); 
     }
 
     if (_.has(currentRelease, 'id') && currentRelease.id === release.id) {
@@ -468,16 +478,54 @@ export default class Releases extends React.Component {
           onClick={()=> this.redeployRelease(release, true)}>
           Rebuild & Redeploy
         </Button>        
+        <Button
+          className={styles.drawerButton}
+          color="primary"
+          onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
+          Cancel
+        </Button>
       </div>)
     } else {
-      return (<Button
+      return (<div>
+        <Button
         className={styles.drawerButton}
         variant="raised"
         color="secondary"
         onClick={()=> this.rollbackRelease(release)}>
         Rollback
-      </Button>)
+      </Button>
+      <Button
+        className={styles.drawerButton}
+        color="primary"
+        onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
+        Cancel
+      </Button>
+    </div>)
     }
+  }
+
+  renderArtifact(artifact) {
+    let multiline = false
+    let rows = 1
+
+    if (artifact.value.includes("\n")) {
+      multiline = true
+      rows = 10
+    }
+
+    return (<FormControl fullWidth className={styles.artifactPlaceholder}>
+      <TextField
+        label={artifact.key}
+        InputLabelProps={{className: styles.artifactLabel}}
+        InputProps={{className: styles.artifactInput}}
+        helperText={artifact.source}
+        multiline={multiline}
+        rows={rows}
+        value={artifact.value}
+        margin="normal"
+        disabled
+      />
+    </FormControl>)
   }
 
   renderDrawer(){
@@ -538,53 +586,26 @@ export default class Releases extends React.Component {
               {this.renderReleaseExtensionTable()}
 						</Grid>
 						<Grid item xs={12}>                
-							<Paper className={styles.root}>
-								<div className={styles.tableWrapper}>
-									<Toolbar>
-										<div>
-											<Typography variant="title">
-												Artifacts
-											</Typography>
-										</div>
-									</Toolbar>
-									<Table>
-										<TableHead>
-											<TableRow>
-												<TableCell>
-													Key
-												</TableCell>
-												<TableCell>
-													Value
-												</TableCell>
-											</TableRow>
-										</TableHead>
-										<TableBody>
-											{release.artifacts.map(artifact => {
-											return (
-											<TableRow
-												key={artifact.key}>
-												<TableCell>
-													{artifact.key}
-												</TableCell>
-												<TableCell>
-													{artifact.value}
-												</TableCell>
-											</TableRow>
-											)
-											})}
-										</TableBody>
-									</Table>
-								</div>
-							</Paper>
+              <Card className={styles.card}>
+                <CardContent>
+                  <Typography variant="headline" component="h2">
+                    Artifacts
+                  </Typography>
+                  <br/>
+                  <Grid container spacing={24}>
+                    {release.artifacts.map(artifact => {
+                    return (
+                    <Grid item xs={12}>
+                      {this.renderArtifact(artifact)}
+                    </Grid>
+                    )
+                    })}
+                  </Grid>
+                </CardContent>
+              </Card>
 						</Grid>
 						<Grid item xs={12}>
               {this.releaseActionButton(release)}
-							<Button
-                className={styles.drawerButton}
-								color="primary"
-								onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-								Cancel
-							</Button>
 						</Grid>
 					</Grid>
 				</div>
