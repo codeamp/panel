@@ -168,14 +168,14 @@ export default class Environments extends React.Component {
       this.props.updateEnvironment({
         variables: form.values(),
       }).then(({data}) => {
-        this.closeDrawer()
+        this.closeDrawer(true)
         this.props.data.refetch()
       });
     } else {
       this.props.createEnvironment({
         variables: form.values(),
       }).then(({data}) => {
-        this.closeDrawer()
+        this.closeDrawer(true)
         this.props.data.refetch()
       });
     }
@@ -196,7 +196,7 @@ export default class Environments extends React.Component {
       variables: this.form.values(),
     }).then(({data}) => {
       this.props.data.refetch()
-      this.closeDrawer()
+      this.closeDrawer(true)
     });
   }
 

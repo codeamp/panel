@@ -24,7 +24,7 @@ import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
-import Form from 'mobx-react-form';
+import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -141,7 +141,7 @@ export default class Services extends React.Component {
     this.setState({ open: !this.state.open })
   }
 
-  componentWillMount(){
+  initProjectServicesForm(formInitials  = {}) {
     const fields = [
       'id',
       'name',
@@ -177,15 +177,7 @@ export default class Services extends React.Component {
       'ports[].protocol': 'Protocol',
     };
 
-    const initials = {
-      'name': '',
-      'command': '',
-      'projectID': '',
-      'type': 'general',
-      'ports[].protocol': 'TCP',
-      'count': 0,
-      'environmentID': this.props.store.app.currentEnvironment.id,
-    }
+    const initials = formInitials
 
     const types = {
       'count': 'number',
@@ -227,8 +219,11 @@ export default class Services extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    this.form = new Form({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });    
+  }
 
+  componentWillMount(){
+    this.form = this.initProjectServicesForm()
   }
 
   onSuccess(form) {
@@ -237,14 +232,14 @@ export default class Services extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       })
     } else {
       this.props.createService({
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     }
   }
@@ -259,83 +254,39 @@ export default class Services extends React.Component {
 
   handleServiceRequest = value => {
     this.form.$('type').set(value);
+    this.form = this.initProjectServicesForm({
+      'type': value,
+    })    
+
     this.openDrawer()
   };
 
   openDrawer(){
     this.setState({ drawerOpen: true, addServiceMenuOpen: false })
   }
-  
-  closeDrawerIfFormNotDirty(){
-    const { services } = this.props.data.project;
-    const formValues = this.form.values()    
-    
-    // check only value for an existing object
-    if(formValues.id !== ''){
-      if(formValues.value !== services[formValues.index].value) {
-        this.setState({ dirtyFormDialogOpen: true })
-        return
-      }
+
+  closeDrawer(force = false){
+    if(!force && this.form.isDirty){
+      this.setState({ dirtyFormDialogOpen: true })
     } else {
-      // check all except ignoredKeys if new object
-      let isDirty = false
-      let ignoredKeys = ['type', 'projectID', 'environmentID']
-      if(formValues.type === 'one-shot'){
-        ignoredKeys.push('ports')
-      }
-
-      Object.keys(formValues).map(function(key){        
-        if(ignoredKeys.includes(key)){
-          return
-        }
-
-        switch(key){
-          case "count":
-            if(formValues[key] !== 0){
-              isDirty = true
-            }
-            break
-          case "ports":
-            if(formValues[key].length > 0){
-              isDirty = true
-            }
-            break
-          default:
-            if(formValues[key] !== ""){
-              isDirty = true
-            }
-        }
-      })
-
-      if(isDirty){
-        this.setState({ dirtyFormDialogOpen: true })
-        return
-      }
+      this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, dirtyFormDialogOpen: false })
     }
-
-    this.closeDrawer()
-  }
-
-  closeDrawer(){
-    this.form.reset()
-    this.form.showErrors(false)
-    this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, dirtyFormDialogOpen: false })
   }
 
   editService(service, index){
-    this.form.$('name').set(service.name);
-    this.form.$('count').set(service.count);
-    this.form.$('command').set(service.command);
-    this.form.$('serviceSpecID').set(service.serviceSpec.id);
-    this.form.$('ports').set(service.ports);
-    this.form.$('type').set(service.type);
-    this.form.$('id').set(service.id);
-    this.form.$('index').set(index);
+    this.form = this.initProjectServicesForm({
+      name: service.name,
+      count: service.count,
+      command: service.command,
+      serviceSpecID: service.serviceSpec.id,
+      type: service.type,
+      id: service.id,
+      index: index,
+    })
+    this.form.$('name').set('disabled', true)
+    this.form.update({ ports: service.ports })
 
-    var that = this
-    that.form.update({ ports: service.ports });
-
-    this.setState({ drawerOpen: true })
+    this.openDrawer()
   }
 
   onSubmit(e) {
@@ -349,13 +300,9 @@ export default class Services extends React.Component {
       variables: this.form.values(),
     }).then(({data}) => {
       this.props.data.refetch()
-      this.closeDrawer()
+      this.closeDrawer(true)
     });
   }
-
-  componentWillUpdate(nextProps, nextState){
-
-  }  
 
   render() {
     const { loading, project, serviceSpecs } = this.props.data;
@@ -463,7 +410,7 @@ export default class Services extends React.Component {
               classes={{
               paper: styles.list,
               }}
-              onClose={() => {this.closeDrawerIfFormNotDirty()}}
+              onClose={() => {this.closeDrawer()}}
               open={this.state.drawerOpen}
           >
               <div tabIndex={0} className={styles.createServiceBar}>
@@ -478,7 +425,7 @@ export default class Services extends React.Component {
                   <div className={styles.drawerBody}>
                     <Grid container spacing={24} className={styles.grid}>
                       <Grid item xs={12}>
-                        <InputField field={this.form.$('name')} fullWidth={true} />
+                        <InputField field={this.form.$('name')} fullWidth={true} disabled={this.form.$('name').disabled} />
                       </Grid>
                       <Grid item xs={12}>
                         <InputField field={this.form.$('command')} fullWidth={true}/>
@@ -535,15 +482,17 @@ export default class Services extends React.Component {
                             onClick={e => this.onSubmit(e)}>
                               Save
                         </Button>
-                        <Button
-                          disabled={this.state.saving}
-                          color="inherit"
-                          onClick={()=>this.setState({ dialogOpen: true })}>
-                          Delete
-                        </Button>
+                        {this.form.values()['id'] &&
+                          <Button
+                            disabled={this.state.saving}
+                            color="inherit"
+                            onClick={()=>this.setState({ dialogOpen: true })}>
+                            Delete
+                          </Button>
+                        }
                         <Button
                           color="primary"
-                          onClick={this.closeDrawer.bind(this)}>
+                          onClick={() => {this.closeDrawer()}}>
                           Cancel
                         </Button>
                       </Grid>
@@ -565,14 +514,14 @@ export default class Services extends React.Component {
               <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
                 Cancel
               </Button>
-              <Button onClick={this.closeDrawer.bind(this)} style={{ color: "red" }}>
+              <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
                 Confirm
               </Button>
             </DialogActions>
           </Dialog>          
 
           {project.services[this.form.values()['index']] &&
-            <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+            <Dialog open={this.state.dialogOpen}>
               <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']].name + "?"}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -584,7 +533,7 @@ export default class Services extends React.Component {
                 <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
                   Cancel
                 </Button>
-                <Button onClick={this.handleDeleteService.bind(this)} color="accent">
+                <Button onClick={this.handleDeleteService.bind(this)} style={{ color: "red" }}>
                   Confirm
                 </Button>
               </DialogActions>

@@ -239,14 +239,14 @@ export default class Extensions extends React.Component {
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     } else {
       this.props.updateExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     }
   }
@@ -258,7 +258,7 @@ export default class Extensions extends React.Component {
       variables: this.form.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
-      that.closeDrawer()
+      that.closeDrawer(true)
     });
   }
 
