@@ -97,11 +97,12 @@ export default class Environments extends React.Component {
       saving: false,
       drawerOpen: false,
       dialogOpen: false,
+      dirtyFormDialogOpen: false,
     }
   }
 
-  componentWillMount(){
-    const initials = {}
+  initAdminEnvironmentForm(formInitials = {}) {
+    const initials = formInitials
     const fields = [
       'id',
       'name',
@@ -136,7 +137,11 @@ export default class Environments extends React.Component {
     };
     const plugins = { dvr: validatorjs };
 
-    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys, placeholders }, { plugins });
+    return new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys, placeholders }, { plugins });    
+  }
+  
+  componentWillMount(){
+    this.form = this.initAdminEnvironmentForm()
   }
 
   onSubmit(e) {
@@ -149,16 +154,18 @@ export default class Environments extends React.Component {
   }
 
   onClick(envIdx){
-
-    this.form.clear()
+    const env = this.props.data.environments[envIdx]
 
     if(envIdx >= 0){
+      this.form = this.initAdminEnvironmentForm({
+        key: env.key,
+        name: env.name,
+        isDefault: env.isDefault,
+        color: env.color,
+        id: env.id,
+      })
       this.form.$('key').set('disabled', true)
-      this.form.$('key').set(this.props.data.environments[envIdx].key)
-      this.form.$('name').set(this.props.data.environments[envIdx].name)
-      this.form.$('isDefault').set(this.props.data.environments[envIdx].isDefault)
-      this.form.$('color').set(this.props.data.environments[envIdx].color)
-      this.form.$('id').set(this.props.data.environments[envIdx].id)
+
       this.openDrawer()
     }
   }
@@ -168,14 +175,14 @@ export default class Environments extends React.Component {
       this.props.updateEnvironment({
         variables: form.values(),
       }).then(({data}) => {
-        this.closeDrawer()
+        this.closeDrawer(true)
         this.props.data.refetch()
       });
     } else {
       this.props.createEnvironment({
         variables: form.values(),
       }).then(({data}) => {
-        this.closeDrawer()
+        this.closeDrawer(true)
         this.props.data.refetch()
       });
     }
@@ -185,10 +192,12 @@ export default class Environments extends React.Component {
     this.setState({ drawerOpen: true, saving: false });
   }
 
-  closeDrawer(){
-    this.form.clear()
-    this.form.$('key').set('disabled', false)
-    this.setState({ drawerOpen: false, saving: false, dialogOpen: false })
+  closeDrawer(force = false){
+    if(!force && this.form.isDirty){
+      this.setState({ dirtyFormDialogOpen: true })
+    } else {
+      this.setState({ drawerOpen: false, saving: false, dialogOpen: false, dirtyFormDialogOpen: false })
+    }
   }
 
   handleDelete(){
@@ -196,7 +205,7 @@ export default class Environments extends React.Component {
       variables: this.form.values(),
     }).then(({data}) => {
       this.props.data.refetch()
-      this.closeDrawer()
+      this.closeDrawer(true)
     });
   }
 
@@ -275,6 +284,7 @@ export default class Environments extends React.Component {
             classes={{
               paper: styles.list,
             }}
+            onClose={() => {this.closeDrawer()}}
             open={this.state.drawerOpen}
         >
             <div tabIndex={0} className={styles.createServiceBar}>
@@ -320,7 +330,7 @@ export default class Environments extends React.Component {
                       }
                       <Button
                         color="primary"
-                        onClick={this.closeDrawer.bind(this)}>
+                        onClick={() => {this.closeDrawer()}}>
                         Cancel
                       </Button>
                     </Grid>
@@ -329,6 +339,24 @@ export default class Environments extends React.Component {
               </form>
             </div>
         </Drawer>
+
+        {/* Used for confirmation of escaping panel if dirty form */}
+        <Dialog open={this.state.dirtyFormDialogOpen}>
+          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {"You'll lose any progress made so far."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>        
 
         <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
           <DialogTitle>{"Are you sure you want to delete " + this.form.values()['name'] + "?"}</DialogTitle>

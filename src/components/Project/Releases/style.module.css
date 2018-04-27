@@ -214,6 +214,10 @@
   color: white;
 }
 
+.inline {
+    display: inline-block;
+}
+
 .artifactLabel {
   font-weight: bold;
 }

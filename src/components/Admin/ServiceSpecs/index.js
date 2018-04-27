@@ -112,10 +112,11 @@ export default class ServiceSpecs extends React.Component {
       selected: null,
       drawerOpen: false,
       saving: false,
+      dirtyFormDialogOpen: false,
     }
   }
 
-  componentWillMount(){
+  initServiceSpecsForm(formInitials = {}) {
     const fields = [
       'name',
       'cpuRequest',
@@ -145,7 +146,7 @@ export default class ServiceSpecs extends React.Component {
       'terminationGracePeriod': 'Termination Grace Period (seconds)',
     };
 
-    const initials = {};
+    const initials = formInitials;
 
     const types = {};
 
@@ -155,21 +156,28 @@ export default class ServiceSpecs extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })    
+  }
+
+  componentWillMount(){
+    this.form = this.initServiceSpecsForm()
   }
 
   isSelected(id){
     return this.state.selected === id
   }
+
   handleClick(e, serviceSpec, index){
-    this.form.$('name').set(serviceSpec.name);
-    this.form.$('cpuRequest').set(serviceSpec.cpuRequest);
-    this.form.$('cpuLimit').set(serviceSpec.cpuLimit);
-    this.form.$('memoryRequest').set(serviceSpec.memoryRequest);
-    this.form.$('memoryLimit').set(serviceSpec.memoryLimit);
-    this.form.$('terminationGracePeriod').set(serviceSpec.terminationGracePeriod);
-    this.form.$('id').set(serviceSpec.id);
-    this.form.$('index').set(index);
+    this.form = this.initServiceSpecsForm({
+      name: serviceSpec.name,
+      cpuRequest: serviceSpec.cpuRequest,
+      cpuLimit: serviceSpec.cpuLimit,
+      memoryRequest: serviceSpec.memoryRequest,
+      memoryLimit: serviceSpec.memoryLimit,
+      terminationGracePeriod: serviceSpec.terminationGracePeriod,
+      id: serviceSpec.id,
+      index: index,
+    })
 
     this.setState({ selected: serviceSpec.id, drawerOpen: true })
   }
@@ -180,14 +188,14 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     } else {
       this.props.updateServiceSpec({
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch();
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     }
   }
@@ -197,19 +205,22 @@ export default class ServiceSpecs extends React.Component {
       variables: this.form.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
-      this.closeDrawer()
+      this.closeDrawer(true)
     });
   }
 
   openDrawer(){
-    this.form.reset()
-    this.form.showErrors(false)
+    this.form = this.initServiceSpecsForm()
     this.setState({ drawerOpen: true })
   }
 
-  closeDrawer(){
-    this.setState({ drawerOpen: false, dialogOpen: false })
-  }
+  closeDrawer(force = false){
+    if(!force && this.form.isDirty){
+      this.setState({ dirtyFormDialogOpen: true })
+    } else {
+      this.setState({ drawerOpen: false, dirtyFormDialogOpen: false, dialogOpen: false })
+    }
+  }  
 
   onError(){
     // todo
@@ -297,6 +308,7 @@ export default class ServiceSpecs extends React.Component {
           classes={{
             paper: styles.drawer
           }}
+          onClose={() => {this.closeDrawer()}}
           open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>
@@ -356,6 +368,24 @@ export default class ServiceSpecs extends React.Component {
               </form>
             </div>
         </Drawer>
+
+        {/* Used for confirmation of escaping panel if dirty form */}
+        <Dialog open={this.state.dirtyFormDialogOpen}>
+          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {"You'll lose any progress made so far."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>                  
 
         {serviceSpecs[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>

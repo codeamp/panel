@@ -312,6 +312,7 @@ export default class ProjectExtensions extends React.Component {
           classes={{
             paper: styles.drawer
           }}
+          onClose={() => {this.setState({ drawerOpen: false })}}          
           open={this.state.extensionDrawer.open}
         >
           {this.renderExtensionsDrawer()}

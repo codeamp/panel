@@ -158,10 +158,11 @@ export default class Secrets extends React.Component {
       saving: false,
       drawerOpen: false,
       dialogOpen: false,
+      dirtyFormDialogOpen: false,
     }
   }
 
-  componentWillMount(){
+  initProjectSecretsForm(formInitials  = {}) {
     const fields = [
       'id',
       'projectID',
@@ -173,31 +174,35 @@ export default class Secrets extends React.Component {
       'isSecret',
       'environmentID',
       'index',
-    ];
+    ]
     const rules = {
       'key': 'string|required',
       'value': 'string|required',
-    };
+    }
     const labels = {
       'key': 'Key',
       'value': 'Value',
       'isSecret': 'Protected',
-    };
-    const initials = {}
+    }
+    const initials = formInitials
     const types = {
       'isSecret': 'checkbox'
-    };
-    const keys = {};
+    }
+    const keys = {}
     const disabled = {
       'key': false
     }
     const extra = {
       'type': [{key: 'build', value: 'Build'}, {key: 'env', value: 'Normal' },{key: 'file', value: 'File'}]
-    };
-    const hooks = {};
-    const plugins = { dvr: validatorjs };
+    }
+    const hooks = {}
+    const plugins = { dvr: validatorjs }
 
-    this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
+    return new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
+  }
+
+  componentWillMount(){
+    this.form = this.initProjectSecretsForm()
   }
 
   handleAddClick(event){
@@ -213,16 +218,22 @@ export default class Secrets extends React.Component {
 
   onClick(secretIdx){
     const secret = this.props.data.project.secrets[secretIdx]
-    if(secret !== undefined){
-        this.form.$('key').set(secret.key)
-        this.form.$('key').set('disabled', true)
-        this.form.$('value').set(secret.value)
-        this.form.$('type').set(secret.type)
-        this.form.$('id').set(secret.id)
-        this.form.$('index').set(secretIdx)
-        this.form.$('isSecret').set(secret.isSecret)
-        this.form.$('isSecret').set('disabled', true)
-        this.openDrawer()
+    if(secret !== null){
+      // find this 
+      this.form = this.initProjectSecretsForm({
+        'key': secret.key,
+        'value': secret.value,
+        'type': secret.type,
+        'id': secret.id,
+        'index': secretIdx,
+        'isSecret': secret.isSecret,
+        'projectID': this.props.data.project.id,
+        'environmentID': this.props.store.app.currentEnvironment.id,
+      })
+      this.form.$('key').set('disabled', true)
+      this.form.$('isSecret').set('disabled', true)
+
+      this.openDrawer()
     }
   }
 
@@ -232,7 +243,7 @@ export default class Secrets extends React.Component {
 
   onError(form){
     // todo
-    this.closeDrawer()
+    this.closeDrawer(true)
   }
 
   onSuccess(form){
@@ -247,7 +258,7 @@ export default class Secrets extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     } else {
       this.props.updateSecret({
@@ -263,8 +274,9 @@ export default class Secrets extends React.Component {
   }
 
   handleRequestClose = value => {
-    this.form.clear()
-    this.form.$('type').set(value);
+    this.form = this.initProjectSecretsForm({
+      'type': value,
+    })
     this.form.$('key').set('disabled', false)
     this.form.$('isSecret').set('disabled', false)
     this.openDrawer()
@@ -272,19 +284,21 @@ export default class Secrets extends React.Component {
 
   openDrawer(){
     this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
-  }
+  } 
 
-  closeDrawer(){
-    this.form.reset()
-    this.form.showErrors(false)
-    this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false })
+  closeDrawer(force = false){
+    if(!force && this.form.isDirty){
+      this.setState({ dirtyFormDialogOpen: true })
+    } else {
+      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })    
+    }
   }
 
   handleDeleteEnvVar(){
     this.props.deleteSecret({
       variables: this.form.values(),
     }).then(({data}) => {
-      this.closeDrawer()
+      this.closeDrawer(true)
       this.props.data.refetch()
     });
   }
@@ -373,7 +387,6 @@ export default class Secrets extends React.Component {
             id="simple-menu"
             anchorEl={this.state.anchorEl}
             open={this.state.addEnvVarMenuOpen}
-            onRequestClose={this.handleRequestClose}
         >
           <MenuItem onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
           <MenuItem onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
@@ -385,6 +398,7 @@ export default class Secrets extends React.Component {
             classes={{
             paper: styles.list,
             }}
+            onClose={() => {this.closeDrawer()}}
             open={this.state.drawerOpen}
         >
             <div tabIndex={0} className={styles.createServiceBar}>
@@ -401,7 +415,7 @@ export default class Secrets extends React.Component {
                     {(this.form.$('type').value === 'env' || this.form.$('type').value === 'build') &&
                       <Grid item xs={12}>
                         <Grid item xs={12}>
-                          <InputField field={this.form.$('key')} fullWidth={true} />
+                          <InputField field={this.form.$('key')} fullWidth={true} disabled={this.form.$('key').disabled} />
                         </Grid>
                         <Grid item xs={12}>
                           <InputField field={this.form.$('value')} fullWidth={true} />
@@ -461,7 +475,7 @@ export default class Secrets extends React.Component {
 
                       <Button
                         color="primary"
-                        onClick={this.closeDrawer.bind(this)}>
+                        onClick={() => {this.closeDrawer()}}>
                         Cancel
                       </Button>
                     </Grid>
@@ -470,6 +484,25 @@ export default class Secrets extends React.Component {
               </form>
             </div>
         </Drawer>
+
+        {/* Used for confirmation of escaping panel if dirty form */}
+        <Dialog open={this.state.dirtyFormDialogOpen}>
+          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {"You'll lose any progress made so far."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {project.secrets.length > 0 && project.secrets[this.form.values()['index']] &&
             <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
               <DialogTitle>{"Are you sure you want to delete " + project.secrets[this.form.values()['index']].key + "?"}</DialogTitle>

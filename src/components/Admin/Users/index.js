@@ -204,6 +204,7 @@ export default class Users extends React.Component {
             classes={{
               paper: styles.list,
             }}
+            onClose={() => {this.setState({ drawerOpen: false })}}            
             open={this.state.drawerOpen}
         >
             <div tabIndex={0} className={styles.createServiceBar}>

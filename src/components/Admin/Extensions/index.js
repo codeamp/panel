@@ -132,10 +132,11 @@ export default class Extensions extends React.Component {
     super(props)
     this.state = {
       drawerOpen: false,
+      dirtyFormDialogOpen: false,
     }
   }
-
-  componentWillMount(){
+  
+  initAdminExtensionsForm(formInitials = {}) {
     const fields = [
       'id',
       'index',
@@ -170,11 +171,7 @@ export default class Extensions extends React.Component {
       'component': 'React Component',
       'environmentID': 'Environment',
     };
-    const initials = {
-      'type': 'Workflow',
-      'environmentID': null,
-      'config[].allowOverride': false,
-    };
+    const initials = formInitials
 
     const types = {
     };
@@ -197,12 +194,29 @@ export default class Extensions extends React.Component {
     const hooks = {};
     const handlers = {};
     const plugins = { dvr: validatorjs };
-    this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })    
+  }
+
+  componentWillMount(){
+    this.form = this.initAdminExtensionsForm({
+      'type': 'Workflow',
+      'environmentID': null,
+      'config[].allowOverride': false,
+    })
+  }
+
+  createNewExtension() {
+    this.form = this.initAdminExtensionsForm({
+      'type': 'Workflow',
+      'environmentID': null,
+      'config[].allowOverride': false,
+    })
+    this.setOptions()
+    
+    this.openDrawer()
   }
 
   openDrawer(){
-    this.form.showErrors(false)
-    this.setOptions()
     this.setState({ drawerOpen: true, dialogOpen: false })
   }
 
@@ -211,12 +225,24 @@ export default class Extensions extends React.Component {
     this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
   }
 
+  closeDrawer(force = false){
+    if(!force && this.form.isDirty){
+      this.setState({ dirtyFormDialogOpen: true })
+    } else {
+      this.setState({ drawerOpen: false, dialogOpen: false, saving: false, dirtyFormDialogOpen: false })
+    }
+  }  
+
   handleClick(e, extension, index){
-    this.form.$('id').set(extension.id)
-    this.form.$('index').set(index)
-    this.form.$('name').set(extension.name)
-    this.form.$('key').set(extension.key)
-    this.form.$('environmentID').set(extension.environment.id)
+    this.form = this.initAdminExtensionsForm({
+      id: extension.id,
+      index: index,
+      name: extension.name,
+      key: extension.key,
+      environmentID: extension.environment.id,
+      component: extension.component,
+      type: extension.type,
+    })
 
     let config = extension.config.map((c) => {
       if (typeof c.allowOverride === 'undefined') {
@@ -225,10 +251,10 @@ export default class Extensions extends React.Component {
         return c; 
       }
     })
-
+    
     this.form.update({ config: config })
-    this.form.$('component').set(extension.component)
-    this.form.$('type').set(extension.type)
+    this.setOptions()
+
     this.openDrawer()
   }
 
@@ -239,14 +265,14 @@ export default class Extensions extends React.Component {
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     } else {
       this.props.updateExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer()
+        this.closeDrawer(true)
       });
     }
   }
@@ -258,7 +284,7 @@ export default class Extensions extends React.Component {
       variables: this.form.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
-      that.closeDrawer()
+      that.closeDrawer(true)
     });
   }
 
@@ -375,7 +401,7 @@ export default class Extensions extends React.Component {
         </Grid>
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
               style={inlineStyles.addButton}
-              onClick={this.openDrawer.bind(this)}>
+              onClick={() => {this.createNewExtension()}}>
               <AddIcon />
         </Button>
         <Drawer
@@ -383,6 +409,7 @@ export default class Extensions extends React.Component {
           classes={{
             paper: styles.drawer
           }}
+          onClose={() => {this.closeDrawer()}}          
           open={this.state.drawerOpen}
         >
             <div className={styles.createServiceBar}>
@@ -458,7 +485,7 @@ export default class Extensions extends React.Component {
                     }
 
                     <Button
-                      onClick={this.closeDrawer.bind(this)}>
+                      onClick={() => {this.closeDrawer()}}>
                       Cancel
                     </Button>
                   </Grid>
@@ -466,6 +493,25 @@ export default class Extensions extends React.Component {
               </form>
             </div>
         </Drawer>
+
+        {/* Used for confirmation of escaping panel if dirty form */}
+        <Dialog open={this.state.dirtyFormDialogOpen}>
+          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {"You'll lose any progress made so far."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {extensions[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
             <DialogTitle>{"Ae you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
