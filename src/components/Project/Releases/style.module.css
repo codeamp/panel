@@ -17,6 +17,7 @@
 }
 
 .createServiceBar {
+
 }
 
 .releaseViewIcon {
@@ -93,7 +94,6 @@
 }
 
 .root {
-    overflow: auto;
 }
 
 /* @-webkit-keyframes pulseWaiting {
@@ -216,4 +216,22 @@
 
 .inline {
     display: inline-block;
+}
+
+.artifactLabel {
+  font-weight: bold;
+}
+
+.artifactInput {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.artifactPlaceholder {
+  padding: 0;
+  margin: 0;
+}
+
+.artifactPlaceholder > div {
+  padding: 0;
+  margin: 0;
 }
