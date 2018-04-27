@@ -330,7 +330,7 @@ export default class Settings extends React.Component {
             </Card>
           </Grid>  
           {this.state.repoType === "private" &&
-            <Grid container style={{ margin: 1 }}>
+            <Grid container style={{ paddingLeft: 15 }}>
               <Grid item sm={3}>
                 <Typography variant="title" className={styles.settingsDescription}>
                   Deploy Key Setup

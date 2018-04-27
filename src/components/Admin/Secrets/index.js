@@ -150,6 +150,7 @@ export default class Secrets extends React.Component {
       saving: false,
       drawerOpen: false,
       dialogOpen:false,
+      dirtyFormDialogOpen: false,
     }
   }
 
@@ -273,12 +274,42 @@ export default class Secrets extends React.Component {
     this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false });
   }
 
+  closeDrawerIfFormNotDirty(){
+    const { secrets } = this.props.data;
+    const formValues = this.form.values()    
+    
+    // check only value for an existing object
+    if(formValues.id !== ''){
+      if(formValues.value !== secrets[formValues.index].value) {
+        this.setState({ dirtyFormDialogOpen: true })
+        return
+      }
+    } else {
+      // check all except ignoredKeys if new object
+      let isDirty = false
+      let ignoredKeys = ['isSecret', 'type']
+      Object.keys(formValues).map(function(key){
+        if(formValues[key] !== "" && !(ignoredKeys.includes(key))){
+          isDirty = true
+        }
+      })
+
+      if(isDirty){
+        this.setState({ dirtyFormDialogOpen: true })
+        return
+      }
+    }
+
+    this.closeDrawer()
+  }
+
   closeDrawer(){
     this.form.$('key').set('disabled', false)
     this.form.$('environmentID').set('disabled', false)
     this.form.$('scope').set('disabled', false)
+    this.form.reset()
 
-    this.setState({ drawerOpen: false, saving: false, dialogOpen: false, addEnvVarMenuOpen: false })
+    this.setState({ drawerOpen: false, saving: false, dialogOpen: false, addEnvVarMenuOpen: false, dirtyFormDialogOpen: false })
   }
 
   handleDeleteEnvVar(){
@@ -424,7 +455,7 @@ export default class Secrets extends React.Component {
           classes={{
           paper: styles.list,
           }}
-          onClose={() => {this.setState({ drawerOpen: false })}}
+          onClose={() => {this.closeDrawerIfFormNotDirty()}}
           open={this.state.drawerOpen}
         >
           <div tabIndex={0} className={styles.createServiceBar}>
@@ -473,7 +504,7 @@ export default class Secrets extends React.Component {
                         value={this.form.values()['value']}
                         name="file-content"
                         editorProps={{$blockScrolling: true}}
-                        focus="true"
+                        focus={true}
                       />
                       <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
                       <Typography variant="caption"> Hide value after saving </Typography>
@@ -518,23 +549,42 @@ export default class Secrets extends React.Component {
             </form>
           </div>
         </Drawer>
-        {secrets.length > 0 && secrets[this.form.values()['index']] &&
-        <Dialog open={this.state.dialogOpen}>
-          <DialogTitle>{"Are you sure you want to delete " + secrets[this.form.values()['index']].key + "?"}</DialogTitle>
+        
+        {/* Used for confirmation of escaping panel if dirty form */}
+        <Dialog open={this.state.dirtyFormDialogOpen}>
+          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {"This will delete the environment variable."}
+              {"You'll lose any progress made so far."}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
               Cancel
             </Button>
-            <Button onClick={this.handleDeleteEnvVar.bind(this)} color="accent">
+            <Button onClick={this.closeDrawer.bind(this)} style={{ color: "red" }}>
               Confirm
             </Button>
           </DialogActions>
         </Dialog>
+
+        {secrets.length > 0 && secrets[this.form.values()['index']] &&
+          <Dialog open={this.state.dialogOpen}>
+            <DialogTitle>{"Are you sure you want to delete " + secrets[this.form.values()['index']].key + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"This will delete the environment variable."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleDeleteEnvVar.bind(this)} style={{ color: "red" }}>
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
         }
       </div>
     )

@@ -133,6 +133,7 @@ export default class Services extends React.Component {
       addServiceMenuOpen: false,
       saving: false,
       dialogOpen: false,
+      dirtyFormDialogOpen: false,
     }
   }
 
@@ -264,11 +265,61 @@ export default class Services extends React.Component {
   openDrawer(){
     this.setState({ drawerOpen: true, addServiceMenuOpen: false })
   }
+  
+  closeDrawerIfFormNotDirty(){
+    const { services } = this.props.data.project;
+    const formValues = this.form.values()    
+    
+    // check only value for an existing object
+    if(formValues.id !== ''){
+      if(formValues.value !== services[formValues.index].value) {
+        this.setState({ dirtyFormDialogOpen: true })
+        return
+      }
+    } else {
+      // check all except ignoredKeys if new object
+      let isDirty = false
+      let ignoredKeys = ['type', 'projectID', 'environmentID']
+      if(formValues.type === 'one-shot'){
+        ignoredKeys.push('ports')
+      }
+
+      Object.keys(formValues).map(function(key){        
+        if(ignoredKeys.includes(key)){
+          return
+        }
+
+        switch(key){
+          case "count":
+            if(formValues[key] !== 0){
+              isDirty = true
+            }
+            break
+          case "ports":
+            if(formValues[key].length > 0){
+              isDirty = true
+            }
+            break
+          default:
+            if(formValues[key] !== ""){
+              isDirty = true
+            }
+        }
+      })
+
+      if(isDirty){
+        this.setState({ dirtyFormDialogOpen: true })
+        return
+      }
+    }
+
+    this.closeDrawer()
+  }
 
   closeDrawer(){
     this.form.reset()
     this.form.showErrors(false)
-    this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false })
+    this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, dirtyFormDialogOpen: false })
   }
 
   editService(service, index){
@@ -412,7 +463,7 @@ export default class Services extends React.Component {
               classes={{
               paper: styles.list,
               }}
-              onClose={() => {this.setState({ drawerOpen: false })}}              
+              onClose={() => {this.closeDrawerIfFormNotDirty()}}
               open={this.state.drawerOpen}
           >
               <div tabIndex={0} className={styles.createServiceBar}>
@@ -501,6 +552,24 @@ export default class Services extends React.Component {
                 </form>
               </div>
           </Drawer>
+
+          {/* Used for confirmation of escaping panel if dirty form */}
+          <Dialog open={this.state.dirtyFormDialogOpen}>
+            <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"You'll lose any progress made so far."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.closeDrawer.bind(this)} style={{ color: "red" }}>
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>          
 
           {project.services[this.form.values()['index']] &&
             <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>

@@ -55,7 +55,7 @@ import styles from './style.module.css';
         repository: "/",
       }
     },
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'network-only'
   }
 })
 
