@@ -10,7 +10,6 @@ import ServiceSpecs from './ServiceSpecs';
 import Extensions from './Extensions';
 import Secrets from './Secrets';
 import Environments from './Environments';
-import Projects from './Projects';
 import Users from './Users';
 
 @graphql(gql`
@@ -63,10 +62,6 @@ export default class Admin extends React.Component {
           <Route path='/admin/environments' render={(props) => (
             <Environments/>
           )}/>
-
-          <Route path='/admin/projects' render={(props) => (
-            <Projects/>
-          )}/>          
           <Route component={DoesNotExist404} />
         </Switch>
       </div>
