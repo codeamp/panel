@@ -113,12 +113,14 @@ export default class Settings extends React.Component {
       'gitBranch': 'Git Branch',
       'gitUrl': 'Git Url',
       'continuousDeploy': 'Continuous Deploy',
+      'releaseTimeout': 'Release Timeout (in seconds)',
     };
     const initials = {
     };
     const types = {
       'environments[].grant': 'checkbox',
       'continuousDeploy': 'checkbox',
+      'releaseTimeout': 'integer',
     };
     const extra = {};
     const hooks = {};
@@ -141,7 +143,7 @@ export default class Settings extends React.Component {
     this.props.updateProject({
       variables: form.values(),
     }).then(({data}) => {
-      this.setState({ automationSaving: false, branchSettingsSaving: false, repositorySettingsSaving: false })
+      this.setState({ automationSaving: false, branchSettingsSaving: false, releaseTimeoutSaving: false, repositorySettingsSaving: false })
       this.props.store.app.setSnackbar({ open: true, msg: this.props.store.app.currentEnvironment.name + " settings saved successfully."})
       this.props.data.refetch()
     });
