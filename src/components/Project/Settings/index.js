@@ -28,6 +28,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitProtocol
       gitBranch
       continuousDeploy
+      releaseTimeout
       environments {
         id
         name
@@ -83,10 +84,11 @@ export default class Settings extends React.Component {
     super(props)
     this.state = {
       repositorySettingsSaving: false,
+      releaseTimeoutSaving: false,      
       branchSettingsSaving: false,
       permissionsSaving: false,
       automationSaving: false,
-      settingsSet: false
+      settingsSet: false,
     }
   }
 
@@ -158,6 +160,9 @@ export default class Settings extends React.Component {
       case "automation":
         this.setState({ automationSaving: true })
         break 
+      case "releaseTimeout":
+        this.setState({ releaseTimeoutSaving: true })
+        break         
     }
     this.form.onSubmit(e, { onSuccess: this.updateProject.bind(this), onError: this.onError.bind(this) })
   }
@@ -192,6 +197,7 @@ export default class Settings extends React.Component {
     this.form.$('environmentID').set(currentEnvironment.id)
     this.form.$('gitBranch').set(project.gitBranch)      
     this.form.$('continuousDeploy').set(project.continuousDeploy)      
+    this.form.$('releaseTimeout').set(project.releaseTimeout)      
 
     environments.map((environment) => {
       var checked = false
@@ -328,7 +334,38 @@ export default class Settings extends React.Component {
                 </Button>
               </CardActions>
             </Card>
-          </Grid>  
+          </Grid>
+
+          <Grid container spacing={24} style={{ padding: 10 }}>
+            <Grid item sm={3}>
+              <Typography variant="title" className={styles.settingsDescription}>
+                Release Timeout
+              </Typography>
+              <Typography variant="caption" className={styles.settingsCaption}>
+                If a release takes longer to complete than the prescribed amount of time, 
+                the release will automatically fail.
+              </Typography>
+            </Grid>
+            <Grid item sm={9}>
+              <Card className={styles.card}>
+                <CardContent>
+                  <Grid item xs={12}>
+                    <InputField field={this.form.$('releaseTimeout')} label={this.form.$('releaseTimeout').label} fullWidth={true} />            
+                  </Grid>
+                </CardContent>
+                <CardActions>
+                  <Button color="primary"
+                    type="submit"
+                    variant="raised"
+                    disabled={this.state.releaseTimeoutSaving}
+                    onClick={(e) => this.onUpdateSettings(e, "releaseTimeout")}>
+                    Save
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>                   
+          </Grid>
+
           {this.state.repoType === "private" &&
             <Grid container style={{ paddingLeft: 15 }}>
               <Grid item sm={3}>
