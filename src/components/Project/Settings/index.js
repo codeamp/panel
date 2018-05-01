@@ -67,6 +67,7 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
       gitBranch
       gitProtocol
       continuousDeploy
+      releaseTimeout
     }
   }
 `, { name: "updateProject"})
@@ -105,6 +106,7 @@ export default class Settings extends React.Component {
       'environments[].label',
       'environments[].grant',
       'continuousDeploy',
+      'releaseTimeout',
     ];
     const rules = {};
     const labels = {
