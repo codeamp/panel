@@ -6,7 +6,7 @@ ARG REACT_APP_CIRCUIT_WSS_URI=http://localhost:3011
 ARG REACT_APP_DEX_URI=http://localhost:5556
 ARG REACT_APP_PANEL_URI=http://localhost:3010
 ARG REACT_APP_CLIENT_ID=example-app
-ARG REACT_APP_KIBANA_LINK_TEMPLATE=https://kibana-ui.example.net/app/kibana#/discover?_g=(refreshInterval:('$$hashKey':'object:2676',display:'10%20seconds',pause:!f,section:1,value:10000),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$$hashKey':'object:1997','$state':(store:appState),meta:(alias:!n,disabled:!f,index:'kubernetes-*',key:kubernetes.namespace,negate:!f,value:##PROJECT-NAMESPACE##),query:(match:(kubernetes.namespace:(query:##PROJECT-NAMESPACE##,type:phrase))))),index:'kubernetes-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'*')),sort:!('@timestamp',desc))
+ARG REACT_APP_KIBANA_LINK_TEMPLATE="https://kibana-ui.example.net/app/kibana#/discover?_g=(refreshInterval:('$$hashKey':'object:2676',display:'10%20seconds',pause:!f,section:1,value:10000),time:(from:now-15m,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$$hashKey':'object:1997','$state':(store:appState),meta:(alias:!n,disabled:!f,index:'kubernetes-*',key:kubernetes.namespace,negate:!f,value:##PROJECT-NAMESPACE##),query:(match:(kubernetes.namespace:(query:##PROJECT-NAMESPACE##,type:phrase))))),index:'kubernetes-*',interval:auto,query:(query_string:(analyze_wildcard:!t,query:'*')),sort:!('@timestamp',desc))"
 
 ENV PORT=${PORT}   
 ENV REACT_APP_CIRCUIT_URI=${REACT_APP_CIRCUIT_URI}
