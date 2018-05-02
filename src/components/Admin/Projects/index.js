@@ -207,7 +207,6 @@ export default class Projects extends React.Component {
   
   render() {
     const { loading, projects, environments } = this.props.data;
-    console.log(projects)
 
     if(loading){
       return (
@@ -295,7 +294,6 @@ export default class Projects extends React.Component {
                           }
                           env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
                             let status = "black"
-                            console.log(releaseExtension)
                             switch(releaseExtension.state){
                               case "complete":
                                 status = "green"
