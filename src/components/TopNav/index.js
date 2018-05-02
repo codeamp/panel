@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavLink, Route, Switch } from 'react-router-dom';
-import { observer, inject } from 'mobx-react';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
@@ -13,7 +12,8 @@ import { LinearProgress } from 'material-ui/Progress';
 import { graphql, withApollo } from 'react-apollo';
 import gql from 'graphql-tag';
 import Button from 'material-ui/Button';
-import _ from "lodash"
+import _ from "lodash";
+import { observer, inject } from 'mobx-react';
 import Logo from './logo_white.png';
 import styles from './style.module.css';
 
@@ -33,7 +33,6 @@ const GET_PROJECTS = gql`
   }
 `
 
-@inject("store") @observer
 @graphql(GET_PROJECTS, {
 	options: (props) => ({
 		variables: {
@@ -44,6 +43,7 @@ const GET_PROJECTS = gql`
 	})
 })
 
+@inject("store") @observer
 class TopNav extends React.Component {
   state = {
     userAnchorEl: undefined,
