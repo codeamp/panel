@@ -239,7 +239,7 @@ export default class Projects extends React.Component {
                   <circle cx="25" cy="25" r="40" fill="red" /> 
                 </svg> &nbsp;&nbsp;&nbsp;                             
 
-                waiting/ not started &nbsp;
+                not started &nbsp;
                 <svg height="10" width="10">
                   <circle cx="25" cy="25" r="40" fill="lightgray" />
                 </svg> &nbsp;&nbsp;&nbsp;
@@ -291,7 +291,7 @@ export default class Projects extends React.Component {
                               color = "green"
                               break;
                             case "waiting":
-                              color = "lightgray"
+                              color = "yellow"
                               break;                              
                             case "failed":
                               color = "red"
@@ -304,7 +304,7 @@ export default class Projects extends React.Component {
                                 status = "green"
                                 break;
                               case "waiting":
-                                status = "lightgray"
+                                status = "yellow"
                                 break;       
                               case "fetching":
                                 status = "yellow"
