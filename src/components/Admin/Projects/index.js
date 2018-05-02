@@ -57,7 +57,19 @@ import { check } from 'graphql-anywhere';
             parentHash
             ref
             created
-          }          
+          } 
+          releaseExtensions {
+            id
+            state
+            extension {
+              id
+              extension {
+                id
+                key
+                name
+              }
+            }
+          }         
         }
       }
       extensions {
@@ -268,6 +280,7 @@ export default class Projects extends React.Component {
                     <TableCell>
                       {project.environments.map(function(env){
                         let color = "black"
+                        let extensionStatuses = []                        
                         if(env.projectReleases.length > 0) {
                           switch(env.projectReleases[0].state){
                             case "complete":
@@ -280,11 +293,32 @@ export default class Projects extends React.Component {
                               color = "red"
                               break;
                           }
+                          env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
+                            let status = "black"
+                            console.log(releaseExtension)
+                            switch(releaseExtension.state){
+                              case "complete":
+                                status = "green"
+                                break;
+                              case "waiting":
+                                status = "yellow"
+                                break;                              
+                              case "failed":
+                                status = "red"
+                                break;
+                            }                            
+                            extensionStatuses.push(
+                              <span style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5 }}>
+                                {releaseExtension.extension.extension.key}
+                              </span>
+                            )
+                          })
                         }
 
                         return (
-                          <div style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center" }}>
+                          <div style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
                             {env.name + "(" + env.key + ")"} &nbsp;
+                            {extensionStatuses}                            
                           </div>
                         )
                       })}
