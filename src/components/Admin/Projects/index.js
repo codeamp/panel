@@ -35,12 +35,45 @@ import { check } from 'graphql-anywhere';
       environments {
         id
         name
+        key
         color
+        projectReleases {
+          id
+          state
+          headFeature {
+            id
+            message
+            user
+            hash
+            parentHash
+            ref
+            created
+          }
+          tailFeature {
+            id
+            message
+            user
+            hash
+            parentHash
+            ref
+            created
+          }          
+        }
+      }
+      extensions {
+        id
+        state
+        extension {
+          id
+          key
+          name
+        }
       }
     }
     environments {
       id
       name
+      key
       color
     }
   }
@@ -56,13 +89,19 @@ import { check } from 'graphql-anywhere';
 })
 
 @graphql(gql`
-mutation DeployProjects($projects: [ProjectInput], $deployableEnvironments: [EnvironmentInput]) {
-  deployProjects(batch:{
-    projects: $projects,
-    deployableEnvironments: $deployableEnvironments,
-  })
+mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: String!, $forceRebuild: Boolean!) {
+  createRelease(release: { headFeatureID: $headFeatureID, projectID: $projectID, environmentID: $environmentID, forceRebuild: $forceRebuild }) {
+    headFeature {
+      message
+    }
+    tailFeature  {
+      message
+    }
+    state
+    stateMessage
+  }
 }
-` , { name: "deployProjects" })
+`, { name: "createRelease" })
 
 
 @inject("store") @observer
@@ -127,19 +166,37 @@ export default class Projects extends React.Component {
   }
 
   onBatchDeploy(){
-    this.props.deployProjects({
-      variables: {
-        projects: this.state.checkedProjects,
-        deployableEnvironments: this.state.checkedEnvs,
-      },
-    }).then(({data}) => {
-      this.props.data.refetch()
-      this.props.store.app.setSnackbarMsg({ open: true, msg: "Batch deploys have been sent out."})
-    });
+    var self = this
+    this.state.checkedProjects.forEach(function(projectID){
+      let project = {}
+      self.props.data.projects.map(function(tmpProject){
+        if(tmpProject.id === projectID) {
+          project = tmpProject
+        }
+      })
+
+      project.environments.map(function(env){
+        console.log(self.state.checkedEnvs, env.id)
+        if(self.state.checkedEnvs.includes(env.id) && env.projectReleases.length > 0){
+          self.props.createRelease({
+            variables: { 
+              headFeatureID: env.projectReleases[0].headFeature.id, 
+              projectID: projectID, 
+              environmentID: self.props.store.app.currentEnvironment.id,
+              forceRebuild: true,
+            },
+          }).then(({data}) => {
+            self.props.data.refetch()
+            console.log("Project " + project.name + " has been deployed in environment " + env.key + ".")
+          });      
+        }
+      })
+    })
   }
   
   render() {
     const { loading, projects, environments } = this.props.data;
+    console.log(projects)
 
     if(loading){
       return (
@@ -156,6 +213,27 @@ export default class Projects extends React.Component {
               <Typography variant="title">
                 Projects
               </Typography>
+              <Typography>
+                not started &nbsp;
+                <svg height="10" width="10">
+                  <circle cx="25" cy="25" r="40" fill="black" />
+                </svg> &nbsp;&nbsp;&nbsp;
+
+                complete &nbsp;
+                <svg height="10" width="10">
+                  <circle cx="25" cy="25" r="40" fill="green" />
+                </svg> &nbsp;&nbsp;&nbsp;
+                
+                failed &nbsp;
+                <svg height="10" width="10">
+                  <circle cx="25" cy="25" r="40" fill="red" /> 
+                </svg> &nbsp;&nbsp;&nbsp;                             
+
+                running &nbsp;
+                <svg height="10" width="10">
+                  <circle cx="25" cy="25" r="40" fill="yellow" />
+                </svg>                                                
+              </Typography>
             </div>
           </Toolbar>
           <Table>
@@ -169,6 +247,9 @@ export default class Projects extends React.Component {
                 <TableCell>
                   Name
                 </TableCell>
+                <TableCell>
+                  Statuses
+                </TableCell>                
               </TableRow>
             </TableHead>
             <TableBody>
@@ -185,6 +266,31 @@ export default class Projects extends React.Component {
                     <TableCell>
                       {project.name}
                     </TableCell>
+                    <TableCell>
+                      {project.environments.map(function(env){
+                        let color = "black"
+                        if(env.projectReleases.length > 0) {
+                          switch(env.projectReleases[0].state){
+                            case "complete":
+                              color = "green"
+                              break;
+                            case "running":
+                              color = "yellow"
+                              break;                              
+                            case "failed":
+                              color = "red"
+                              break;
+                          }
+                        }
+
+                        return (
+                          <div style={{ color: color }}>
+                            {env.name + "(" + env.key + ")"} &nbsp;
+                          </div>
+                        )
+                      })}
+                    </TableCell>  
+                                      
                   </TableRow>
                 )
               })}
@@ -193,7 +299,7 @@ export default class Projects extends React.Component {
         </Paper>
         <Paper style={{ marginTop: 20, padding: 20 }}>
           <Grid container>
-            <Grid item xs={4}>
+            <Grid item xs={12}>
             <Typography variant="subheading">
               Deploy to selected environments:
             </Typography>
@@ -206,10 +312,9 @@ export default class Projects extends React.Component {
                       <Checkbox 
                         onClick={() => {self.toggleCheckedEnv(env)}}
                         checked={self.state.checkedEnvs.includes(env.id)} 
-                        label={env.name} 
                       />
                     }
-                    label={env.name}
+                    label={env.name + "(" + env.key + ")"} 
                   />    
                   </div>              
                 )
@@ -221,11 +326,6 @@ export default class Projects extends React.Component {
                 Deploy
               </Button>
             </Grid>
-            <Grid item xs={8}>
-              <Typography variant="subheading"> Deploy Log </Typography>
-              <div style={{ border: "1px solid black ", minWidth: "90%", height: 200, padding: 15 }}>
-              </div>
-            </Grid>    
           </Grid>   
         </Paper>
       </div>
