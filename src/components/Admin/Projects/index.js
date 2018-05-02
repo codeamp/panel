@@ -176,7 +176,6 @@ export default class Projects extends React.Component {
       })
 
       project.environments.map(function(env){
-        console.log(self.state.checkedEnvs, env.id)
         if(self.state.checkedEnvs.includes(env.id) && env.projectReleases.length > 0){
           self.props.createRelease({
             variables: { 
