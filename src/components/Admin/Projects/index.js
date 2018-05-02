@@ -239,6 +239,11 @@ export default class Projects extends React.Component {
                   <circle cx="25" cy="25" r="40" fill="red" /> 
                 </svg> &nbsp;&nbsp;&nbsp;                             
 
+                waiting/ not started &nbsp;
+                <svg height="10" width="10">
+                  <circle cx="25" cy="25" r="40" fill="lightgray" />
+                </svg> &nbsp;&nbsp;&nbsp;
+
                 running &nbsp;
                 <svg height="10" width="10">
                   <circle cx="25" cy="25" r="40" fill="yellow" />
@@ -278,7 +283,7 @@ export default class Projects extends React.Component {
                     </TableCell>
                     <TableCell>
                       {project.environments.map(function(env){
-                        let color = "black"
+                        let color = "lightgray"
                         let extensionStatuses = []                        
                         if(env.projectReleases.length > 0) {
                           switch(env.projectReleases[0].state){
@@ -286,21 +291,24 @@ export default class Projects extends React.Component {
                               color = "green"
                               break;
                             case "waiting":
-                              color = "yellow"
+                              color = "lightgray"
                               break;                              
                             case "failed":
                               color = "red"
                               break;
                           }
                           env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
-                            let status = "black"
+                            let status = "lightgray"
                             switch(releaseExtension.state){
                               case "complete":
                                 status = "green"
                                 break;
                               case "waiting":
+                                status = "lightgray"
+                                break;       
+                              case "fetching":
                                 status = "yellow"
-                                break;                              
+                                break;                                                              
                               case "failed":
                                 status = "red"
                                 break;
