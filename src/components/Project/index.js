@@ -99,6 +99,7 @@ class Project extends React.Component {
     project.environments.map((env) => {
       if(env.id === id){
         this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name })
+        this.props.history.push(`?${this.props.store.app.environmentQueryString}`)
         this.props.client.resetStore()
         return null
       }
@@ -143,38 +144,38 @@ class Project extends React.Component {
           key: "10",
           icon: <FeaturesIcon />,
           name: "Features",
-          slug: this.props.match.url + "/features",
+          slug: `${this.props.match.url}/features?${this.props.store.app.environmentQueryString}`,
           count: deployableFeatures,
         },
         {
           key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
-          slug: this.props.match.url + "/releases",
+          slug: `${this.props.match.url}/releases?${this.props.store.app.environmentQueryString}`,
         },
         {
           key: "30",
           icon: <ServicesIcon />,
           name: "Services",
-          slug: this.props.match.url + "/services",
+          slug: `${this.props.match.url}/services?${this.props.store.app.environmentQueryString}`,
         },
         {
           key: "40",
           icon: <SecretIcon />,
           name: "Secrets",
-          slug: this.props.match.url + "/secrets",
+          slug: `${this.props.match.url}/secrets?${this.props.store.app.environmentQueryString}`,
         },
         {
           key: "50",
           icon: <ExtensionsIcon />,
           name: "Extensions",
-          slug: this.props.match.url + "/extensions",
+          slug: `${this.props.match.url}/extensions?${this.props.store.app.environmentQueryString}`,
         },
         {
           key: "60",
           icon: <SettingsIcon />,
           name: "Settings",
-          slug: this.props.match.url + "/settings",
+          slug: `${this.props.match.url}/settings?${this.props.store.app.environmentQueryString}`,
         },
     ];
   }

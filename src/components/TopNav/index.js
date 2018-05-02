@@ -130,11 +130,11 @@ class TopNav extends React.Component {
       return null
     })
 
+    this.props.history.push(`/projects/${suggestion.project.slug}?${this.props.store.app.environmentQueryString}`)
     if (!matched) {
       this.props.store.app.setCurrentEnv({id: suggestion.project.environments[0].id, color: suggestion.project.environments[0].color, name: suggestion.project.environments[0].name })
     }
-
-    this.props.history.push('/projects/' + suggestion.project.slug)      
+  
     this.hideSuggestions(true)
     this.setState({ projectQuery: "" })
   }

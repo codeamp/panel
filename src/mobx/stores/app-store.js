@@ -4,11 +4,24 @@ import map from 'lodash/map';
 class AppStore {
   constructor() {
     const user = JSON.parse(localStorage.getItem('user'));
-    var currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
-    var adminLeftNavOpen = JSON.parse(localStorage.getItem('adminLeftNavOpen'));
-    if(!currentEnv){
-      currentEnv = {id: null, name: null, color: 'gray'};
+    var envParams = new URLSearchParams(window.location.search)
+
+    var currentEnv = {id: null, name: null, color: 'gray'}
+    var envId = envParams.get('id')
+    var envName = envParams.get('name')
+    var envColor = envParams.get('color')
+    if (envId !== "") {
+      currentEnv.id = envId
     }
+    if (envName !== "") {
+      currentEnv.name = envName
+    }
+    if (envColor !== "") {
+      currentEnv.color = envColor
+    }
+    var envQueryString = `id=${currentEnv.id}&name=${currentEnv.name}&color=${currentEnv.color}`
+    
+    var adminLeftNavOpen = JSON.parse(localStorage.getItem('adminLeftNavOpen'));
     var projectTitle = '';    
     if(!projectTitle){
       projectTitle = '';
@@ -38,6 +51,7 @@ class AppStore {
           msg: "",
       },
       currentEnvironment: currentEnv,
+      environmentQueryString: envQueryString,
       features: {
         showDeployed: false,
       },
@@ -92,9 +106,10 @@ class AppStore {
   setCurrentEnv = action(params => {
     this.currentEnvironment.id = params.id;
     this.currentEnvironment.name = params.name;
+    this.currentEnvironment.color = params.color
     if(params.color){ this.currentEnvironment.color = params.color; }
 
-    localStorage.setItem('currentEnv', JSON.stringify(params));
+    this.environmentQueryString = `id=${this.currentEnvironment.id}&name=${this.currentEnvironment.name}&color=${this.currentEnvironment.color}`
   })
 }
 
