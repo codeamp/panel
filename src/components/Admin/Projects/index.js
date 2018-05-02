@@ -15,6 +15,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import InputField from 'components/Form/input-field';
 import Checkbox from 'material-ui/Checkbox';
+import { FormControlLabel } from 'material-ui/Form';
 import Loading from 'components/Utils/Loading';
 import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
@@ -37,6 +38,11 @@ import { check } from 'graphql-anywhere';
         color
       }
     }
+    environments {
+      id
+      name
+      color
+    }
   }
 `, {
 	options: (props) => ({
@@ -48,8 +54,18 @@ import { check } from 'graphql-anywhere';
 		}
 	})
 })
-@inject("store") @observer
 
+@graphql(gql`
+mutation DeployProjects($projects: [ProjectInput], $deployableEnvironments: [EnvironmentInput]) {
+  deployProjects(batch:{
+    projects: $projects,
+    deployableEnvironments: $deployableEnvironments,
+  })
+}
+` , { name: "deployProjects" })
+
+
+@inject("store") @observer
 @observer
 export default class Projects extends React.Component {
   constructor(props){
@@ -59,6 +75,7 @@ export default class Projects extends React.Component {
       drawerOpen: false,
       dialogOpen: false,
       checkedProjects: [],
+      checkedEnvs: [],
     }
   }
 
@@ -97,9 +114,32 @@ export default class Projects extends React.Component {
 
     this.setState({ checkedProjects: checkedProjects })
   }
+  
+  toggleCheckedEnv(env) {
+    let checkedEnvs = this.state.checkedEnvs
+    if(checkedEnvs.includes(env.id)){
+      checkedEnvs.splice(checkedEnvs.indexOf(env.id), 1)
+    } else {
+      checkedEnvs.push(env.id)
+    }
 
+    this.setState({ checkedEnvs: checkedEnvs })
+  }
+
+  onBatchDeploy(){
+    this.props.deployProjects({
+      variables: {
+        projects: this.state.checkedProjects,
+        deployableEnvironments: this.state.checkedEnvs,
+      },
+    }).then(({data}) => {
+      this.props.data.refetch()
+      this.props.store.app.setSnackbarMsg({ open: true, msg: "Batch deploys have been sent out."})
+    });
+  }
+  
   render() {
-    const { loading, projects } = this.props.data;
+    const { loading, projects, environments } = this.props.data;
 
     if(loading){
       return (
@@ -150,6 +190,43 @@ export default class Projects extends React.Component {
               })}
             </TableBody>
           </Table>
+        </Paper>
+        <Paper style={{ marginTop: 20, padding: 20 }}>
+          <Grid container>
+            <Grid item xs={4}>
+            <Typography variant="subheading">
+              Deploy to selected environments:
+            </Typography>
+            {environments.map(function(env, idx){
+                return (
+                  <div>
+                  <FormControlLabel
+                    key={env.id}
+                    control={
+                      <Checkbox 
+                        onClick={() => {self.toggleCheckedEnv(env)}}
+                        checked={self.state.checkedEnvs.includes(env.id)} 
+                        label={env.name} 
+                      />
+                    }
+                    label={env.name}
+                  />    
+                  </div>              
+                )
+              })}     
+              <br/><br/>
+              <Button 
+                onClick={this.onBatchDeploy.bind(this)}
+                variant="raised" color="primary">
+                Deploy
+              </Button>
+            </Grid>
+            <Grid item xs={8}>
+              <Typography variant="subheading"> Deploy Log </Typography>
+              <div style={{ border: "1px solid black ", minWidth: "90%", height: 200, padding: 15 }}>
+              </div>
+            </Grid>    
+          </Grid>   
         </Paper>
       </div>
     )
