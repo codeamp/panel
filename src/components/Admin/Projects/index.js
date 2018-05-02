@@ -308,7 +308,7 @@ export default class Projects extends React.Component {
                                 break;
                             }                            
                             extensionStatuses.push(
-                              <span style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5 }}>
+                              <span style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
                                 {releaseExtension.extension.extension.key}
                               </span>
                             )
