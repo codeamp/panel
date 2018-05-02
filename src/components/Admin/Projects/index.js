@@ -213,7 +213,7 @@ export default class Projects extends React.Component {
                 Projects
               </Typography>
               <Typography>
-                not started &nbsp;
+                no releases &nbsp;
                 <svg height="10" width="10">
                   <circle cx="25" cy="25" r="40" fill="black" />
                 </svg> &nbsp;&nbsp;&nbsp;
@@ -273,7 +273,7 @@ export default class Projects extends React.Component {
                             case "complete":
                               color = "green"
                               break;
-                            case "running":
+                            case "waiting":
                               color = "yellow"
                               break;                              
                             case "failed":
@@ -283,7 +283,7 @@ export default class Projects extends React.Component {
                         }
 
                         return (
-                          <div style={{ color: color }}>
+                          <div style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center" }}>
                             {env.name + "(" + env.key + ")"} &nbsp;
                           </div>
                         )
