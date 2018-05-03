@@ -188,10 +188,18 @@ export default class Projects extends React.Component {
       })
 
       project.environments.map(function(env){
-        if(self.state.checkedEnvs.includes(env.id) && env.projectReleases.length > 0){
+        let currentRelease = null
+        env.projectReleases.map(function(release){
+          if(release.state === "complete"){
+            currentRelease = release
+            return
+          }
+        })        
+        
+        if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
           self.props.createRelease({
             variables: { 
-              headFeatureID: env.projectReleases[0].headFeature.id, 
+              headFeatureID: currentRelease.headFeature.id, 
               projectID: projectID, 
               environmentID: self.props.store.app.currentEnvironment.id,
               forceRebuild: true,
