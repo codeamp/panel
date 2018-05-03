@@ -275,7 +275,7 @@ export default class Releases extends React.Component {
     drawerRelease: null,
   };
 
-  componentWillMount() {    
+  UNSAFE_componentWillMount() {
     this.props.data.refetch()
 
     const { socket, match } = this.props;
@@ -304,6 +304,20 @@ export default class Releases extends React.Component {
 
     this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   };
+
+  static getDerivedStateFromProps(props, currentState) {
+    if (currentState.drawerOpen && currentState.drawerRelease !== null) {
+      for (let release of props.data.project.releases) {
+        if (release.id === currentState.drawerRelease.id) {
+          if (JSON.stringify(release) !== JSON.stringify(currentState.drawerRelease)) {
+            currentState.drawerRelease = release
+            return currentState
+          }
+        }
+      }
+    }
+    return null
+  }
 
   renderReleaseExtensionTable() {
 		if (this.state.drawerRelease === null){
@@ -593,7 +607,7 @@ export default class Releases extends React.Component {
 				classes={{
 				  paper: styles.drawer
         }}
-        onClose={() => {this.setState({ drawerOpen: false })}}        
+        onClose={() => {this.setState({ drawerOpen: false })}}
 				open={this.state.drawerOpen}>
 				<div className={styles.createServiceBar}>
 					<AppBar position="static" color="default">
