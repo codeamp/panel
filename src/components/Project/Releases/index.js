@@ -261,6 +261,15 @@ mutation Mutation($id: String, $headFeatureID: String!, $projectID: String!, $en
 }
 `, { name: "createRelease" })
 
+@graphql(gql`
+mutation StopRelease($id: ID!) {
+  stopRelease(id: $id) {
+    state
+    stateMessage
+  }
+}
+`, { name: "stopRelease" })
+
 export default class Releases extends React.Component {
   state = {
     drawerRelease: null,
@@ -442,18 +451,67 @@ export default class Releases extends React.Component {
   closeDrawer(){
     this.setState({ drawerOpen: false, drawerRelease: null })
   }
+
+  stopRelease(release) {
+    const { stopRelease } = this.props;
+    const { refetch } = this.props.data
+    stopRelease({
+      variables: {
+        id: release.id
+      },
+    }).then(({data}) => {
+      refetch()
+    }).catch(function(err){
+      refetch()
+    });
+  }
+
+  stopReleaseButton(release) {
+    let workflowsActive = true;
+    for (let workflow of release.releaseExtensions) {
+      if (workflow.state === "complete" || workflow.state === "failed") {
+        workflowsActive = false;
+      } else {
+        workflowsActive = true;
+        break;
+      }
+    }``
+    if (workflowsActive || release.state !== "failed") {
+      return (
+        <Button
+        className={styles.drawerButton}
+        color="secondary"
+        variant="raised"
+        onClick={() => this.stopRelease(release)}>
+          Stop Release
+        </Button>
+      )
+    }
+    return (
+      <Button
+        className={styles.drawerButton}
+        color="secondary"
+        variant="raised"
+        disabled>
+        Stop Release
+        </Button>
+    )
+  }
   
   releaseActionButton(release) {
     let { currentRelease } = this.props.data.project;
 
     if (release.state !== "complete"){
       return (
+        <div>
         <Button
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
           Cancel
         </Button>
+        {this.stopReleaseButton(release)}
+        </div>
       ); 
     }
 
@@ -526,7 +584,7 @@ export default class Releases extends React.Component {
   renderDrawer(){
 		if (this.state.drawerRelease === null){
 			return null
-		}
+    }
 
     let release = this.state.drawerRelease;
     return (
@@ -546,6 +604,22 @@ export default class Releases extends React.Component {
 						</Toolbar>
 					</AppBar>
 					<Grid container spacing={24} className={styles.grid}>
+            <Grid item xs={12}>
+              <Card square={true}>
+                <CardContent>
+                  <Typography variant="title">
+                    <b>State:</b> {release.state}
+                  </Typography>
+                </CardContent>
+              </Card>
+              <Card square={true}>
+                <CardContent>
+                  <Typography>
+                    <b>Message:</b> {release.stateMessage}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
 						<Grid item xs={12}>
               <Grid container>
                 <Grid item xs={12} style={{ textAlign: "right", padding: "1em" }}>
