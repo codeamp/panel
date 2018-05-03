@@ -482,15 +482,16 @@ export default class Releases extends React.Component {
 
   stopReleaseButton(release) {
     let workflowsActive = true;
-    for (let workflow of release.releaseExtensions) {
-      if (workflow.state === "complete" || workflow.state === "failed") {
+    for (let extension of release.releaseExtensions) {
+      if (extension.state === "complete" || extension.state === "failed") {
         workflowsActive = false;
-      } else {
+      } else if(extension.type === "workflow") {
         workflowsActive = true;
         break;
       }
-    }``
-    if (workflowsActive || release.state !== "failed") {
+    }
+
+    if (workflowsActive && release.state !== "failed") {
       return (
         <Button
         className={styles.drawerButton}
