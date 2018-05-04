@@ -92,11 +92,12 @@ import { check } from 'graphql-anywhere';
   }
 `, {
 	options: (props) => ({
+    fetchPolicy: "cache-and-network",
 		variables: {
 			projectSearch: {
 				repository: "",
         bookmarked: false,
-			}
+      },
     },
 	})
 })
@@ -216,9 +217,10 @@ export default class Projects extends React.Component {
   
   render() {
     const { loading, projects, environments } = this.props.data;
-    console.log(this.props.data)
+    
+    console.log(environments, projects)
 
-    if(loading){
+    if(loading || !projects || !environments){
       return (
         <Loading />
       )

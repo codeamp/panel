@@ -40,6 +40,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
   }
 `, {
 	options: (props) => ({
+    fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
 				repository: "",

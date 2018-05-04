@@ -57,7 +57,9 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
     cache: new InMemoryCache({
       dataIdFromObject: object => {
         switch (object.__typename) {
-          case 'Environment': return object.key + Math.random().toString(36).substring(7);; // use `key` as the primary key
+          case 'Environment': 
+            return object.id + Math.random().toString(36).substring(7);
+            break;
           default: return defaultDataIdFromObject(object); // fall back to default handling
         }
       }
