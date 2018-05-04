@@ -30,10 +30,6 @@ export default class LeftNav extends React.Component {
     this.props.store.app.setAdminLeftNav(!this.props.store.app.adminLeftNavOpen)
   };
 
-  handleEnvChange(e){
-    this.props.store.app.setCurrentEnv({id: e.target.value })
-  }
-
   render() {
     const { loading, user } = this.props.data;
     if(loading) {

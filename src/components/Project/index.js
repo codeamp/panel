@@ -54,6 +54,7 @@ import Grid from 'material-ui/Grid';
       }
       environments {
         id
+        key
         name
         color
         created
@@ -98,7 +99,8 @@ class Project extends React.Component {
 
     project.environments.map((env) => {
       if(env.id === id){
-        this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name })
+        this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name, key: env.key })
+        this.props.history.push('/projects/'+this.props.match.params.slug+"/"+env.key)      
         this.props.client.resetStore()
         return null
       }
@@ -192,11 +194,6 @@ class Project extends React.Component {
       return (<Loading />)
     }
 
-    // handle invalid project
-    if(!project){
-      return (<DoesNotExist404 />)
-    }
-
     let bookmarked = (
       <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
         <StarBorderIcon/>
@@ -248,25 +245,25 @@ class Project extends React.Component {
           </Grid>
         </Grid>
         <Switch>
-          <Route exact path='/projects/:slug/features' render={(props) => (
+          <Route exact path='/projects/:slug/:environment' render={(props) => (
             <ProjectFeatures history={history} {...props} socket={socket} />
           )}/>
-          <Route exact path='/projects/:slug/releases' render={(props) => (
+          <Route exact path='/projects/:slug/:environment/features' render={(props) => (
+            <ProjectFeatures history={history} {...props} socket={socket} />
+          )}/>
+          <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
             <ProjectReleases {...props} socket={socket} />
           )}/>
-          <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
-          )}/>
-          <Route exact path='/projects/:slug/services' render={(props) => (
+          <Route exact path='/projects/:slug/:environment/services' render={(props) => (
             <ProjectServices {...props} />
           )}/>
-          <Route exact path='/projects/:slug/secrets' render={(props) => (
+          <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
             <ProjectSecrets {...props} />
           )}/>
-          <Route exact path='/projects/:slug/extensions' render={(props) => (
+          <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
             <ProjectExtensions {...props} socket={socket} />
           )}/>
-          <Route exact path='/projects/:slug/settings' render={(props) => (
+          <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
             <ProjectSettings {...props} />
           )}/>
           <Route component={DoesNotExist404} />
