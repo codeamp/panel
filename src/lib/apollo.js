@@ -69,11 +69,9 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
       },
       query: {
         errorPolicy: 'all',
-        fetchPolicy: 'network-only',        
       },
       mutate: {
-        errorPolicy: 'all',
-        fetchPolicy: 'network-only',        
+        errorPolicy: 'all',  
       },
     }
   });
