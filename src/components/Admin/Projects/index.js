@@ -97,7 +97,8 @@ import { check } from 'graphql-anywhere';
 				repository: "",
         bookmarked: false,
 			}
-		}
+    },
+    fetchPolicy: 'network-only',
 	})
 })
 
