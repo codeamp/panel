@@ -16,34 +16,11 @@ import ExpansionPanel, {
   ExpansionPanelSummary,
   ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
-import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
-import ExtensionStateFailedIcon from 'material-ui-icons/Error';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
-import IconButton from 'material-ui/IconButton';
-import Tooltip from 'material-ui/Tooltip';
-import FilterListIcon from 'material-ui-icons/FilterList';
-import { InputLabel } from 'material-ui/Input';
 import { MenuItem } from 'material-ui/Menu';
 import { FormControl } from 'material-ui/Form';
 import Select from 'material-ui/Select';
-
-
-class InitPublicProjectComponent extends React.Component {
-  render() {
-    return (
-      <Card className={styles.card} raised={false}>
-        <CardContent className={styles.progress}>
-          <Typography type="subheading" component="h3" style={{ color: "gray" }}>
-            Currently pulling features down
-          </Typography>
-          <br/>
-          <Loading />
-        </CardContent>
-      </Card>
-    )
-  }
-}
 
 @inject("store") @observer
 

@@ -3,20 +3,9 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
-import Card, { CardContent, CardActions } from 'material-ui/Card';
+import Card, { CardContent } from 'material-ui/Card';
 import Loading from 'components/Utils/Loading';
-import Button from 'material-ui/Button';
 import gql from 'graphql-tag';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
-import { NavLink } from 'react-router-dom';
-import ExpansionPanel, {
-  ExpansionPanelSummary,
-  ExpansionPanelActions,
-} from 'material-ui/ExpansionPanel';
-import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
-import ExtensionStateFailedIcon from 'material-ui-icons/Error';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
-import Divider from 'material-ui/Divider';
 import styles from './style.module.css';
 
 @graphql(gql`
@@ -116,7 +105,7 @@ export default class Dashboard extends React.Component {
                 <Typography variant="headline" component="h2" className={styles.title}>
                   Projects
                 </Typography>
-                <Typography component="headline" component="h1" className={styles.bigNumber}>
+                <Typography component="headline" className={styles.bigNumber}>
                   {projects.length}
                 </Typography>
               </CardContent>
@@ -129,7 +118,7 @@ export default class Dashboard extends React.Component {
                 <Typography variant="headline" component="h2" className={styles.title}>
                   Features
                 </Typography>
-                <Typography component="headline" component="h1" className={styles.bigNumber}>
+                <Typography component="headline" className={styles.bigNumber}>
                   {features.length}
                 </Typography>
               </CardContent>
@@ -142,7 +131,7 @@ export default class Dashboard extends React.Component {
                 <Typography variant="headline" component="h2" className={styles.title}>
                   Releases
                 </Typography>
-                <Typography component="headline" component="h1" className={styles.bigNumber}>
+                <Typography component="headline" className={styles.bigNumber}>
                   {releases.length}
                 </Typography>
               </CardContent>
@@ -155,7 +144,7 @@ export default class Dashboard extends React.Component {
                 <Typography variant="headline" component="h2" className={styles.title}>
                   Users
                 </Typography>
-                <Typography component="headline" component="h1" className={styles.bigNumber}>
+                <Typography component="headline" className={styles.bigNumber}>
                   {users.length}
                 </Typography>
               </CardContent>

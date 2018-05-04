@@ -3,16 +3,8 @@ import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
-import Grid from 'material-ui/Grid';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
-import InputField from 'components/Form/input-field';
-import CheckboxField from 'components/Form/checkbox-field';
-import Card, {CardContent, CardActions} from 'material-ui/Card';
-import { FormLabel, FormControl, FormControlLabel } from 'material-ui/Form';
-import Radio, {RadioGroup} from 'material-ui/Radio';
 
 @inject("store") @observer
 

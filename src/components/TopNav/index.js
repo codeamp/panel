@@ -45,6 +45,7 @@ const GET_PROJECTS = gql`
 })
 
 class TopNav extends React.Component {
+  timeout = null;
   state = {
     userAnchorEl: undefined,
     value: '',
@@ -52,11 +53,13 @@ class TopNav extends React.Component {
     projects: [],
     projectQuery: '',
     selectedSuggestionIndex: 0,
+    timeout: null,
   };
 
   handleUserClick = event => {
     this.setState({ userAnchorEl: event.currentTarget });
   };
+
   handleUserClose = () => {
     this.setState({ userAnchorEl: null });
   };
@@ -77,11 +80,10 @@ class TopNav extends React.Component {
     }
 
     const cleanedValue = this.escapeRegExp(projectQuery.trim().toLowerCase());
-    let re = new RegExp(cleanedValue, "i");
     
-    clearTimeout(this.state.timeout) 
+    clearTimeout(this.timeout) 
 		if(cleanedValue !== ''){
-      this.state.timeout = setTimeout(() => {
+      this.timeout = setTimeout(() => {
         this.props.data.refetch({ projectSearch: { repository: cleanedValue, bookmarked: false }})
       }, 300)
 		}
@@ -116,6 +118,9 @@ class TopNav extends React.Component {
         break;
       case "Enter":
         this.onSuggestionItemClick(this.state.projects[this.state.selectedSuggestionIndex])
+        break;
+      default:
+      break
     }
   }
 
@@ -145,6 +150,10 @@ class TopNav extends React.Component {
     const { store } = this.props
     const { app } = this.props.store; 
     const { loading } = this.props.data;
+
+    if(loading){
+      return null
+    }
 
     return (
       <div>

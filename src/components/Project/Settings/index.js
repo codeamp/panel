@@ -158,6 +158,8 @@ export default class Settings extends React.Component {
       case "automation":
         this.setState({ automationSaving: true })
         break 
+      default:
+        break;
     }
     this.form.onSubmit(e, { onSuccess: this.updateProject.bind(this), onError: this.onError.bind(this) })
   }

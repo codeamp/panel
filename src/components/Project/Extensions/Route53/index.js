@@ -1,8 +1,5 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
-import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
-import CloseIcon from 'material-ui-icons/Close';
 import Typography from 'material-ui/Typography';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
@@ -12,8 +9,6 @@ import { observer, inject } from 'mobx-react';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import Input, { InputLabel } from 'material-ui/Input';
-import { FormControl, FormHelperText } from 'material-ui/Form';
 import _ from 'lodash'
 
 @graphql(gql`
@@ -113,15 +108,14 @@ export default class LoadBalancer extends React.Component {
   }
 
   onSuccess(form){
-    var self = this
     var userConfig = {
       "config": [],
       "form": this.form.values(),
     }
 
     if(this.props.config.fields.size > 0){
-      Object.keys(this.props.config.values()).map(function(key){
-        userConfig.config.push({ "key": key, "value": self.props.config.values()[key] })
+      Object.keys(this.props.config.values()).map((key) => {
+        userConfig.config.push({ "key": key, "value": this.props.config.values()[key] })
         return null
       })
     }
@@ -199,7 +193,6 @@ export default class LoadBalancer extends React.Component {
       );
     }
     
-    var self = this
     var extraOptions = []
     project.extensions.map(function(extension){
       if(extension.extension.key.includes("loadbalancer") && extension.customConfig.type !== "internal") {

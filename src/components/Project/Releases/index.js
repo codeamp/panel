@@ -20,9 +20,8 @@ import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
 import _ from "lodash"
 import Chip from 'material-ui/Chip';
-import Input, { InputLabel } from 'material-ui/Input';
-import { FormControl, FormHelperText } from 'material-ui/Form';
-import Card, { CardActions, CardContent } from 'material-ui/Card';
+import { FormControl } from 'material-ui/Form';
+import Card, { CardContent } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
 
 const kibanaLinkTemplate = process.env.REACT_APP_KIBANA_LINK_TEMPLATE
@@ -78,7 +77,7 @@ class ReleaseView extends React.Component {
   }
 
   render() {
-    const { release, currentRelease, project } = this.props;
+    const { release, currentRelease } = this.props;
     
     let state
     switch(release.state) {  
@@ -325,7 +324,6 @@ export default class Releases extends React.Component {
 			return null
 		}
 
-    const { project } = this.props.data;
     const release = this.state.drawerRelease
     const extensions = release.releaseExtensions.map(function(releaseExtension){
       return releaseExtension.extension
@@ -348,12 +346,10 @@ export default class Releases extends React.Component {
     })
 
     const releaseExtensions = orderedExtensions.map(function(extension){
-      let found = false
       let stateIcon = <CircularProgress size={25} /> 
 
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
-          found = true
           if(release.releaseExtensions[i].state === "complete"){
               stateIcon = <ExtensionStateCompleteIcon />
           }

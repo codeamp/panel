@@ -220,11 +220,6 @@ export default class Extensions extends React.Component {
     this.setState({ drawerOpen: true, dialogOpen: false })
   }
 
-  closeDrawer(){
-    this.form.reset()
-    this.setState({ drawerOpen: false, dialogOpen: false, saving: false })
-  }
-
   closeDrawer(force = false){
     if(!force && this.form.isDirty){
       this.setState({ dirtyFormDialogOpen: true })
