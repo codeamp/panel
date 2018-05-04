@@ -60,9 +60,7 @@ export default class App extends React.Component {
       },
       fetchDelay: null,
     };
-  }
-
-  componentDidMount() {
+    
     socket.on('reconnect_failed', () => {
         // todo
     });
