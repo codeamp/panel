@@ -280,6 +280,7 @@ export default class Projects extends React.Component {
             </TableHead>
             <TableBody>
               {projects.map(function(project, idx){
+                console.log('project', project.name)
                 return (
                   <TableRow
                     tabIndex={-1}
