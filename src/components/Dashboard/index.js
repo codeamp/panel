@@ -24,6 +24,22 @@ import styles from './style.module.css';
     projects(projectSearch: $projectSearch) {
       id
     }
+    releases {
+      id
+      headFeature {
+        id
+        message
+        user
+        hash
+        parentHash
+        ref
+        created
+      }
+      project {
+        repository
+      }
+      state
+    }
     features {
       id
     }
@@ -145,10 +161,7 @@ export default class Dashboard extends React.Component {
               </CardContent>
             </Card>        
           </Grid>
-        </Grid>          
-        <Grid item xs={12} style={{ margin: 15 }}>
-          <hr/>
-        </Grid>          
+        </Grid>                   
       </div>
     );
   }
