@@ -375,6 +375,18 @@ export default class ProjectExtensions extends React.Component {
     )
   }
 
+  renderArtifactRow(extension) {
+    if (extension.artifacts === null) {
+      return "";
+    }
+    for (let artifact of extension.artifacts) {
+      if (artifact.key === "name" || artifact.key === "fqdn") {
+        return artifact.value;
+      }
+    }
+    return "";
+  }
+
   renderEnabledExtensions() {
     const { project } = this.props.data;
 
@@ -390,6 +402,9 @@ export default class ProjectExtensions extends React.Component {
           <TableRow>
             <TableCell>
               Name
+            </TableCell>
+            <TableCell>
+              Artifact
             </TableCell>
             <TableCell>
               Type
@@ -418,6 +433,7 @@ export default class ProjectExtensions extends React.Component {
               tabIndex={-1}
               key={extension.id}>
               <TableCell> { extension.extension.name } </TableCell>
+              <TableCell>{ this.renderArtifactRow(extension)} </TableCell>
               <TableCell> { extension.extension.type } </TableCell>
               <TableCell> { stateIcon } </TableCell>
               <TableCell> { new Date(extension.created).toString() }</TableCell>
