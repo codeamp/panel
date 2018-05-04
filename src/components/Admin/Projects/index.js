@@ -98,7 +98,6 @@ import { check } from 'graphql-anywhere';
         bookmarked: false,
 			}
     },
-    ssr: false,
 	})
 })
 
@@ -217,6 +216,7 @@ export default class Projects extends React.Component {
   
   render() {
     const { loading, projects, environments } = this.props.data;
+    console.log(this.props.data)
 
     if(loading){
       return (
