@@ -7,6 +7,7 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
+import Link from 'react-router-dom/Link';
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -287,7 +288,9 @@ export default class Projects extends React.Component {
                         checked={ self.state.checkedProjects.includes(project.id) } />
                     </TableCell>
                     <TableCell>
-                      {project.name}
+                      <Link to={"/projects/" + project.slug}>
+                        {project.name}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       {project.environments.map(function(env){
@@ -331,7 +334,9 @@ export default class Projects extends React.Component {
 
                         return (
                           <div style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
-                            {env.name + "(" + env.key + ")"} &nbsp;
+                            <Link to={"/projects/" + project.slug + "/" + env.key}>
+                              {env.name + "(" + env.key + ")"} &nbsp;
+                            </Link>                                                      
                             {extensionStatuses}                            
                           </div>
                         )
