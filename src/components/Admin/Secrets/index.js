@@ -223,7 +223,12 @@ export default class Secrets extends React.Component {
         'index': secretIdx,
         'isSecret': secret.isSecret,
         'environmentID': this.props.store.app.currentEnvironment.id,
+        'scope': secret.scope,
+        'isSecret': secret.isSecret,
       })
+
+      this.form.$('key').set('disabled', true)
+      this.form.$('isSecret').set('disabled', true)
 
       this.openDrawer()
     }
