@@ -256,6 +256,7 @@ export default class Services extends React.Component {
     this.form.$('type').set(value);
     this.form = this.initProjectServicesForm({
       'type': value,
+      'environmentID': this.props.store.app.currentEnvironment.id,
     })    
 
     this.openDrawer()
@@ -282,6 +283,7 @@ export default class Services extends React.Component {
       type: service.type,
       id: service.id,
       index: index,
+      environmentID: this.props.store.app.currentEnvironment.id,
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
