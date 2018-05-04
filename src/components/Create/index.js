@@ -153,11 +153,6 @@ export default class Create extends React.Component {
         environmentID: this.props.store.app.currentEnvironment.id  
       }
     }).then(({data}) => {
-      self.props.store.app.setCurrentEnv({
-        id: data.createProject.environments[0].id,
-        color: data.createProject.environments[0].color,
-        name: data.createProject.environments[0].name
-      })
       self.props.history.push('/projects/' + data.createProject.slug)
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))

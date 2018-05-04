@@ -4,27 +4,13 @@ import map from 'lodash/map';
 class AppStore {
   constructor() {
     const user = JSON.parse(localStorage.getItem('user'));
-    var currentEnv = JSON.parse(localStorage.getItem('currentEnv'));
-    var adminLeftNavOpen = JSON.parse(localStorage.getItem('adminLeftNavOpen'));
-    if(!currentEnv){
-      currentEnv = {id: null, name: null, color: 'gray'};
-    }
-    var projectTitle = '';    
-    if(!projectTitle){
-      projectTitle = '';
-    }
-
-    if(!adminLeftNavOpen){
-      adminLeftNavOpen = false
-    }
-
     extendObservable(this, {
       title: 'CodeAmp Panel',
       user: user,
       leftNavItems: [],
-      leftNavProjectTitle: projectTitle,
+      leftNavProjectTitle: '',
       bookmarks: [],
-      adminLeftNavOpen: adminLeftNavOpen,
+      adminLeftNavOpen: false,
       ws: {
         channel: null,
         data: null,
@@ -37,7 +23,12 @@ class AppStore {
       connectionHeader: {
           msg: "",
       },
-      currentEnvironment: currentEnv,
+      currentEnvironment: {
+        id: null, 
+        key: null,
+        name: null, 
+        color: 'gray'
+      },
       features: {
         showDeployed: false,
       },
@@ -54,7 +45,6 @@ class AppStore {
 
   setAdminLeftNav = action(open => {
     this.adminLeftNavOpen = open;
-    localStorage.setItem('adminLeftNavOpen', open);    
   });
 
   setNavProjects = action(projects => {
@@ -70,7 +60,6 @@ class AppStore {
 
   setProjectTitle = action(title => {
     this.leftNavProjectTitle = title;
-    localStorage.setItem('projectTitle', title);
   })
 
   setSnackbar = action(params => {
@@ -92,9 +81,8 @@ class AppStore {
   setCurrentEnv = action(params => {
     this.currentEnvironment.id = params.id;
     this.currentEnvironment.name = params.name;
+    this.currentEnvironment.key = params.key;
     if(params.color){ this.currentEnvironment.color = params.color; }
-
-    localStorage.setItem('currentEnv', JSON.stringify(params));
   })
 }
 

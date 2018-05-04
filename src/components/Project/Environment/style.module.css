@@ -1,0 +1,19 @@
+.root {
+  text-align: center;
+  margin: auto;
+  margin-top: 50px;
+}
+
+.title {
+  font-size: 40px;
+  font-weight: 500;
+}
+
+.caption {
+  font-size: 20px;
+  font-weight: 100;
+}
+
+.button {
+  margin: 10px;
+}
