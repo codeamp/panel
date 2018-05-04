@@ -1,7 +1,7 @@
 import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { InMemoryCache, defaultDataIdFromObject } from 'apollo-cache-inmemory';
 import { ApolloLink } from 'apollo-link';
 import { onError } from "apollo-link-error";
 
@@ -54,7 +54,14 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
 
   return new ApolloClient({
     link: afterwareLink.concat(errorLink.concat(middlewareLink.concat(httpLink))),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      dataIdFromObject: object => {
+        switch (object.__typename) {
+          case 'Environment': return object.key + Math.random().toString(36).substring(7);; // use `key` as the primary key
+          default: return defaultDataIdFromObject(object); // fall back to default handling
+        }
+      }
+    }),
     defaultOptions: {
       watchQuery: {
         errorPolicy: 'ignore',
@@ -62,9 +69,11 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
       },
       query: {
         errorPolicy: 'all',
+        fetchPolicy: 'network-only',        
       },
       mutate: {
         errorPolicy: 'all',
+        fetchPolicy: 'network-only',        
       },
     }
   });

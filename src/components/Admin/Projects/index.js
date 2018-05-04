@@ -28,7 +28,7 @@ import { check } from 'graphql-anywhere';
 
 
 @graphql(gql`
-  query Projects($projectSearch: ProjectSearchInput){
+  query AllProjects($projectSearch: ProjectSearchInput){
     projects(projectSearch: $projectSearch){
       id
       name
@@ -98,7 +98,7 @@ import { check } from 'graphql-anywhere';
         bookmarked: false,
 			}
     },
-    fetchPolicy: 'network-only',
+    ssr: false,
 	})
 })
 
@@ -196,8 +196,6 @@ export default class Projects extends React.Component {
             return
           }
         })        
-
-        console.log('currentRelease', currentRelease)
         
         if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
           self.props.createRelease({
@@ -209,7 +207,6 @@ export default class Projects extends React.Component {
             },
           }).then(({data}) => {
             self.props.data.refetch()
-            console.log("Project " + project.name + " has been deployed in environment " + env.key + ".")
           });      
         }
       })
@@ -224,8 +221,6 @@ export default class Projects extends React.Component {
         <Loading />
       )
     }
-
-    console.log(projects, environments)
 
     var self = this;
     return (
@@ -282,11 +277,10 @@ export default class Projects extends React.Component {
             </TableHead>
             <TableBody>
               {projects.map(function(project, idx){
-                console.log('project', project.name)
                 return (
                   <TableRow
                     tabIndex={-1}
-                    key={project.id}>
+                    key={project.name}>
                     <TableCell>
                       <Checkbox 
                         onClick={() => {self.toggleCheckedProject(project)} }
@@ -299,7 +293,6 @@ export default class Projects extends React.Component {
                     </TableCell>
                     <TableCell>
                       {project.environments.map(function(env){
-                        console.log('env', env.name)
                         let color = "lightgray"
                         let extensionStatuses = []                        
                         if(env.projectReleases.length > 0) {
@@ -314,9 +307,6 @@ export default class Projects extends React.Component {
                               color = "red"
                               break;
                           }
-                          
-                          console.log('color', color, 'env.projectReleases[0].state', env.projectReleases[0])
-                          console.log('env.projectReleases[1]', env.projectReleases[1])
 
                           env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
                             let status = "lightgray"
@@ -334,9 +324,8 @@ export default class Projects extends React.Component {
                                 status = "red"
                                 break;
                             }                  
-                            console.log('releaseExtension', releaseExtension, 'status', status)          
                             extensionStatuses.push(
-                              <span style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
+                              <span key={releaseExtension.id} style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
                                 {releaseExtension.extension.extension.key}
                               </span>
                             )
@@ -344,7 +333,7 @@ export default class Projects extends React.Component {
                         }
 
                         return (
-                          <div style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
+                          <div key={env.id + project.id} style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
                             <Link to={"/projects/" + project.slug + "/" + env.key}>
                               {env.name + "(" + env.key + ")"} &nbsp;
                             </Link>                                                      
@@ -368,17 +357,16 @@ export default class Projects extends React.Component {
             </Typography>
             {environments.map(function(env, idx){
                 return (
-                  <div>
-                  <FormControlLabel
-                    key={env.id}
-                    control={
-                      <Checkbox 
-                        onClick={() => {self.toggleCheckedEnv(env)}}
-                        checked={self.state.checkedEnvs.includes(env.id)} 
-                      />
-                    }
-                    label={env.name + "(" + env.key + ")"} 
-                  />    
+                  <div key={env.id}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox 
+                          onClick={() => {self.toggleCheckedEnv(env)}}
+                          checked={self.state.checkedEnvs.includes(env.id)} 
+                        />
+                      }
+                      label={env.name + "(" + env.key + ")"} 
+                    />    
                   </div>              
                 )
               })}     
