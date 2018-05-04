@@ -196,13 +196,15 @@ export default class Projects extends React.Component {
             return
           }
         })        
+
+        console.log('currentRelease', currentRelease)
         
         if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
           self.props.createRelease({
             variables: { 
               headFeatureID: currentRelease.headFeature.id, 
               projectID: projectID, 
-              environmentID: self.props.store.app.currentEnvironment.id,
+              environmentID: env.id,
               forceRebuild: true,
             },
           }).then(({data}) => {
@@ -294,6 +296,7 @@ export default class Projects extends React.Component {
                     </TableCell>
                     <TableCell>
                       {project.environments.map(function(env){
+                        console.log('env', env)
                         let color = "lightgray"
                         let extensionStatuses = []                        
                         if(env.projectReleases.length > 0) {
@@ -308,6 +311,10 @@ export default class Projects extends React.Component {
                               color = "red"
                               break;
                           }
+                          
+                          console.log('color', color, 'env.projectReleases[0].state', env.projectReleases[0].state)
+                          console.log('env.projectReleases[1]', env.projectReleases[1])
+
                           env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
                             let status = "lightgray"
                             switch(releaseExtension.state){
@@ -323,7 +330,8 @@ export default class Projects extends React.Component {
                               case "failed":
                                 status = "red"
                                 break;
-                            }                            
+                            }                  
+                            console.log('releaseExtension', releaseExtension, 'status', status)          
                             extensionStatuses.push(
                               <span style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
                                 {releaseExtension.extension.extension.key}
