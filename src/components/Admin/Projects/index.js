@@ -190,14 +190,16 @@ export default class Projects extends React.Component {
 
       project.environments.map(function(env){
         let currentRelease = null
-        env.projectReleases.map(function(release){
+        for(var i = 0; i < env.projectReleases.length; i++) {
+          let release = env.projectReleases[i]
           if(release.state === "complete"){
             currentRelease = release
-            return
+            break
           }
-        })        
+        }
         
         if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
+          console.log('deploying ' + project.name + ' in env ' + env.key + ' with head feature ' + currentRelease.headFeature.hash)
           self.props.createRelease({
             variables: { 
               headFeatureID: currentRelease.headFeature.id, 
