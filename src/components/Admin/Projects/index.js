@@ -118,7 +118,6 @@ mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: 
 
 
 @inject("store") @observer
-@observer
 export default class Projects extends React.Component {
   constructor(props){
     super(props)
