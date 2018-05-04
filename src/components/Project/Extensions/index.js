@@ -147,10 +147,8 @@ export default class ProjectExtensions extends React.Component {
       },
       dialogOpen: false,
     }
-  }
 
-  componentWillMount(){
-    this.setupSocketHandlers();
+    this.setupSocketHandlers();    
   }
   
   setupSocketHandlers(){

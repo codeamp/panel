@@ -123,6 +123,7 @@ export default class Features extends React.Component {
     };
 
     this.setFilterAndRefetchFeatures.bind(this);
+    this.setupSocketHandlers();
   }
 
   handleChange = panel => (event, expanded) => {
@@ -229,10 +230,6 @@ export default class Features extends React.Component {
     }
     this.setState({ filter: e.target.value })
     this.props.store.app.setFeatures({ showDeployed: showDeployed })
-  }
-  
-  componentWillMount(){
-    this.setupSocketHandlers();
   }
 
   setupSocketHandlers(){
