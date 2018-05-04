@@ -275,10 +275,13 @@ export default class Releases extends React.Component {
     drawerRelease: null,
   };
 
-  UNSAFE_componentWillMount() {
+  constructor(props) {
+    super(props)
     this.props.data.refetch()
 
     const { socket, match } = this.props;
+
+    console.log(match.url.substring(1, match.url.length))
     
     socket.on(match.url.substring(1, match.url.length), (data) => {
       console.log('release completed! should refetch now', data)
@@ -305,7 +308,7 @@ export default class Releases extends React.Component {
     const plugins = {};
 
     this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
-  };
+  }
 
   static getDerivedStateFromProps(props, currentState) {
     if (currentState.drawerOpen && currentState.drawerRelease !== null) {
