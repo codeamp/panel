@@ -281,10 +281,12 @@ export default class Releases extends React.Component {
     const { socket, match } = this.props;
     
     socket.on(match.url.substring(1, match.url.length), (data) => {
+      console.log('release completed! should refetch now', data)
       this.props.data.refetch()
     });    
     
     socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
+      console.log('release extension completed! should refetch now', data)
       this.props.data.refetch()
     });        
 
