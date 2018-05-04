@@ -24,22 +24,6 @@ import styles from './style.module.css';
     projects(projectSearch: $projectSearch) {
       id
     }
-    releases {
-      id
-      headFeature {
-        id
-        message
-        user
-        hash
-        parentHash
-        ref
-        created
-      }
-      project {
-        repository
-      }
-      state
-    }
     features {
       id
     }
@@ -164,38 +148,6 @@ export default class Dashboard extends React.Component {
         </Grid>          
         <Grid item xs={12} style={{ margin: 15 }}>
           <hr/>
-        </Grid>
-        {/* Recent Releases */}
-        <Grid item xs={12}>
-          <Typography variant="headline" component="h2" style={{ textAlign: "center", marginBottom: 10 }}>
-            Recent Releases
-          </Typography>           
-          {releases.map((release, idx) => {
-            return (
-                <ExpansionPanel 
-                  key={idx} expanded={expanded === idx} onChange={this.handleChange(idx)}> 
-                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
-                  <div> 
-                    <Typography variant="body1" style={{ fontSize: 18, marginBottom: 15 }}> { release.project.repository } </Typography>                     
-                    {release.state === 'waiting' && <div key={"waiting"+release.id} className=  {styles.innerWaiting}></div>}  
-                    {release.state === 'failed' && <div key={"failed"+release.id} className={styles.innerFailed}></div>}
-                    {release.state === 'complete' && <div key={"complete"+release.id} className={styles.innerComplete}></div>}
-
-                    <Typography variant="body1" style={{ fontSize: 14 }}> <b> { release.headFeature.message } </b> </Typography> 
-                    <Typography variant="body2" style={{ fontSize: 12 }}>{ release.headFeature.user } created on { new Date(release.headFeature.created).toString() } at { new Date(release.headFeature.created).toTimeString() } </Typography> 
-                  </div>
-                      </ExpansionPanelSummary>
-                      <Divider />
-                      <ExpansionPanelActions>
-                        <CopyToClipboard text={release.headFeature.hash} onCopy={() => this.copyGitHash(release.headFeature.hash)}>
-                          <Button color="primary" size="small">
-                            Copy Git Hash
-                          </Button>
-                        </CopyToClipboard>       
-                      </ExpansionPanelActions>
-                  </ExpansionPanel>
-              )
-          })}
         </Grid>          
       </div>
     );
