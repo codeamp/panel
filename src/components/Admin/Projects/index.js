@@ -225,6 +225,8 @@ export default class Projects extends React.Component {
       )
     }
 
+    console.log(projects, environments)
+
     var self = this;
     return (
       <div>
@@ -297,7 +299,7 @@ export default class Projects extends React.Component {
                     </TableCell>
                     <TableCell>
                       {project.environments.map(function(env){
-                        console.log('env', env)
+                        console.log('env', env.name)
                         let color = "lightgray"
                         let extensionStatuses = []                        
                         if(env.projectReleases.length > 0) {
@@ -313,7 +315,7 @@ export default class Projects extends React.Component {
                               break;
                           }
                           
-                          console.log('color', color, 'env.projectReleases[0].state', env.projectReleases[0].state)
+                          console.log('color', color, 'env.projectReleases[0].state', env.projectReleases[0])
                           console.log('env.projectReleases[1]', env.projectReleases[1])
 
                           env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
