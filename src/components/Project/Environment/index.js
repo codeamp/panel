@@ -70,7 +70,6 @@ export default class Environment extends React.Component {
 
   render() {
     const { loading, environments } = this.props.data;
-    console.log(this.props.match.params)
     if(loading){
       return null
     }
