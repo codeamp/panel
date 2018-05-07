@@ -33,6 +33,24 @@ import { check } from 'graphql-anywhere';
       id
       name
       slug
+      extensions {
+        id
+        extension {
+          id
+          name
+          component
+          config
+          type
+          key
+          created
+        }
+        state
+        stateMessage
+        config
+        customConfig
+        artifacts
+        created
+      }
       environments {
         id
         name
@@ -117,6 +135,20 @@ mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: 
 }
 `, { name: "createRelease" })
 
+@graphql(gql`
+  mutation UpdateProjectExtension ($id: String, $projectID: String!, $extensionID: String!, $config: JSON!, $customConfig: JSON!, $environmentID: String!) {
+      updateProjectExtension(projectExtension:{
+        id: $id,
+        projectID: $projectID,
+        extensionID: $extensionID,
+        config: $config,
+        customConfig: $customConfig,
+        environmentID: $environmentID,
+      }) {
+          id
+      }
+}
+`, { name: "updateProjectExtension" })
 
 @inject("store") @observer
 export default class Projects extends React.Component {
@@ -131,7 +163,7 @@ export default class Projects extends React.Component {
     }
     
     const { socket, match } = this.props;    
-    
+
     socket.on(match.url.substring(1, match.url.length), (data) => {
       this.props.data.refetch()
     });    
@@ -219,6 +251,25 @@ export default class Projects extends React.Component {
             },
           }).then(({data}) => {
             self.props.data.refetch()
+            project.extensions.map(function(projectExtension){
+              if(projectExtension.extension.key === "kubernetesloadbalancers" && projectExtension.environment.id === env.id) {
+                if(projectExtension.customConfig.type === "internal") {
+                  console.log('updating project extension ' + projectExtension.extension.name)
+                  self.props.updateProjectExtension({
+                    variables: {
+                      id: projectExtension.id,
+                      projectID: projectID,
+                      extensionID: projectExtension.extension.id,
+                      config: projectExtension.config,
+                      customConfig: projectExtension.customConfig,
+                      environmentID: env.id,
+                    }
+                  }).then(({data}) => {
+                    self.props.data.refetch()
+                  })
+                }
+              }
+            })
           });      
         }
       })
