@@ -129,6 +129,16 @@ export default class Projects extends React.Component {
       checkedProjects: [],
       checkedEnvs: [],
     }
+    
+    const { socket, match } = this.props;    
+    
+    socket.on(match.url.substring(1, match.url.length), (data) => {
+      this.props.data.refetch()
+    });    
+    
+    socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
+      this.props.data.refetch()
+    });            
   }
 
   onSubmit(e) {

@@ -61,7 +61,7 @@ export default class Admin extends React.Component {
           )}/>                    
 
           <Route path='/admin/projects' render={(props) => (
-            <Projects data={this.props.data} socket={this.props.socket} />
+            <Projects data={this.props.data} socket={this.props.socket} {...props} />
           )}/>                              
 
           <Route path='/admin/environments' render={(props) => (
