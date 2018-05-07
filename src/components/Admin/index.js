@@ -11,6 +11,7 @@ import Extensions from './Extensions';
 import Secrets from './Secrets';
 import Environments from './Environments';
 import Users from './Users';
+import Projects from './Projects';
 
 @graphql(gql`
   query {
@@ -58,6 +59,10 @@ export default class Admin extends React.Component {
           <Route path='/admin/users' render={(props) => (
             <Users data={this.props.data} socket={this.props.socket} />
           )}/>                    
+
+          <Route path='/admin/projects' render={(props) => (
+            <Projects data={this.props.data} socket={this.props.socket} />
+          )}/>                              
 
           <Route path='/admin/environments' render={(props) => (
             <Environments/>

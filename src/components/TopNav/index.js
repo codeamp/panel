@@ -41,6 +41,7 @@ const GET_PROJECTS = gql`
 				bookmarked: true,
 			}
     },
+    fetchPolicy: "network-only",
 	})
 })
 
@@ -154,6 +155,8 @@ class TopNav extends React.Component {
     if(loading){
       return null
     }
+
+    console.log(this.props.data)
 
     return (
       <div>

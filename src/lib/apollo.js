@@ -1,9 +1,10 @@
 import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { InMemoryCache, defaultDataIdFromObject } from 'apollo-cache-inmemory';
 import { ApolloLink } from 'apollo-link';
 import { onError } from "apollo-link-error";
+import _ from 'lodash';
 
 export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
   const httpLink = createHttpLink({
@@ -54,7 +55,19 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
 
   return new ApolloClient({
     link: afterwareLink.concat(errorLink.concat(middlewareLink.concat(httpLink))),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      dataIdFromObject: object => {
+        switch (object.__typename) {
+          case 'Environment': 
+            if(!_.isUndefined(object.projectReleases)) {
+              return object.id + '-' + Math.random().toString(36).substring(7);
+            }
+            return defaultDataIdFromObject(object);              
+          default: 
+            return defaultDataIdFromObject(object);
+        }        
+      }
+    }),
     defaultOptions: {
       watchQuery: {
         errorPolicy: 'ignore',
@@ -64,7 +77,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
         errorPolicy: 'all',
       },
       mutate: {
-        errorPolicy: 'all',
+        errorPolicy: 'all',  
       },
     }
   });
