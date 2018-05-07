@@ -252,20 +252,22 @@ export default class Projects extends React.Component {
           }).then(({data}) => {
             self.props.data.refetch()
             project.extensions.map(function(projectExtension){
-              if(projectExtension.environment.id === env.id) {
-                console.log('updating project extension ' + projectExtension.extension.name)
-                self.props.updateProjectExtension({
-                  variables: {
-                    id: projectExtension.id,
-                    projectID: projectID,
-                    extensionID: projectExtension.extension.id,
-                    config: projectExtension.config,
-                    customConfig: projectExtension.customConfig,
-                    environmentID: env.id,
-                  }
-                }).then(({data}) => {
-                  self.props.data.refetch()
-                })
+              if(projectExtension.extension.key === "kubernetesloadbalancers" && projectExtension.environment.id === env.id) {
+                if(projectExtension.customConfig.type === "internal") {
+                  console.log('updating project extension ' + projectExtension.extension.name)
+                  self.props.updateProjectExtension({
+                    variables: {
+                      id: projectExtension.id,
+                      projectID: projectID,
+                      extensionID: projectExtension.extension.id,
+                      config: projectExtension.config,
+                      customConfig: projectExtension.customConfig,
+                      environmentID: env.id,
+                    }
+                  }).then(({data}) => {
+                    self.props.data.refetch()
+                  })
+                }
               }
             })
           });      
