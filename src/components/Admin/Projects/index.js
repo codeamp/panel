@@ -217,8 +217,6 @@ export default class Projects extends React.Component {
   
   render() {
     const { loading, projects, environments } = this.props.data;
-    
-    console.log(environments, projects)
 
     if(loading || !projects || !environments){
       return (
