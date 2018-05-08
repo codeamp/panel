@@ -81,6 +81,9 @@ import _ from 'lodash';
         extensions {
           id
           state
+          config
+          customConfig
+          artifacts
           extension {
             id
             key
@@ -216,7 +219,7 @@ export default class Projects extends React.Component {
 
       project.environments.map(function(env){
         let _environment = _.find(environments, {id: env.id})
-        let _project = _.find(projects, {id: project.id})
+        let _project = _.find(_environment.projects, {id: project.id})
 
         let currentRelease = null
         for(var i = 0; i < _project.releases.length; i++) {
@@ -239,8 +242,16 @@ export default class Projects extends React.Component {
           }).then(({data}) => {
             self.props.data.refetch()
             _project.extensions.map(function(projectExtension){
-              if(projectExtension.extension.key === "kubernetesloadbalancers" && projectExtension.environment.id === env.id) {
+              if(projectExtension.extension.key === "kubernetesloadbalancers") {
                 console.log('updating project extension ' + projectExtension.extension.name)
+                console.log({
+                  id: projectExtension.id,
+                  projectID: projectID,
+                  extensionID: projectExtension.extension.id,
+                  config: projectExtension.config,
+                  customConfig: projectExtension.customConfig,
+                  environmentID: _environment.id,
+                })
                 self.props.updateProjectExtension({
                   variables: {
                     id: projectExtension.id,
