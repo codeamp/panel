@@ -55,19 +55,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
 
   return new ApolloClient({
     link: afterwareLink.concat(errorLink.concat(middlewareLink.concat(httpLink))),
-    cache: new InMemoryCache({
-      dataIdFromObject: object => {
-        switch (object.__typename) {
-          case 'Environment': 
-            if(!_.isUndefined(object.projectReleases)) {
-              return object.id + '-' + Math.random().toString(36).substring(7);
-            }
-            return defaultDataIdFromObject(object);              
-          default: 
-            return defaultDataIdFromObject(object);
-        }        
-      }
-    }),
+    cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
         errorPolicy: 'ignore',

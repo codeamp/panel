@@ -25,7 +25,7 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { check } from 'graphql-anywhere';
-
+import _ from 'lodash';
 
 @graphql(gql`
   query AllProjects($projectSearch: ProjectSearchInput){
@@ -33,30 +33,18 @@ import { check } from 'graphql-anywhere';
       id
       name
       slug
-      extensions {
-        id
-        extension {
-          id
-          name
-          component
-          config
-          type
-          key
-          created
-        }
-        state
-        stateMessage
-        config
-        customConfig
-        artifacts
-        created
-      }
       environments {
         id
-        name
-        key
-        color
-        projectReleases {
+      }
+    }
+    environments {
+      id
+      name
+      key
+      color
+      projects {
+        id
+        releases {
           id
           state
           headFeature {
@@ -90,22 +78,19 @@ import { check } from 'graphql-anywhere';
             }
           }         
         }
-      }
-      extensions {
-        id
-        state
-        extension {
+        extensions {
           id
-          key
-          name
-        }
+          state
+          config
+          customConfig
+          artifacts
+          extension {
+            id
+            key
+            name
+          }  
+        }      
       }
-    }
-    environments {
-      id
-      name
-      key
-      color
     }
   }
 `, {
@@ -221,6 +206,8 @@ export default class Projects extends React.Component {
   }
 
   onBatchDeploy(){
+    const { environments, projects } = this.props.data;
+
     var self = this
     this.state.checkedProjects.forEach(function(projectID){
       let project = {}
@@ -231,9 +218,12 @@ export default class Projects extends React.Component {
       })
 
       project.environments.map(function(env){
+        let _environment = _.find(environments, {id: env.id})
+        let _project = _.find(_environment.projects, {id: project.id})
+
         let currentRelease = null
-        for(var i = 0; i < env.projectReleases.length; i++) {
-          let release = env.projectReleases[i]
+        for(var i = 0; i < _project.releases.length; i++) {
+          let release = _project.releases[i]
           if(release.state === "complete"){
             currentRelease = release
             break
@@ -241,33 +231,39 @@ export default class Projects extends React.Component {
         }
         
         if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
-          console.log('deploying ' + project.name + ' in env ' + env.key + ' with head feature ' + currentRelease.headFeature.hash)
+          console.log('deploying ' + _project.name + ' in env ' + _environment.key + ' with head feature ' + currentRelease.headFeature.hash)
           self.props.createRelease({
             variables: { 
               headFeatureID: currentRelease.headFeature.id, 
               projectID: projectID, 
-              environmentID: env.id,
+              environmentID: _environment.id,
               forceRebuild: true,
             },
           }).then(({data}) => {
             self.props.data.refetch()
-            project.extensions.map(function(projectExtension){
-              if(projectExtension.extension.key === "kubernetesloadbalancers" && projectExtension.environment.id === env.id) {
-                if(projectExtension.customConfig.type === "internal") {
-                  console.log('updating project extension ' + projectExtension.extension.name)
-                  self.props.updateProjectExtension({
-                    variables: {
-                      id: projectExtension.id,
-                      projectID: projectID,
-                      extensionID: projectExtension.extension.id,
-                      config: projectExtension.config,
-                      customConfig: projectExtension.customConfig,
-                      environmentID: env.id,
-                    }
-                  }).then(({data}) => {
-                    self.props.data.refetch()
-                  })
-                }
+            _project.extensions.map(function(projectExtension){
+              if(projectExtension.extension.key === "kubernetesloadbalancers") {
+                console.log('updating project extension ' + projectExtension.extension.name)
+                console.log({
+                  id: projectExtension.id,
+                  projectID: projectID,
+                  extensionID: projectExtension.extension.id,
+                  config: projectExtension.config,
+                  customConfig: projectExtension.customConfig,
+                  environmentID: _environment.id,
+                })
+                self.props.updateProjectExtension({
+                  variables: {
+                    id: projectExtension.id,
+                    projectID: projectID,
+                    extensionID: projectExtension.extension.id,
+                    config: projectExtension.config,
+                    customConfig: projectExtension.customConfig,
+                    environmentID: _environment.id,
+                  }
+                }).then(({data}) => {
+                  self.props.data.refetch()
+                })
               }
             })
           });      
@@ -356,10 +352,14 @@ export default class Projects extends React.Component {
                     </TableCell>
                     <TableCell>
                       {project.environments.map(function(env){
+                        // get env in environments query
+                        let _environment = _.find(environments, { id: env.id })
+                        let _project = _.find(_environment.projects, { id: project.id })
+                        
                         let color = "lightgray"
                         let extensionStatuses = []                        
-                        if(env.projectReleases.length > 0) {
-                          switch(env.projectReleases[0].state){
+                        if(_project.releases.length > 0) {
+                          switch(_project.releases[0].state){
                             case "complete":
                               color = "green"
                               break;
@@ -371,7 +371,7 @@ export default class Projects extends React.Component {
                               break;
                           }
 
-                          env.projectReleases[0].releaseExtensions.map(function(releaseExtension){
+                          _project.releases[0].releaseExtensions.map(function(releaseExtension){
                             let status = "lightgray"
                             switch(releaseExtension.state){
                               case "complete":
@@ -397,8 +397,8 @@ export default class Projects extends React.Component {
 
                         return (
                           <div key={env.id + project.id} style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
-                            <Link to={"/projects/" + project.slug + "/" + env.key}>
-                              {env.name + "(" + env.key + ")"} &nbsp;
+                            <Link to={"/projects/" + _project.slug + "/" + _environment.key}>
+                              {_environment.name + "(" + _environment.key + ")"} &nbsp;
                             </Link>                                                      
                             {extensionStatuses}                            
                           </div>
