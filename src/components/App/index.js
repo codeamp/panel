@@ -40,6 +40,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
   }
 `, {
 	options: (props) => ({
+    fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
 				repository: "",
@@ -137,7 +138,7 @@ export default class App extends React.Component {
                     <Create projects={projects} type={"create"} {...props} />
                   )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin data={this.props.data} projects={projects} {...props} />
+                    <Admin socket={socket} data={this.props.data} projects={projects} {...props} />
                   )} />
                   <Route exact path='/projects/:slug' render={(props) => (
                     <ProjectEnvironment {...props}>

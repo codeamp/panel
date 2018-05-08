@@ -1,9 +1,10 @@
 import { ApolloClient } from 'apollo-client';
 import { createHttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { InMemoryCache, defaultDataIdFromObject } from 'apollo-cache-inmemory';
 import { ApolloLink } from 'apollo-link';
 import { onError } from "apollo-link-error";
+import _ from 'lodash';
 
 export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
   const httpLink = createHttpLink({
@@ -64,7 +65,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
         errorPolicy: 'all',
       },
       mutate: {
-        errorPolicy: 'all',
+        errorPolicy: 'all',  
       },
     }
   });
