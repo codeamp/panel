@@ -119,6 +119,9 @@ class TopNav extends React.Component {
       case "Enter":
         this.onSuggestionItemClick(this.state.projects[this.state.selectedSuggestionIndex])
         break;
+      case "Escape":
+        this.setState({ showSuggestions: false, hovering: false })
+        break;
       default:
       break
     }
@@ -149,11 +152,6 @@ class TopNav extends React.Component {
     var self = this
     const { store } = this.props
     const { app } = this.props.store; 
-    const { loading } = this.props.data;
-
-    if(loading){
-      return null
-    }
 
     return (
       <div>
