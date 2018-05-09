@@ -205,7 +205,7 @@ export default class Projects extends React.Component {
     this.setState({ checkedEnvs: checkedEnvs })
   }
 
-  onBatchDeploy(){
+  onBatchDeploy(route53Deploy){
     const { environments, projects } = this.props.data;
 
     var self = this
@@ -242,7 +242,7 @@ export default class Projects extends React.Component {
           }).then(({data}) => {
             self.props.data.refetch()
             _project.extensions.map(function(projectExtension){
-              if(projectExtension.extension.key === "kubernetesloadbalancers") {
+              if(route53Deploy && projectExtension.extension.key === "route53"){
                 console.log('updating project extension ' + projectExtension.extension.name)
                 console.log({
                   id: projectExtension.id,
@@ -263,7 +263,31 @@ export default class Projects extends React.Component {
                   }
                 }).then(({data}) => {
                   self.props.data.refetch()
-                })
+                })                
+              } else {
+                if(projectExtension.extension.key === "kubernetesloadbalancers") {
+                  console.log('updating project extension ' + projectExtension.extension.name)
+                  console.log({
+                    id: projectExtension.id,
+                    projectID: projectID,
+                    extensionID: projectExtension.extension.id,
+                    config: projectExtension.config,
+                    customConfig: projectExtension.customConfig,
+                    environmentID: _environment.id,
+                  })
+                  self.props.updateProjectExtension({
+                    variables: {
+                      id: projectExtension.id,
+                      projectID: projectID,
+                      extensionID: projectExtension.extension.id,
+                      config: projectExtension.config,
+                      customConfig: projectExtension.customConfig,
+                      environmentID: _environment.id,
+                    }
+                  }).then(({data}) => {
+                    self.props.data.refetch()
+                  })
+                }
               }
             })
           });      
@@ -439,6 +463,11 @@ export default class Projects extends React.Component {
                 variant="raised" color="primary">
                 Deploy
               </Button>
+              <Button 
+                onClick={() => {this.onBatchDeploy(true)}}
+                variant="raised" color="primary">
+                Deploy Route53 Extensions
+              </Button>              
             </Grid>
           </Grid>   
         </Paper>
