@@ -229,6 +229,9 @@ export default class Secrets extends React.Component {
 
       this.form.$('key').set('disabled', true)
       this.form.$('isSecret').set('disabled', true)
+      this.form.$('scope').set('disabled', true)
+      this.form.$('type').set('disabled', true)
+      this.form.$('environmentID').set('disabled', true)      
 
       this.openDrawer()
     }
@@ -270,6 +273,9 @@ export default class Secrets extends React.Component {
     })
     this.form.$('key').set('disabled', false)
     this.form.$('isSecret').set('disabled', false)
+    this.form.$('scope').set('disabled', false)
+    this.form.$('environment').set('disabled', false)
+  
     this.openDrawer()
   }
 
