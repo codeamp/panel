@@ -97,9 +97,9 @@ class ReleaseView extends React.Component {
             <Grid container spacing={0}>
               <Grid item xs={10}>
                 <Typography className={styles.featureCommitMsg}>
-                  { this.props.release.headFeature.hash.substring(0, 8) }
-                  <DoubleRightIcon />
                   { this.props.release.tailFeature.hash.substring(0, 8) }
+                  <DoubleRightIcon />
+                  { this.props.release.headFeature.hash.substring(0, 8) }
                 </Typography>
                 <Typography>
                   { this.props.release.headFeature.message}
