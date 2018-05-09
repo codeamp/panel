@@ -6,6 +6,7 @@ import Button from 'material-ui/Button';
 import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
+import Card, { CardContent } from 'material-ui/Card';
 import AppBar from 'material-ui/AppBar';
 import Link from 'react-router-dom/Link';
 import Dialog, {
@@ -305,6 +306,29 @@ export default class Projects extends React.Component {
       )
     }
 
+    var runningReleases = 0
+    var completeReleases = 0
+    var failedReleases = 0
+    
+    projects.map(function(project){
+      if(project.releases.length > 0){
+        switch(project.releases[0].state){
+          case "complete":
+            completeReleases += 1
+            break;
+          case "failed":
+            failedReleases += 1
+            break;
+          case "waiting":
+            runningReleases += 1
+            break;
+          case "fetching":
+            runningReleases += 1
+            break;
+        }
+      }
+    })    
+
     var self = this;
     return (
       <div>
@@ -341,6 +365,58 @@ export default class Projects extends React.Component {
                 </svg>                                                
               </Typography>
             </div>
+            <Grid item xs={3}>
+              <Card className={styles.releasesCard}>
+                <CardContent>
+                  <Typography variant="headline" component="h2" className={styles.title}>
+                    Total
+                  </Typography>
+                  <Typography component="headline" className={styles.bigNumber}>
+                    {projects.length}
+                  </Typography>
+                </CardContent>
+              </Card>        
+            </Grid>
+
+            <Grid item xs={3}>
+              <Card className={styles.releasesCard}>
+                <CardContent>
+                  <Typography variant="headline" component="h2" className={styles.title}>
+                    Complete
+                  </Typography>
+                  <Typography component="headline" className={styles.bigNumber}>
+                    {completeReleases}
+                  </Typography>
+                </CardContent>
+              </Card>        
+            </Grid>
+
+            <Grid item xs={3}>
+              <Card className={styles.releasesCard}>
+                <CardContent>
+                  <Typography variant="headline" component="h2" className={styles.title}>
+                    Running
+                  </Typography>
+                  <Typography component="headline" className={styles.bigNumber}>
+                    {runningReleases}
+                  </Typography>
+                </CardContent>
+              </Card>        
+            </Grid>            
+
+            <Grid item xs={3}>
+              <Card className={styles.releasesCard}>
+                <CardContent>
+                  <Typography variant="headline" component="h2" className={styles.title}>
+                    Failures
+                  </Typography>
+                  <Typography component="headline" className={styles.bigNumber}>
+                    {failedReleases}
+                  </Typography>
+                </CardContent>
+              </Card>        
+            </Grid>            
+
           </Toolbar>
           <Table>
             <TableHead>
