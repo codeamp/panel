@@ -1,3 +1,15 @@
 .tablePaper {
     overflow: auto;
 }
+
+.completeReleasesCard {
+    background-color: green;
+}
+
+.runningReleasesCard {
+    background-color: yellow;
+}
+
+.failedReleasesCard {
+    background-color: red;
+}

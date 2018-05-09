@@ -38,6 +38,16 @@ import _ from 'lodash';
         id
       }
     }
+    extensions {
+      id
+      key
+      name
+      environment {
+        id
+        name
+        key
+      }
+    }
     environments {
       id
       name
@@ -146,6 +156,7 @@ export default class Projects extends React.Component {
       dialogOpen: false,
       checkedProjects: [],
       checkedEnvs: [],
+      checkedExtensions: [],
     }
     
     const { socket, match } = this.props;    
@@ -205,6 +216,17 @@ export default class Projects extends React.Component {
 
     this.setState({ checkedEnvs: checkedEnvs })
   }
+  
+  toggleCheckedExtension(extension) {
+    let checkedExtensions = this.state.checkedExtensions
+    if(checkedExtensions.includes(extension.id)){
+      checkedExtensions.splice(checkedExtensions.indexOf(extension.id), 1)
+    } else {
+      checkedExtensions.push(extension.id)
+    }
+
+    this.setState({ checkedExtensions: checkedExtensions })
+  }
 
   onBatchDeploy(route53Deploy){
     const { environments, projects } = this.props.data;
@@ -241,9 +263,10 @@ export default class Projects extends React.Component {
               forceRebuild: true,
             },
           }).then(({data}) => {
+            // find checked extensions for that env
             self.props.data.refetch()
             _project.extensions.map(function(projectExtension){
-              if(route53Deploy && projectExtension.extension.key === "route53"){
+              if(self.state.checkedExtensions.includes(projectExtension.extension.id)) {
                 console.log('updating project extension ' + projectExtension.extension.name)
                 console.log({
                   id: projectExtension.id,
@@ -264,33 +287,9 @@ export default class Projects extends React.Component {
                   }
                 }).then(({data}) => {
                   self.props.data.refetch()
-                })                
-              } else {
-                if(projectExtension.extension.key === "kubernetesloadbalancers") {
-                  console.log('updating project extension ' + projectExtension.extension.name)
-                  console.log({
-                    id: projectExtension.id,
-                    projectID: projectID,
-                    extensionID: projectExtension.extension.id,
-                    config: projectExtension.config,
-                    customConfig: projectExtension.customConfig,
-                    environmentID: _environment.id,
-                  })
-                  self.props.updateProjectExtension({
-                    variables: {
-                      id: projectExtension.id,
-                      projectID: projectID,
-                      extensionID: projectExtension.extension.id,
-                      config: projectExtension.config,
-                      customConfig: projectExtension.customConfig,
-                      environmentID: _environment.id,
-                    }
-                  }).then(({data}) => {
-                    self.props.data.refetch()
-                  })
-                }
+                })
               }
-            })
+            })            
           });      
         }
       })
@@ -298,9 +297,9 @@ export default class Projects extends React.Component {
   }
   
   render() {
-    const { loading, projects, environments } = this.props.data;
+    const { loading, projects, environments, extensions } = this.props.data;
 
-    if(loading || !projects || !environments){
+    if(loading || !projects || !environments || !extensions){
       return (
         <Loading />
       )
@@ -309,24 +308,31 @@ export default class Projects extends React.Component {
     var runningReleases = 0
     var completeReleases = 0
     var failedReleases = 0
-    
-    projects.map(function(project){
-      if(project.releases.length > 0){
-        switch(project.releases[0].state){
-          case "complete":
-            completeReleases += 1
-            break;
-          case "failed":
-            failedReleases += 1
-            break;
-          case "waiting":
-            runningReleases += 1
-            break;
-          case "fetching":
-            runningReleases += 1
-            break;
+
+    environments.map(function(env){
+      let _environment = _.find(environments, { id: env.id })
+      projects.map(function(project){
+        let _project = _.find(_environment.projects, { id: project.id })
+        console.log(_project)
+        if(_project !== undefined) {
+          if(_project.releases.length > 0){
+            switch(_project.releases[0].state){
+              case "complete":
+                completeReleases += 1
+                break;
+              case "failed":
+                failedReleases += 1
+                break;
+              case "waiting":
+                runningReleases += 1
+                break;
+              case "fetching":
+                runningReleases += 1
+                break;
+            }
+          }
         }
-      }
+      })
     })    
 
     var self = this;
@@ -365,57 +371,62 @@ export default class Projects extends React.Component {
                 </svg>                                                
               </Typography>
             </div>
-            <Grid item xs={3}>
-              <Card className={styles.releasesCard}>
-                <CardContent>
-                  <Typography variant="headline" component="h2" className={styles.title}>
-                    Total
-                  </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
-                    {projects.length}
-                  </Typography>
-                </CardContent>
-              </Card>        
-            </Grid>
 
-            <Grid item xs={3}>
-              <Card className={styles.releasesCard}>
-                <CardContent>
-                  <Typography variant="headline" component="h2" className={styles.title}>
-                    Complete
-                  </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
-                    {completeReleases}
-                  </Typography>
-                </CardContent>
-              </Card>        
-            </Grid>
+            <br/>
 
-            <Grid item xs={3}>
-              <Card className={styles.releasesCard}>
-                <CardContent>
-                  <Typography variant="headline" component="h2" className={styles.title}>
-                    Running
-                  </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
-                    {runningReleases}
-                  </Typography>
-                </CardContent>
-              </Card>        
-            </Grid>            
+            <Grid container spacing={24}>
+              <Grid item xs={3}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="headline" component="h2" className={styles.title}>
+                      Total
+                    </Typography>
+                    <Typography variant="display2" className={styles.bigNumber}>
+                      {projects.length}
+                    </Typography>
+                  </CardContent>
+                </Card>        
+              </Grid>
 
-            <Grid item xs={3}>
-              <Card className={styles.releasesCard}>
-                <CardContent>
-                  <Typography variant="headline" component="h2" className={styles.title}>
-                    Failures
-                  </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
-                    {failedReleases}
-                  </Typography>
-                </CardContent>
-              </Card>        
-            </Grid>            
+              <Grid item xs={3}>
+                <Card className={styles.completeReleasesCard}>
+                  <CardContent>
+                    <Typography variant="headline" component="h2" className={styles.title}>
+                      Complete
+                    </Typography>
+                    <Typography variant="display2" className={styles.bigNumber}>
+                      {completeReleases}
+                    </Typography>
+                  </CardContent>
+                </Card>        
+              </Grid>
+
+              <Grid item xs={3}>
+                <Card className={styles.runningReleasesCard}>
+                  <CardContent>
+                    <Typography variant="headline" component="h2" className={styles.title}>
+                      Running
+                    </Typography>
+                    <Typography variant="display2" className={styles.bigNumber}>
+                      {runningReleases}
+                    </Typography>
+                  </CardContent>
+                </Card>        
+              </Grid>            
+
+              <Grid item xs={3}>
+                <Card className={styles.failedReleasesCard}>
+                  <CardContent>
+                    <Typography variant="headline" component="h2" className={styles.title}>
+                      Failures
+                    </Typography>
+                    <Typography variant="display2" className={styles.bigNumber}>
+                      {failedReleases}
+                    </Typography>
+                  </CardContent>
+                </Card>        
+              </Grid> 
+            </Grid>     
 
           </Toolbar>
           <Table>
@@ -515,37 +526,55 @@ export default class Projects extends React.Component {
         <Paper style={{ marginTop: 20, padding: 20 }}>
           <Grid container>
             <Grid item xs={12}>
-            <Typography variant="subheading">
-              Deploy to selected environments:
-            </Typography>
-            {environments.map(function(env, idx){
+              <Typography variant="display1">
+                Deploy to selected environments:
+              </Typography>
+              {environments.map(function(env, idx){
                 return (
                   <div key={env.id}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox 
-                          onClick={() => {self.toggleCheckedEnv(env)}}
-                          checked={self.state.checkedEnvs.includes(env.id)} 
-                        />
-                      }
-                      label={env.name + "(" + env.key + ")"} 
-                    />    
-                  </div>              
+                    <Grid item xs={12}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox 
+                              onClick={() => {self.toggleCheckedEnv(env)}}
+                              checked={self.state.checkedEnvs.includes(env.id)} 
+                            />
+                          }
+                          label={env.name + "(" + env.key + ")"} 
+                        />    
+                    </Grid> 
+                    <Typography variant="body2">
+                      <b>Available Extensions</b>
+                    </Typography>
+                    <Grid item xs={12}>
+                      {extensions.map(function(extension){
+                        if(extension.environment.id === env.id){
+                          return (
+                            <FormControlLabel
+                              control={
+                                <Checkbox 
+                                  onClick={() => {self.toggleCheckedExtension(extension)}}
+                                  checked={self.state.checkedExtensions.includes(extension.id)} 
+                                />
+                              }
+                              label={extension.name + "(" + extension.key + ")"} 
+                            />    
+                          )
+                        }
+                      })}
+                    </Grid>                    
+                    <hr/>
+                  </div>                               
                 )
-              })}     
-              <br/><br/>
-              <Button 
-                onClick={this.onBatchDeploy.bind(this)}
-                variant="raised" color="primary">
-                Deploy
-              </Button>
-              <Button 
-                onClick={() => {this.onBatchDeploy(true)}}
-                variant="raised" color="primary">
-                Deploy Route53 Extensions
-              </Button>              
-            </Grid>
+              })} 
+            </Grid> 
           </Grid>   
+          <br/><br/>
+          <Button 
+            onClick={this.onBatchDeploy.bind(this)}
+            variant="raised" color="primary">
+            Deploy All
+          </Button>                  
         </Paper>
       </div>
     )
