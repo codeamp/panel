@@ -105,7 +105,7 @@ class ReleaseView extends React.Component {
                   { this.props.release.headFeature.message}
                 </Typography>
                 <Typography component="p" className={styles.featureAuthor}>
-                  by <b> { this.props.release.user.email } </b> - { new Date(this.props.release.created).toString() }
+                  by <b> { this.props.release.user !== null ? this.props.release.user.email : "Continuous Deploy" } </b> - { new Date(this.props.release.created).toString() }
                 </Typography>
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
