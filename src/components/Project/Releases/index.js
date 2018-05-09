@@ -97,15 +97,15 @@ class ReleaseView extends React.Component {
             <Grid container spacing={0}>
               <Grid item xs={10}>
                 <Typography className={styles.featureCommitMsg}>
-                  { this.props.release.headFeature.hash.slice(30) }
+                  { this.props.release.headFeature.hash.substring(0, 8) }
                   <DoubleRightIcon />
-                  { this.props.release.tailFeature.hash.slice(30) }
+                  { this.props.release.tailFeature.hash.substring(0, 8) }
                 </Typography>
                 <Typography>
                   { this.props.release.headFeature.message}
                 </Typography>
                 <Typography component="p" className={styles.featureAuthor}>
-                  by <b> { this.props.release.headFeature.user } </b> - { new Date(this.props.release.created).toString() }
+                  by <b> { this.props.release.user.email } </b> - { new Date(this.props.release.created).toString() }
                 </Typography>
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
