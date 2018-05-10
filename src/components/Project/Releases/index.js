@@ -444,7 +444,7 @@ export default class Releases extends React.Component {
 
     createRelease({
       variables: { 
-        releaseId: release.id, 
+        id: release.id, 
         headFeatureID: release.headFeature.id, 
         projectID: release.project.id, 
         environmentID: release.environment.id,
