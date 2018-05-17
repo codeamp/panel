@@ -19,8 +19,7 @@
 }
 
 .addButton {
-    position: absolute;
-    bottom: 0px;
+    position: fixed;
     bottom: 25px;
     right: 25px;
 }

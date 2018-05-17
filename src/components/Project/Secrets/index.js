@@ -29,14 +29,6 @@ import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';
 
-const inlineStyles = {
-  addButton: {
-    position: 'absolute',
-    bottom: 25,
-    right: 25,
-  }
-}
-
 @inject("store") @observer
 @graphql(gql`
 query Project($slug: String, $environmentID: String){
@@ -378,7 +370,7 @@ export default class Secrets extends React.Component {
         </Paper>
 
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
-            style={inlineStyles.addButton}
+            className={styles.addButton}
             onClick={this.handleAddClick.bind(this)}>
             <AddIcon />
         </Button>
