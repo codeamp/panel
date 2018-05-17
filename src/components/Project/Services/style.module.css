@@ -18,10 +18,11 @@
 }
 
 .addButton {
-    position: absolute;
+    position: fixed;
     bottom: 25px;
     right: 25px;
 }
+
 
 .appBar {
     width: 100%;
