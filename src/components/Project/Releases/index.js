@@ -42,12 +42,13 @@ class ReleaseView extends React.Component {
         return true
     })
 
-    const orderedExtensions = filteredExtensions.sort(function(a, b){
-        if(a.extension.created < b.extension.created){
-          return -1
-        } else {
-          return 1
-        }
+    let orderedExtensions = []
+    filteredExtensions.map(function(extension){
+      if(extension.extension.type === "workflow") {
+        orderedExtensions.unshift(extension)
+      } else {
+        orderedExtensions.push(extension)
+      }
     })
 
     const projectExtensionLights = orderedExtensions.map(function(extension){
@@ -233,6 +234,7 @@ class ReleaseView extends React.Component {
             extension {
               id
               name
+              type
             }
           }
           type
@@ -361,12 +363,13 @@ export default class Releases extends React.Component {
         return true
     })
 
-    const orderedExtensions = filteredExtensions.sort(function(a, b){
-        if(a.extension.created < b.extension.created) {
-          return -1
-        } else {
-          return 1
-        }
+    let orderedExtensions = []
+    filteredExtensions.map(function(extension){
+      if(extension.extension.type === "workflow") {
+        orderedExtensions.unshift(extension)
+      } else {
+        orderedExtensions.push(extension)
+      }
     })
 
     const releaseExtensions = orderedExtensions.map(function(extension){
@@ -631,7 +634,6 @@ export default class Releases extends React.Component {
         }
       break;
     }
-    console.log(baseGitUrl)
 
     return (
 			<Drawer
