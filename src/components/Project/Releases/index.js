@@ -43,10 +43,10 @@ class ReleaseView extends React.Component {
     })
 
     const orderedExtensions = filteredExtensions.sort(function(a, b){
-        if(b.extension.type === "workflow"){
-            return 1
+        if(a.extension.created < b.extension.created){
+          return -1
         } else {
-            return -1
+          return 1
         }
     })
 
@@ -56,13 +56,29 @@ class ReleaseView extends React.Component {
           // get state { waiting => yellow, failed => red, complete => green}
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}></div>)
+            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}>
+              <Typography style={{ color: "black", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
+                {release.releaseExtensions[i].extension.extension.name}
+              </Typography>
+            </div>)
             case "complete":
-            return (<div key={"complete"+release.releaseExtensions[i].id} className={styles.innerComplete}></div>)
+            return (<div key={"complete"+release.releaseExtensions[i].id} className={styles.innerComplete}>
+              <Typography style={{ color: "white", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
+                {release.releaseExtensions[i].extension.extension.name}
+              </Typography>
+            </div>)
             case "failed":
-            return (<div key={"failed"+release.releaseExtensions[i].id} className={styles.innerFailed}></div>)                        
+            return (<div key={"failed"+release.releaseExtensions[i].id} className={styles.innerFailed}>
+              <Typography style={{ color: "white", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
+                {release.releaseExtensions[i].extension.extension.name}
+              </Typography>
+            </div>)                        
             default:
-            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}></div>)
+            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}>
+              <Typography style={{ color: "black", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
+                {release.releaseExtensions[i].extension.extension.name}
+              </Typography>
+            </div>)
           }
         }
       }
@@ -86,6 +102,14 @@ class ReleaseView extends React.Component {
       break;
       case "running":
         state = (<CircularProgress className={styles.progress} color="secondary" />)
+      break;
+      case "failed":
+        state = (<Chip label="FAILED" style={{ backgroundColor: "red", color: "white" }} />)
+      break;
+      case "complete":
+        if(currentRelease.id !== release.id){
+          state = (<Chip label="SUCCEEDED" style={{ backgroundColor: "green", color: "white" }} />)
+        }
       break;
       default:
         state = null
@@ -338,10 +362,10 @@ export default class Releases extends React.Component {
     })
 
     const orderedExtensions = filteredExtensions.sort(function(a, b){
-        if(b.extension.type === "workflow"){
-            return 1
+        if(a.extension.created < b.extension.created) {
+          return -1
         } else {
-            return -1
+          return 1
         }
     })
 
@@ -589,6 +613,26 @@ export default class Releases extends React.Component {
     }
 
     let release = this.state.drawerRelease;
+    let baseGitUrl = ""
+    switch(this.props.data.project.gitProtocol) {
+      case "SSH":
+        baseGitUrl = this.props.data.project.gitUrl.split('git@')
+        if(baseGitUrl.length > 0){
+          baseGitUrl = baseGitUrl.replace(':', '/').split('.git')
+          if(baseGitUrl.length > 0){
+            baseGitUrl = baseGitUrl[0] + "/commit/"
+          }
+        }
+      break;
+      case "HTTPS":
+        baseGitUrl = this.props.data.project.gitUrl.split('.git', 1)
+        if(baseGitUrl.length > 0){
+          baseGitUrl = baseGitUrl[0] + "/commit/"
+        }
+      break;
+    }
+    console.log(baseGitUrl)
+
     return (
 			<Drawer
 				anchor="right"
@@ -624,13 +668,13 @@ export default class Releases extends React.Component {
             </Grid>
 						<Grid item xs={12}>
               <Grid container>
-                <Grid item xs={12} style={{ textAlign: "right", padding: "1em" }}>
+                <Grid item xs={12} style={{ textAlign: "left", padding: "1em" }}>
                   <Typography>
                     <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, release.environment.key)} target="_blank" className={styles.kibanaLogLink}>
-                        Application Logs
+                      RELEASE LOGS
                     </a>
                   </Typography>
-              </Grid>
+                </Grid>
               </Grid>
 							<Card square={true}>
 								<CardContent>
@@ -642,14 +686,14 @@ export default class Releases extends React.Component {
 							<Card square={true}>
 								<CardContent>                                     
 									<Typography variant="body1">
-										<b>HEAD</b> : {release.headFeature.hash }
+										<b>HEAD</b> : <a href={baseGitUrl + release.headFeature.hash }>{release.headFeature.hash}</a>
 									</Typography>                  
 								</CardContent>
 							</Card>                  
 							<Card square={true}>
 								<CardContent>                                               
 									<Typography variant="body1">
-										<b>TAIL</b> : {release.tailFeature.hash }
+										<b>TAIL</b> : <a href={baseGitUrl + release.tailFeature.hash }>{release.tailFeature.hash}</a>
 									</Typography>                                  
 								</CardContent>
 							</Card>                                    
@@ -693,6 +737,15 @@ export default class Releases extends React.Component {
 
     return (
       <div>
+        <Grid container>
+          <Grid item xs={12} style={{ textAlign: "left", paddingBottom: "1em" }}>
+            <Typography variant="subheading">
+              <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, this.props.store.app.currentEnvironment.key)} target="_blank" className={styles.kibanaLogLink}>
+                APPLICATION LOGS
+              </a>
+            </Typography>
+          </Grid>
+        </Grid>        
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.feature}>
             <Card square={true}>
@@ -713,6 +766,8 @@ export default class Releases extends React.Component {
                 release={release}
                 currentRelease={project.currentRelease}
                 slug={project.slug}
+                gitUrl={project.gitUrl}
+                gitProtocol={project.gitProtocol}
 
                 handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
               )})
