@@ -618,7 +618,7 @@ export default class Releases extends React.Component {
       case "SSH":
         baseGitUrl = this.props.data.project.gitUrl.split('git@')
         if(baseGitUrl.length > 0){
-          baseGitUrl = baseGitUrl.replace(':', '/').split('.git')
+          baseGitUrl = baseGitUrl[1].replace(':', '/').split('.git')
           if(baseGitUrl.length > 0){
             baseGitUrl = baseGitUrl[0] + "/commit/"
           }
