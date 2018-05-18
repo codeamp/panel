@@ -592,7 +592,7 @@ export default class Releases extends React.Component {
         if(baseGitUrl.length > 0){
           baseGitUrl = baseGitUrl[1].replace(':', '/').split('.git')
           if(baseGitUrl.length > 0){
-            baseGitUrl = baseGitUrl[0] + "/commit/"
+            baseGitUrl = "https://" + baseGitUrl[0] + "/commit/"
           }
         }
       break;
