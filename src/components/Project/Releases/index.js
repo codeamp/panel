@@ -708,22 +708,18 @@ export default class Releases extends React.Component {
 
     return (
       <div>
-        <Grid container>
-          <Grid item xs={12} style={{ textAlign: "left", paddingBottom: "1em" }}>
-            <Typography variant="subheading">
-              <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, this.props.store.app.currentEnvironment.key)} target="_blank" className={styles.kibanaLogLink}>
-                APPLICATION LOGS
-              </a>
-            </Typography>
-          </Grid>
-        </Grid>        
         <Grid container spacing={16}>
           <Grid item xs={12} className={styles.feature}>
             <Card square={true}>
               <CardContent>
-                <Typography variant="title">
+                <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
                 </Typography>
+                <Typography variant="subheading" style={{ display: "inline-block", float: "right" }}>
+                <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, this.props.store.app.currentEnvironment.key)} target="_blank" className={styles.kibanaLogLink}>
+                  APPLICATION LOGS
+                </a>
+              </Typography>                              
               </CardContent>
             </Card>
             {project.releases.map((release) => {
