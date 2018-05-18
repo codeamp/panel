@@ -106,8 +106,9 @@
     display:inline-block;
     margin-right: 5px;
     background-color: yellow;
-    width:15px;
-    height:15px;
+    min-width:15px;
+    min-height:15px;
+    padding: 9px;
     border: 1px solid #70705c;
     border-radius:50px;
     /* -webkit-animation: pulseWaiting 2s linear 1s infinite; */
@@ -128,9 +129,10 @@
     display:inline-block;
     margin-right: 5px;
     background-color:gainsboro;
-    width:15px;
+    min-width:15px;
+    min-height:15px;
+    padding: 9px;
     border: 1px solid #70705c;
-    height:15px;
     border-radius:50px;
 }
 
@@ -155,10 +157,12 @@
     display:inline-block;
     margin-right: 5px;
     background-color:red;
-    width:15px;
-    height:15px;
+    min-width:15px;
+    min-height:15px;
+    padding: 9px;
     border: 1px solid #70705c;
     border-radius:50px;
+    color: white;
     /* -webkit-animation: pulseFailed 2s linear 1s infinite; */
 }
 
@@ -183,8 +187,9 @@
     display:inline-block;
     margin-right: 5px;
     background-color:green;
-    width:15px;
-    height:15px;
+    min-width:15px;
+    min-height:15px;
+    padding: 9px;
     border: 1px solid #70705c;
     border-radius:50px;
     /* -webkit-animation: pulseComplete 2s linear 1s infinite; */
