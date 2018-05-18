@@ -42,44 +42,22 @@ class ReleaseView extends React.Component {
         return true
     })
 
-    let orderedExtensions = []
-    filteredExtensions.map(function(extension){
-      if(extension.extension.type === "workflow") {
-        orderedExtensions.unshift(extension)
-      } else {
-        orderedExtensions.push(extension)
-      }
-    })
-
-    const projectExtensionLights = orderedExtensions.map(function(extension){
+    const projectExtensionLights = filteredExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}>
-              <Typography style={{ color: "black", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
-                {release.releaseExtensions[i].extension.extension.name}
-              </Typography>
-            </div>)
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+            break;
             case "complete":
-            return (<div key={"complete"+release.releaseExtensions[i].id} className={styles.innerComplete}>
-              <Typography style={{ color: "white", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
-                {release.releaseExtensions[i].extension.extension.name}
-              </Typography>
-            </div>)
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
+            break;
             case "failed":
-            return (<div key={"failed"+release.releaseExtensions[i].id} className={styles.innerFailed}>
-              <Typography style={{ color: "white", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
-                {release.releaseExtensions[i].extension.extension.name}
-              </Typography>
-            </div>)                        
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+            break;
             default:
-            return (<div key={"waiting"+release.releaseExtensions[i].id} className={styles.innerWaiting}>
-              <Typography style={{ color: "black", fontSize: 12, lineHeight: 0, fontWeight: 500 }}>
-                {release.releaseExtensions[i].extension.extension.name}
-              </Typography>
-            </div>)
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
           }
         }
       }
@@ -363,16 +341,7 @@ export default class Releases extends React.Component {
         return true
     })
 
-    let orderedExtensions = []
-    filteredExtensions.map(function(extension){
-      if(extension.extension.type === "workflow") {
-        orderedExtensions.unshift(extension)
-      } else {
-        orderedExtensions.push(extension)
-      }
-    })
-
-    const releaseExtensions = orderedExtensions.map(function(extension){
+    const releaseExtensions = filteredExtensions.map(function(extension){
       let stateIcon = <CircularProgress size={25} /> 
 
       for(var i = 0; i < release.releaseExtensions.length; i++){
