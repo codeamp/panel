@@ -657,14 +657,14 @@ export default class Releases extends React.Component {
 							<Card square={true}>
 								<CardContent>                                     
 									<Typography variant="body1">
-										<b>HEAD</b> : <a href={baseGitUrl + release.headFeature.hash }>{release.headFeature.hash}</a>
+										<b>HEAD</b> : <a target="_blank" href={baseGitUrl + release.headFeature.hash }>{release.headFeature.hash}</a>
 									</Typography>                  
 								</CardContent>
 							</Card>                  
 							<Card square={true}>
 								<CardContent>                                               
 									<Typography variant="body1">
-										<b>TAIL</b> : <a href={baseGitUrl + release.tailFeature.hash }>{release.tailFeature.hash}</a>
+										<b>TAIL</b> : <a  target="_blank" href={baseGitUrl + release.tailFeature.hash }>{release.tailFeature.hash}</a>
 									</Typography>                                  
 								</CardContent>
 							</Card>                                    
