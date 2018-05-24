@@ -229,7 +229,6 @@ export default class Secrets extends React.Component {
         'isSecret': secret.isSecret,
         'environmentID': this.props.store.app.currentEnvironment.id,
         'scope': secret.scope,
-        'isSecret': secret.isSecret,
       })
 
       this.form.$('key').set('disabled', true)

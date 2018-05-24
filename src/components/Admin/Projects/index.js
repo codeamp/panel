@@ -5,27 +5,15 @@ import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
 import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
-import Drawer from 'material-ui/Drawer';
 import Card, { CardContent } from 'material-ui/Card';
-import AppBar from 'material-ui/AppBar';
 import Link from 'react-router-dom/Link';
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from 'material-ui/Dialog';
-import InputField from 'components/Form/input-field';
 import Checkbox from 'material-ui/Checkbox';
 import { FormControlLabel } from 'material-ui/Form';
 import Loading from 'components/Utils/Loading';
 import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
-import { check } from 'graphql-anywhere';
 import _ from 'lodash';
 
 @graphql(gql`
@@ -229,18 +217,18 @@ export default class Projects extends React.Component {
   }
 
   onBatchDeploy(route53Deploy){
-    const { environments, projects } = this.props.data;
+    const { environments } = this.props.data;
 
     var self = this
     this.state.checkedProjects.forEach(function(projectID){
       let project = {}
-      self.props.data.projects.map(function(tmpProject){
+      self.props.data.projects.forEach(function(tmpProject){
         if(tmpProject.id === projectID) {
           project = tmpProject
         }
       })
 
-      project.environments.map(function(env){
+      project.environments.forEach(function(env){
         let _environment = _.find(environments, {id: env.id})
         let _project = _.find(_environment.projects, {id: project.id})
 
@@ -265,7 +253,7 @@ export default class Projects extends React.Component {
           }).then(({data}) => {
             // find checked extensions for that env
             self.props.data.refetch()
-            _project.extensions.map(function(projectExtension){
+            _project.extensions.forEach(function(projectExtension){
               if(self.state.checkedExtensions.includes(projectExtension.extension.id)) {
                 console.log('updating project extension ' + projectExtension.extension.name)
                 console.log({
@@ -309,9 +297,9 @@ export default class Projects extends React.Component {
     var completeReleases = 0
     var failedReleases = 0
 
-    environments.map(function(env){
+    environments.forEach(function(env){
       let _environment = _.find(environments, { id: env.id })
-      projects.map(function(project){
+      projects.forEach(function(project){
         let _project = _.find(_environment.projects, { id: project.id })
         console.log(_project)
         if(_project !== undefined) {
@@ -328,6 +316,8 @@ export default class Projects extends React.Component {
                 break;
               case "fetching":
                 runningReleases += 1
+                break;
+              default:
                 break;
             }
           }
@@ -462,7 +452,7 @@ export default class Projects extends React.Component {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      {project.environments.map(function(env){
+                      {project.environments.forEach(function(env){
                         // get env in environments query
                         let _environment = _.find(environments, { id: env.id })
                         let _project = _.find(_environment.projects, { id: project.id })
@@ -480,9 +470,11 @@ export default class Projects extends React.Component {
                             case "failed":
                               color = "red"
                               break;
+                            default:
+                              break;
                           }
 
-                          _project.releases[0].releaseExtensions.map(function(releaseExtension){
+                          _project.releases[0].releaseExtensions.forEach(function(releaseExtension){
                             let status = "lightgray"
                             switch(releaseExtension.state){
                               case "complete":
@@ -496,6 +488,8 @@ export default class Projects extends React.Component {
                                 break;                                                              
                               case "failed":
                                 status = "red"
+                                break;
+                              default:
                                 break;
                             }                  
                             extensionStatuses.push(
@@ -547,7 +541,7 @@ export default class Projects extends React.Component {
                       <b>Available Extensions</b>
                     </Typography>
                     <Grid item xs={12}>
-                      {extensions.map(function(extension){
+                      {extensions.forEach(function(extension){
                         if(extension.environment.id === env.id){
                           return (
                             <FormControlLabel
