@@ -24,11 +24,16 @@ import { FormControl } from 'material-ui/Form';
 import Card, { CardContent } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
 
-const kibanaLinkTemplate = process.env.REACT_APP_KIBANA_LINK_TEMPLATE
+const kibanaAppLogTemplate = process.env.REACT_APP_KIBANA_LINK_TEMPLATE
+const kibanaReleaseLogTemplate = process.env.REACT_APP_KIBANA_RELEASE_TEMPLATE
 
+function generateKibanaLink(linkTemplate, replacementHash) {
+  for (const key in replacementHash) {
+    let re = new RegExp(key,"g");
+    linkTemplate = linkTemplate.replace(re, replacementHash[key])
+  }
 
-function generateKibanaLink(linkTemplate, slug, environment) {
-  return linkTemplate.replace(/##PROJECT-NAMESPACE##/g, `${environment}-${slug}`)
+  return linkTemplate
 }
 
 class ReleaseView extends React.Component {  
@@ -641,7 +646,7 @@ export default class Releases extends React.Component {
               <Grid container>
                 <Grid item xs={12} style={{ textAlign: "left", padding: "1em" }}>
                   <Typography>
-                    <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, release.environment.key)} target="_blank" className={styles.kibanaLogLink}>
+                    <a id="kibana-log-link" href={generateKibanaLink(kibanaReleaseLogTemplate, {"##PROJECT-NAMESPACE##": `${release.environment.key}-${this.props.data.project.slug}`, "##RELEASE-ID##": release.id})} target="_blank" className={styles.kibanaLogLink}>
                       RELEASE LOGS
                     </a>
                   </Typography>
@@ -716,7 +721,7 @@ export default class Releases extends React.Component {
                   Releases
                 </Typography>
                 <Typography variant="subheading" style={{ display: "inline-block", float: "right" }}>
-                <a id="kibana-log-link" href={generateKibanaLink(kibanaLinkTemplate, this.props.data.project.slug, this.props.store.app.currentEnvironment.key)} target="_blank" className={styles.kibanaLogLink}>
+                <a id="kibana-log-link" href={generateKibanaLink(kibanaAppLogTemplate, {"##PROJECT-NAMESPACE##": `${this.props.store.app.currentEnvironment.key}-${this.props.data.project.slug}`})} target="_blank" className={styles.kibanaLogLink}>
                   APPLICATION LOGS
                 </a>
               </Typography>                              
