@@ -27,13 +27,14 @@ jobs:
           - v1-dependencies-
 
       - run: npm install
+      - run: npm run-script build
       - run:
           name: Node Security Check
           command: |
             set -x
             sudo npm install -g nsp nsp-reporter-checkstyle
             nsp check --reporter summary
-      - run: npm run-script build
+
 
       - save_cache:
           paths:
