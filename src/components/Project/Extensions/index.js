@@ -324,7 +324,7 @@ export default class ProjectExtensions extends React.Component {
     let availableExtensions = extensions.reduce((extensions, extension) => {
       let found = false
       project.extensions.forEach(function(projectExtension) {
-        if (projectExtension.extension.id === extension.id && projectExtension.extension.type !== 'once') {
+        if (projectExtension.extension.id === extension.id && projectExtension.extension.type !== 'once' && projectExtension.extension.type !== 'notification') {
           found = true 
         }
       })
