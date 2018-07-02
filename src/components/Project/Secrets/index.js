@@ -211,7 +211,7 @@ export default class Secrets extends React.Component {
   }
 
   onClick(secretIdx){
-    const secret = this.props.data.project.secrets[secretIdx]
+    const secret = this.props.data.project.secrets.entries[secretIdx]
     if(secret !== null){
       // find this 
       this.form = this.initProjectSecretsForm({
@@ -232,7 +232,7 @@ export default class Secrets extends React.Component {
   }
 
   onClickVersion(versionIdx) {
-    this.form.$('value').set(this.props.data.project.secrets[this.form.values()['index']].versions[versionIdx].value)
+    this.form.$('value').set(this.props.data.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
   }
 
   onError(form){
@@ -338,7 +338,7 @@ export default class Secrets extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {project.secrets.map(function(secret, idx){
+              {project.secrets.entries.map(function(secret, idx){
                 let emptyValue
                 if (secret.value === '') {
                   emptyValue = styles.emptyValue
@@ -441,9 +441,9 @@ export default class Secrets extends React.Component {
                       </Grid>
                     }
 
-                    {this.form.values()['index'] >= 0 && project.secrets[this.form.values()['index']] &&
+                    {this.form.values()['index'] >= 0 && project.secrets.entries[this.form.values()['index']] &&
                       <EnvVarVersionHistory 
-                        versions={project.secrets[this.form.values()['index']].versions}
+                        versions={project.secrets.entries[this.form.values()['index']].versions}
                         onClickVersion={this.onClickVersion.bind(this)}
                       />
                     }    
@@ -497,9 +497,9 @@ export default class Secrets extends React.Component {
           </DialogActions>
         </Dialog>
 
-        {project.secrets.length > 0 && project.secrets[this.form.values()['index']] &&
+        {project.secrets.entries.length > 0 && project.secrets.entries[this.form.values()['index']] &&
             <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-              <DialogTitle>{"Are you sure you want to delete " + project.secrets[this.form.values()['index']].key + "?"}</DialogTitle>
+              <DialogTitle>{"Are you sure you want to delete " + project.secrets.entries[this.form.values()['index']].key + "?"}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
                   {"This will delete the environment variable and all its versions."}
