@@ -56,16 +56,18 @@ query {
     created
   }
   secrets {
-    id
-    key
-    value
-    created
-    scope
-    type
-    environment {
+    entries {
       id
-      name
+      key
+      value
       created
+      scope
+      type
+      environment {
+        id
+        name
+        created
+      }
     }
   }
 }
@@ -295,9 +297,9 @@ export default class Extensions extends React.Component {
     const { secrets, environments } = this.props.data    
     // filter secrets by env of current extension if exists
     var self = this
-    var envSecrets = secrets
+    var envSecrets = secrets.entries
     if(this.form.$('environmentID').value){
-      envSecrets = secrets.filter(function(secret){
+      envSecrets = secrets.entries.filter(function(secret){
         if(self.form.$('environmentID').value === secret.environment.id){
           return true
         }

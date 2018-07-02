@@ -38,17 +38,19 @@ query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
     services {
-      id
-      name
-      command
-      serviceSpec {
+      entries {
         id
         name
+        command
+        serviceSpec {
+          id
+          name
+        }
+        count
+        type
+        ports
+        created
       }
-      count
-      type
-      ports
-      created
     }
   }
   serviceSpecs {

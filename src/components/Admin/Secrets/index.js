@@ -42,31 +42,36 @@ import 'brace/theme/github';
       created
     }
     secrets {
-      id
-      key
-      value
-      created
-      scope
-      isSecret
-      project {
+      nextCursor
+      page
+      count
+      entries {
         id
-      }
-      user {
-        id
-        email
-      }
-      type
-      environment {
-        id
-        name
-        created
-      }
-      versions {
+        key
         value
         created
+        scope
+        isSecret
+        project {
+          id
+        }
         user {
           id
           email
+        }
+        type
+        environment {
+          id
+          name
+          created
+        }
+        versions {
+          value
+          created
+          user {
+            id
+            email
+          }
         }
       }
     }
@@ -242,7 +247,7 @@ export default class Secrets extends React.Component {
   }
 
   onClickVersion(versionIdx) {
-    this.form.$('value').set(this.props.data.secrets[this.form.values()['index']].versions[versionIdx].value)
+    this.form.$('value').set(this.props.data.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
   }
 
   onError(form){
@@ -367,7 +372,7 @@ export default class Secrets extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {secrets.map(function(secret, idx){
+              {secrets.entries.map(function(secret, idx){
                 let emptyValue
                 if (secret.value === '') {
                   emptyValue = styles.emptyValue
@@ -498,9 +503,9 @@ export default class Secrets extends React.Component {
                   }
 
                   {/* Version History */}
-                  {this.form.values()['index'] >= 0 && secrets[this.form.values()['index']] &&
+                  {this.form.values()['index'] >= 0 && secrets.entries[this.form.values()['index']] &&
                     <EnvVarVersionHistory 
-                      versions={secrets[this.form.values()['index']].versions}
+                      versions={secrets.entries[this.form.values()['index']].versions}
                       onClickVersion={this.onClickVersion.bind(this)}
                     />
                   }       
@@ -553,9 +558,9 @@ export default class Secrets extends React.Component {
           </DialogActions>
         </Dialog>
 
-        {secrets.length > 0 && secrets[this.form.values()['index']] &&
+        {secrets.entries.length > 0 && secrets.entries[this.form.values()['index']] &&
           <Dialog open={this.state.dialogOpen}>
-            <DialogTitle>{"Are you sure you want to delete " + secrets[this.form.values()['index']].key + "?"}</DialogTitle>
+            <DialogTitle>{"Are you sure you want to delete " + secrets.entries[this.form.values()['index']].key + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 {"This will delete the environment variable."}

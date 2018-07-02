@@ -36,24 +36,26 @@ query Project($slug: String, $environmentID: String){
     id
     name
     secrets {
-      id
-      key
-      value
-      isSecret
-      user {
+      entries {
         id
-        email
-      }
-      versions {
+        key
         value
-        created
+        isSecret
         user {
           id
           email
         }
-      }      
-      type
-      created
+        versions {
+          value
+          created
+          user {
+            id
+            email
+          }
+        }      
+        type
+        created
+      }
     }
   }
 }`, {
