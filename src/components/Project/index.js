@@ -48,7 +48,7 @@ import Grid from 'material-ui/Grid';
            created
          }
       }
-      features {
+      features(params: { limit: 25}){
         entries {
           id
           created
