@@ -20,14 +20,16 @@ import styles from './style.module.css';
 const GET_PROJECTS = gql`
   query Projects($projectSearch: ProjectSearchInput){
     projects(projectSearch: $projectSearch){
-      id
-      name
-      slug
-      repository
-      environments {
+      entries {
         id
         name
-        color
+        slug
+        repository
+        environments {
+          id
+          name
+          color
+        }
       }
     }
   }
@@ -113,7 +115,7 @@ class TopNav extends React.Component {
         }
         break;
       case "ArrowDown":
-        if(this.state.selectedSuggestionIndex < this.props.data.projects.length - 1){
+        if(this.state.selectedSuggestionIndex < this.props.data.projects.entries.length - 1){
           this.setState({ selectedSuggestionIndex: this.state.selectedSuggestionIndex + 1})
         }
         break;
@@ -142,7 +144,7 @@ class TopNav extends React.Component {
 
   componentWillReceiveProps(nextProps){
     if(_.has(nextProps.data, 'projects')){
-      const projects = nextProps.data.projects.map(function(project){
+      const projects = nextProps.data.projects.entries.map(function(project){
         return { id: project.id, label: project.name, project: project }
       })
       this.setState({ projects: projects })
@@ -153,8 +155,6 @@ class TopNav extends React.Component {
     var self = this
     const { store } = this.props
     const { app } = this.props.store; 
-
-    console.log(this.props.data)
 
     return (
       <div>

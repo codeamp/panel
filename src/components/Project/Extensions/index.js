@@ -56,17 +56,19 @@ import TextField from 'material-ui/TextField';
         created
       }
       secrets {
-        id
-        key
-        value
-        created
-        scope
-        type
-        environment {
+        entries {
           id
-          name
+          key
+          value
           created
-        }        
+          scope
+          type
+          environment {
+            id
+            name
+            created
+          }        
+        }
       }
     }
     extensions(environmentID: $environmentID) {
@@ -522,7 +524,7 @@ export default class ProjectExtensions extends React.Component {
     this.form = new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })
     this.form.update({config: config})
 
-    const secretOptions = this.props.data.project.secrets.map(function(secret){
+    const secretOptions = this.props.data.project.secrets.entries.map(function(secret){
       return {
         key: secret.id,
         value: "(" + secret.key + ") => " + secret.value,
