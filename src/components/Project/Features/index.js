@@ -34,7 +34,7 @@ import Select from 'material-ui/Select';
       gitProtocol
       gitUrl
       gitBranch
-      features(showDeployed: $showDeployed) {
+      features(showDeployed: $showDeployed, params: { limit: 25 }) {
         entries {
           id
           message
@@ -45,7 +45,7 @@ import Select from 'material-ui/Select';
           created
         }
       }
-      releases {
+      releases(params: { limit: 25}) {
         entries {
           id
           headFeature {

@@ -190,7 +190,7 @@ class ReleaseView extends React.Component {
           created
         }
       }
-      releases {
+      releases(params: { limit: 15 }){
         entries {
           id
           artifacts
