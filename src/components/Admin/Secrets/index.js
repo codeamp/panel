@@ -223,7 +223,7 @@ export default class Secrets extends React.Component {
   }
 
   onClick(secretIdx){
-    const secret = this.props.data.secrets[secretIdx]
+    const secret = this.props.data.secrets.entries[secretIdx]
     if(secret !== undefined){
       this.form = this.initAdminSecretsForm({
         'key': secret.key,
