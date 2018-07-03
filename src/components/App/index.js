@@ -28,14 +28,19 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
       permissions
     }
     projects(projectSearch: $projectSearch){
-      id
-      name
-      slug
-      environments {
+      page
+      nextCursor
+      count
+      entries {
         id
         name
-        color
-      }
+        slug
+        environments {
+          id
+          name
+          color
+        }
+      } 
     }
   }
 `, {
@@ -132,13 +137,13 @@ export default class App extends React.Component {
               <div className={styles.children}>
                 <Switch> 
                   <Route exact path='/' render={(props) => (
-                    <Dashboard projects={projects} />
+                    <Dashboard projects={projects.entries} />
                   )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create projects={projects} type={"create"} {...props} />
+                    <Create projects={projects.entries} type={"create"} {...props} />
                   )} />
                   <Route path='/admin' render={(props) => (
-                    <Admin socket={socket} data={this.props.data} projects={projects} {...props} />
+                    <Admin socket={socket} data={this.props.data} projects={projects.entries} {...props} />
                   )} />
                   <Route exact path='/projects/:slug' render={(props) => (
                     <ProjectEnvironment {...props}>

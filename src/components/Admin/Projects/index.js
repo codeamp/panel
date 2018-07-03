@@ -19,21 +19,23 @@ import _ from 'lodash';
 @graphql(gql`
   query AllProjects($projectSearch: ProjectSearchInput){
     projects(projectSearch: $projectSearch){
-      id
-      name
-      slug
-      environments {
-        id
-      }
-    }
-    extensions {
-      id
-      key
-      name
-      environment {
+      entries {
         id
         name
-        key
+        slug
+        environments {
+          id
+        }
+        extensions {
+          id
+          key
+          name
+          environment {
+            id
+            name
+            key
+          }
+        }
       }
     }
     environments {
@@ -42,40 +44,42 @@ import _ from 'lodash';
       key
       color
       projects {
-        id
-        releases {
+        entries {
           id
-          state
-          headFeature {
-            id
-            message
-            user
-            hash
-            parentHash
-            ref
-            created
-          }
-          tailFeature {
-            id
-            message
-            user
-            hash
-            parentHash
-            ref
-            created
-          } 
-          releaseExtensions {
+          releases {
             id
             state
-            extension {
+            headFeature {
               id
+              message
+              user
+              hash
+              parentHash
+              ref
+              created
+            }
+            tailFeature {
+              id
+              message
+              user
+              hash
+              parentHash
+              ref
+              created
+            } 
+            releaseExtensions {
+              id
+              state
               extension {
                 id
-                key
-                name
+                extension {
+                  id
+                  key
+                  name
+                }
               }
-            }
-          }         
+            }         
+          }
         }
         extensions {
           id

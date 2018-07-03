@@ -11,26 +11,18 @@ import styles from './style.module.css';
 @graphql(gql`
   query AllObjects($projectSearch: ProjectSearchInput){
     projects(projectSearch: $projectSearch) {
-      id
+      nextCursor
+      page
+      count
+      entries {
+        id
+      }
     }
     releases {
-      id
-      headFeature {
-        id
-        message
-        user
-        hash
-        parentHash
-        ref
-        created
-      }
-      project {
-        repository
-      }
-      state
+      count
     }
     features {
-      id
+      count
     }
     users {
       id
@@ -40,7 +32,7 @@ import styles from './style.module.css';
   options: {
     variables: {
       projectSearch: {
-        bookmarked: false,
+        bookmarked: true,
         repository: "/",
       }
     },
@@ -72,7 +64,7 @@ export default class Dashboard extends React.Component {
 
   componentWillReact() {
     const { projects } = this.props.data;
-    this.props.store.app.setNavProjects(projects)
+    this.props.store.app.setNavProjects(projects.entries)
   }
   
   handleChange = panel => (event, expanded) => {
@@ -106,7 +98,7 @@ export default class Dashboard extends React.Component {
                   Projects
                 </Typography>
                 <Typography component="headline" className={styles.bigNumber}>
-                  {projects.length}
+                  {projects.count}
                 </Typography>
               </CardContent>
             </Card>        
@@ -119,7 +111,7 @@ export default class Dashboard extends React.Component {
                   Features
                 </Typography>
                 <Typography component="headline" className={styles.bigNumber}>
-                  {features.length}
+                  {features.count}
                 </Typography>
               </CardContent>
             </Card>        
@@ -132,7 +124,7 @@ export default class Dashboard extends React.Component {
                   Releases
                 </Typography>
                 <Typography component="headline" className={styles.bigNumber}>
-                  {releases.length}
+                  {releases.count}
                 </Typography>
               </CardContent>
             </Card>        

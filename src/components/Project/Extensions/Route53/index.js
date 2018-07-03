@@ -34,17 +34,19 @@ query Project($slug: String, $environmentID: String){
       created
     }
     services {
-      id
-      name
-      command
-      serviceSpec {
+      entries {
         id
         name
+        command
+        serviceSpec {
+          id
+          name
+        }
+        count
+        type
+        ports
+        created
       }
-      count
-      type
-      ports
-      created
     }
   }
 

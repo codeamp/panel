@@ -48,9 +48,11 @@ import Grid from 'material-ui/Grid';
            created
          }
       }
-      features{
-        id
-        created
+      features(params: { limit: 25}){
+        entries {
+          id
+          created
+        }
       }
       environments {
         id
@@ -130,14 +132,15 @@ class Project extends React.Component {
     // count deployable features by comparing currentRelease created and feature created
     var deployableFeatures = 0
     if(project.currentRelease !== null){
-      project.features.map(function(feature){
+      project.features.entries.map(function(feature){
+        console.log(project)
         if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
           deployableFeatures += 1
         }
         return null
       })
     } else {
-      deployableFeatures = project.features.length
+      deployableFeatures = project.features.entries.length
     }
         
     this.props.store.app.leftNavItems = [

@@ -34,18 +34,8 @@ import Select from 'material-ui/Select';
       gitProtocol
       gitUrl
       gitBranch
-      features(showDeployed: $showDeployed) {
-        id
-        message
-        user
-        hash
-        parentHash
-        ref
-        created
-      }
-      releases {
-        id
-        headFeature {
+      features(showDeployed: $showDeployed, params: { limit: 25 }) {
+        entries {
           id
           message
           user
@@ -54,7 +44,21 @@ import Select from 'material-ui/Select';
           ref
           created
         }
-        state
+      }
+      releases(params: { limit: 25}) {
+        entries {
+          id
+          headFeature {
+            id
+            message
+            user
+            hash
+            parentHash
+            ref
+            created
+          }
+          state
+        }
       }
       extensions {
         id
@@ -129,7 +133,7 @@ export default class Features extends React.Component {
   }
 
   renderFeatureList = (project) => {
-    if(project.features.length === 0){
+    if(project.features.entries.length === 0){
       return (
         <div>          
         <ExpansionPanel expanded={true}>
@@ -157,12 +161,12 @@ export default class Features extends React.Component {
 
     let { expanded } = this.state;
     if (expanded === null) {
-      expanded = project.features[0].id
+      expanded = project.features.entries[0].id
     }
 
     return (
       <div> 
-        {project.features.map((feature, idx) => {
+        {project.features.entries.map((feature, idx) => {
           return (<ExpansionPanel 
               key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 

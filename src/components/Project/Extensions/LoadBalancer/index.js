@@ -18,17 +18,19 @@ query Project($slug: String, $environmentID: String){
   project(slug: $slug, environmentID: $environmentID) {
     id
     services {
-      id
-      name
-      command
-      serviceSpec {
+      entries {
         id
         name
+        command
+        serviceSpec {
+          id
+          name
+        }
+        count
+        type
+        ports
+        created
       }
-      count
-      type
-      ports
-      created
     }
   }
 
@@ -229,7 +231,7 @@ export default class LoadBalancer extends React.Component {
     }
     
     var self = this
-    const extraOptions = project.services.map(function(service){
+    const extraOptions = project.services.entries.map(function(service){
         return {
           key: service.name,
           value: service.name,
@@ -239,7 +241,7 @@ export default class LoadBalancer extends React.Component {
     var containerPortOptions = []
     // get port options depending on selected service, if exists
     if(this.form.$('service').value){
-      project.services.map(function(service){
+      project.services.entries.map(function(service){
         if(service.name === self.form.$('service').value){
           containerPortOptions = service.ports.map(function(cPort){
             return {

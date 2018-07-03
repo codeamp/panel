@@ -37,18 +37,20 @@ import Grow from 'material-ui/transitions/Grow';
 query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
-    services {
-      id
-      name
-      command
-      serviceSpec {
+    services(params: { limit: 30}){
+      entries {
         id
         name
+        command
+        serviceSpec {
+          id
+          name
+        }
+        count
+        type
+        ports
+        created
       }
-      count
-      type
-      ports
-      created
     }
   }
   serviceSpecs {
@@ -359,7 +361,8 @@ export default class Services extends React.Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {project.services.map( (service, index) => {
+                {project.services.entries.map( (service, index) => {
+                  console.log(service)
                   return (
                     <TableRow
                       hover
@@ -522,9 +525,9 @@ export default class Services extends React.Component {
             </DialogActions>
           </Dialog>          
 
-          {project.services[this.form.values()['index']] &&
+          {project.services.entries[this.form.values()['index']] &&
             <Dialog open={this.state.dialogOpen}>
-              <DialogTitle>{"Ae you sure you want to delete " + project.services[this.form.values()['index']].name + "?"}</DialogTitle>
+              <DialogTitle>{"Ae you sure you want to delete " + project.services.entries[this.form.values()['index']].name + "?"}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
                   This will remove the service as well as all its related properties e.g. container ports and commands that you've associated

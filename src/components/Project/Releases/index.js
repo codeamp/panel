@@ -190,54 +190,56 @@ class ReleaseView extends React.Component {
           created
         }
       }
-      releases {
-        id
-        artifacts
-        state
-        stateMessage
-        created
-        user {
-          email
-        }
-        project {
-          id
-        }
-        environment {
-          id
-          key
-        }        
-        releaseExtensions {
+      releases(params: { limit: 15 }){
+        entries {
           id
           artifacts
-          extension {
-            id
-            extension {
-              id
-              name
-              type
-            }
-          }
-          type
           state
           stateMessage
-        }
-        headFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
           created
-        }
-        tailFeature {
-          id
-          message
-          user
-          hash
-          parentHash
-          ref
-          created
+          user {
+            email
+          }
+          project {
+            id
+          }
+          environment {
+            id
+            key
+          }        
+          releaseExtensions {
+            id
+            artifacts
+            extension {
+              id
+              extension {
+                id
+                name
+                type
+              }
+            }
+            type
+            state
+            stateMessage
+          }
+          headFeature {
+            id
+            message
+            user
+            hash
+            parentHash
+            ref
+            created
+          }
+          tailFeature {
+            id
+            message
+            user
+            hash
+            parentHash
+            ref
+            created
+          }
         }
       }
     }
@@ -313,7 +315,7 @@ export default class Releases extends React.Component {
 
   static getDerivedStateFromProps(props, currentState) {
     if (currentState.drawerOpen && currentState.drawerRelease !== null) {
-      for (let release of props.data.project.releases) {
+      for (let release of props.data.project.releases.entries) {
         if (release.id === currentState.drawerRelease.id) {
           if (JSON.stringify(release) !== JSON.stringify(currentState.drawerRelease)) {
             currentState.drawerRelease = release
@@ -726,7 +728,7 @@ export default class Releases extends React.Component {
               </Typography>                              
               </CardContent>
             </Card>
-            {project.releases.map((release) => {
+            {project.releases.entries.map((release) => {
               const extensions = release.releaseExtensions.map(function(releaseExtension){
                 return releaseExtension.extension
               })
@@ -743,7 +745,7 @@ export default class Releases extends React.Component {
                 handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
               )})
             }
-            {(project.releases.length === 0) && <Card square={true}>
+            {(project.releases.entries.length === 0) && <Card square={true}>
               <CardContent>
                 <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
                   There are no releases.
