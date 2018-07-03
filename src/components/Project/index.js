@@ -8,6 +8,7 @@ import IconButton from 'material-ui/IconButton';
 import SettingsIcon from 'material-ui-icons/Settings';
 import FeaturesIcon from 'material-ui-icons/Input';
 import ReleasesIcon from 'material-ui-icons/Timeline';
+import LockIcon from 'material-ui-icons/Lock';
 import ServicesIcon from 'material-ui-icons/Widgets';
 import SecretIcon from 'material-ui-icons/VpnKey';
 import ExtensionsIcon from 'material-ui-icons/Extension';
@@ -188,6 +189,10 @@ class Project extends React.Component {
     this.setLeftNavProjectItems(nextProps)
   }
 
+  toggleLock(e) {
+    console.log(e)
+  }
+
   render() {
     const { history, socket } = this.props;
     const { loading, project } = this.props.data;
@@ -210,15 +215,27 @@ class Project extends React.Component {
         </IconButton>
       ) 
     }
+
+    let lockedView = (
+      <IconButton aria-label="lock" onClick={this.toggleLock.bind(this)}>
+        <LockIcon />
+      </IconButton>
+    ) 
+
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
-          <Grid item xs={9}>
+          <Grid item xs={6}>
             <Toolbar style={{paddingLeft: "0px"}}>
               {bookmarked}
               <Typography variant="title">
                 {project.slug} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
+            </Toolbar>
+          </Grid>
+          <Grid item xs={3} style={{textAlign: "right"}}>
+            <Toolbar style={{textAlign: "right", display: "inline-flex"}}>
+              { lockedView }
             </Toolbar>
           </Grid>
           <Grid item xs={3} style={{textAlign: "right"}}>
