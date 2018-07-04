@@ -17,6 +17,7 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
+import PanelTable from 'components/Utils/Table';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
@@ -311,65 +312,31 @@ export default class Secrets extends React.Component {
     var self = this;
     return (
       <div>
-        <Paper className={styles.tablePaper}>
-          <Toolbar>
-            <Typography variant="title">
-              Secrets
-            </Typography>
-          </Toolbar>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  Key
-                </TableCell>
-                <TableCell>
-                  Type
-                </TableCell>
-                <TableCell>
-                  Protected
-                </TableCell>
-                <TableCell>
-                  Creator
-                </TableCell>
-                <TableCell>
-                  Created
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {project.secrets.entries.map(function(secret, idx){
-                let emptyValue
-                if (secret.value === '') {
-                  emptyValue = styles.emptyValue
-                }
-                return (
-                  <TableRow
-                    hover
-                    tabIndex={-1}
-                    onClick={()=> self.onClick(idx)}
-                    key={secret.id}>
-                    <TableCell>
-                      <span className={emptyValue}>{secret.key}</span>
-                    </TableCell>
-                    <TableCell>
-                      {secret.type}
-                    </TableCell>
-                    <TableCell>
-                      {secret.isSecret ? "yes" : "no" }
-                    </TableCell>
-                    <TableCell>
-                      {secret.user.email}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(secret.created).toString()}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
+        <PanelTable 
+          title={"Secrets"}
+          rows={project.secrets.entries}
+          onClick={this.onClick.bind(this)}
+          columns={[{
+            label: "Key",
+            getVal: function(row){return row.key},
+          }, {
+            label: "Type",
+            getVal: function(row){return row.type},
+          }, {
+            label: "Protected",
+            getVal: function(row){
+              if(row.isSecret)
+                return "yes"
+              return "no"
+            },
+          }, {
+            label: "Creator",
+            getVal: function(row){return row.user.email},
+          }, {
+            label: "Created",
+            getVal: function(row){return new Date(row.created).toString()},
+          }]}
+        />
 
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
             className={styles.addButton}
