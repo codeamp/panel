@@ -1,18 +1,22 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
-import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
+import Table, { TableCell, TableHead, TableBody, TableRow, TableFooter } from 'material-ui/Table';
 import Drawer from 'material-ui/Drawer';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Typography from 'material-ui/Typography';
 import Toolbar from 'material-ui/Toolbar';
+import TablePagination from '@material-ui/core/TablePagination';
+import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
+import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
+import IconButton from '@material-ui/core/IconButton';
 
 import styles from './style.module.css';
 
 export default class PanelTable extends React.Component { 
 
   render() {
-    const { title, columns, rows } = this.props;
+    const { title, columns, rows, paginator } = this.props;
     var self = this;
   
     return (
@@ -44,9 +48,10 @@ export default class PanelTable extends React.Component {
                       onClick={() => self.props.onClick(idx)}
                       key={row.id}
                     >
-                      {columns.map(function(col){
+                      {columns.map(function(col, colIdx){
                         return (
-                          <TableCell>
+                          <TableCell
+                            key={colIdx}>
                             {col.getVal(row)}
                           </TableCell>
                         )
@@ -55,6 +60,41 @@ export default class PanelTable extends React.Component {
                   )
                 })}
               </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TablePagination
+                    component="div"
+                    count={paginator.count}
+                    rowsPerPage={paginator.rowsPerPage}
+                    rowsPerPageOptions={[paginator.rowsPerPage]}
+                    page={paginator.page}
+                    backIconButtonProps={{
+                      'aria-label': 'Previous Page',
+                    }}
+                    nextIconButtonProps={{
+                      'aria-label': 'Next Page',
+                    }}
+                    onChangePage={this.props.handleChangePage}
+                  />
+
+                  <div>
+                    <IconButton
+                      onClick={this.handleBackButtonClick}
+                      disabled={page === 0}
+                      aria-label="Previous Page"
+                    >
+                      {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+                    </IconButton>
+                    <IconButton
+                      onClick={this.handleNextButtonClick}
+                      disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                      aria-label="Next Page"
+                    >
+                      {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+                    </IconButton>
+                  </div>
+                </TableRow>
+              </TableFooter>
             </Table>
           </Paper>
         </Grid>

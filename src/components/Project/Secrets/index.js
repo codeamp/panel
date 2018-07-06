@@ -32,11 +32,14 @@ import 'brace/theme/github';
 
 @inject("store") @observer
 @graphql(gql`
-query Project($slug: String, $environmentID: String){
+query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
   project(slug: $slug, environmentID: $environmentID) {
     id
     name
-    secrets {
+    secrets(params:$params) {
+      nextCursor
+      page
+      count
       entries {
         id
         key
@@ -64,6 +67,10 @@ query Project($slug: String, $environmentID: String){
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
+      params: {
+        limit: props.store.app.paginator.limit,
+        cursor: props.store.app.paginator.cursor,
+      },
     }
   })
 })
@@ -154,6 +161,7 @@ export default class Secrets extends React.Component {
       drawerOpen: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
+      cursorStack: [],
     }
   }
 
@@ -302,6 +310,48 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
+  handleChangePage(evt, page){
+    let cursorStack = this.state.cursorStack
+    let nextCursor = this.props.data.project.secrets.nextCursor
+    console.log('onChangePage', page, evt)
+    
+    if(page > this.props.data.project.secrets.page - 1){ 
+      this.props.data.refetch({
+        params: {
+          limit: this.props.store.app.paginator.limit,
+          cursor: this.props.data.project.secrets.nextCursor,
+        }
+      }).then(({data}) => {
+        cursorStack.push(this.props.store.app.paginator.cursor)
+        this.setState({ 
+          cursorStack: cursorStack
+        })
+        this.props.store.app.setPaginator({
+          limit: this.props.store.app.paginator.limit,
+          cursor: nextCursor,
+        })
+        console.log(this.props.store.app.paginator, this.state.cursorStack)
+      })
+    } else {
+      let cursor = cursorStack.pop()
+      // console.log('refetching with', cursor)
+      this.props.data.refetch({
+        params: {
+          limit: this.props.store.app.paginator.limit,
+          cursor: "foo",
+        }
+      }).then(({data}) => {
+        this.setState({
+          cursorStack: cursorStack
+        })
+        this.props.store.app.setPaginator({
+          limit: this.props.store.app.paginator.limit,
+          cursor: nextCursor,
+        })
+      })
+    }
+  }
+
   render() {
     const { loading, project } = this.props.data;
     if(loading){
@@ -310,12 +360,22 @@ export default class Secrets extends React.Component {
       )
     }
     var self = this;
+
+    console.log(project.secrets)
+
     return (
       <div>
         <PanelTable 
           title={"Secrets"}
           rows={project.secrets.entries}
+          handleChangePage={this.handleChangePage.bind(this)}
           onClick={this.onClick.bind(this)}
+          paginator={{
+            count: project.secrets.count,
+            nextCursor: project.secrets.nextCursor,
+            page: project.secrets.page - 1,
+            rowsPerPage: this.props.store.app.paginator.limit,
+          }}
           columns={[{
             label: "Key",
             getVal: function(row){return row.key},
