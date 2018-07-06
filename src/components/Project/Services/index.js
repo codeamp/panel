@@ -181,6 +181,8 @@ export default class Services extends React.Component {
 
     const initials = formInitials
 
+		console.log(initials)
+
     const types = {
       'count': 'number',
       'ports[].port': 'number',
@@ -192,36 +194,9 @@ export default class Services extends React.Component {
       'ports[].protocol': ['TCP', 'UDP']
     };
 
-    const $hooks = {
-      onAdd(instance) {
-        // console.log('-> onAdd HOOK', instance.path || 'form');
-      },
-      onDel(instance) {
-        // console.log('-> onDel HOOK', instance.path || 'form');
-      },
-      onSubmit(instance){
-        // console.log('-> onSubmit HOOK', instance.path || 'form');
-      },
-      onSuccess(instance){
-        // console.log('Form Values!', instance.values())
-      },
-      sync(instance){
-        // console.log('sync', instance)
-      },
-      onChange(instance){
-        // console.log(instance.values())
-      }
-    };
-
-    const hooks = {
-      'ports': $hooks,
-      'serviceSpecID': $hooks,
-      'ports[]': $hooks,
-    };
-
     const plugins = { dvr: validatorjs };
 
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });    
+    return new MobxReactForm({ fields, rules, labels, initials, extra, types, keys }, { plugins });    
   }
 
   componentWillMount(){
@@ -277,6 +252,15 @@ export default class Services extends React.Component {
   }
 
   editService(service, index){
+		let ports = service.ports.map(function(port){
+			return {
+				port: port.port,
+				protocol: port.protocol,
+			}
+		})
+
+		console.log(ports)
+
     this.form = this.initProjectServicesForm({
       name: service.name,
       count: service.count,
@@ -286,12 +270,14 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
+      ports: ports,
     })
+		console.log(this.form.values())
     this.form.$('name').set('disabled', true)
-    this.form.update({ ports: service.ports })
 
     this.openDrawer()
   }
+
 
   onSubmit(e) {
     this.setState({ saving: true})
@@ -324,6 +310,7 @@ export default class Services extends React.Component {
         }
       })
     })
+
     return (
       <div>
           <Paper className={styles.tablePaper}>
@@ -415,7 +402,7 @@ export default class Services extends React.Component {
               classes={{
               paper: styles.list,
               }}
-              onClose={() => {this.closeDrawer()}}
+              onClose={() => {this.closeDrawer(true)}}
               open={this.state.drawerOpen}
           >
               <div tabIndex={0} className={styles.createServiceBar}>
