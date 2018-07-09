@@ -62,35 +62,21 @@ export default class PanelTable extends React.Component {
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TablePagination
-                    component="div"
-                    count={paginator.count}
-                    rowsPerPage={paginator.rowsPerPage}
-                    rowsPerPageOptions={[paginator.rowsPerPage]}
-                    page={paginator.page}
-                    backIconButtonProps={{
-                      'aria-label': 'Previous Page',
-                    }}
-                    nextIconButtonProps={{
-                      'aria-label': 'Next Page',
-                    }}
-                    onChangePage={this.props.handleChangePage}
-                  />
-
                   <div>
+                    {paginator.page * paginator.rowsPerPage} - {rows.length} of {paginator.count}
                     <IconButton
                       onClick={this.handleBackButtonClick}
-                      disabled={page === 0}
+                      disabled={paginator.page === 0}
                       aria-label="Previous Page"
                     >
-                      {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
+                      <KeyboardArrowLeft />
                     </IconButton>
                     <IconButton
                       onClick={this.handleNextButtonClick}
-                      disabled={page >= Math.ceil(count / rowsPerPage) - 1}
+                      disabled={paginator.page >= Math.ceil(paginator.count / paginator.rowsPerPage) - 1}
                       aria-label="Next Page"
                     >
-                      {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
+                      <KeyboardArrowRight />
                     </IconButton>
                   </div>
                 </TableRow>
