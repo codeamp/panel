@@ -373,7 +373,7 @@ export default class Secrets extends React.Component {
           paginator={{
             count: project.secrets.count,
             nextCursor: project.secrets.nextCursor,
-            page: project.secrets.page - 1,
+            page: project.secrets.page,
             rowsPerPage: this.props.store.app.paginator.limit,
           }}
           columns={[{
