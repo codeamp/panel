@@ -316,7 +316,7 @@ export default class Secrets extends React.Component {
 
     this.props.data.refetch({
       params: {
-        limit: this.props.store.app.paginator.limit,
+        limit: this.props.limit || this.props.store.app.paginator.limit,
         cursor: nextCursor,
       }
     }).then(({data}) => {
@@ -325,7 +325,7 @@ export default class Secrets extends React.Component {
         cursorStack: cursorStack
       })
       this.props.store.app.setPaginator({
-        limit: this.props.store.app.paginator.limit,
+        limit: this.props.limit || this.props.store.app.paginator.limit,
         cursor: nextCursor,
       })
     })    
@@ -340,7 +340,7 @@ export default class Secrets extends React.Component {
       cursorStack: cursorStack
     })
     this.props.store.app.setPaginator({
-      limit: this.props.store.app.paginator.limit,
+      limit: this.props.limit || this.props.store.app.paginator.limit,
       cursor: cursor,
     })
     this.props.data.refetch()  
@@ -367,7 +367,7 @@ export default class Secrets extends React.Component {
             count: project.secrets.count,
             nextCursor: project.secrets.nextCursor,
             page: project.secrets.page,
-            rowsPerPage: this.props.store.app.paginator.limit,
+            rowsPerPage: this.props.limit || this.props.store.app.paginator.limit,
           }}
           columns={[{
             label: "Key",
