@@ -29,10 +29,6 @@ class AppStore {
         name: null, 
         color: 'gray'
       },
-      paginator: {
-        limit: 1,
-        cursor: "",
-      },
       features: {
         showDeployed: false,
       },
@@ -45,10 +41,6 @@ class AppStore {
   
   setTitle = action(title => {
     this.title = title;
-  });
-
-  setPaginator = action(paginator => {
-    this.paginator = paginator;
   });
 
   setAdminLeftNav = action(open => {
