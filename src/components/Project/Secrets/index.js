@@ -310,46 +310,40 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
-  handleChangePage(evt, page){
+  setNextPage(){
     let cursorStack = this.state.cursorStack
     let nextCursor = this.props.data.project.secrets.nextCursor
-    console.log('onChangePage', page, evt)
-    
-    if(page > this.props.data.project.secrets.page - 1){ 
-      this.props.data.refetch({
-        params: {
-          limit: this.props.store.app.paginator.limit,
-          cursor: this.props.data.project.secrets.nextCursor,
-        }
-      }).then(({data}) => {
-        cursorStack.push(this.props.store.app.paginator.cursor)
-        this.setState({ 
-          cursorStack: cursorStack
-        })
-        this.props.store.app.setPaginator({
-          limit: this.props.store.app.paginator.limit,
-          cursor: nextCursor,
-        })
-        console.log(this.props.store.app.paginator, this.state.cursorStack)
+
+    this.props.data.refetch({
+      params: {
+        limit: this.props.store.app.paginator.limit,
+        cursor: nextCursor,
+      }
+    }).then(({data}) => {
+      cursorStack.push(this.props.store.app.paginator.cursor)
+      this.setState({ 
+        cursorStack: cursorStack
       })
-    } else {
-      let cursor = cursorStack.pop()
-      // console.log('refetching with', cursor)
-      this.props.data.refetch({
-        params: {
-          limit: this.props.store.app.paginator.limit,
-          cursor: "foo",
-        }
-      }).then(({data}) => {
-        this.setState({
-          cursorStack: cursorStack
-        })
-        this.props.store.app.setPaginator({
-          limit: this.props.store.app.paginator.limit,
-          cursor: nextCursor,
-        })
+      this.props.store.app.setPaginator({
+        limit: this.props.store.app.paginator.limit,
+        cursor: nextCursor,
       })
-    }
+    })    
+  }
+
+  setPreviousPage(){
+    let cursorStack = this.state.cursorStack
+    let nextCursor = this.props.data.project.secrets.nextCursor    
+    let cursor = cursorStack.pop()
+
+    this.setState({
+      cursorStack: cursorStack
+    })
+    this.props.store.app.setPaginator({
+      limit: this.props.store.app.paginator.limit,
+      cursor: cursor,
+    })
+    this.props.data.refetch()  
   }
 
   render() {
@@ -361,14 +355,13 @@ export default class Secrets extends React.Component {
     }
     var self = this;
 
-    console.log(project.secrets)
-
     return (
       <div>
         <PanelTable 
           title={"Secrets"}
           rows={project.secrets.entries}
-          handleChangePage={this.handleChangePage.bind(this)}
+          handleBackButtonClick={this.setPreviousPage.bind(this)}
+          handleNextButtonClick={this.setNextPage.bind(this)}
           onClick={this.onClick.bind(this)}
           paginator={{
             count: project.secrets.count,

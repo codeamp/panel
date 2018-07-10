@@ -30,7 +30,7 @@ class AppStore {
         color: 'gray'
       },
       paginator: {
-        limit: 1,
+        limit: 25,
         cursor: "",
       },
       features: {
