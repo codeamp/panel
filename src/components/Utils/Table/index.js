@@ -18,6 +18,14 @@ export default class PanelTable extends React.Component {
   render() {
     const { title, columns, rows, paginator } = this.props;
     var self = this;
+
+    let firstRowIndex = 1
+    let lastRowIndex = rows.length
+
+    if(paginator.page !== 1){
+      firstRowIndex = ((paginator.page - 1) * paginator.rowsPerPage) + 1
+      lastRowIndex = firstRowIndex + rows.length - 1
+    }
   
     return (
       <Grid container justify="center" alignItems="center">
@@ -63,8 +71,7 @@ export default class PanelTable extends React.Component {
               <TableFooter>
                 <TableRow>
                   <div>
-                    {paginator.page * paginator.rowsPerPage} - 
-                    {rows.length === 1 ? paginator.page * paginator.rowsPerPage : (paginator.page * paginator.rowsPerPage) + rows.length} of {paginator.count}
+                    {firstRowIndex} - {lastRowIndex} of {paginator.count}
                     <IconButton
                       onClick={this.props.handleBackButtonClick}
                       disabled={paginator.page === 1}
