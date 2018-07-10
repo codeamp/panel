@@ -68,7 +68,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
       params: {
-        limit: props.store.app.paginator.limit,
+        limit: props.limit || props.store.app.paginator.limit,
         cursor: props.store.app.paginator.cursor,
       },
     }

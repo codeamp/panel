@@ -81,7 +81,7 @@ export default class PanelTable extends React.Component {
                     </IconButton>
                     <IconButton
                       onClick={this.props.handleNextButtonClick}
-                      disabled={paginator.page >= Math.ceil(paginator.count / paginator.rowsPerPage)}
+                      disabled={lastRowIndex >= paginator.count}
                       aria-label="Next Page"
                     >
                       <KeyboardArrowRight />
