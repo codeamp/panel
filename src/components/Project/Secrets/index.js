@@ -355,6 +355,8 @@ export default class Secrets extends React.Component {
     }
     var self = this;
 
+    console.log(project.secrets)
+
     return (
       <div>
         <PanelTable 

@@ -2,14 +2,9 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
 import Table, { TableCell, TableHead, TableBody, TableRow, TableFooter } from 'material-ui/Table';
-import Drawer from 'material-ui/Drawer';
-import Menu, { MenuItem } from 'material-ui/Menu';
 import Typography from 'material-ui/Typography';
 import Toolbar from 'material-ui/Toolbar';
-import TablePagination from '@material-ui/core/TablePagination';
-import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
-import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import IconButton from '@material-ui/core/IconButton';
+import Pagination from '../Pagination';
 
 import styles from './style.module.css';
 
@@ -45,7 +40,7 @@ export default class PanelTable extends React.Component {
                         {col.label}
                       </TableCell>
                     ))}
-                </TableRow>
+                </TableRow>    
               </TableHead>
               <TableBody>
                 {rows.map(function(row, idx){
@@ -68,27 +63,13 @@ export default class PanelTable extends React.Component {
                   )
                 })}
               </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <div>
-                    {firstRowIndex} - {lastRowIndex} of {paginator.count}
-                    <IconButton
-                      onClick={this.props.handleBackButtonClick}
-                      disabled={paginator.page === 1}
-                      aria-label="Previous Page"
-                    >
-                      <KeyboardArrowLeft />
-                    </IconButton>
-                    <IconButton
-                      onClick={this.props.handleNextButtonClick}
-                      disabled={lastRowIndex >= paginator.count}
-                      aria-label="Next Page"
-                    >
-                      <KeyboardArrowRight />
-                    </IconButton>
-                  </div>
-                </TableRow>
-              </TableFooter>
+              <Pagination 
+                firstRowIndex={firstRowIndex}
+                lastRowIndex={lastRowIndex}
+                paginator={paginator}
+                handleNextButtonClick={this.props.handleNextButtonClick}
+                handleBackButtonClick={this.props.handleBackButtonClick}
+              />
             </Table>
           </Paper>
         </Grid>
