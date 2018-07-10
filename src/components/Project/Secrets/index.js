@@ -17,7 +17,6 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
-import PanelTable from 'components/Utils/Table';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
@@ -32,14 +31,11 @@ import 'brace/theme/github';
 
 @inject("store") @observer
 @graphql(gql`
-query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
+query Project($slug: String, $environmentID: String){
   project(slug: $slug, environmentID: $environmentID) {
     id
     name
-    secrets(params:$params) {
-      nextCursor
-      page
-      count
+    secrets {
       entries {
         id
         key
@@ -67,10 +63,6 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
-      params: {
-        limit: props.store.app.paginator.limit,
-        cursor: props.store.app.paginator.cursor,
-      },
     }
   })
 })
@@ -161,7 +153,6 @@ export default class Secrets extends React.Component {
       drawerOpen: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
-      cursorStack: [],
     }
   }
 
@@ -310,48 +301,6 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
-  handleChangePage(evt, page){
-    let cursorStack = this.state.cursorStack
-    let nextCursor = this.props.data.project.secrets.nextCursor
-    console.log('onChangePage', page, evt)
-    
-    if(page > this.props.data.project.secrets.page - 1){ 
-      this.props.data.refetch({
-        params: {
-          limit: this.props.store.app.paginator.limit,
-          cursor: this.props.data.project.secrets.nextCursor,
-        }
-      }).then(({data}) => {
-        cursorStack.push(this.props.store.app.paginator.cursor)
-        this.setState({ 
-          cursorStack: cursorStack
-        })
-        this.props.store.app.setPaginator({
-          limit: this.props.store.app.paginator.limit,
-          cursor: nextCursor,
-        })
-        console.log(this.props.store.app.paginator, this.state.cursorStack)
-      })
-    } else {
-      let cursor = cursorStack.pop()
-      // console.log('refetching with', cursor)
-      this.props.data.refetch({
-        params: {
-          limit: this.props.store.app.paginator.limit,
-          cursor: "foo",
-        }
-      }).then(({data}) => {
-        this.setState({
-          cursorStack: cursorStack
-        })
-        this.props.store.app.setPaginator({
-          limit: this.props.store.app.paginator.limit,
-          cursor: nextCursor,
-        })
-      })
-    }
-  }
-
   render() {
     const { loading, project } = this.props.data;
     if(loading){
@@ -360,43 +309,67 @@ export default class Secrets extends React.Component {
       )
     }
     var self = this;
-
-    console.log(project.secrets)
-
     return (
       <div>
-        <PanelTable 
-          title={"Secrets"}
-          rows={project.secrets.entries}
-          handleChangePage={this.handleChangePage.bind(this)}
-          onClick={this.onClick.bind(this)}
-          paginator={{
-            count: project.secrets.count,
-            nextCursor: project.secrets.nextCursor,
-            page: project.secrets.page,
-            rowsPerPage: this.props.store.app.paginator.limit,
-          }}
-          columns={[{
-            label: "Key",
-            getVal: function(row){return row.key},
-          }, {
-            label: "Type",
-            getVal: function(row){return row.type},
-          }, {
-            label: "Protected",
-            getVal: function(row){
-              if(row.isSecret)
-                return "yes"
-              return "no"
-            },
-          }, {
-            label: "Creator",
-            getVal: function(row){return row.user.email},
-          }, {
-            label: "Created",
-            getVal: function(row){return new Date(row.created).toString()},
-          }]}
-        />
+        <Paper className={styles.tablePaper}>
+          <Toolbar>
+            <Typography variant="title">
+              Secrets
+            </Typography>
+          </Toolbar>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  Key
+                </TableCell>
+                <TableCell>
+                  Type
+                </TableCell>
+                <TableCell>
+                  Protected
+                </TableCell>
+                <TableCell>
+                  Creator
+                </TableCell>
+                <TableCell>
+                  Created
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {project.secrets.entries.map(function(secret, idx){
+                let emptyValue
+                if (secret.value === '') {
+                  emptyValue = styles.emptyValue
+                }
+                return (
+                  <TableRow
+                    hover
+                    tabIndex={-1}
+                    onClick={()=> self.onClick(idx)}
+                    key={secret.id}>
+                    <TableCell>
+                      <span className={emptyValue}>{secret.key}</span>
+                    </TableCell>
+                    <TableCell>
+                      {secret.type}
+                    </TableCell>
+                    <TableCell>
+                      {secret.isSecret ? "yes" : "no" }
+                    </TableCell>
+                    <TableCell>
+                      {secret.user.email}
+                    </TableCell>
+                    <TableCell>
+                      {new Date(secret.created).toString()}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </Paper>
 
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
             className={styles.addButton}
