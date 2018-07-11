@@ -98,6 +98,7 @@ class Project extends React.Component {
 
   handleEnvironmentSelect = (id) => {
   	const { project } = this.props.data;
+    
     project.environments.map((env) => {
       if(env.id === id){
         this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name, key: env.key })
