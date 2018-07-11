@@ -163,6 +163,18 @@ export default class Secrets extends React.Component {
       dirtyFormDialogOpen: false,
       cursorStack: [],
     }
+
+    // check url query params
+    if(this.props.history.location.search !== ""){
+        const cursor = new URLSearchParams(this.props.history.location.search).get("cursor")
+        if(cursor !== "" && cursor !== null){
+            this.props.store.app.setPaginator({
+                limit: this.props.limit || this.props.store.app.paginator.limit,
+                cursor: cursor,
+            })
+            this.props.data.refetch()
+        }
+    }
   }
 
   initProjectSecretsForm(formInitials  = {}) {
@@ -353,6 +365,7 @@ export default class Secrets extends React.Component {
         <Loading />
       )
     }
+
     var self = this;
 
     return (
