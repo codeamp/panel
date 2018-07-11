@@ -33,7 +33,7 @@ jobs:
           command: |
             set -x
             sudo npm install -g nsp nsp-reporter-checkstyle
-            nsp check --reporter summary | tee /tmp/nsp-report
+            nsp check --reporter summary | tee /tmp/nsp-report || EXIT_CODE=$? && true
             
       - store_artifacts:
           path: /tmp/nsp-report
