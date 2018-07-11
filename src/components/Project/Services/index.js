@@ -37,7 +37,7 @@ import Grow from 'material-ui/transitions/Grow';
 query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
-    services(params: { limit: 30}){
+    services(params: { limit: 100}){
       entries {
         id
         name
