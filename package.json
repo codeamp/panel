@@ -19,7 +19,7 @@
     "mobx": "^4.2.1",
     "mobx-react": "^5.1.2",
     "mobx-react-form": ">=1.32.2",
-    "npm": "^5.10.0",
+    "npm": "^6.1.0",
     "oidc-client": ">=1.4.1",
     "raven-js": "^3.26.3",
     "react": ">=16.2.0",
