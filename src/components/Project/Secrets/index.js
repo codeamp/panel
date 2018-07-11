@@ -56,7 +56,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
             id
             email
           }
-        }      
+        }
         type
         created
       }
@@ -222,7 +222,7 @@ export default class Secrets extends React.Component {
   onClick(secretIdx){
     const secret = this.props.data.project.secrets.entries[secretIdx]
     if(secret !== null){
-      // find this 
+      // find this
       this.form = this.initProjectSecretsForm({
         'key': secret.key,
         'value': secret.value,
@@ -287,13 +287,13 @@ export default class Secrets extends React.Component {
 
   openDrawer(){
     this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
-  } 
+  }
 
   closeDrawer(force = false){
     if(!force && this.form.isDirty){
       this.setState({ dirtyFormDialogOpen: true })
     } else {
-      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })    
+      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })
     }
   }
 
@@ -321,19 +321,19 @@ export default class Secrets extends React.Component {
       }
     }).then(({data}) => {
       cursorStack.push(this.props.store.app.paginator.cursor)
-      this.setState({ 
+      this.setState({
         cursorStack: cursorStack
       })
       this.props.store.app.setPaginator({
         limit: this.props.limit || this.props.store.app.paginator.limit,
         cursor: nextCursor,
       })
-    })    
+    })
   }
 
   setPreviousPage(){
     let cursorStack = this.state.cursorStack
-    let nextCursor = this.props.data.project.secrets.nextCursor    
+    let nextCursor = this.props.data.project.secrets.nextCursor
     let cursor = cursorStack.pop()
 
     this.setState({
@@ -343,7 +343,7 @@ export default class Secrets extends React.Component {
       limit: this.props.limit || this.props.store.app.paginator.limit,
       cursor: cursor,
     })
-    this.props.data.refetch()  
+    this.props.data.refetch()
   }
 
   render() {
@@ -355,11 +355,9 @@ export default class Secrets extends React.Component {
     }
     var self = this;
 
-    console.log(project.secrets)
-
     return (
       <div>
-        <PanelTable 
+        <PanelTable
           title={"Secrets"}
           rows={project.secrets.entries}
           handleBackButtonClick={this.setPreviousPage.bind(this)}
@@ -464,11 +462,11 @@ export default class Secrets extends React.Component {
                     }
 
                     {this.form.values()['index'] >= 0 && project.secrets.entries[this.form.values()['index']] &&
-                      <EnvVarVersionHistory 
+                      <EnvVarVersionHistory
                         versions={project.secrets.entries[this.form.values()['index']].versions}
                         onClickVersion={this.onClickVersion.bind(this)}
                       />
-                    }    
+                    }
 
                     <Grid item xs={12}>
                       <Button color="primary"
