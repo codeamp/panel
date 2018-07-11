@@ -18,6 +18,8 @@ import ProjectEnvironment from 'components/Project/Environment';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
 
+import Raven from 'raven-js'
+
 const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
 
 @graphql(gql`
@@ -40,7 +42,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
           name
           color
         }
-      } 
+      }
     }
   }
 `, {
@@ -66,7 +68,7 @@ export default class App extends React.Component {
       },
       fetchDelay: null,
     };
-    
+
     socket.on('reconnect_failed', () => {
         // todo
     });
@@ -88,8 +90,13 @@ export default class App extends React.Component {
   render() {
     const { loading, projects, user } = this.props.data;
 
+    if (process.env.REACT_APP_SENTRY_DSN) {
+      Raven.config(process.env.REACT_APP_SENTRY_DSN).install()
+    }
+
     if(this.props.data.networkStatus === 8){
       return (
+
         <div className={styles.root}>
             <Grid item xs={12} className={styles.top}>
               <TopNav projects={[]} {...this.props} />
@@ -130,12 +137,12 @@ export default class App extends React.Component {
         <div className={styles.root}>
           <Grid container spacing={0}>
             <Grid item xs={12} className={styles.top}>
-              <TopNav {...this.props} /> 
+              <TopNav {...this.props} />
             </Grid>
-            <Grid item xs={12} className={styles.center}> 
+            <Grid item xs={12} className={styles.center}>
               <LeftNav {...this.props} />
               <div className={styles.children}>
-                <Switch> 
+                <Switch>
                   <Route exact path='/' render={(props) => (
                     <Dashboard projects={projects.entries} />
                   )} />
@@ -171,7 +178,7 @@ export default class App extends React.Component {
             action={
               <Button color="inherit" size="small" onClick={() => {this.props.store.app.setSnackbar({ open: false })}}>
                 Close
-              </Button>              
+              </Button>
             }
           />
         </div>
