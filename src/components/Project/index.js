@@ -98,7 +98,7 @@ class Project extends React.Component {
 
   handleEnvironmentSelect = (id) => {
   	const { project } = this.props.data;
-    
+
     project.environments.map((env) => {
       if(env.id === id){
         this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name, key: env.key })
@@ -109,8 +109,7 @@ class Project extends React.Component {
           redirectUrl += "/" + tokenizedURL[4]
         }
 
-        this.props.history.push(redirectUrl)      
-        this.props.client.resetStore()
+        this.props.history.push(redirectUrl)
         return null
       }
       return null
