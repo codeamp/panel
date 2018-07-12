@@ -340,12 +340,20 @@ export default class Secrets extends React.Component {
         limit: this.props.limit || this.props.store.app.paginator.limit,
         cursor: nextCursor,
       })
+
+      if(nextCursor !== null){
+        this.props.history.push({
+          pathname: this.props.location.pathname,
+          search: '?cursor=' + nextCursor
+        })
+      } else {
+        this.props.data.refetch()
+      }
     })
   }
 
   setPreviousPage(){
     let cursorStack = this.state.cursorStack
-    let nextCursor = this.props.data.project.secrets.nextCursor
     let cursor = cursorStack.pop()
 
     this.setState({
@@ -355,7 +363,15 @@ export default class Secrets extends React.Component {
       limit: this.props.limit || this.props.store.app.paginator.limit,
       cursor: cursor,
     })
-    this.props.data.refetch()
+
+    if(cursor !== null){
+      this.props.history.push({
+        pathname: this.props.location.pathname,
+        search: '?cursor=' + cursor
+      })
+    } else {
+      this.props.data.refetch()
+    }
   }
 
   render() {
