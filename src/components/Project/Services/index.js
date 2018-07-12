@@ -52,6 +52,24 @@ query Project($slug: String, $environmentID: String) {
         created
       }
     }
+    extensions {
+        id
+        extension {
+          id
+          name
+          component
+          config
+          type
+          key
+          created
+        }
+        state
+        stateMessage
+        config
+        customConfig
+        artifacts
+        created
+      }
   }
   serviceSpecs {
     id
@@ -136,6 +154,7 @@ export default class Services extends React.Component {
       saving: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
+      serviceExtensions: [],
     }
   }
 
@@ -144,6 +163,7 @@ export default class Services extends React.Component {
   }
 
   initProjectServicesForm(formInitials  = {}) {
+
     const fields = [
       'id',
       'name',
@@ -251,15 +271,16 @@ export default class Services extends React.Component {
   }
 
   handleClick = event => {
+    this.getServiceTypes()
     this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
   };
 
-  handleServiceRequest = value => {
-    this.form.$('type').set(value);
+  handleServiceRequest = service => {
+    this.form.$('type').set(service.type);
     this.form = this.initProjectServicesForm({
-      'type': value,
+      'type': service.type,
       'environmentID': this.props.store.app.currentEnvironment.id,
-    })    
+    })
 
     this.openDrawer()
   };
@@ -308,6 +329,82 @@ export default class Services extends React.Component {
     });
   }
 
+  componentWillUpdate(nextProps, nextState){
+
+  }
+
+  async getServiceTypes(){
+    const { loading, project } = this.props.data
+    if (loading) {
+      return null
+    }
+
+    const deployers = this.props.data.project.extensions.filter(function(extension){
+      if (extension.extension.type === "deployment") {
+        return extension
+      }
+    })
+
+    let uniqueDeployers = []
+    for (let extension of deployers) {
+      let found = false
+      for (let unique of uniqueDeployers) {
+        if (unique.extension.key === extension.extension.key){
+          found = true
+        }
+      }
+      if (found === false) {
+        uniqueDeployers.push(extension)
+      }
+    }
+
+    let serviceTypes = []
+    for (let extension of uniqueDeployers) {
+
+      let component = null
+      let formType = null
+      // check typename to know if Extension or ProjectExtension
+      if(extension.__typename === "ProjectExtension"){
+        component = extension.extension.component;
+        formType = "enabled";
+      } else if(extension.__typename === "Extension") {
+        component = extension.component;
+        formType = "available";
+      } else {
+        return;
+      }
+  
+      let registerFunc
+      
+      if (component !== ""){
+        try {
+          await import("./" + component)
+          .then((c) => {
+            component = c.default
+            registerFunc = c.RegisterServiceTypes
+          });
+        }
+        catch (e) {}
+        serviceTypes = serviceTypes.concat(registerFunc())
+      }
+    }
+
+    console.log(serviceTypes)
+
+    this.setState({
+      serviceExtensions: serviceTypes
+    })
+  }
+
+  renderCustomForm() {
+    if (this.state.serviceExtensions.length !== 0) {
+      let CustomForm = this.state.serviceExtensions[0].component
+      return (
+        <CustomForm/>
+      )
+    }
+  }
+
   render() {
     const { loading, project, serviceSpecs } = this.props.data;
     if(loading){
@@ -315,6 +412,7 @@ export default class Services extends React.Component {
         <Loading />
       )
     }
+
     this.form.$('projectID').set(project.id)
     this.form.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
@@ -324,6 +422,7 @@ export default class Services extends React.Component {
         }
       })
     })
+
     return (
       <div>
           <Paper className={styles.tablePaper}>
@@ -362,7 +461,6 @@ export default class Services extends React.Component {
               </TableHead>
               <TableBody>
                 {project.services.entries.map( (service, index) => {
-                  console.log(service)
                   return (
                     <TableRow
                       hover
@@ -400,8 +498,10 @@ export default class Services extends React.Component {
                 <Grow in={this.state.addServiceMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
-                      <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
+                    {this.state.serviceExtensions.map( (service) => {
+                        return ( <MenuItem onClick={() => this.handleServiceRequest(service)} key={service.label}>{service.label}</MenuItem>)
+                      })
+                    }
                     </MenuList>
                   </Paper>
                 </Grow>
@@ -477,6 +577,9 @@ export default class Services extends React.Component {
                                 </Grid>
                             </Grid>
                           </div>
+                      </Grid>
+                      <Grid item xs={12}>
+                        { this.renderCustomForm() }
                       </Grid>
                       <Grid item xs={12}>
                         <Button color="primary"
