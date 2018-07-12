@@ -28,8 +28,6 @@ import _ from 'lodash';
         }
         extensions {
           id
-          key
-          name
           environment {
             id
             name
@@ -43,10 +41,10 @@ import _ from 'lodash';
       name
       key
       color
-      projects {
-        entries {
-          id
-          releases {
+      projects {        
+        id
+        releases {
+          entries{
             id
             state
             headFeature {
@@ -78,23 +76,16 @@ import _ from 'lodash';
                   name
                 }
               }
-            }         
+            }     
           }
         }
-        extensions {
-          id
-          state
-          config
-          customConfig
-          artifacts
-          extension {
-            id
-            key
-            name
-          }  
-        }      
       }
     }
+    extensions {
+      id
+      key
+      name
+    }  
   }
 `, {
 	options: (props) => ({
@@ -177,7 +168,7 @@ export default class Projects extends React.Component {
   }
 
   selectAllProjects(e){
-    const allProjects = this.props.data.projects.map(function(project){
+    const allProjects = this.props.data.projects.entries.map(function(project){
       return project.id
     })
     if(e.target.checked){
@@ -295,17 +286,16 @@ export default class Projects extends React.Component {
       return (
         <Loading />
       )
-    }
-
+    }      
+      
     var runningReleases = 0
     var completeReleases = 0
     var failedReleases = 0
 
     environments.forEach(function(env){
       let _environment = _.find(environments, { id: env.id })
-      projects.forEach(function(project){
+      projects.entries.forEach(function(project){
         let _project = _.find(_environment.projects, { id: project.id })
-        console.log(_project)
         if(_project !== undefined) {
           if(_project.releases.length > 0){
             switch(_project.releases[0].state){
@@ -440,7 +430,7 @@ export default class Projects extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {projects.map(function(project, idx){
+              {projects.entries.map(function(project, idx){
                 return (
                   <TableRow
                     tabIndex={-1}
@@ -546,19 +536,18 @@ export default class Projects extends React.Component {
                     </Typography>
                     <Grid item xs={12}>
                       {extensions.forEach(function(extension){
-                        if(extension.environment.id === env.id){
-                          return (
-                            <FormControlLabel
-                              control={
-                                <Checkbox 
-                                  onClick={() => {self.toggleCheckedExtension(extension)}}
-                                  checked={self.state.checkedExtensions.includes(extension.id)} 
-                                />
-                              }
-                              label={extension.name + "(" + extension.key + ")"} 
-                            />    
-                          )
-                        }
+                        return (
+                          <FormControlLabel
+                            control={
+                              <Checkbox 
+                                onClick={() => {self.toggleCheckedExtension(extension)}}
+                                checked={self.state.checkedExtensions.includes(extension.id)} 
+                              />
+                            }
+                            label={extension.name + "(" + extension.key + ")"} 
+                          />    
+                        )
+                      
                       })}
                     </Grid>                    
                     <hr/>
