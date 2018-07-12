@@ -102,8 +102,14 @@ class Project extends React.Component {
     project.environments.map((env) => {
       if(env.id === id){
         this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name, key: env.key })
-        this.props.history.push('/projects/'+this.props.match.params.slug+"/"+env.key)      
-        this.props.client.resetStore()
+
+        var tokenizedURL = this.props.location.pathname.split("/")
+        var redirectUrl = '/projects/' + this.props.match.params.slug + "/" + env.key
+        if (tokenizedURL.length === 5) {
+          redirectUrl += "/" + tokenizedURL[4]
+        }
+
+        this.props.history.push(redirectUrl)
         return null
       }
       return null
