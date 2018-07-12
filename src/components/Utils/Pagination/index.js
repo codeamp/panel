@@ -11,27 +11,25 @@ export default class Pagination extends React.Component {
       const { firstRowIndex, lastRowIndex, paginator } = this.props;
   
       return(
-        <TableFooter>
-          <TableRow>
-            <div>
-              {firstRowIndex} - {lastRowIndex} of {paginator.count}
-              <IconButton
-                onClick={this.props.handleBackButtonClick}
-                disabled={paginator.page === 1}
-                aria-label="Previous Page"
-              >
-                <KeyboardArrowLeft />
-              </IconButton>
-              <IconButton
-                onClick={this.props.handleNextButtonClick}
-                disabled={lastRowIndex >= paginator.count}
-                aria-label="Next Page"
-              >
-                <KeyboardArrowRight />
-              </IconButton>
-            </div>
-          </TableRow>
-        </TableFooter> 
+        <TableRow>
+          <div>
+            {firstRowIndex} - {lastRowIndex} of {paginator.count}
+            <IconButton
+              onClick={this.props.handleBackButtonClick}
+              disabled={paginator.page === 1}
+              aria-label="Previous Page"
+            >
+              <KeyboardArrowLeft />
+            </IconButton>
+            <IconButton
+              onClick={this.props.handleNextButtonClick}
+              disabled={lastRowIndex >= paginator.count}
+              aria-label="Next Page"
+            >
+              <KeyboardArrowRight />
+            </IconButton>
+          </div>
+        </TableRow>
       ) 
     }
   }
