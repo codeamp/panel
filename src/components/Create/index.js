@@ -17,8 +17,8 @@ import MobxReactForm from 'mobx-react-form';
 @inject("store") @observer
 
 @graphql(gql`
-  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!, $environmentID: String) {
-    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked, environmentID: $environmentID }) {
+  mutation Mutation($gitProtocol: String!, $gitUrl: String!, $bookmarked: Boolean!) {
+    createProject(project: { gitProtocol: $gitProtocol, gitUrl: $gitUrl, bookmarked: $bookmarked }) {
       id
       name
       slug
@@ -62,7 +62,6 @@ export default class Create extends React.Component {
       'id',
       'gitProtocol',
       'gitUrl',
-      'environmentID',
     ];
     const rules = {};
     const types = {};
@@ -149,8 +148,7 @@ export default class Create extends React.Component {
       variables: { 
         gitUrl: this.state.url, 
         gitProtocol: this.state.repoType, 
-        bookmarked: this.state.bookmarked, 
-        environmentID: this.props.store.app.currentEnvironment.id  
+        bookmarked: this.state.bookmarked
       }
     }).then(({data}) => {
       self.props.history.push('/projects/' + data.createProject.slug)
