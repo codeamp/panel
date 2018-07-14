@@ -9,6 +9,7 @@ import IconButton from 'material-ui/IconButton';
 import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
 import CloseIcon from 'material-ui-icons/Close';
+import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import Input from 'material-ui/Input';
 import Dialog, {
@@ -17,6 +18,12 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import ExpansionPanel, {
+  //  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  ExpansionPanelActions,
+} from 'material-ui/ExpansionPanel';
+import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
@@ -140,12 +147,17 @@ export default class Services extends React.Component {
       saving: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
+      showAdvancedSettings: false,
     }
   }
 
   handleToggleDrawer(){
     this.setState({ open: !this.state.open })
   }
+
+  handleToggleAdvancedSettings = panel => (event) => {
+    this.setState({ showAdvancedSettings: !this.state.showAdvancedSettings });
+  };
 
   initProjectServicesForm(formInitials  = {}) {
     const fields = [
@@ -501,11 +513,19 @@ export default class Services extends React.Component {
                                 </Grid>
                             </Grid>
                           </div>
+                          <div className={styles.advancedSettingsContainer}>
+                          <ExpansionPanel expanded={this.state.showAdvancedSettings} onChange={this.handleToggleAdvancedSettings()}>
+                            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                              <Typography>
+                                Advanced Configurations
+                              </Typography>
+                            </ExpansionPanelSummary>
+                            <Divider/>
                             <Grid container spacing={24}>
-                                <Grid item xs={12}>
+                                <Grid item xs={12} className={styles.advancedSettingTitle}>
                                       <Typography variant="subheading"> Deployment Strategy </Typography>
-                                </Grid> 
-                              <Grid key={this.form.$('deploymentStrategy').id}>
+                                </Grid>
+                              <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
                                 <Grid item xs={12}>
                                   <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
                                 </Grid>
@@ -522,6 +542,10 @@ export default class Services extends React.Component {
                                 }
                               </Grid>
                             </Grid>
+                          </ExpansionPanel>
+                          </div>
+
+                            
                       </Grid>
                       <Grid item xs={12}>
                         <Button color="primary"
