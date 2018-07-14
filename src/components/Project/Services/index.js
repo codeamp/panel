@@ -19,9 +19,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import ExpansionPanel, {
-  //  ExpansionPanelDetails,
   ExpansionPanelSummary,
-  ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -187,8 +185,8 @@ export default class Services extends React.Component {
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
       'ports[].protocol': 'required',
-      'deploymentStrategy.maxUnavailable': "string",
-      'deploymentStrategy.maxSurge': "string",
+      'deploymentStrategy.maxUnavailable': "numeric|between:0,100",
+      'deploymentStrategy.maxSurge': "numeric|between:0,100",
     };
 
     const labels = {
@@ -201,8 +199,8 @@ export default class Services extends React.Component {
       'ports[].protocol': 'Protocol',
       'deploymentStrategy': 'Custom Deployment Strategy',
       'deploymentStrategy.type': 'Type',
-      'deploymentStrategy.maxUnavailable': 'MaxUnavailable',
-      'deploymentStrategy.maxSurge': 'MaxSurge',
+      'deploymentStrategy.maxUnavailable': 'MaxUnavailable %',
+      'deploymentStrategy.maxSurge': 'MaxSurge %',
     };
 
     const initials = formInitials
@@ -210,6 +208,8 @@ export default class Services extends React.Component {
     const types = {
       'count': 'number',
       'ports[].port': 'number',
+      'deploymentStrategy.maxSurge': 'number',
+      'deploymentStrategy.maxUnavailable': 'number',
     };
 
     const keys = {};
