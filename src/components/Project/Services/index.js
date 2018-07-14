@@ -218,6 +218,10 @@ export default class Services extends React.Component {
       'ports[].protocol': ['TCP', 'UDP'],
       'deploymentStrategy.type': [
         {
+          'key': 'default',
+          'value': 'Default (RollingUpdate, 30%,60%)'
+        },
+        {
           'key': 'recreate',
           'value': 'Recreate'
         },
@@ -295,6 +299,9 @@ export default class Services extends React.Component {
     this.form = this.initProjectServicesForm({
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
+      'deploymentStrategy.type': 'default',
+      'deploymentStrategy.maxUnavailable': "",
+      'deploymentStrategy.maxSurge': ""
     })    
 
     this.openDrawer()
@@ -526,8 +533,8 @@ export default class Services extends React.Component {
                                       <Typography variant="subheading"> Deployment Strategy </Typography>
                                 </Grid>
                               <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
-                                <Grid item xs={12}>
-                                  <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
+                                <Grid item xs={8}>
+                                  <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={true} />
                                 </Grid>
                                 {
                                 this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&

@@ -69,10 +69,11 @@
 
 .deploymentStrategyForm {
     margin-left: 1em;
+    margin-right: 1em;
 }
 
 .addRuleBtn {
-    paddingLeft: 35px;
+    padding-left: 35px;
 }
 
 
