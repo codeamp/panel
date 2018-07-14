@@ -208,8 +208,6 @@ export default class Services extends React.Component {
     const types = {
       'count': 'number',
       'ports[].port': 'number',
-      'deploymentStrategy.maxSurge': 'number',
-      'deploymentStrategy.maxUnavailable': 'number',
     };
 
     const keys = {};
@@ -300,8 +298,6 @@ export default class Services extends React.Component {
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
-      'deploymentStrategy.maxUnavailable': "",
-      'deploymentStrategy.maxSurge': ""
     })    
 
     this.openDrawer()
@@ -332,7 +328,12 @@ export default class Services extends React.Component {
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
-    this.form.update({ deploymentStrategy: service.deploymentStrategy })
+
+    if (service.deploymentStrategy.type === "" ) {
+      this.form.update({ deploymentStrategy: {type: "default"} })
+    } else {
+      this.form.update({ deploymentStrategy: service.deploymentStrategy })
+    }
 
     this.openDrawer()
   }
@@ -533,8 +534,8 @@ export default class Services extends React.Component {
                                       <Typography variant="subheading"> Deployment Strategy </Typography>
                                 </Grid>
                               <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
-                                <Grid item xs={8}>
-                                  <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={true} />
+                                <Grid item xs={12}>
+                                  <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
                                 </Grid>
                                 {
                                 this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
