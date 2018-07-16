@@ -78,6 +78,8 @@ import _ from 'lodash';
               }
             }     
           }
+          page
+          nextCursor
         }
       }
     }
@@ -89,7 +91,7 @@ import _ from 'lodash';
   }
 `, {
 	options: (props) => ({
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
 				repository: "",
@@ -287,17 +289,16 @@ export default class Projects extends React.Component {
         <Loading />
       )
     }      
-      
+
     var runningReleases = 0
     var completeReleases = 0
     var failedReleases = 0
 
     environments.forEach(function(env){
       let _environment = _.find(environments, { id: env.id })
-      projects.entries.forEach(function(project){
-        let _project = _.find(_environment.projects, { id: project.id })
+      _environment.projects.forEach(function(_project){
         if(_project !== undefined) {
-          if(_project.releases.length > 0){
+          if(_project.releases.entries.length > 0){
             switch(_project.releases[0].state){
               case "complete":
                 completeReleases += 1
