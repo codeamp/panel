@@ -58,9 +58,11 @@ class Callback extends Component {
   componentWillMount() {
     userManger.events.addUserLoaded((user) => {
       this.props.store.app.setUser(user)
+      console.log(user)
     });
 
     userManger.signinRedirectCallback().then(function(user) {
+      console.log(user)
       window.location.href = '/'
     }).catch(function(err) {
       console.log(err);
