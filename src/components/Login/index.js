@@ -45,6 +45,10 @@ class Dex extends Component {
   }
 
   render() {
+    if(this.startSigninMainWindow === null){
+      return (<div></div>)
+    }
+    
     return (
       <div>
         <button onClick={this.startSigninMainWindow.bind(this)}>Signin</button>
