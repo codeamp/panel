@@ -25,6 +25,9 @@ import _ from 'lodash';
         slug
         environments {
           id
+          name
+          key
+          __typename
         }
         extensions {
           id
@@ -34,15 +37,6 @@ import _ from 'lodash';
             key
           }
         }
-      }
-    }
-    environments {
-      id
-      name
-      key
-      color
-      projects {        
-        id
         releases {
           entries{
             id
@@ -80,21 +74,72 @@ import _ from 'lodash';
           }
           page
           nextCursor
+          __typename
         }
       }
+      __typename
     }
+    environments {
+      id
+      name
+      key
+      color
+      __typename
+    }
+
     extensions {
       id
       key
       name
+      __typename
     }  
+
+    releases {
+      entries{
+        id
+        state
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        } 
+        releaseExtensions {
+          id
+          state
+          extension {
+            id
+            extension {
+              id
+              key
+              name
+            }
+          }
+        }     
+      }
+      page
+      nextCursor
+      __typename
+    }
   }
 `, {
 	options: (props) => ({
     fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
-				repository: "",
+        repository: "",
         bookmarked: false,
       },
     },
@@ -282,9 +327,9 @@ export default class Projects extends React.Component {
   }
   
   render() {
-    const { loading, projects, environments, extensions } = this.props.data;
+    const { loading, projects, environments, extensions, releases } = this.props.data;
 
-    if(loading || !projects || !environments || !extensions){
+    if(loading || !projects || !environments || !extensions || !releases){
       return (
         <Loading />
       )
@@ -294,32 +339,30 @@ export default class Projects extends React.Component {
     var completeReleases = 0
     var failedReleases = 0
 
-    environments.forEach(function(env){
-      let _environment = _.find(environments, { id: env.id })
-      _environment.projects.forEach(function(_project){
-        if(_project !== undefined) {
-          if(_project.releases.entries.length > 0){
-            switch(_project.releases[0].state){
-              case "complete":
-                completeReleases += 1
-                break;
-              case "failed":
-                failedReleases += 1
-                break;
-              case "waiting":
-                runningReleases += 1
-                break;
-              case "fetching":
-                runningReleases += 1
-                break;
-              default:
-                break;
-            }
-          }
+    console.log(typeof(releases))
+
+    if (releases !== undefined && releases.entries !== undefined){
+      releases.entries.forEach(function(release){
+        console.log(release)
+        switch(release.state){
+          case "complete":
+            completeReleases += 1
+            break;
+          case "failed":
+            failedReleases += 1
+            break;
+          case "waiting":
+            runningReleases += 1
+            break;
+          case "fetching":
+            runningReleases += 1
+            break;
+          default:
+            break;
         }
       })
-    })    
-
+    }
+      
     var self = this;
     return (
       <div>
@@ -437,7 +480,7 @@ export default class Projects extends React.Component {
                     tabIndex={-1}
                     key={project.name}>
                     <TableCell>
-                      <Checkbox 
+                      <Checkbox
                         onClick={() => {self.toggleCheckedProject(project)} }
                         checked={ self.state.checkedProjects.includes(project.id) } />
                     </TableCell>
@@ -447,21 +490,19 @@ export default class Projects extends React.Component {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      {project.environments.forEach(function(env){
+                      {project.environments.map(function(env, idx){
                         // get env in environments query
-                        let _environment = _.find(environments, { id: env.id })
-                        let _project = _.find(_environment.projects, { id: project.id })
-                        
                         let color = "lightgray"
-                        let extensionStatuses = []                        
-                        if(_project.releases.length > 0) {
-                          switch(_project.releases[0].state){
+                        let extensionStatuses = []
+
+                        if(project.releases.entries.length > 0) {
+                          switch(project.releases.entries[0].state){
                             case "complete":
                               color = "green"
                               break;
                             case "waiting":
                               color = "yellow"
-                              break;                              
+                              break;
                             case "failed":
                               color = "red"
                               break;
@@ -469,7 +510,7 @@ export default class Projects extends React.Component {
                               break;
                           }
 
-                          _project.releases[0].releaseExtensions.forEach(function(releaseExtension){
+                          project.releases.entries[0].releaseExtensions.forEach(function(releaseExtension){
                             let status = "lightgray"
                             switch(releaseExtension.state){
                               case "complete":
@@ -477,16 +518,16 @@ export default class Projects extends React.Component {
                                 break;
                               case "waiting":
                                 status = "yellow"
-                                break;       
+                                break;
                               case "fetching":
                                 status = "yellow"
-                                break;                                                              
+                                break;
                               case "failed":
                                 status = "red"
                                 break;
                               default:
                                 break;
-                            }                  
+                            }                            
                             extensionStatuses.push(
                               <span key={releaseExtension.id} style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
                                 {releaseExtension.extension.extension.key}
@@ -497,15 +538,14 @@ export default class Projects extends React.Component {
 
                         return (
                           <div key={env.id + project.id} style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
-                            <Link to={"/projects/" + _project.slug + "/" + _environment.key}>
-                              {_environment.name + "(" + _environment.key + ")"} &nbsp;
-                            </Link>                                                      
-                            {extensionStatuses}                            
+                            <Link to={"/projects/" + project.slug + "/" + env.key}>
+                              {env.name + "(" + env.key + ")"} &nbsp;
+                            </Link>
+                            {extensionStatuses}
                           </div>
                         )
                       })}
-                    </TableCell>  
-                                      
+                    </TableCell>
                   </TableRow>
                 )
               })}
