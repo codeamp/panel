@@ -339,11 +339,8 @@ export default class Projects extends React.Component {
     var completeReleases = 0
     var failedReleases = 0
 
-    console.log(typeof(releases))
-
     if (releases !== undefined && releases.entries !== undefined){
       releases.entries.forEach(function(release){
-        console.log(release)
         switch(release.state){
           case "complete":
             completeReleases += 1
