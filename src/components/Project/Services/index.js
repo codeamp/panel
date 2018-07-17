@@ -56,6 +56,8 @@ query Project($slug: String, $environmentID: String) {
         ports
         created
         deploymentStrategy
+        readinessProbes
+        livenessProbes
       }
     }
   }
@@ -80,7 +82,8 @@ query Project($slug: String, $environmentID: String) {
 // Mutations
 @graphql(gql`
 mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!, $deploymentStrategy: DeploymentStrategyInput!) {
+    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
+    $deploymentStrategy: DeploymentStrategyInput!, $readinessProbes: [HealthProbeInput], $livenessProbes: [HealthProbeInput]) {
     createService(service:{
     projectID: $projectID,
     command: $command,
@@ -91,6 +94,8 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
     ports: $ports,
     environmentID: $environmentID,
     deploymentStrategy: $deploymentStrategy,
+    readinessProbes: $readinessProbes,
+    livenessProbes: $livenessProbes
     }) {
       id
     }
@@ -98,7 +103,8 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
 
 @graphql(gql`
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!, $deploymentStrategy: DeploymentStrategyInput!) {
+    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
+    $deploymentStrategy: DeploymentStrategyInput!, $readinessProbes: [HealthProbeInput], $livenessProbes: [HealthProbeInput]) {
     updateService(service:{
     id: $id,
     projectID: $projectID,
@@ -110,6 +116,8 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     ports: $ports,
     environmentID: $environmentID,
     deploymentStrategy: $deploymentStrategy,
+    readinessProbes: $readinessProbes,
+    livenessProbes: $livenessProbes
     }) {
       id
     }
@@ -117,7 +125,8 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 
 @graphql(gql`
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-  $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!, $deploymentStrategy: DeploymentStrategyInput!) {
+  $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
+  $deploymentStrategy: DeploymentStrategyInput!, $readinessProbes: [HealthProbeInput], $livenessProbes: [HealthProbeInput]) {
   deleteService(service:{
   id: $id,
   projectID: $projectID,
@@ -129,6 +138,8 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   ports: $ports,
   environmentID: $environmentID,
   deploymentStrategy: $deploymentStrategy,
+  readinessProbes: $readinessProbes,
+  livenessProbes: $livenessProbes
   }) {
     id
   }
@@ -176,6 +187,30 @@ export default class Services extends React.Component {
       'deploymentStrategy.type',
       'deploymentStrategy.maxUnavailable',
       'deploymentStrategy.maxSurge',
+      'livenessProbes',
+      'livenessProbes[]',
+      'livenessProbes[].method',
+      'livenessProbes[].command',
+      'livenessProbes[].port',
+      'livenessProbes[].scheme',
+      'livenessProbes[].path',
+      'livenessProbes[].initialDelaySeconds',
+      'livenessProbes[].periodSeconds',
+      'livenessProbes[].timeoutSeconds',
+      'livenessProbes[].successThreshold',
+      'livenessProbes[].failureThreshold',
+      'readinessProbes',
+      'readinessProbes[]',
+      'readinessProbes[].method',
+      'readinessProbes[].command',
+      'readinessProbes[].port',
+      'readinessProbes[].scheme',
+      'readinessProbes[].path',
+      'readinessProbes[].initialDelaySeconds',
+      'readinessProbes[].periodSeconds',
+      'readinessProbes[].timeoutSeconds',
+      'readinessProbes[].successThreshold',
+      'readinessProbes[].failureThreshold',
     ];
 
     const rules = {
@@ -187,6 +222,28 @@ export default class Services extends React.Component {
       'ports[].protocol': 'required',
       'deploymentStrategy.maxUnavailable': "numeric|between:0,100",
       'deploymentStrategy.maxSurge': "numeric|between:0,100",
+
+      'livenessProbes[].method': "string|required",
+      'livenessProbes[].command': "string",
+      'livenessProbes[].port': "string",
+      'livenessProbes[].scheme': "string",
+      'livenessProbes[].path': "string",
+      'livenessProbes[].initialDelaySeconds': "numeric|min:0",
+      'livenessProbes[].periodSeconds': "numeric|min:0",
+      'livenessProbes[].timeoutSeconds': "numeric|min:0",
+      'livenessProbes[].successThreshold': "numeric|min:0",
+      'livenessProbes[].failureThreshold': "numeric|min:0",
+
+      'readinessProbes[].method': "string|required",
+      'readinessProbes[].command': "string",
+      'readinessProbes[].port': "string",
+      'readinessProbes[].scheme': "string",
+      'readinessProbes[].path': "string",
+      'readinessProbes[].initialDelaySeconds': "numeric|min:0",
+      'readinessProbes[].periodSeconds': "numeric|min:0",
+      'readinessProbes[].timeoutSeconds': "numeric|min:0",
+      'readinessProbes[].successThreshold': "numeric|min:0",
+      'readinessProbes[].failureThreshold': "numeric|min:0",
     };
 
     const labels = {
@@ -201,6 +258,28 @@ export default class Services extends React.Component {
       'deploymentStrategy.type': 'Type',
       'deploymentStrategy.maxUnavailable': 'MaxUnavailable %',
       'deploymentStrategy.maxSurge': 'MaxSurge %',
+
+      'livenessProbes[].method': "Method",
+      'livenessProbes[].command': "Command",
+      'livenessProbes[].port': "Port",
+      'livenessProbes[].scheme': "Scheme",
+      'livenessProbes[].path': "Path",
+      'livenessProbes[].initialDelaySeconds': "InitialDelaySeconds",
+      'livenessProbes[].periodSeconds': "PeriodSeconds",
+      'livenessProbes[].timeoutSeconds': "TimeoutSeconds",
+      'livenessProbes[].successThreshold': "SuccessThreshold",
+      'livenessProbes[].failureThreshold': "FailureThreshold",
+
+      'readinessProbes[].method': "Method",
+      'readinessProbes[].command': "Command",
+      'readinessProbes[].port': "Port",
+      'readinessProbes[].scheme': "Scheme",
+      'readinessProbes[].path': "Path",
+      'readinessProbes[].initialDelaySeconds': "InitialDelaySeconds",
+      'readinessProbes[].periodSeconds': "PeriodSeconds",
+      'readinessProbes[].timeoutSeconds': "TimeoutSeconds",
+      'readinessProbes[].successThreshold': "SuccessThreshold",
+      'readinessProbes[].failureThreshold': "FailureThreshold",
     };
 
     const initials = formInitials
@@ -208,6 +287,18 @@ export default class Services extends React.Component {
     const types = {
       'count': 'number',
       'ports[].port': 'number',
+
+      'livenessProbes[].initialDelaySeconds': 'number',
+      'livenessProbes[].periodSeconds': 'number',
+      'livenessProbes[].timeoutSeconds': 'number',
+      'livenessProbes[].successThreshold': 'number',
+      'livenessProbes[].failureThreshold': 'number',
+
+      'readinessProbes[].initialDelaySeconds': 'number',
+      'readinessProbes[].periodSeconds': 'number',
+      'readinessProbes[].timeoutSeconds': 'number',
+      'readinessProbes[].successThreshold': 'number',
+      'readinessProbes[].failureThreshold': 'number',
     };
 
     const keys = {};
@@ -215,18 +306,28 @@ export default class Services extends React.Component {
     const extra = {
       'ports[].protocol': ['TCP', 'UDP'],
       'deploymentStrategy.type': [
-        {
-          'key': 'default',
-          'value': 'Default (RollingUpdate, 30%,60%)'
-        },
-        {
-          'key': 'recreate',
-          'value': 'Recreate'
-        },
-        {
-          'key': 'rollingUpdate',
-          'value': 'RollingUpdate'
-        }]
+        {'key': 'default', 'value': 'Default (RollingUpdate, 30%,60%)'},
+        {'key': 'recreate', 'value': 'Recreate'},
+        {'key': 'rollingUpdate', 'value': 'RollingUpdate'}
+      ],
+      'readinessProbes[].method': [
+        {'key': 'exec', 'value': 'Exec'},
+        {'key': 'http', 'value': 'HTTP'},
+        {'key': 'tcp', 'value': 'TCP'}
+      ],
+      'readinessProbes[].scheme': [
+        {'key': 'http', 'value': 'HTTP'},
+        {'key': 'https', 'value': 'HTTPS'}
+      ],
+      'livenessProbes[].method': [
+        {'key': 'exec', 'value': 'Exec'},
+        {'key': 'http', 'value': 'HTTP'},
+        {'key': 'tcp', 'value': 'TCP'}
+      ],
+      'livenessProbes[].scheme': [
+        {'key': 'http', 'value': 'HTTP'},
+        {'key': 'https', 'value': 'HTTPS'}
+      ],
       };
 
     const $hooks = {
@@ -255,6 +356,8 @@ export default class Services extends React.Component {
       'serviceSpecID': $hooks,
       'ports[]': $hooks,
       'deploymentStrategy': $hooks,
+      'readinessProbes[]': $hooks,
+      'livenessProbes[]': $hooks,
     };
 
     const plugins = { dvr: validatorjs };
@@ -298,6 +401,17 @@ export default class Services extends React.Component {
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
+      'livenessProbes[].initialDelaySeconds': '0',
+      'livenessProbes[].periodSeconds': '0',
+      'livenessProbes[].timeoutSeconds': '0',
+      'livenessProbes[].successThreshold': '0',
+      'livenessProbes[].failureThreshold': '0',
+
+      'readinessProbes[].initialDelaySeconds': '0',
+      'readinessProbes[].periodSeconds': '0',
+      'readinessProbes[].timeoutSeconds': '0',
+      'readinessProbes[].successThreshold': '0',
+      'readinessProbes[].failureThreshold': '0',
     })    
 
     this.openDrawer()
@@ -328,6 +442,8 @@ export default class Services extends React.Component {
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
+    this.form.update({readinessProbes: service.readinessProbes})
+    this.form.update({livenessProbes: service.livenessProbes})
 
     if (service.deploymentStrategy.type === "" ) {
       this.form.update({ deploymentStrategy: {type: "default"} })
@@ -550,6 +666,153 @@ export default class Services extends React.Component {
                                 }
                               </Grid>
                             </Grid>
+                            <Divider/>
+                            <Grid container spacing={24}>
+                              <Grid item xs={12} className={styles.advancedSettingTitle}>
+                                <Typography variant="subheading"> Readiness Probes </Typography>
+                              </Grid>
+                              { this.form.$('readinessProbes').value.length > 0 && (
+                                <Grid item xs={12}>
+                                   <div className={styles.probeForm}>
+                                      {this.form.$('readinessProbes').map(probe =>
+                                        <Grid key={probe.id} container spacing={24}>
+                                          <Grid item xs={12}>
+                                            <SelectField field={probe.$('method')} fullWidth={false} />
+                                          </Grid>
+                                          { probe.$('method').value === 'exec' && (
+                                            <Grid item xs={12}>
+                                              <InputField field={probe.$('command')} fullWidth={true} />
+                                            </Grid>
+                                          )}
+                                          { probe.$('method').value === 'http' && (
+                                            <Grid item xs={12}>
+                                              <Grid item xs={4}>
+                                                <SelectField field={probe.$('scheme')} fullWidth={false} />
+                                              </Grid>
+                                              <Grid item xs={4}>
+                                                <InputField field={probe.$('port')} />
+                                              </Grid>
+                                              <Grid item xs={4}>
+                                                <InputField field={probe.$('path')} />
+                                              </Grid>
+                                            </Grid>
+                                          )}
+                                          { probe.$('method').value === 'tcp' && (
+                                            <Grid item xs={4}>
+                                              <InputField field={probe.$('port')} />
+                                            </Grid>
+                                          )}
+                                          { probe.$('method').value !== "" && (
+                                            <Grid item xs={12}>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('initialDelaySeconds')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('periodSeconds')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('timeoutSeconds')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('successThreshold')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('failureThreshold')} />
+                                              </Grid>
+                                            </Grid>
+                                          )}
+                                          <Grid item xs={1}>
+                                            <Button type="submit" style={{color: "red"}} onClick={probe.onDel}>
+                                              Remove
+                                            </Button>
+                                          </Grid>
+                                        </Grid>
+                                      )}
+                                    </div>
+                                </Grid>
+                              )
+                              }
+                                <Grid item xs={12}>
+                                  <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbes').onAdd}>
+                                      Add Readiness Probe
+                                  </Button>
+                                </Grid>
+                            </Grid>
+                            <Divider/>
+                            <Grid container spacing={24}>
+                              <Grid item xs={12} className={styles.advancedSettingTitle}>
+                                <Typography variant="subheading"> Liveness Probes </Typography>
+                              </Grid>
+                              { this.form.$('livenessProbes').value.length > 0 && (
+                                <Grid item xs={12}>
+                                   <div>
+                                      {this.form.$('livenessProbes').map(probe =>
+                                        <Grid key={probe.id} container spacing={24}>
+                                          <Grid item xs={12}>
+                                            <SelectField field={probe.$('method')} fullWidth={false} />
+                                          </Grid>
+                                          { probe.$('method').value === 'exec' && (
+                                            <Grid item xs={12}>
+                                              <InputField field={probe.$('command')} fullWidth={true} />
+                                            </Grid>
+                                          )}
+                                          { probe.$('method').value === 'http' && (
+                                            <Grid item xs={12}>
+                                              <Grid item xs={4}>
+                                                <SelectField field={probe.$('scheme')} fullWidth={false} />
+                                              </Grid>
+                                              <Grid item xs={4}>
+                                                <InputField field={probe.$('port')} />
+                                              </Grid>
+                                              <Grid item xs={4}>
+                                                <InputField field={probe.$('path')} />
+                                              </Grid>
+                                            </Grid>
+                                          )}
+                                          { probe.$('method').value === 'tcp' && (
+                                            <Grid item xs={4}>
+                                              <InputField field={probe.$('port')} />
+                                            </Grid>
+                                          )}
+                                          { probe.$('method').value !== "" && (
+                                            <Grid item xs={12}>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('initialDelaySeconds')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('periodSeconds')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('timeoutSeconds')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('successThreshold')} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('failureThreshold')} />
+                                              </Grid>
+                                            </Grid>
+                                          )}
+                                          <Grid item xs={1}>
+                                            <Button type="submit" style={{color: "red"}} onClick={probe.onDel}>
+                                              Remove
+                                            </Button>
+                                          </Grid>
+                                        </Grid>
+                                      )}
+                                    </div>
+                                </Grid>
+                              )
+                              }
+                                <Grid item xs={12}>
+                                  <Button variant="raised" type="secondary" onClick={this.form.$('livenessProbes').onAdd}>
+                                      Add Livness Probe
+                                  </Button>
+                                </Grid>
+                            </Grid>
+
+
+                          <Divider/>
                           </ExpansionPanel>
                           </div>
 
