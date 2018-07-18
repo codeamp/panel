@@ -187,6 +187,8 @@ export default class Services extends React.Component {
       'deploymentStrategy.type',
       'deploymentStrategy.maxUnavailable',
       'deploymentStrategy.maxSurge',
+
+      // livenessProbe form inputs
       'livenessProbes',
       'livenessProbes[]',
       'livenessProbes[].method',
@@ -199,6 +201,8 @@ export default class Services extends React.Component {
       'livenessProbes[].timeoutSeconds',
       'livenessProbes[].successThreshold',
       'livenessProbes[].failureThreshold',
+
+      // readinessProbe form inputs
       'readinessProbes',
       'readinessProbes[]',
       'readinessProbes[].method',
@@ -225,7 +229,7 @@ export default class Services extends React.Component {
 
       'livenessProbes[].method': "string|required",
       'livenessProbes[].command': "string",
-      'livenessProbes[].port': "string",
+      'livenessProbes[].port': 'numeric|between:0,65535',
       'livenessProbes[].scheme': "string",
       'livenessProbes[].path': "string",
       'livenessProbes[].initialDelaySeconds': "numeric|min:0",
@@ -236,7 +240,7 @@ export default class Services extends React.Component {
 
       'readinessProbes[].method': "string|required",
       'readinessProbes[].command': "string",
-      'readinessProbes[].port': "string",
+      'readinessProbes[].port': 'numeric|between:0,65535',
       'readinessProbes[].scheme': "string",
       'readinessProbes[].path': "string",
       'readinessProbes[].initialDelaySeconds': "numeric|min:0",
@@ -288,12 +292,14 @@ export default class Services extends React.Component {
       'count': 'number',
       'ports[].port': 'number',
 
+      'livenessProbes[].port': 'number',
       'livenessProbes[].initialDelaySeconds': 'number',
       'livenessProbes[].periodSeconds': 'number',
       'livenessProbes[].timeoutSeconds': 'number',
       'livenessProbes[].successThreshold': 'number',
       'livenessProbes[].failureThreshold': 'number',
 
+      'readinessProbes[].port': 'number',
       'readinessProbes[].initialDelaySeconds': 'number',
       'readinessProbes[].periodSeconds': 'number',
       'readinessProbes[].timeoutSeconds': 'number',
@@ -362,7 +368,11 @@ export default class Services extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins });    
+    const options = {
+      autoParseNumbers: true
+    }
+
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins, options });    
   }
 
   componentWillMount(){
@@ -401,17 +411,17 @@ export default class Services extends React.Component {
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
-      'livenessProbes[].initialDelaySeconds': '0',
-      'livenessProbes[].periodSeconds': '0',
-      'livenessProbes[].timeoutSeconds': '0',
-      'livenessProbes[].successThreshold': '0',
-      'livenessProbes[].failureThreshold': '0',
+      // 'livenessProbes[].initialDelaySeconds': '0',
+      // 'livenessProbes[].periodSeconds': '0',
+      // 'livenessProbes[].timeoutSeconds': '0',
+      // 'livenessProbes[].successThreshold': '0',
+      // 'livenessProbes[].failureThreshold': '0',
 
-      'readinessProbes[].initialDelaySeconds': '0',
-      'readinessProbes[].periodSeconds': '0',
-      'readinessProbes[].timeoutSeconds': '0',
-      'readinessProbes[].successThreshold': '0',
-      'readinessProbes[].failureThreshold': '0',
+      // 'readinessProbes[].initialDelaySeconds': '0',
+      // 'readinessProbes[].periodSeconds': '0',
+      // 'readinessProbes[].timeoutSeconds': '0',
+      // 'readinessProbes[].successThreshold': '0',
+      // 'readinessProbes[].failureThreshold': '0',
     })    
 
     this.openDrawer()
@@ -439,6 +449,7 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
+      
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
