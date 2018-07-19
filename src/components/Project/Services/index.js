@@ -773,11 +773,9 @@ export default class Services extends React.Component {
                                         </Grid>
                                       </Grid>
                                     </ExpansionPanelDetails>
-                                  </ExpansionPanel>
-
+                                  </ExpansionPanel>=
                                 </Grid>
-
-
+                                
                                 <Grid item xs={12}>
                                   <ExpansionPanel>
                                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -877,8 +875,6 @@ export default class Services extends React.Component {
                                   </ExpansionPanel>
 
                                 </Grid>
-
-
                               </Grid>
                             </ExpansionPanelDetails>
                           </ExpansionPanel>
