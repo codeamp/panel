@@ -659,10 +659,6 @@ export default class Services extends React.Component {
                                       </Typography>
                                     </ExpansionPanelSummary>
                                     <ExpansionPanelDetails>
-
-                                        {/* <Grid item xs={12} className={styles.advancedSettingTitle}>
-                                              <Typography variant="subheading"> Deployment Strategy </Typography>
-                                        </Grid> */}
                                       <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
                                         <Grid item xs={12}>
                                           <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
@@ -689,16 +685,29 @@ export default class Services extends React.Component {
                                         Readiness Probes
                                       </Typography>
                                     </ExpansionPanelSummary>
-
+                                    <Divider/>
                                     <ExpansionPanelDetails>
                                       <Grid container spacing={8} direction={'row'}>
                                       { this.form.$('readinessProbes').value.length > 0 && (
                                         <Grid item xs={12}>
                                         
                                         {this.form.$('readinessProbes').map(probe =>
-                                          <Grid key={probe.id} container direction={'column'}>
+                                          <Grid key={probe.id} container direction={'column'} className={styles.healthProbe}>
                                             <Grid item xs={12}>
-                                              <SelectField field={probe.$('method')} fullWidth={true} />
+                                              <Grid container direction={'row'}>
+                                                <Grid item xs={6}>
+                                                  <SelectField field={probe.$('method')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={6}>
+                                                <Grid container direction={'row'} justify={'flex-end'}>
+                                                  <Grid item xs={1}>
+                                                    <IconButton>
+                                                      <CloseIcon onClick={probe.onDel} />
+                                                    </IconButton>
+                                                  </Grid>
+                                                </Grid>
+                                                </Grid>
+                                              </Grid>
                                             </Grid>
 
                                           { probe.$('method').value === 'exec' && (
@@ -742,7 +751,7 @@ export default class Services extends React.Component {
 
                                               <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
                                                 <Grid item xs={3}>
-                                                  <InputField field={probe.$('initialDelaySeconds')} fullWidth={true} />
+                                                  <InputField field={probe.$('initialDelaySeconds')} fullWidth={true}/>
                                                 </Grid>
                                                 <Grid item xs={3}>
                                                   <InputField field={probe.$('periodSeconds')} fullWidth={true} />
@@ -753,13 +762,6 @@ export default class Services extends React.Component {
                                               </Grid>
                                             </Grid>
                                           )}
-
-                                          <Grid item xs={1} className={styles.removeProbeButton}>
-                                            <Button type="submit" style={{color: "red"}} onClick={probe.onDel}>
-                                              Remove
-                                            </Button>
-                                          </Grid>
-
                                           </Grid>
                                         )}
                                         </Grid>
@@ -783,16 +785,29 @@ export default class Services extends React.Component {
                                         Liveness Probes
                                       </Typography>
                                     </ExpansionPanelSummary>
-
+                                    <Divider/>
                                     <ExpansionPanelDetails>
                                       <Grid container spacing={8} direction={'row'}>
                                       { this.form.$('livenessProbes').value.length > 0 && (
                                         <Grid item xs={12}>
                                         
                                         {this.form.$('livenessProbes').map(probe =>
-                                          <Grid key={probe.id} container direction={'column'}>
+                                          <Grid key={probe.id} container direction={'column'} className={styles.healthProbe}>
                                             <Grid item xs={12}>
-                                              <SelectField field={probe.$('method')} fullWidth={true} />
+                                              <Grid container direction={'row'}>
+                                                <Grid item xs={6}>
+                                                  <SelectField field={probe.$('method')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={6}>
+                                                <Grid container direction={'row'} justify={'flex-end'}>
+                                                  <Grid item xs={1}>
+                                                    <IconButton>
+                                                      <CloseIcon onClick={probe.onDel} />
+                                                    </IconButton>
+                                                  </Grid>
+                                                </Grid>
+                                                </Grid>
+                                              </Grid>
                                             </Grid>
 
                                           { probe.$('method').value === 'exec' && (
@@ -847,12 +862,6 @@ export default class Services extends React.Component {
                                               </Grid>
                                             </Grid>
                                           )}
-
-                                          <Grid item xs={1} className={styles.removeProbeButton}>
-                                            <Button type="submit" style={{color: "red"}} onClick={probe.onDel}>
-                                              Remove
-                                            </Button>
-                                          </Grid>
 
                                           </Grid>
                                         )}
