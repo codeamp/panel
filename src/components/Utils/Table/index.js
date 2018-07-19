@@ -1,7 +1,7 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Paper from 'material-ui/Paper';
-import Table, { TableCell, TableHead, TableBody, TableRow, TableFooter } from 'material-ui/Table';
+import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
 import Typography from 'material-ui/Typography';
 import Toolbar from 'material-ui/Toolbar';
 import Pagination from '../Pagination';
