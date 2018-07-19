@@ -3,8 +3,6 @@ import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
-import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
-import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Dialog, {
@@ -258,7 +256,7 @@ export default class Secrets extends React.Component {
 
   onError(form){
     // todo
-    this.closeDrawer(true)
+    this.setState({ saving: false })
   }
 
   onSuccess(form){
@@ -382,8 +380,6 @@ export default class Secrets extends React.Component {
       )
     }
 
-    var self = this;
-
     return (
       <div>
         <PanelTable
@@ -448,7 +444,7 @@ export default class Secrets extends React.Component {
               <AppBar position="static" color="default">
                   <Toolbar>
                     <Typography variant="title" color="inherit">
-                        Environment Variable
+                        Secret
                     </Typography>
                   </Toolbar>
               </AppBar>

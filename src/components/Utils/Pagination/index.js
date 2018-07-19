@@ -1,10 +1,9 @@
 import React from 'react';
-import { TableRow, TableFooter } from 'material-ui/Table';
+import { TableRow } from 'material-ui/Table';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import IconButton from '@material-ui/core/IconButton';
 
-import styles from './style.module.css';
 import Typography from 'material-ui/Typography';
 
 export default class Pagination extends React.Component {
