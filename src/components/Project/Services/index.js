@@ -19,7 +19,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import ExpansionPanel, {
-  ExpansionPanelSummary,
+  ExpansionPanelSummary, ExpansionPanelActions, ExpansionPanelDetails
 } from 'material-ui/ExpansionPanel';
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -82,7 +82,7 @@ query Project($slug: String, $environmentID: String) {
 // Mutations
 @graphql(gql`
 mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
+    $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbes: [HealthProbeInput], $livenessProbes: [HealthProbeInput]) {
     createService(service:{
     projectID: $projectID,
@@ -103,7 +103,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
 
 @graphql(gql`
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
+    $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbes: [HealthProbeInput], $livenessProbes: [HealthProbeInput]) {
     updateService(service:{
     id: $id,
@@ -125,7 +125,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 
 @graphql(gql`
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-  $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
+  $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
   $deploymentStrategy: DeploymentStrategyInput!, $readinessProbes: [HealthProbeInput], $livenessProbes: [HealthProbeInput]) {
   deleteService(service:{
   id: $id,
@@ -157,6 +157,7 @@ export default class Services extends React.Component {
       dialogOpen: false,
       dirtyFormDialogOpen: false,
       showAdvancedSettings: false,
+      showDeploymentStrategy: false,
     }
   }
 
@@ -291,6 +292,8 @@ export default class Services extends React.Component {
     const types = {
       'count': 'number',
       'ports[].port': 'number',
+      'deploymentStrategy.maxUnavailable': 'number',
+      'deploymentStrategy.maxSurge': 'number',
 
       'livenessProbes[].port': 'number',
       'livenessProbes[].initialDelaySeconds': 'number',
@@ -411,17 +414,6 @@ export default class Services extends React.Component {
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
-      // 'livenessProbes[].initialDelaySeconds': '0',
-      // 'livenessProbes[].periodSeconds': '0',
-      // 'livenessProbes[].timeoutSeconds': '0',
-      // 'livenessProbes[].successThreshold': '0',
-      // 'livenessProbes[].failureThreshold': '0',
-
-      // 'readinessProbes[].initialDelaySeconds': '0',
-      // 'readinessProbes[].periodSeconds': '0',
-      // 'readinessProbes[].timeoutSeconds': '0',
-      // 'readinessProbes[].successThreshold': '0',
-      // 'readinessProbes[].failureThreshold': '0',
     })    
 
     this.openDrawer()
@@ -648,186 +640,240 @@ export default class Services extends React.Component {
                                 </Grid>
                             </Grid>
                           </div>
-                          <div className={styles.advancedSettingsContainer}>
-                          <ExpansionPanel expanded={this.state.showAdvancedSettings} onChange={this.handleToggleAdvancedSettings()}>
+
+                          <ExpansionPanel className={styles.advancedSettingsContainer} expanded={this.state.showAdvancedSettings} onChange={this.handleToggleAdvancedSettings()}>
+
                             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                               <Typography>
                                 Advanced Configurations
                               </Typography>
                             </ExpansionPanelSummary>
-                            <Divider/>
-                            <Grid container spacing={24}>
-                                <Grid item xs={12} className={styles.advancedSettingTitle}>
-                                      <Typography variant="subheading"> Deployment Strategy </Typography>
-                                </Grid>
-                              <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
+
+                            <ExpansionPanelDetails>
+                              <Grid container spacing={8} direction={'row'}>
                                 <Grid item xs={12}>
-                                  <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
-                                </Grid>
-                                {
-                                this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
-                                <Grid container spacing={24}>
-                                  <Grid item xs={6}>
-                                    <InputField field={this.form.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <InputField field={this.form.$('deploymentStrategy.maxSurge')} fullWith={false} />
-                                  </Grid>
-                                </Grid>
-                                }
-                              </Grid>
-                            </Grid>
-                            <Divider/>
-                            <Grid container spacing={24}>
-                              <Grid item xs={12} className={styles.advancedSettingTitle}>
-                                <Typography variant="subheading"> Readiness Probes </Typography>
-                              </Grid>
-                              { this.form.$('readinessProbes').value.length > 0 && (
-                                <Grid item xs={12}>
-                                   <div className={styles.probeForm}>
-                                      {this.form.$('readinessProbes').map(probe =>
-                                        <Grid key={probe.id} container spacing={24}>
-                                          <Grid item xs={12}>
-                                            <SelectField field={probe.$('method')} fullWidth={false} />
+                                  <ExpansionPanel className={styles.advancedSettingsExpansionPanel}>
+                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                      <Typography>
+                                          Deployment Strategy
+                                      </Typography>
+                                    </ExpansionPanelSummary>
+                                    <ExpansionPanelDetails>
+
+                                        {/* <Grid item xs={12} className={styles.advancedSettingTitle}>
+                                              <Typography variant="subheading"> Deployment Strategy </Typography>
+                                        </Grid> */}
+                                      <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
+                                        <Grid item xs={12}>
+                                          <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
+                                        </Grid>
+                                        { this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
+                                          <Grid container spacing={24}>
+                                            <Grid item xs={6}>
+                                              <InputField field={this.form.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                              <InputField field={this.form.$('deploymentStrategy.maxSurge')} fullWith={false} />
+                                            </Grid>
                                           </Grid>
+                                        }
+                                      </Grid>
+                                    </ExpansionPanelDetails>
+                                  </ExpansionPanel>
+                                </Grid>
+                                
+                                <Grid item xs={12}>
+                                  <ExpansionPanel>
+                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                      <Typography>
+                                        Readiness Probes
+                                      </Typography>
+                                    </ExpansionPanelSummary>
+
+                                    <ExpansionPanelDetails>
+                                      <Grid container spacing={8} direction={'row'}>
+                                      { this.form.$('readinessProbes').value.length > 0 && (
+                                        <Grid item xs={12}>
+                                        
+                                        {this.form.$('readinessProbes').map(probe =>
+                                          <Grid key={probe.id} container direction={'column'}>
+                                            <Grid item xs={12}>
+                                              <SelectField field={probe.$('method')} fullWidth={true} />
+                                            </Grid>
+
                                           { probe.$('method').value === 'exec' && (
                                             <Grid item xs={12}>
                                               <InputField field={probe.$('command')} fullWidth={true} />
                                             </Grid>
                                           )}
+
                                           { probe.$('method').value === 'http' && (
-                                            <Grid item xs={12}>
+                                            <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
                                               <Grid item xs={4}>
-                                                <SelectField field={probe.$('scheme')} fullWidth={false} />
+                                                <SelectField field={probe.$('scheme')} fullWidth={true} />
                                               </Grid>
-                                              <Grid item xs={4}>
-                                                <InputField field={probe.$('port')} />
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('port')} fullWidth={true} />
                                               </Grid>
-                                              <Grid item xs={4}>
-                                                <InputField field={probe.$('path')} />
+                                              <Grid item xs={12}>
+                                                <InputField field={probe.$('path')} fullWidth={true} />
                                               </Grid>
                                             </Grid>
                                           )}
+
                                           { probe.$('method').value === 'tcp' && (
-                                            <Grid item xs={4}>
-                                              <InputField field={probe.$('port')} />
+                                            <Grid container justify={'flex-start'}>
+                                              <Grid item xs={4}>
+                                                <InputField field={probe.$('port')} fullWidth={true} />
+                                              </Grid>
                                             </Grid>
                                           )}
+
                                           { probe.$('method').value !== "" && (
-                                            <Grid item xs={12}>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('initialDelaySeconds')} />
+                                            <Grid container spacing={8} direction={'column'}>
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('successThreshold')} fullWidth={true}/>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('failureThreshold')} fullWidth={true} />
+                                                </Grid>
                                               </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('periodSeconds')} />
-                                              </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('timeoutSeconds')} />
-                                              </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('successThreshold')} />
-                                              </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('failureThreshold')} />
+
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('initialDelaySeconds')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('periodSeconds')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('timeoutSeconds')} fullWidth={true} />
+                                                </Grid>
                                               </Grid>
                                             </Grid>
                                           )}
-                                          <Grid item xs={1}>
+
+                                          <Grid item xs={1} className={styles.removeProbeButton}>
                                             <Button type="submit" style={{color: "red"}} onClick={probe.onDel}>
                                               Remove
                                             </Button>
                                           </Grid>
+
+                                          </Grid>
+                                        )}
                                         </Grid>
                                       )}
-                                    </div>
+                                        <Grid item xs={12}>
+                                          <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbes').onAdd}>
+                                              Add Readiness Probe
+                                          </Button>
+                                        </Grid>
+                                      </Grid>
+                                    </ExpansionPanelDetails>
+                                  </ExpansionPanel>
+
                                 </Grid>
-                              )
-                              }
+
+
                                 <Grid item xs={12}>
-                                  <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbes').onAdd}>
-                                      Add Readiness Probe
-                                  </Button>
-                                </Grid>
-                            </Grid>
-                            <Divider/>
-                            <Grid container spacing={24}>
-                              <Grid item xs={12} className={styles.advancedSettingTitle}>
-                                <Typography variant="subheading"> Liveness Probes </Typography>
-                              </Grid>
-                              { this.form.$('livenessProbes').value.length > 0 && (
-                                <Grid item xs={12}>
-                                   <div>
-                                      {this.form.$('livenessProbes').map(probe =>
-                                        <Grid key={probe.id} container spacing={24}>
-                                          <Grid item xs={12}>
-                                            <SelectField field={probe.$('method')} fullWidth={false} />
-                                          </Grid>
+                                  <ExpansionPanel>
+                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                      <Typography>
+                                        Liveness Probes
+                                      </Typography>
+                                    </ExpansionPanelSummary>
+
+                                    <ExpansionPanelDetails>
+                                      <Grid container spacing={8} direction={'row'}>
+                                      { this.form.$('livenessProbes').value.length > 0 && (
+                                        <Grid item xs={12}>
+                                        
+                                        {this.form.$('livenessProbes').map(probe =>
+                                          <Grid key={probe.id} container direction={'column'}>
+                                            <Grid item xs={12}>
+                                              <SelectField field={probe.$('method')} fullWidth={true} />
+                                            </Grid>
+
                                           { probe.$('method').value === 'exec' && (
                                             <Grid item xs={12}>
                                               <InputField field={probe.$('command')} fullWidth={true} />
                                             </Grid>
                                           )}
+
                                           { probe.$('method').value === 'http' && (
-                                            <Grid item xs={12}>
+                                            <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
                                               <Grid item xs={4}>
-                                                <SelectField field={probe.$('scheme')} fullWidth={false} />
+                                                <SelectField field={probe.$('scheme')} fullWidth={true} />
                                               </Grid>
-                                              <Grid item xs={4}>
-                                                <InputField field={probe.$('port')} />
+                                              <Grid item xs={2}>
+                                                <InputField field={probe.$('port')} fullWidth={true} />
                                               </Grid>
-                                              <Grid item xs={4}>
-                                                <InputField field={probe.$('path')} />
+                                              <Grid item xs={12}>
+                                                <InputField field={probe.$('path')} fullWidth={true} />
                                               </Grid>
                                             </Grid>
                                           )}
+
                                           { probe.$('method').value === 'tcp' && (
-                                            <Grid item xs={4}>
-                                              <InputField field={probe.$('port')} />
+                                            <Grid container justify={'flex-start'}>
+                                              <Grid item xs={4}>
+                                                <InputField field={probe.$('port')} fullWidth={true} />
+                                              </Grid>
                                             </Grid>
                                           )}
+
                                           { probe.$('method').value !== "" && (
-                                            <Grid item xs={12}>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('initialDelaySeconds')} />
+                                            <Grid container spacing={8} direction={'column'}>
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('successThreshold')} fullWidth={true}/>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('failureThreshold')} fullWidth={true} />
+                                                </Grid>
                                               </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('periodSeconds')} />
-                                              </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('timeoutSeconds')} />
-                                              </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('successThreshold')} />
-                                              </Grid>
-                                              <Grid item xs={2}>
-                                                <InputField field={probe.$('failureThreshold')} />
+
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('initialDelaySeconds')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('periodSeconds')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={probe.$('timeoutSeconds')} fullWidth={true} />
+                                                </Grid>
                                               </Grid>
                                             </Grid>
                                           )}
-                                          <Grid item xs={1}>
+
+                                          <Grid item xs={1} className={styles.removeProbeButton}>
                                             <Button type="submit" style={{color: "red"}} onClick={probe.onDel}>
                                               Remove
                                             </Button>
                                           </Grid>
+
+                                          </Grid>
+                                        )}
                                         </Grid>
                                       )}
-                                    </div>
+                                        <Grid item xs={12}>
+                                          <Button variant="raised" type="secondary" onClick={this.form.$('livenessProbes').onAdd}>
+                                              Add Liveness Probe
+                                          </Button>
+                                        </Grid>
+                                      </Grid>
+                                    </ExpansionPanelDetails>
+                                  </ExpansionPanel>
+
                                 </Grid>
-                              )
-                              }
-                                <Grid item xs={12}>
-                                  <Button variant="raised" type="secondary" onClick={this.form.$('livenessProbes').onAdd}>
-                                      Add Livness Probe
-                                  </Button>
-                                </Grid>
-                            </Grid>
 
 
-                          <Divider/>
+                              </Grid>
+                            </ExpansionPanelDetails>
                           </ExpansionPanel>
-                          </div>
 
-                            
                       </Grid>
                       <Grid item xs={12}>
                         <Button color="primary"
