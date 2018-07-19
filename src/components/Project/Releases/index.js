@@ -95,6 +95,7 @@ class ReleaseView extends React.Component {
       default:
         state = null
     }
+
     return (
       <Grid item xs={12} onClick={(e) => {this.props.handleOnClick(e)}}>
         <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>
@@ -110,7 +111,7 @@ class ReleaseView extends React.Component {
                   { this.props.release.headFeature.message}
                 </Typography>
                 <Typography component="p" className={styles.featureAuthor}>
-                  by <b> { this.props.release.user !== null ? this.props.release.user.email : "Continuous Deploy" } </b> - { new Date(this.props.release.created).toString() }
+                  by <b> { (this.props.release.user !== null && this.props.release.user.email !== "") ? this.props.release.user.email : <Chip label="CD" className={styles.continuousDelivery} />} </b> - { new Date(this.props.release.created).toString() }
                 </Typography>
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
