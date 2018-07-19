@@ -448,7 +448,7 @@ export default class Secrets extends React.Component {
               <AppBar position="static" color="default">
                   <Toolbar>
                     <Typography variant="title" color="inherit">
-                        Environment Variable
+                        Secret
                     </Typography>
                   </Toolbar>
               </AppBar>
