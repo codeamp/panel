@@ -258,7 +258,7 @@ export default class Secrets extends React.Component {
 
   onError(form){
     // todo
-    this.closeDrawer(true)
+    this.setState({ saving: false })
   }
 
   onSuccess(form){
