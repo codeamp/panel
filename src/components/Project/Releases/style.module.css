@@ -219,10 +219,10 @@
   color: white;
 }
 
-.activeRelease {
+.continuousDelivery {
     background-color: #2bbd17;
     color: white;
-  }
+}
 
 .inline {
     display: inline-block;
