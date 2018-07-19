@@ -19,7 +19,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import ExpansionPanel, {
-  ExpansionPanelSummary, ExpansionPanelActions, ExpansionPanelDetails
+  ExpansionPanelSummary, ExpansionPanelDetails
 } from 'material-ui/ExpansionPanel';
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
