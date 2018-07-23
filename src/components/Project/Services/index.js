@@ -154,15 +154,38 @@ export default class Services extends React.Component {
       anchorEl: null,
       addServiceMenuOpen: false,
       saving: false,
-      dialogOpen: false,
-      dirtyFormDialogOpen: false,
+      showConfirmDeleteDialog: false,
+      userHasUnsavedChanges: false,
+      showDiscardEditsConfirmDialog: false,
       showAdvancedSettings: false,
       showDeploymentStrategy: false,
     }
+
+
+    this.handleDeleteService = this.handleDeleteService.bind(this)
+    this.handleCancelForm = this.handleCancelForm.bind(this)
   }
 
   handleToggleDrawer(){
     this.setState({ open: !this.state.open })
+  }
+
+  handleFormChanged() {
+    this.setState({userHasUnsavedChanges: true})
+  }
+
+  handleClickAway() {
+    if (this.state.addServiceMenuOpen === true){
+        this.setState({ addServiceMenuOpen: false })
+    }
+  }
+
+  handleCancelForm() {
+    if (this.state.userHasUnsavedChanges === true) {
+      this.setState({showDiscardEditsConfirmDialog:true})
+    } else {
+      this.closeDrawer()
+    }
   }
 
   handleToggleAdvancedSettings = panel => (event) => {
@@ -339,6 +362,7 @@ export default class Services extends React.Component {
       ],
       };
 
+    var handleFormChanged = this.handleFormChanged.bind(this)
     const $hooks = {
       onAdd(instance) {
         // console.log('-> onAdd HOOK', instance.path || 'form');
@@ -357,10 +381,14 @@ export default class Services extends React.Component {
       },
       onChange(instance){
         // console.log(instance.values())
+        handleFormChanged()
       }
     };
 
     const hooks = {
+      'name': $hooks,
+      'count': $hooks,
+      'command': $hooks,
       'ports': $hooks,
       'serviceSpecID': $hooks,
       'ports[]': $hooks,
@@ -426,11 +454,9 @@ export default class Services extends React.Component {
   }
 
   closeDrawer(force = false){
-    if(!force && this.form.isDirty){
-      this.setState({ dirtyFormDialogOpen: true })
-    } else {
-      this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, dirtyFormDialogOpen: false })
-    }
+    if(force || this.state.userHasUnsavedChanges === false){
+      this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, showDiscardEditsConfirmDialog: false, showConfirmDeleteDialog: false, userHasUnsavedChanges: false })
+    } 
   }
 
   editService(service, index){
@@ -443,7 +469,6 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
-      
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -475,7 +500,7 @@ export default class Services extends React.Component {
   }
 
   handleDeleteService() {
-    this.setState({ dialogOpen: false, loading: true })
+    this.setState({ showConfirmDeleteDialog: false, loading: true })
     this.props.deleteService({
       variables: this.form.values(),
     }).then(({data}) => {
@@ -491,6 +516,7 @@ export default class Services extends React.Component {
         <Loading />
       )
     }
+
     this.form.$('projectID').set(project.id)
     this.form.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
@@ -571,7 +597,7 @@ export default class Services extends React.Component {
               placement="bottom-start"
               eventsEnabled={this.state.addServiceMenuOpen}
             >
-              <ClickAwayListener onClickAway={()=>this.setState({ addServiceMenuOpen: false })}>
+              <ClickAwayListener onClickAway={()=>this.handleClickAway()}>
                 <Grow in={this.state.addServiceMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
@@ -614,7 +640,7 @@ export default class Services extends React.Component {
                         <InputField field={this.form.$('count')} fullWidth={true}/>
                       </Grid>
                       <Grid item xs={9}>
-                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true} />
+                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
                       </Grid>
                       <Grid item xs={12}>
                           <div>
@@ -884,13 +910,13 @@ export default class Services extends React.Component {
                           <Button
                             disabled={this.state.saving}
                             color="inherit"
-                            onClick={()=>this.setState({ dialogOpen: true })}>
+                            onClick={()=>this.setState({ showConfirmDeleteDialog: true })}>
                             Delete
                           </Button>
                         }
                         <Button
                           color="primary"
-                          onClick={() => {this.closeDrawer()}}>
+                          onClick={() => this.handleCancelForm()}>
                           Cancel
                         </Button>
                       </Grid>
@@ -901,7 +927,7 @@ export default class Services extends React.Component {
           </Drawer>
 
           {/* Used for confirmation of escaping panel if dirty form */}
-          <Dialog open={this.state.dirtyFormDialogOpen}>
+          <Dialog open={this.state.showDiscardEditsConfirmDialog}>
             <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
@@ -909,7 +935,7 @@ export default class Services extends React.Component {
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+              <Button onClick={()=> this.setState({ showDiscardEditsConfirmDialog: false })} color="primary">
                 Cancel
               </Button>
               <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
@@ -919,7 +945,7 @@ export default class Services extends React.Component {
           </Dialog>          
 
           {project.services.entries[this.form.values()['index']] &&
-            <Dialog open={this.state.dialogOpen}>
+            <Dialog open={this.state.showConfirmDeleteDialog}>
               <DialogTitle>{"Ae you sure you want to delete " + project.services.entries[this.form.values()['index']].name + "?"}</DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -928,10 +954,10 @@ export default class Services extends React.Component {
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                <Button onClick={()=> this.setState({ showConfirmDeleteDialog: false })} color="primary">
                   Cancel
                 </Button>
-                <Button onClick={this.handleDeleteService.bind(this)} style={{ color: "red" }}>
+                <Button onClick={this.handleDeleteService} style={{ color: "red" }}>
                   Confirm
                 </Button>
               </DialogActions>
