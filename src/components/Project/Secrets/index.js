@@ -3,8 +3,6 @@ import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
-import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Table';
-import Paper from 'material-ui/Paper';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Dialog, {
@@ -17,6 +15,7 @@ import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
+import PanelTable from 'components/Utils/Table';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
@@ -31,11 +30,14 @@ import 'brace/theme/github';
 
 @inject("store") @observer
 @graphql(gql`
-query Project($slug: String, $environmentID: String){
+query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
   project(slug: $slug, environmentID: $environmentID) {
     id
     name
-    secrets {
+    secrets(params:$params) {
+      nextCursor
+      page
+      count
       entries {
         id
         key
@@ -52,7 +54,7 @@ query Project($slug: String, $environmentID: String){
             id
             email
           }
-        }      
+        }
         type
         created
       }
@@ -63,6 +65,10 @@ query Project($slug: String, $environmentID: String){
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
+      params: {
+        limit: props.limit || props.store.app.paginator.limit,
+        cursor: props.store.app.paginator.cursor,
+      },
     }
   })
 })
@@ -153,6 +159,19 @@ export default class Secrets extends React.Component {
       drawerOpen: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
+      cursorStack: [],
+    }
+
+    // check url query params
+    if(this.props.history.location.search !== ""){
+        const cursor = new URLSearchParams(this.props.history.location.search).get("cursor")
+        if(cursor !== "" && cursor !== null){
+            this.props.store.app.setPaginator({
+                limit: this.props.limit || this.props.store.app.paginator.limit,
+                cursor: cursor,
+            })
+            this.props.data.refetch()
+        }
     }
   }
 
@@ -213,7 +232,7 @@ export default class Secrets extends React.Component {
   onClick(secretIdx){
     const secret = this.props.data.project.secrets.entries[secretIdx]
     if(secret !== null){
-      // find this 
+      // find this
       this.form = this.initProjectSecretsForm({
         'key': secret.key,
         'value': secret.value,
@@ -237,7 +256,7 @@ export default class Secrets extends React.Component {
 
   onError(form){
     // todo
-    this.closeDrawer(true)
+    this.setState({ saving: false })
   }
 
   onSuccess(form){
@@ -278,13 +297,13 @@ export default class Secrets extends React.Component {
 
   openDrawer(){
     this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
-  } 
+  }
 
   closeDrawer(force = false){
     if(!force && this.form.isDirty){
       this.setState({ dirtyFormDialogOpen: true })
     } else {
-      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })    
+      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })
     }
   }
 
@@ -301,6 +320,58 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
+  setNextPage(){
+    let cursorStack = this.state.cursorStack
+    let nextCursor = this.props.data.project.secrets.nextCursor
+
+    this.props.data.refetch({
+      params: {
+        limit: this.props.limit || this.props.store.app.paginator.limit,
+        cursor: nextCursor,
+      }
+    }).then(({data}) => {
+      cursorStack.push(this.props.store.app.paginator.cursor)
+      this.setState({
+        cursorStack: cursorStack
+      })
+      this.props.store.app.setPaginator({
+        limit: this.props.limit || this.props.store.app.paginator.limit,
+        cursor: nextCursor,
+      })
+
+      if(nextCursor !== null){
+        this.props.history.push({
+          pathname: this.props.location.pathname,
+          search: '?cursor=' + nextCursor
+        })
+      } else {
+        this.props.data.refetch()
+      }
+    })
+  }
+
+  setPreviousPage(){
+    let cursorStack = this.state.cursorStack
+    let cursor = cursorStack.pop()
+
+    this.setState({
+      cursorStack: cursorStack
+    })
+    this.props.store.app.setPaginator({
+      limit: this.props.limit || this.props.store.app.paginator.limit,
+      cursor: cursor,
+    })
+
+    if(cursor !== null){
+      this.props.history.push({
+        pathname: this.props.location.pathname,
+        search: '?cursor=' + cursor
+      })
+    } else {
+      this.props.data.refetch()
+    }
+  }
+
   render() {
     const { loading, project } = this.props.data;
     if(loading){
@@ -308,68 +379,42 @@ export default class Secrets extends React.Component {
         <Loading />
       )
     }
-    var self = this;
+
     return (
       <div>
-        <Paper className={styles.tablePaper}>
-          <Toolbar>
-            <Typography variant="title">
-              Secrets
-            </Typography>
-          </Toolbar>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  Key
-                </TableCell>
-                <TableCell>
-                  Type
-                </TableCell>
-                <TableCell>
-                  Protected
-                </TableCell>
-                <TableCell>
-                  Creator
-                </TableCell>
-                <TableCell>
-                  Created
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {project.secrets.entries.map(function(secret, idx){
-                let emptyValue
-                if (secret.value === '') {
-                  emptyValue = styles.emptyValue
-                }
-                return (
-                  <TableRow
-                    hover
-                    tabIndex={-1}
-                    onClick={()=> self.onClick(idx)}
-                    key={secret.id}>
-                    <TableCell>
-                      <span className={emptyValue}>{secret.key}</span>
-                    </TableCell>
-                    <TableCell>
-                      {secret.type}
-                    </TableCell>
-                    <TableCell>
-                      {secret.isSecret ? "yes" : "no" }
-                    </TableCell>
-                    <TableCell>
-                      {secret.user.email}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(secret.created).toString()}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </Paper>
+        <PanelTable
+          title={"Secrets"}
+          rows={project.secrets.entries}
+          handleBackButtonClick={this.setPreviousPage.bind(this)}
+          handleNextButtonClick={this.setNextPage.bind(this)}
+          onClick={this.onClick.bind(this)}
+          paginator={{
+            count: project.secrets.count,
+            nextCursor: project.secrets.nextCursor,
+            page: project.secrets.page,
+            rowsPerPage: this.props.limit || this.props.store.app.paginator.limit,
+          }}
+          columns={[{
+            label: "Key",
+            getVal: function(row){return row.key},
+          }, {
+            label: "Type",
+            getVal: function(row){return row.type},
+          }, {
+            label: "Protected",
+            getVal: function(row){
+              if(row.isSecret)
+                return "yes"
+              return "no"
+            },
+          }, {
+            label: "Creator",
+            getVal: function(row){return row.user.email},
+          }, {
+            label: "Created",
+            getVal: function(row){return new Date(row.created).toString()},
+          }]}
+        />
 
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
             className={styles.addButton}
@@ -399,7 +444,7 @@ export default class Secrets extends React.Component {
               <AppBar position="static" color="default">
                   <Toolbar>
                     <Typography variant="title" color="inherit">
-                        Environment Variable
+                        Secret
                     </Typography>
                   </Toolbar>
               </AppBar>
@@ -442,11 +487,11 @@ export default class Secrets extends React.Component {
                     }
 
                     {this.form.values()['index'] >= 0 && project.secrets.entries[this.form.values()['index']] &&
-                      <EnvVarVersionHistory 
+                      <EnvVarVersionHistory
                         versions={project.secrets.entries[this.form.values()['index']].versions}
                         onClickVersion={this.onClickVersion.bind(this)}
                       />
-                    }    
+                    }
 
                     <Grid item xs={12}>
                       <Button color="primary"

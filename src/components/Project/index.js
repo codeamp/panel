@@ -125,7 +125,7 @@ class Project extends React.Component {
       }
     }).then(({ data }) => {
       this.props.data.refetch()
-    })      
+    })
   }
 
   setLeftNavProjectItems = (props) => {
@@ -139,7 +139,6 @@ class Project extends React.Component {
     var deployableFeatures = 0
     if(project.currentRelease !== null){
       project.features.entries.map(function(feature){
-        console.log(project)
         if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
           deployableFeatures += 1
         }
@@ -148,7 +147,7 @@ class Project extends React.Component {
     } else {
       deployableFeatures = project.features.entries.length
     }
-        
+
     this.props.store.app.leftNavItems = [
         {
           key: "10",
@@ -214,7 +213,7 @@ class Project extends React.Component {
         <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
           <StarIcon/>
         </IconButton>
-      ) 
+      )
     }
     return (
       <div className={styles.root}>
@@ -243,7 +242,7 @@ class Project extends React.Component {
                 open={Boolean(this.state.environmentAnchorEl)}
                 onClose={this.handleEnvironmentClose.bind(this)}>
                 {project.environments.map((env) => {
-                  return (<MenuItem 
+                  return (<MenuItem
                     key={env.id}
                     onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
                     {env.name}
@@ -267,7 +266,7 @@ class Project extends React.Component {
             <ProjectServices {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets {...props} />
+            <ProjectSecrets limit={100} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
             <ProjectExtensions {...props} socket={socket} />

@@ -9,6 +9,7 @@ import IconButton from 'material-ui/IconButton';
 import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
 import CloseIcon from 'material-ui-icons/Close';
+import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import Input from 'material-ui/Input';
 import Dialog, {
@@ -17,6 +18,10 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import ExpansionPanel, {
+  ExpansionPanelSummary,
+} from 'material-ui/ExpansionPanel';
+import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
@@ -50,6 +55,7 @@ query Project($slug: String, $environmentID: String) {
         type
         ports
         created
+        deploymentStrategy
       }
     }
   }
@@ -74,7 +80,7 @@ query Project($slug: String, $environmentID: String) {
 // Mutations
 @graphql(gql`
 mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!) {
+    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!, $deploymentStrategy: DeploymentStrategyInput!) {
     createService(service:{
     projectID: $projectID,
     command: $command,
@@ -84,6 +90,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
     type: $type,
     ports: $ports,
     environmentID: $environmentID,
+    deploymentStrategy: $deploymentStrategy,
     }) {
       id
     }
@@ -91,7 +98,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
 
 @graphql(gql`
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!) {
+    $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!, $deploymentStrategy: DeploymentStrategyInput!) {
     updateService(service:{
     id: $id,
     projectID: $projectID,
@@ -102,6 +109,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     type: $type,
     ports: $ports,
     environmentID: $environmentID,
+    deploymentStrategy: $deploymentStrategy,
     }) {
       id
     }
@@ -109,7 +117,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 
 @graphql(gql`
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
-  $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!) {
+  $count: String!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!, $deploymentStrategy: DeploymentStrategyInput!) {
   deleteService(service:{
   id: $id,
   projectID: $projectID,
@@ -120,6 +128,7 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   type: $type,
   ports: $ports,
   environmentID: $environmentID,
+  deploymentStrategy: $deploymentStrategy,
   }) {
     id
   }
@@ -136,12 +145,17 @@ export default class Services extends React.Component {
       saving: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
+      showAdvancedSettings: false,
     }
   }
 
   handleToggleDrawer(){
     this.setState({ open: !this.state.open })
   }
+
+  handleToggleAdvancedSettings = panel => (event) => {
+    this.setState({ showAdvancedSettings: !this.state.showAdvancedSettings });
+  };
 
   initProjectServicesForm(formInitials  = {}) {
     const fields = [
@@ -158,6 +172,10 @@ export default class Services extends React.Component {
       'ports[].protocol',
       'environmentID',
       'index',
+      'deploymentStrategy',
+      'deploymentStrategy.type',
+      'deploymentStrategy.maxUnavailable',
+      'deploymentStrategy.maxSurge',
     ];
 
     const rules = {
@@ -167,6 +185,8 @@ export default class Services extends React.Component {
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
       'ports[].protocol': 'required',
+      'deploymentStrategy.maxUnavailable': "numeric|between:0,100",
+      'deploymentStrategy.maxSurge': "numeric|between:0,100",
     };
 
     const labels = {
@@ -177,6 +197,10 @@ export default class Services extends React.Component {
       'ports': 'Container Ports',
       'ports[].port': 'Port',
       'ports[].protocol': 'Protocol',
+      'deploymentStrategy': 'Custom Deployment Strategy',
+      'deploymentStrategy.type': 'Type',
+      'deploymentStrategy.maxUnavailable': 'MaxUnavailable %',
+      'deploymentStrategy.maxSurge': 'MaxSurge %',
     };
 
     const initials = formInitials
@@ -189,8 +213,21 @@ export default class Services extends React.Component {
     const keys = {};
 
     const extra = {
-      'ports[].protocol': ['TCP', 'UDP']
-    };
+      'ports[].protocol': ['TCP', 'UDP'],
+      'deploymentStrategy.type': [
+        {
+          'key': 'default',
+          'value': 'Default (RollingUpdate, 30%,60%)'
+        },
+        {
+          'key': 'recreate',
+          'value': 'Recreate'
+        },
+        {
+          'key': 'rollingUpdate',
+          'value': 'RollingUpdate'
+        }]
+      };
 
     const $hooks = {
       onAdd(instance) {
@@ -217,6 +254,7 @@ export default class Services extends React.Component {
       'ports': $hooks,
       'serviceSpecID': $hooks,
       'ports[]': $hooks,
+      'deploymentStrategy': $hooks,
     };
 
     const plugins = { dvr: validatorjs };
@@ -259,6 +297,7 @@ export default class Services extends React.Component {
     this.form = this.initProjectServicesForm({
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
+      'deploymentStrategy.type': 'default',
     })    
 
     this.openDrawer()
@@ -289,6 +328,12 @@ export default class Services extends React.Component {
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
+
+    if (service.deploymentStrategy.type === "" ) {
+      this.form.update({ deploymentStrategy: {type: "default"} })
+    } else {
+      this.form.update({ deploymentStrategy: service.deploymentStrategy })
+    }
 
     this.openDrawer()
   }
@@ -362,7 +407,6 @@ export default class Services extends React.Component {
               </TableHead>
               <TableBody>
                 {project.services.entries.map( (service, index) => {
-                  console.log(service)
                   return (
                     <TableRow
                       hover
@@ -477,6 +521,39 @@ export default class Services extends React.Component {
                                 </Grid>
                             </Grid>
                           </div>
+                          <div className={styles.advancedSettingsContainer}>
+                          <ExpansionPanel expanded={this.state.showAdvancedSettings} onChange={this.handleToggleAdvancedSettings()}>
+                            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                              <Typography>
+                                Advanced Configurations
+                              </Typography>
+                            </ExpansionPanelSummary>
+                            <Divider/>
+                            <Grid container spacing={24}>
+                                <Grid item xs={12} className={styles.advancedSettingTitle}>
+                                      <Typography variant="subheading"> Deployment Strategy </Typography>
+                                </Grid>
+                              <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
+                                <Grid item xs={12}>
+                                  <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
+                                </Grid>
+                                {
+                                this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
+                                <Grid container spacing={24}>
+                                  <Grid item xs={6}>
+                                    <InputField field={this.form.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
+                                  </Grid>
+                                  <Grid item xs={6}>
+                                    <InputField field={this.form.$('deploymentStrategy.maxSurge')} fullWith={false} />
+                                  </Grid>
+                                </Grid>
+                                }
+                              </Grid>
+                            </Grid>
+                          </ExpansionPanel>
+                          </div>
+
+                            
                       </Grid>
                       <Grid item xs={12}>
                         <Button color="primary"

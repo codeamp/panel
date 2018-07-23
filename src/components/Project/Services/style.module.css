@@ -57,8 +57,23 @@
     width: 100px;
 }
 
+.advancedSettingsContainer {
+    width: 100%;
+    padding-top: 2em;
+}
+
+.advancedSettingTitle {
+    margin-top: 1em;
+    margin-left: 1em;
+}
+
+.deploymentStrategyForm {
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
 .addRuleBtn {
-    paddingLeft: 35px;
+    padding-left: 35px;
 }
 
 
