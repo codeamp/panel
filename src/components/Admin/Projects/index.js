@@ -264,7 +264,7 @@ export default class Projects extends React.Component {
     var self = this
     this.state.checkedProjects.forEach(function(projectID){
       let project = {}
-      self.props.data.projects.forEach(function(tmpProject){
+      self.props.data.projects.entries.forEach(function(tmpProject){
         if(tmpProject.id === projectID) {
           project = tmpProject
         }
@@ -272,11 +272,9 @@ export default class Projects extends React.Component {
 
       project.environments.forEach(function(env){
         let _environment = _.find(environments, {id: env.id})
-        let _project = _.find(_environment.projects, {id: project.id})
-
         let currentRelease = null
-        for(var i = 0; i < _project.releases.length; i++) {
-          let release = _project.releases[i]
+        for(var i = 0; i < project.releases.entries.length; i++) {
+          let release = project.releases.entries[i]
           if(release.state === "complete"){
             currentRelease = release
             break
@@ -284,7 +282,7 @@ export default class Projects extends React.Component {
         }
         
         if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
-          console.log('deploying ' + _project.name + ' in env ' + _environment.key + ' with head feature ' + currentRelease.headFeature.hash)
+          console.log('deploying ' + project.name + ' in env ' + _environment.key + ' with head feature ' + currentRelease.headFeature.hash)
           self.props.createRelease({
             variables: { 
               headFeatureID: currentRelease.headFeature.id, 
@@ -295,7 +293,7 @@ export default class Projects extends React.Component {
           }).then(({data}) => {
             // find checked extensions for that env
             self.props.data.refetch()
-            _project.extensions.forEach(function(projectExtension){
+            project.extensions.forEach(function(projectExtension){
               if(self.state.checkedExtensions.includes(projectExtension.extension.id)) {
                 console.log('updating project extension ' + projectExtension.extension.name)
                 console.log({
@@ -598,7 +596,7 @@ export default class Projects extends React.Component {
           <Button 
             onClick={this.onBatchDeploy.bind(this)}
             variant="raised" color="primary">
-            Deploy All
+            Deploy Selected
           </Button>                  
         </Paper>
       </div>
