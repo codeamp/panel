@@ -379,6 +379,7 @@ export default class Secrets extends React.Component {
         <Loading />
       )
     }
+    console.log(project)
 
     return (
       <div>
