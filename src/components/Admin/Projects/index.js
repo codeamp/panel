@@ -25,28 +25,20 @@ import _ from 'lodash';
         slug
         environments {
           id
+          name
+          key
+          __typename
         }
         extensions {
           id
-          key
-          name
           environment {
             id
             name
             key
           }
         }
-      }
-    }
-    environments {
-      id
-      name
-      key
-      color
-      projects {
-        entries {
-          id
-          releases {
+        releases {
+          entries{
             id
             state
             headFeature {
@@ -78,30 +70,76 @@ import _ from 'lodash';
                   name
                 }
               }
-            }         
+            }     
           }
+          page
+          nextCursor
+          __typename
         }
-        extensions {
+      }
+      __typename
+    }
+    environments {
+      id
+      name
+      key
+      color
+      __typename
+    }
+
+    extensions {
+      id
+      key
+      name
+      __typename
+    }  
+
+    releases {
+      entries{
+        id
+        state
+        headFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        }
+        tailFeature {
+          id
+          message
+          user
+          hash
+          parentHash
+          ref
+          created
+        } 
+        releaseExtensions {
           id
           state
-          config
-          customConfig
-          artifacts
           extension {
             id
-            key
-            name
-          }  
-        }      
+            extension {
+              id
+              key
+              name
+            }
+          }
+        }     
       }
+      page
+      nextCursor
+      __typename
     }
   }
 `, {
 	options: (props) => ({
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
-				repository: "",
+        repository: "",
         bookmarked: false,
       },
     },
@@ -177,7 +215,7 @@ export default class Projects extends React.Component {
   }
 
   selectAllProjects(e){
-    const allProjects = this.props.data.projects.map(function(project){
+    const allProjects = this.props.data.projects.entries.map(function(project){
       return project.id
     })
     if(e.target.checked){
@@ -226,7 +264,7 @@ export default class Projects extends React.Component {
     var self = this
     this.state.checkedProjects.forEach(function(projectID){
       let project = {}
-      self.props.data.projects.forEach(function(tmpProject){
+      self.props.data.projects.entries.forEach(function(tmpProject){
         if(tmpProject.id === projectID) {
           project = tmpProject
         }
@@ -234,11 +272,9 @@ export default class Projects extends React.Component {
 
       project.environments.forEach(function(env){
         let _environment = _.find(environments, {id: env.id})
-        let _project = _.find(_environment.projects, {id: project.id})
-
         let currentRelease = null
-        for(var i = 0; i < _project.releases.length; i++) {
-          let release = _project.releases[i]
+        for(var i = 0; i < project.releases.entries.length; i++) {
+          let release = project.releases.entries[i]
           if(release.state === "complete"){
             currentRelease = release
             break
@@ -246,7 +282,7 @@ export default class Projects extends React.Component {
         }
         
         if(self.state.checkedEnvs.includes(env.id) && currentRelease !== null){
-          console.log('deploying ' + _project.name + ' in env ' + _environment.key + ' with head feature ' + currentRelease.headFeature.hash)
+          console.log('deploying ' + project.name + ' in env ' + _environment.key + ' with head feature ' + currentRelease.headFeature.hash)
           self.props.createRelease({
             variables: { 
               headFeatureID: currentRelease.headFeature.id, 
@@ -257,7 +293,7 @@ export default class Projects extends React.Component {
           }).then(({data}) => {
             // find checked extensions for that env
             self.props.data.refetch()
-            _project.extensions.forEach(function(projectExtension){
+            project.extensions.forEach(function(projectExtension){
               if(self.state.checkedExtensions.includes(projectExtension.extension.id)) {
                 console.log('updating project extension ' + projectExtension.extension.name)
                 console.log({
@@ -289,46 +325,39 @@ export default class Projects extends React.Component {
   }
   
   render() {
-    const { loading, projects, environments, extensions } = this.props.data;
+    const { loading, projects, environments, extensions, releases } = this.props.data;
 
-    if(loading || !projects || !environments || !extensions){
+    if(loading || !projects || !environments || !extensions || !releases){
       return (
         <Loading />
       )
-    }
+    }      
 
     var runningReleases = 0
     var completeReleases = 0
     var failedReleases = 0
 
-    environments.forEach(function(env){
-      let _environment = _.find(environments, { id: env.id })
-      projects.forEach(function(project){
-        let _project = _.find(_environment.projects, { id: project.id })
-        console.log(_project)
-        if(_project !== undefined) {
-          if(_project.releases.length > 0){
-            switch(_project.releases[0].state){
-              case "complete":
-                completeReleases += 1
-                break;
-              case "failed":
-                failedReleases += 1
-                break;
-              case "waiting":
-                runningReleases += 1
-                break;
-              case "fetching":
-                runningReleases += 1
-                break;
-              default:
-                break;
-            }
-          }
+    if (releases !== undefined && releases.entries !== undefined){
+      releases.entries.forEach(function(release){
+        switch(release.state){
+          case "complete":
+            completeReleases += 1
+            break;
+          case "failed":
+            failedReleases += 1
+            break;
+          case "waiting":
+            runningReleases += 1
+            break;
+          case "fetching":
+            runningReleases += 1
+            break;
+          default:
+            break;
         }
       })
-    })    
-
+    }
+      
     var self = this;
     return (
       <div>
@@ -440,13 +469,13 @@ export default class Projects extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {projects.map(function(project, idx){
+              {projects.entries.map(function(project, idx){
                 return (
                   <TableRow
                     tabIndex={-1}
                     key={project.name}>
                     <TableCell>
-                      <Checkbox 
+                      <Checkbox
                         onClick={() => {self.toggleCheckedProject(project)} }
                         checked={ self.state.checkedProjects.includes(project.id) } />
                     </TableCell>
@@ -456,21 +485,19 @@ export default class Projects extends React.Component {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      {project.environments.forEach(function(env){
+                      {project.environments.map(function(env, idx){
                         // get env in environments query
-                        let _environment = _.find(environments, { id: env.id })
-                        let _project = _.find(_environment.projects, { id: project.id })
-                        
                         let color = "lightgray"
-                        let extensionStatuses = []                        
-                        if(_project.releases.length > 0) {
-                          switch(_project.releases[0].state){
+                        let extensionStatuses = []
+
+                        if(project.releases.entries.length > 0) {
+                          switch(project.releases.entries[0].state){
                             case "complete":
                               color = "green"
                               break;
                             case "waiting":
                               color = "yellow"
-                              break;                              
+                              break;
                             case "failed":
                               color = "red"
                               break;
@@ -478,7 +505,7 @@ export default class Projects extends React.Component {
                               break;
                           }
 
-                          _project.releases[0].releaseExtensions.forEach(function(releaseExtension){
+                          project.releases.entries[0].releaseExtensions.forEach(function(releaseExtension){
                             let status = "lightgray"
                             switch(releaseExtension.state){
                               case "complete":
@@ -486,16 +513,16 @@ export default class Projects extends React.Component {
                                 break;
                               case "waiting":
                                 status = "yellow"
-                                break;       
+                                break;
                               case "fetching":
                                 status = "yellow"
-                                break;                                                              
+                                break;
                               case "failed":
                                 status = "red"
                                 break;
                               default:
                                 break;
-                            }                  
+                            }                            
                             extensionStatuses.push(
                               <span key={releaseExtension.id} style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
                                 {releaseExtension.extension.extension.key}
@@ -506,15 +533,14 @@ export default class Projects extends React.Component {
 
                         return (
                           <div key={env.id + project.id} style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
-                            <Link to={"/projects/" + _project.slug + "/" + _environment.key}>
-                              {_environment.name + "(" + _environment.key + ")"} &nbsp;
-                            </Link>                                                      
-                            {extensionStatuses}                            
+                            <Link to={"/projects/" + project.slug + "/" + env.key}>
+                              {env.name + "(" + env.key + ")"} &nbsp;
+                            </Link>
+                            {extensionStatuses}
                           </div>
                         )
                       })}
-                    </TableCell>  
-                                      
+                    </TableCell>
                   </TableRow>
                 )
               })}
@@ -546,19 +572,18 @@ export default class Projects extends React.Component {
                     </Typography>
                     <Grid item xs={12}>
                       {extensions.forEach(function(extension){
-                        if(extension.environment.id === env.id){
-                          return (
-                            <FormControlLabel
-                              control={
-                                <Checkbox 
-                                  onClick={() => {self.toggleCheckedExtension(extension)}}
-                                  checked={self.state.checkedExtensions.includes(extension.id)} 
-                                />
-                              }
-                              label={extension.name + "(" + extension.key + ")"} 
-                            />    
-                          )
-                        }
+                        return (
+                          <FormControlLabel
+                            control={
+                              <Checkbox 
+                                onClick={() => {self.toggleCheckedExtension(extension)}}
+                                checked={self.state.checkedExtensions.includes(extension.id)} 
+                              />
+                            }
+                            label={extension.name + "(" + extension.key + ")"} 
+                          />    
+                        )
+                      
                       })}
                     </Grid>                    
                     <hr/>
@@ -571,7 +596,7 @@ export default class Projects extends React.Component {
           <Button 
             onClick={this.onBatchDeploy.bind(this)}
             variant="raised" color="primary">
-            Deploy All
+            Deploy Selected
           </Button>                  
         </Paper>
       </div>
