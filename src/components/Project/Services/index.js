@@ -152,17 +152,47 @@ export default class Services extends React.Component {
     this.state = {
       drawerOpen: false,
       anchorEl: null,
-      addServiceMenuOpen: false,
+      userHasUnsavedChanges: false,
       saving: false,
-      dialogOpen: false,
-      dirtyFormDialogOpen: false,
+
+      showConfirmDeleteDialog: false,      
+      showAddServiceMenu: false,
+      showDiscardEditsConfirmDialog: false,
       showAdvancedSettings: false,
       showDeploymentStrategy: false,
     }
+
+    this.handleDeleteService = this.handleDeleteService.bind(this)
+    this.handleCancelForm = this.handleCancelForm.bind(this)
+    this.handleClick = this.handleClick.bind(this)
   }
 
   handleToggleDrawer(){
     this.setState({ open: !this.state.open })
+  }
+
+  handleFormChanged() {
+    this.setState({userHasUnsavedChanges: true})
+  }
+
+  handleServiceMenuClickAway() {
+    if (this.state.showAddServiceMenu === true) {
+      this.setState({showAddServiceMenu:false})
+    } 
+  }
+
+  handleDrawerClickAway() {
+    if (this.state.drawerOpen === true) {
+      this.handleCancelForm()
+    } 
+  }
+
+  handleCancelForm() {
+    if (this.state.userHasUnsavedChanges === true) {
+      this.setState({showDiscardEditsConfirmDialog:true})
+    } else {
+      this.closeDrawer()
+    }
   }
 
   handleToggleAdvancedSettings = panel => (event) => {
@@ -339,12 +369,15 @@ export default class Services extends React.Component {
       ],
       };
 
+    var handleFormChanged = this.handleFormChanged.bind(this)
     const $hooks = {
       onAdd(instance) {
         // console.log('-> onAdd HOOK', instance.path || 'form');
+        handleFormChanged()
       },
       onDel(instance) {
         // console.log('-> onDel HOOK', instance.path || 'form');
+        handleFormChanged()
       },
       onSubmit(instance){
         // console.log('-> onSubmit HOOK', instance.path || 'form');
@@ -357,16 +390,41 @@ export default class Services extends React.Component {
       },
       onChange(instance){
         // console.log(instance.values())
+        handleFormChanged()
       }
     };
 
     const hooks = {
+      'name': $hooks,
+      'count': $hooks,
+      'command': $hooks,
       'ports': $hooks,
       'serviceSpecID': $hooks,
       'ports[]': $hooks,
       'deploymentStrategy': $hooks,
       'readinessProbe': $hooks,
-      'livenessProbe': $hooks,
+      
+      'livenessProbe.method': $hooks,
+      'livenessProbe.command': $hooks,
+      'livenessProbe.port': $hooks,
+      'livenessProbe.scheme': $hooks,
+      'livenessProbe.path': $hooks,
+      'livenessProbe.initialDelaySeconds': $hooks,
+      'livenessProbe.periodSeconds': $hooks,
+      'livenessProbe.timeoutSeconds': $hooks,
+      'livenessProbe.successThreshold': $hooks,
+      'livenessProbe.failureThreshold': $hooks,
+
+      'readinessProbe.method': $hooks,
+      'readinessProbe.command': $hooks,
+      'readinessProbe.port': $hooks,
+      'readinessProbe.scheme': $hooks,
+      'readinessProbe.path': $hooks,
+      'readinessProbe.initialDelaySeconds': $hooks,
+      'readinessProbe.periodSeconds': $hooks,
+      'readinessProbe.timeoutSeconds': $hooks,
+      'readinessProbe.successThreshold': $hooks,
+      'readinessProbe.failureThreshold': $hooks,
     };
 
     const plugins = { dvr: validatorjs };
@@ -405,7 +463,7 @@ export default class Services extends React.Component {
   }
 
   handleClick = event => {
-    this.setState({ addServiceMenuOpen: true, anchorEl: event.currentTarget });
+    this.setState({ showAddServiceMenu: true, anchorEl: event.currentTarget });
   };
 
   handleServiceRequest = value => {
@@ -422,15 +480,13 @@ export default class Services extends React.Component {
   };
 
   openDrawer(){
-    this.setState({ drawerOpen: true, addServiceMenuOpen: false })
+    this.setState({ drawerOpen: true, showAddServiceMenu: false })
   }
 
   closeDrawer(force = false){
-    if(!force && this.form.isDirty){
-      this.setState({ dirtyFormDialogOpen: true })
-    } else {
-      this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, dirtyFormDialogOpen: false })
-    }
+    if(force || this.state.userHasUnsavedChanges === false){
+      this.setState({ drawerOpen: false, showAddServiceMenu: false, saving: false, showDiscardEditsConfirmDialog: false, showConfirmDeleteDialog: false, userHasUnsavedChanges: false })
+    } 
   }
 
   editService(service, index){
@@ -443,7 +499,6 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
-      
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -475,7 +530,7 @@ export default class Services extends React.Component {
   }
 
   handleDeleteService() {
-    this.setState({ dialogOpen: false, loading: true })
+    this.setState({ showConfirmDeleteDialog: false, loading: true })
     this.props.deleteService({
       variables: this.form.values(),
     }).then(({data}) => {
@@ -491,6 +546,7 @@ export default class Services extends React.Component {
         <Loading />
       )
     }
+
     this.form.$('projectID').set(project.id)
     this.form.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
@@ -561,18 +617,18 @@ export default class Services extends React.Component {
           <Manager>
             <Target>
               <Button variant="fab" aria-label="Add" type="submit" color="primary"
-                aria-owns={this.state.addServiceMenuOpen ? 'menu-list' : null}
+                aria-owns={this.state.showAddServiceMenu ? 'menu-list' : null}
                 aria-haspopup="true"
-                onClick={this.handleClick.bind(this)}>
+                onClick={this.handleClick}>
                 <AddIcon />
               </Button>
             </Target>
             <Popper
               placement="bottom-start"
-              eventsEnabled={this.state.addServiceMenuOpen}
+              eventsEnabled={this.state.showAddServiceMenu}
             >
-              <ClickAwayListener onClickAway={()=>this.setState({ addServiceMenuOpen: false })}>
-                <Grow in={this.state.addServiceMenuOpen} id="menu-list">
+              <ClickAwayListener onClickAway={()=>this.handleServiceMenuClickAway()}>
+                <Grow in={this.state.showAddServiceMenu} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
                       <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
@@ -585,358 +641,358 @@ export default class Services extends React.Component {
           </Manager>
         </div>
 
-          <Drawer
-              anchor="right"
-              classes={{
-              paper: styles.list,
-              }}
-              onClose={() => {this.closeDrawer()}}
-              open={this.state.drawerOpen}
-          >
-              <div tabIndex={0} className={styles.createServiceBar}>
-                <AppBar position="static" color="default">
-                    <Toolbar>
-                    <Typography variant="title" color="inherit">
-                        Service
-                    </Typography>
-                    </Toolbar>
-                </AppBar>
-                <form onSubmit={this.form.onSubmit}>
-                  <div className={styles.drawerBody}>
-                    <Grid container spacing={24} className={styles.grid}>
-                      <Grid item xs={12}>
-                        <InputField field={this.form.$('name')} fullWidth={true} disabled={this.form.$('name').disabled} />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <InputField field={this.form.$('command')} fullWidth={true}/>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <InputField field={this.form.$('count')} fullWidth={true}/>
-                      </Grid>
-                      <Grid item xs={9}>
-                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true} />
-                      </Grid>
-                      <Grid item xs={12}>
-                          <div>
-                            <Grid container spacing={24}>
-                                { this.form.$('ports').value.length > 0 &&
+        <Drawer
+            anchor="right"
+            classes={{
+            paper: styles.list,
+            }}
+            onClose={() => {this.handleDrawerClickAway()}}
+            open={this.state.drawerOpen}
+        >
+            <div tabIndex={0} className={styles.createServiceBar}>
+              <AppBar position="static" color="default">
+                  <Toolbar>
+                  <Typography variant="title" color="inherit">
+                      Service
+                  </Typography>
+                  </Toolbar>
+              </AppBar>
+              <form onSubmit={this.form.onSubmit}>
+                <div className={styles.drawerBody}>
+                  <Grid container spacing={24} className={styles.grid}>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('name')} fullWidth={true} disabled={this.form.$('name').disabled} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <InputField field={this.form.$('command')} fullWidth={true}/>
+                    </Grid>
+                    <Grid item xs={3}>
+                      <InputField field={this.form.$('count')} fullWidth={true}/>
+                    </Grid>
+                    <Grid item xs={9}>
+                      <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <div>
+                          <Grid container spacing={24}>
+                              { this.form.$('ports').value.length > 0 &&
+                                <Grid item xs={12}>
+                                  <Typography variant="subheading"> Container Ports </Typography>
+                                </Grid>
+                              }
+                              { this.form.$('ports').value.length > 0 &&
+                                <Grid item xs={12}>
+                                  <div>
+                                      {this.form.$('ports').map(port =>
+                                        <Grid key={port.id} container spacing={24}>
+                                          <Grid item xs={4}>
+                                            <InputField field={port.$('port')} fullWidth={false} className={styles.portFormInput} />
+                                          </Grid>
+                                          <Grid item xs={6}>
+                                            <RadioField field={port.$('protocol')} />
+                                          </Grid>
+                                          <Grid item xs={1}>
+                                            <IconButton>
+                                              <CloseIcon onClick={port.onDel} />
+                                            </IconButton>
+                                          </Grid>
+                                        </Grid>
+                                      )}
+                                  </div>
+                                </Grid>
+                              }
+                              <Grid item xs={12}>
+                                <Button variant="raised" type="secondary" onClick={this.form.$('ports').onAdd}>
+                                    Add container port
+                                </Button>
+                              </Grid>
+                          </Grid>
+                        </div>
+
+                        <ExpansionPanel className={styles.advancedSettingsContainer} expanded={this.state.showAdvancedSettings} onChange={this.handleToggleAdvancedSettings()}>
+
+                          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                            <Typography>
+                              Advanced Configurations
+                            </Typography>
+                          </ExpansionPanelSummary>
+
+                          <ExpansionPanelDetails>
+                            <Grid container spacing={8} direction={'row'}>
+                              <Grid item xs={12}>
+                                <ExpansionPanel className={styles.advancedSettingsExpansionPanel}>
+                                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                    <Typography>
+                                        Deployment Strategy
+                                    </Typography>
+                                  </ExpansionPanelSummary>
+                                  <ExpansionPanelDetails>
+                                    <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
+                                      <Grid item xs={12}>
+                                        <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
+                                      </Grid>
+                                      { this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
+                                        <Grid container spacing={24}>
+                                          <Grid item xs={6}>
+                                            <InputField field={this.form.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
+                                          </Grid>
+                                          <Grid item xs={6}>
+                                            <InputField field={this.form.$('deploymentStrategy.maxSurge')} fullWith={false} />
+                                          </Grid>
+                                        </Grid>
+                                      }
+                                    </Grid>
+                                  </ExpansionPanelDetails>
+                                </ExpansionPanel>
+                              </Grid>
+                              
+                              <Grid item xs={12}>
+                                <ExpansionPanel>
+                                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                    <Typography>
+                                      Readiness Probe
+                                    </Typography>
+                                  </ExpansionPanelSummary>
+                                  <Divider/>
+                                  <ExpansionPanelDetails>
+                                    {/* <Grid container spacing={8} direction={'row'}>
+                                    { this.form.$('readinessProbes').value.length > 0 && (
+                                      <Grid item xs={12}>
+                                      
+                                      {this.form.$('readinessProbes').map(probe => */}
                                   <Grid item xs={12}>
-                                    <Typography variant="subheading"> Container Ports </Typography>
-                                  </Grid>
-                                }
-                                { this.form.$('ports').value.length > 0 &&
-                                  <Grid item xs={12}>
-                                    <div>
-                                        {this.form.$('ports').map(port =>
-                                          <Grid key={port.id} container spacing={24}>
-                                            <Grid item xs={4}>
-                                              <InputField field={port.$('port')} fullWidth={false} className={styles.portFormInput} />
+                                    <Grid key={this.form.$('readinessProbe').id} container direction={'column'} className={styles.healthProbe}>
+                                      <Grid item xs={12}>
+                                        <Grid container direction={'row'}>
+                                          <Grid item xs={6}>
+                                            <SelectField field={this.form.$('readinessProbe.method')} fullWidth={true} />
+                                          </Grid>
+                                        </Grid>
+                                      </Grid>
+
+                                        {this.form.$('readinessProbe.method').value !== 'default' && (
+                                          <Grid item xs={12}>
+                                          { this.form.$('readinessProbe.method').value === 'exec' && (
+                                            <Grid item xs={12}>
+                                              <InputField field={this.form.$('readinessProbe.command')} fullWidth={true} />
                                             </Grid>
-                                            <Grid item xs={6}>
-                                              <RadioField field={port.$('protocol')} />
+                                          )}
+
+                                          { this.form.$('readinessProbe.method').value === 'http' && (
+                                            <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
+                                              <Grid item xs={4}>
+                                                <SelectField field={this.form.$('readinessProbe.scheme')} fullWidth={true} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={this.form.$('readinessProbe.port')} fullWidth={true} />
+                                              </Grid>
+                                              <Grid item xs={12}>
+                                                <InputField field={this.form.$('readinessProbe.path')} fullWidth={true} />
+                                              </Grid>
                                             </Grid>
-                                            <Grid item xs={1}>
-                                              <IconButton>
-                                                <CloseIcon onClick={port.onDel} />
-                                              </IconButton>
+                                          )}
+
+                                          { this.form.$('readinessProbe.method').value === 'tcp' && (
+                                            <Grid container justify={'flex-start'}>
+                                              <Grid item xs={4}>
+                                                <InputField field={this.form.$('readinessProbe.port')} fullWidth={true} />
+                                              </Grid>
                                             </Grid>
+                                          )}
+
+                                          { this.form.$('readinessProbe.method').value !== "" && (
+                                            <Grid container spacing={8} direction={'column'}>
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('readinessProbe.successThreshold')} fullWidth={true}/>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('readinessProbe.failureThreshold')} fullWidth={true} />
+                                                </Grid>
+                                              </Grid>
+
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('readinessProbe.initialDelaySeconds')} fullWidth={true}/>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('readinessProbe.periodSeconds')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('readinessProbe.timeoutSeconds')} fullWidth={true} />
+                                                </Grid>
+                                              </Grid>
+                                            </Grid>
+                                        )}
                                           </Grid>
                                         )}
-                                    </div>
+                                    </Grid>
                                   </Grid>
-                                }
-                                <Grid item xs={12}>
-                                  <Button variant="raised" type="secondary" onClick={this.form.$('ports').onAdd}>
-                                      Add container port
-                                  </Button>
-                                </Grid>
-                            </Grid>
-                          </div>
-
-                          <ExpansionPanel className={styles.advancedSettingsContainer} expanded={this.state.showAdvancedSettings} onChange={this.handleToggleAdvancedSettings()}>
-
-                            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                              <Typography>
-                                Advanced Configurations
-                              </Typography>
-                            </ExpansionPanelSummary>
-
-                            <ExpansionPanelDetails>
-                              <Grid container spacing={8} direction={'row'}>
-                                <Grid item xs={12}>
-                                  <ExpansionPanel className={styles.advancedSettingsExpansionPanel}>
-                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                                      <Typography>
-                                          Deployment Strategy
-                                      </Typography>
-                                    </ExpansionPanelSummary>
-                                    <ExpansionPanelDetails>
-                                      <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
-                                        <Grid item xs={12}>
-                                          <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
-                                        </Grid>
-                                        { this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
-                                          <Grid container spacing={24}>
-                                            <Grid item xs={6}>
-                                              <InputField field={this.form.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
-                                            </Grid>
-                                            <Grid item xs={6}>
-                                              <InputField field={this.form.$('deploymentStrategy.maxSurge')} fullWith={false} />
-                                            </Grid>
-                                          </Grid>
-                                        }
+                                    {/* )}
+                                      <Grid item xs={12}>
+                                        <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbes').onAdd}>
+                                            Add Readiness Probe
+                                        </Button>
                                       </Grid>
-                                    </ExpansionPanelDetails>
-                                  </ExpansionPanel>
-                                </Grid>
-                                
-                                <Grid item xs={12}>
-                                  <ExpansionPanel>
-                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                                      <Typography>
-                                        Readiness Probe
-                                      </Typography>
-                                    </ExpansionPanelSummary>
-                                    <Divider/>
-                                    <ExpansionPanelDetails>
-                                      {/* <Grid container spacing={8} direction={'row'}>
-                                      { this.form.$('readinessProbes').value.length > 0 && (
-                                        <Grid item xs={12}>
-                                        
-                                        {this.form.$('readinessProbes').map(probe => */}
+                                    </Grid> */}
+                                  </ExpansionPanelDetails>
+                                </ExpansionPanel>
+                              </Grid>
+
+
+
+
+                              <Grid item xs={12}>
+                                <ExpansionPanel>
+                                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                    <Typography>
+                                      Liveness Probe
+                                    </Typography>
+                                  </ExpansionPanelSummary>
+                                  <Divider/>
+                                  <ExpansionPanelDetails>
                                     <Grid item xs={12}>
-                                      <Grid key={this.form.$('readinessProbe').id} container direction={'column'} className={styles.healthProbe}>
+                                      <Grid key={this.form.$('livenessProbe').id} container direction={'column'} className={styles.healthProbe}>
                                         <Grid item xs={12}>
                                           <Grid container direction={'row'}>
                                             <Grid item xs={6}>
-                                              <SelectField field={this.form.$('readinessProbe.method')} fullWidth={true} />
+                                              <SelectField field={this.form.$('livenessProbe.method')} fullWidth={true} />
                                             </Grid>
                                           </Grid>
                                         </Grid>
 
-                                          {this.form.$('readinessProbe.method').value !== 'default' && (
+                                        {this.form.$('livenessProbe.method').value !== 'default' && (
+                                          <Grid item xs={12}>
+                                          { this.form.$('livenessProbe.method').value === 'exec' && (
                                             <Grid item xs={12}>
-                                            { this.form.$('readinessProbe.method').value === 'exec' && (
-                                              <Grid item xs={12}>
-                                                <InputField field={this.form.$('readinessProbe.command')} fullWidth={true} />
-                                              </Grid>
-                                            )}
-
-                                            { this.form.$('readinessProbe.method').value === 'http' && (
-                                              <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
-                                                <Grid item xs={4}>
-                                                  <SelectField field={this.form.$('readinessProbe.scheme')} fullWidth={true} />
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                  <InputField field={this.form.$('readinessProbe.port')} fullWidth={true} />
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                  <InputField field={this.form.$('readinessProbe.path')} fullWidth={true} />
-                                                </Grid>
-                                              </Grid>
-                                            )}
-
-                                            { this.form.$('readinessProbe.method').value === 'tcp' && (
-                                              <Grid container justify={'flex-start'}>
-                                                <Grid item xs={4}>
-                                                  <InputField field={this.form.$('readinessProbe.port')} fullWidth={true} />
-                                                </Grid>
-                                              </Grid>
-                                            )}
-
-                                            { this.form.$('readinessProbe.method').value !== "" && (
-                                              <Grid container spacing={8} direction={'column'}>
-                                                <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('readinessProbe.successThreshold')} fullWidth={true}/>
-                                                  </Grid>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('readinessProbe.failureThreshold')} fullWidth={true} />
-                                                  </Grid>
-                                                </Grid>
-
-                                                <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('readinessProbe.initialDelaySeconds')} fullWidth={true}/>
-                                                  </Grid>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('readinessProbe.periodSeconds')} fullWidth={true} />
-                                                  </Grid>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('readinessProbe.timeoutSeconds')} fullWidth={true} />
-                                                  </Grid>
-                                                </Grid>
-                                              </Grid>
-                                          )}
+                                              <InputField field={this.form.$('livenessProbe.command')} fullWidth={true} />
                                             </Grid>
                                           )}
+
+                                          { this.form.$('livenessProbe.method').value === 'http' && (
+                                            <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
+                                              <Grid item xs={4}>
+                                                <SelectField field={this.form.$('livenessProbe.scheme')} fullWidth={true} />
+                                              </Grid>
+                                              <Grid item xs={2}>
+                                                <InputField field={this.form.$('livenessProbe.port')} fullWidth={true} />
+                                              </Grid>
+                                              <Grid item xs={12}>
+                                                <InputField field={this.form.$('livenessProbe.path')} fullWidth={true} />
+                                              </Grid>
+                                            </Grid>
+                                          )}
+
+                                          { this.form.$('livenessProbe.method').value === 'tcp' && (
+                                            <Grid container justify={'flex-start'}>
+                                              <Grid item xs={4}>
+                                                <InputField field={this.form.$('livenessProbe.port')} fullWidth={true} />
+                                              </Grid>
+                                            </Grid>
+                                          )}
+
+                                          { this.form.$('livenessProbe.method').value !== "" && (
+                                            <Grid container spacing={8} direction={'column'}>
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('livenessProbe.successThreshold')} fullWidth={true}/>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('livenessProbe.failureThreshold')} fullWidth={true} />
+                                                </Grid>
+                                              </Grid>
+
+                                              <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('livenessProbe.initialDelaySeconds')} fullWidth={true}/>
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('livenessProbe.periodSeconds')} fullWidth={true} />
+                                                </Grid>
+                                                <Grid item xs={3}>
+                                                  <InputField field={this.form.$('livenessProbe.timeoutSeconds')} fullWidth={true} />
+                                                </Grid>
+                                              </Grid>
+                                            </Grid>
+                                        )}
+                                          </Grid>
+                                        )}
                                       </Grid>
                                     </Grid>
-                                      {/* )}
-                                        <Grid item xs={12}>
-                                          <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbes').onAdd}>
-                                              Add Readiness Probe
-                                          </Button>
-                                        </Grid>
-                                      </Grid> */}
-                                    </ExpansionPanelDetails>
-                                  </ExpansionPanel>
-                                </Grid>
-
-
-
-
-                                <Grid item xs={12}>
-                                  <ExpansionPanel>
-                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                                      <Typography>
-                                        Liveness Probe
-                                      </Typography>
-                                    </ExpansionPanelSummary>
-                                    <Divider/>
-                                    <ExpansionPanelDetails>
-                                      <Grid item xs={12}>
-                                        <Grid key={this.form.$('livenessProbe').id} container direction={'column'} className={styles.healthProbe}>
-                                          <Grid item xs={12}>
-                                            <Grid container direction={'row'}>
-                                              <Grid item xs={6}>
-                                                <SelectField field={this.form.$('livenessProbe.method')} fullWidth={true} />
-                                              </Grid>
-                                            </Grid>
-                                          </Grid>
-
-                                          {this.form.$('livenessProbe.method').value !== 'default' && (
-                                            <Grid item xs={12}>
-                                            { this.form.$('livenessProbe.method').value === 'exec' && (
-                                              <Grid item xs={12}>
-                                                <InputField field={this.form.$('livenessProbe.command')} fullWidth={true} />
-                                              </Grid>
-                                            )}
-
-                                            { this.form.$('livenessProbe.method').value === 'http' && (
-                                              <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
-                                                <Grid item xs={4}>
-                                                  <SelectField field={this.form.$('livenessProbe.scheme')} fullWidth={true} />
-                                                </Grid>
-                                                <Grid item xs={2}>
-                                                  <InputField field={this.form.$('livenessProbe.port')} fullWidth={true} />
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                  <InputField field={this.form.$('livenessProbe.path')} fullWidth={true} />
-                                                </Grid>
-                                              </Grid>
-                                            )}
-
-                                            { this.form.$('livenessProbe.method').value === 'tcp' && (
-                                              <Grid container justify={'flex-start'}>
-                                                <Grid item xs={4}>
-                                                  <InputField field={this.form.$('livenessProbe.port')} fullWidth={true} />
-                                                </Grid>
-                                              </Grid>
-                                            )}
-
-                                            { this.form.$('livenessProbe.method').value !== "" && (
-                                              <Grid container spacing={8} direction={'column'}>
-                                                <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('livenessProbe.successThreshold')} fullWidth={true}/>
-                                                  </Grid>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('livenessProbe.failureThreshold')} fullWidth={true} />
-                                                  </Grid>
-                                                </Grid>
-
-                                                <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('livenessProbe.initialDelaySeconds')} fullWidth={true}/>
-                                                  </Grid>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('livenessProbe.periodSeconds')} fullWidth={true} />
-                                                  </Grid>
-                                                  <Grid item xs={3}>
-                                                    <InputField field={this.form.$('livenessProbe.timeoutSeconds')} fullWidth={true} />
-                                                  </Grid>
-                                                </Grid>
-                                              </Grid>
-                                          )}
-                                            </Grid>
-                                          )}
-                                        </Grid>
-                                      </Grid>
-                                    </ExpansionPanelDetails>
-                                  </ExpansionPanel>
-                                </Grid>
+                                  </ExpansionPanelDetails>
+                                </ExpansionPanel>
                               </Grid>
-                            </ExpansionPanelDetails>
-                          </ExpansionPanel>
+                            </Grid>
+                          </ExpansionPanelDetails>
+                        </ExpansionPanel>
 
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Button color="primary"
-                            className={styles.buttonSpacing}
-                            disabled={this.state.saving}
-                            type="submit"
-                            variant="raised"
-                            onClick={e => this.onSubmit(e)}>
-                              Save
-                        </Button>
-                        {this.form.values()['id'] &&
-                          <Button
-                            disabled={this.state.saving}
-                            color="inherit"
-                            onClick={()=>this.setState({ dialogOpen: true })}>
-                            Delete
-                          </Button>
-                        }
-                        <Button
-                          color="primary"
-                          onClick={() => {this.closeDrawer()}}>
-                          Cancel
-                        </Button>
-                      </Grid>
                     </Grid>
-                  </div>
-                </form>
-              </div>
-          </Drawer>
+                    <Grid item xs={12}>
+                      <Button color="primary"
+                          className={styles.buttonSpacing}
+                          disabled={this.state.saving}
+                          type="submit"
+                          variant="raised"
+                          onClick={e => this.onSubmit(e)}>
+                            Save
+                      </Button>
+                      {this.form.values()['id'] &&
+                        <Button
+                          disabled={this.state.saving}
+                          color="inherit"
+                          onClick={()=>this.setState({ showConfirmDeleteDialog: true })}>
+                          Delete
+                        </Button>
+                      }
+                      <Button
+                        color="primary"
+                        onClick={() => this.handleCancelForm()}>
+                        Cancel
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </div>
+              </form>
+            </div>
+        </Drawer>
 
-          {/* Used for confirmation of escaping panel if dirty form */}
-          <Dialog open={this.state.dirtyFormDialogOpen}>
-            <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+        {/* Used for confirmation of escaping panel if dirty form */}
+        <Dialog open={this.state.showDiscardEditsConfirmDialog}>
+          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {"You'll lose any progress made so far."}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={()=> this.setState({ showDiscardEditsConfirmDialog: false })} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>          
+
+        {project.services.entries[this.form.values()['index']] &&
+          <Dialog open={this.state.showConfirmDeleteDialog}>
+            <DialogTitle>{"Ae you sure you want to delete " + project.services.entries[this.form.values()['index']].name + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                {"You'll lose any progress made so far."}
+                This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
+                with this service.
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+              <Button onClick={()=> this.setState({ showConfirmDeleteDialog: false })} color="primary">
                 Cancel
               </Button>
-              <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+              <Button onClick={this.handleDeleteService} style={{ color: "red" }}>
                 Confirm
               </Button>
             </DialogActions>
-          </Dialog>          
-
-          {project.services.entries[this.form.values()['index']] &&
-            <Dialog open={this.state.dialogOpen}>
-              <DialogTitle>{"Ae you sure you want to delete " + project.services.entries[this.form.values()['index']].name + "?"}</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
-                  with this service.
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                  Cancel
-                </Button>
-                <Button onClick={this.handleDeleteService.bind(this)} style={{ color: "red" }}>
-                  Confirm
-                </Button>
-              </DialogActions>
-            </Dialog>
-          }
+          </Dialog>
+        }
       </div>
     )
   }
