@@ -157,7 +157,9 @@ export default class Services extends React.Component {
       dialogOpen: false,
       dirtyFormDialogOpen: false,
       showAdvancedSettings: false,
-      showDeploymentStrategy: false,
+      showDeploymentStrategySettings: false,
+      showReadinessProbeSettings: false,
+      showLivenessProbeSettings: false
     }
   }
 
@@ -168,6 +170,18 @@ export default class Services extends React.Component {
   handleToggleAdvancedSettings = panel => (event) => {
     this.setState({ showAdvancedSettings: !this.state.showAdvancedSettings });
   };
+
+  handleToggleDeploymentStrategySettings = panel => (event) => {
+    this.setState(({showDeploymentStrategySettings: !this.state.showDeploymentStrategySettings}))
+  }
+
+  handleToggleLivenessProbeSettings = panel => (event) => {
+    this.setState(({showLivenessProbeSettings: !this.state.showLivenessProbeSettings}))
+  }
+
+  handleToggleReadinessProbeSettings = panel => (event) => {
+    this.setState(({showReadinessProbeSettings: !this.state.showReadinessProbeSettings}))
+  }
 
   initProjectServicesForm(formInitials  = {}) {
     const fields = [
@@ -201,6 +215,10 @@ export default class Services extends React.Component {
       'livenessProbe.timeoutSeconds',
       'livenessProbe.successThreshold',
       'livenessProbe.failureThreshold',
+      'livenessProbe.httpHeaders',
+      'livenessProbe.httpHeaders[]',
+      'livenessProbe.httpHeaders[].name',
+      'livenessProbe.httpHeaders[].value',
 
       // readinessProbe form inputs
       'readinessProbe',
@@ -214,6 +232,10 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds',
       'readinessProbe.successThreshold',
       'readinessProbe.failureThreshold',
+      'readinessProbe.httpHeaders',
+      'readinessProbe.httpHeaders[]',
+      'readinessProbe.httpHeaders[].name',
+      'readinessProbe.httpHeaders[].value',
     ];
 
     const rules = {
@@ -236,6 +258,8 @@ export default class Services extends React.Component {
       'livenessProbe.timeoutSeconds': "numeric|min:0",
       'livenessProbe.successThreshold': "numeric|min:0",
       'livenessProbe.failureThreshold': "numeric|min:0",
+      'livenessProbe.httpHeaders[].name': "string",
+      'livenessProbe.httpHeaders[].value': "string",
 
       'readinessProbe.method': "string",
       'readinessProbe.command': "string",
@@ -247,6 +271,8 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': "numeric|min:0",
       'readinessProbe.successThreshold': "numeric|min:0",
       'readinessProbe.failureThreshold': "numeric|min:0",
+      'readinessProbe.httpHeaders[].name': "string",
+      'readinessProbe.httpHeaders[].value': "string",
     };
 
     const labels = {
@@ -272,6 +298,9 @@ export default class Services extends React.Component {
       'livenessProbe.timeoutSeconds': "TimeoutSeconds",
       'livenessProbe.successThreshold': "SuccessThreshold",
       'livenessProbe.failureThreshold': "FailureThreshold",
+      'livenessProbe.httpHeaders[]': "HTTPHeaders",
+      'livenessProbe.httpHeaders[].name': "Name",
+      'livenessProbe.httpHeaders[].value': "Value",
 
       'readinessProbe.method': "Method",
       'readinessProbe.command': "Command",
@@ -283,6 +312,9 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': "TimeoutSeconds",
       'readinessProbe.successThreshold': "SuccessThreshold",
       'readinessProbe.failureThreshold': "FailureThreshold",
+      'readinessProbe.httpHeaders[]': "HTTPHeaders",
+      'readinessProbe.httpHeaders[].name': "Name",
+      'readinessProbe.httpHeaders[].value': "Value",
     };
 
     const initials = formInitials
@@ -429,7 +461,13 @@ export default class Services extends React.Component {
     if(!force && this.form.isDirty){
       this.setState({ dirtyFormDialogOpen: true })
     } else {
-      this.setState({ drawerOpen: false, addServiceMenuOpen: false, saving: false, dirtyFormDialogOpen: false })
+      this.setState({
+        drawerOpen: false,
+        addServiceMenuOpen: false,
+        saving: false,
+        dirtyFormDialogOpen: false,
+        showAdvancedSettings: false,
+      })
     }
   }
 
@@ -448,23 +486,33 @@ export default class Services extends React.Component {
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
 
-    if (service.deploymentStrategy.type === "" ) {
+    let newState = {}
+
+    if (service.deploymentStrategy.type === "" || service.deploymentStrategy.type === "default" ) {
       this.form.update({ deploymentStrategy: {type: "default"} })
     } else {
       this.form.update({ deploymentStrategy: service.deploymentStrategy })
+      newState.showAdvancedSettings = true
+      newState.showDeploymentStrategySettings = true
     }
 
     if (service.readinessProbe.method === "") {
       this.form.update({readinessProbe: {method: "default"}})
     } else {
       this.form.update({readinessProbe: service.readinessProbe})
+      newState.showAdvancedSettings = true
+      newState.showReadinessProbeSettings = true
     }
 
     if (service.livenessProbe.method === "") {
       this.form.update({livenessProbe: {method: "default"}})
     } else {
       this.form.update({livenessProbe: service.livenessProbe})
+      newState.showAdvancedSettings = true
+      newState.showLivenessProbeSettings = true
     }
+
+    this.setState(newState)
 
     this.openDrawer()
   }
@@ -664,7 +712,7 @@ export default class Services extends React.Component {
                             <ExpansionPanelDetails>
                               <Grid container spacing={8} direction={'row'}>
                                 <Grid item xs={12}>
-                                  <ExpansionPanel className={styles.advancedSettingsExpansionPanel}>
+                                  <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showDeploymentStrategySettings} onChange={this.handleToggleDeploymentStrategySettings()}>
                                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                                       <Typography>
                                           Deployment Strategy
@@ -691,7 +739,7 @@ export default class Services extends React.Component {
                                 </Grid>
                                 
                                 <Grid item xs={12}>
-                                  <ExpansionPanel>
+                                  <ExpansionPanel expanded={this.state.showReadinessProbeSettings} onChange={this.handleToggleReadinessProbeSettings()}>
                                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                                       <Typography>
                                         Readiness Probe
@@ -699,11 +747,6 @@ export default class Services extends React.Component {
                                     </ExpansionPanelSummary>
                                     <Divider/>
                                     <ExpansionPanelDetails>
-                                      {/* <Grid container spacing={8} direction={'row'}>
-                                      { this.form.$('readinessProbes').value.length > 0 && (
-                                        <Grid item xs={12}>
-                                        
-                                        {this.form.$('readinessProbes').map(probe => */}
                                     <Grid item xs={12}>
                                       <Grid key={this.form.$('readinessProbe').id} container direction={'column'} className={styles.healthProbe}>
                                         <Grid item xs={12}>
@@ -732,6 +775,33 @@ export default class Services extends React.Component {
                                                 </Grid>
                                                 <Grid item xs={12}>
                                                   <InputField field={this.form.$('readinessProbe.path')} fullWidth={true} />
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                  {this.form.$('readinessProbe.httpHeaders').value.length > 0 && (
+                                                    <Grid item xs={12}>
+                                                      {this.form.$('readinessProbe.httpHeaders').map(header =>
+                                                      <Grid container spacing={8} key={header.id}>
+                                                          <Grid item xs={6}>
+                                                            <InputField field={header.$('name')}/>
+                                                          </Grid>
+                                                          <Grid item xs={5}>
+                                                            <InputField field={header.$('value')}/>
+                                                          </Grid>
+                                                        <Grid item xs={1}>
+                                                          <IconButton>
+                                                            <CloseIcon onClick={header.onDel} />
+                                                          </IconButton>
+                                                        </Grid>
+                                                      </Grid>
+                                                      )}
+                                                    </Grid>
+                                                  )}
+                                                    <Grid item xs={12} className={styles.addHeaderButton}>
+                                                      <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbe.httpHeaders').onAdd}>
+                                                          Add Header
+                                                      </Button>
+                                                    </Grid>
                                                 </Grid>
                                               </Grid>
                                             )}
@@ -772,13 +842,6 @@ export default class Services extends React.Component {
                                           )}
                                       </Grid>
                                     </Grid>
-                                      {/* )}
-                                        <Grid item xs={12}>
-                                          <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbes').onAdd}>
-                                              Add Readiness Probe
-                                          </Button>
-                                        </Grid>
-                                      </Grid> */}
                                     </ExpansionPanelDetails>
                                   </ExpansionPanel>
                                 </Grid>
@@ -787,7 +850,7 @@ export default class Services extends React.Component {
 
 
                                 <Grid item xs={12}>
-                                  <ExpansionPanel>
+                                  <ExpansionPanel expanded={this.state.showLivenessProbeSettings} onChange={this.handleToggleLivenessProbeSettings()}>
                                     <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
                                       <Typography>
                                         Liveness Probe
@@ -824,6 +887,34 @@ export default class Services extends React.Component {
                                                 <Grid item xs={12}>
                                                   <InputField field={this.form.$('livenessProbe.path')} fullWidth={true} />
                                                 </Grid>
+
+                                                <Grid item xs={12}>
+                                                  {this.form.$('livenessProbe.httpHeaders').value.length > 0 && (
+                                                    <Grid item xs={12}>
+                                                      {this.form.$('livenessProbe.httpHeaders').map(header =>
+                                                      <Grid container spacing={8} key={header.id}>
+                                                          <Grid item xs={6}>
+                                                            <InputField field={header.$('name')}/>
+                                                          </Grid>
+                                                          <Grid item xs={5}>
+                                                            <InputField field={header.$('value')}/>
+                                                          </Grid>
+                                                        <Grid item xs={1}>
+                                                          <IconButton>
+                                                            <CloseIcon onClick={header.onDel} />
+                                                          </IconButton>
+                                                        </Grid>
+                                                      </Grid>
+                                                      )}
+                                                    </Grid>
+                                                  )}
+                                                  <Grid item xs={12} className={styles.addHeaderButton}>
+                                                    <Button variant="raised" type="secondary" onClick={this.form.$('livenessProbe.httpHeaders').onAdd}>
+                                                        Add Header
+                                                    </Button>
+                                                  </Grid>
+                                                </Grid>
+
                                               </Grid>
                                             )}
 

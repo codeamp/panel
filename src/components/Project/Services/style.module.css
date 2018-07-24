@@ -60,9 +60,6 @@
 .advancedSettingsContainer {
     width: 100%;
     margin-top: 2em;
-    /* padding-top: 2em; */
-    /* padding-left: 0px; */
-    /* margin-left: 0px; */
 }
 
 .advancedSettingsExpansionPanel {
@@ -70,19 +67,19 @@
 }
 
 .advancedSettingTitle {
-    /* margin-top: 1em;
-    margin-left: 1em; */
+
 }
 
 .deploymentStrategyForm {
-    /* margin-left: 1em;
-    margin-right: 1em; */
 }
 
 .probeForm {
     margin-left: 1em;
     margin-right: 1em;
-    /* padding-bottom: 2em; */
+}
+
+.addHeaderButton {
+    margin-bottom: 2em;
 }
 
 .healthProbe {
