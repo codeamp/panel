@@ -27,6 +27,9 @@ import gql from 'graphql-tag';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 @inject("store") @observer
 @graphql(gql`
@@ -412,7 +415,7 @@ export default class Secrets extends React.Component {
             getVal: function(row){return row.user.email},
           }, {
             label: "Created",
-            getVal: function(row){return new Date(row.created).toString()},
+            getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},
           }]}
         />
 

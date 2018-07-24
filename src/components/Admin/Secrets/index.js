@@ -32,6 +32,9 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 @inject("store") @observer
 @graphql(gql`
@@ -402,7 +405,7 @@ export default class Secrets extends React.Component {
                       {secret.user.email}
                     </TableCell>
                     <TableCell>
-                      {new Date(secret.created).toString()}
+                      {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
                     </TableCell>
                   </TableRow>
                 )
