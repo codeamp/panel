@@ -288,8 +288,8 @@ export default class Services extends React.Component {
       'livenessProbe.timeoutSeconds': "numeric|min:0",
       'livenessProbe.successThreshold': "numeric|min:0",
       'livenessProbe.failureThreshold': "numeric|min:0",
-      'livenessProbe.httpHeaders[].name': "string",
-      'livenessProbe.httpHeaders[].value': "string",
+      'livenessProbe.httpHeaders[].name': "string|required",
+      'livenessProbe.httpHeaders[].value': "string|required",
 
       'readinessProbe.method': "string",
       'readinessProbe.command': "string",
@@ -301,8 +301,8 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': "numeric|min:0",
       'readinessProbe.successThreshold': "numeric|min:0",
       'readinessProbe.failureThreshold': "numeric|min:0",
-      'readinessProbe.httpHeaders[].name': "string",
-      'readinessProbe.httpHeaders[].value': "string",
+      'readinessProbe.httpHeaders[].name': "string|required",
+      'readinessProbe.httpHeaders[].value': "string|required",
     };
 
     const labels = {
