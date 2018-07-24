@@ -21,6 +21,9 @@ import Divider from 'material-ui/Divider';
 import { MenuItem } from 'material-ui/Menu';
 import { FormControl } from 'material-ui/Form';
 import Select from 'material-ui/Select';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 @inject("store") @observer
 
@@ -167,12 +170,15 @@ export default class Features extends React.Component {
     return (
       <div> 
         {project.features.entries.map((feature, idx) => {
+          //Thu Jul 05 2018 13:55:44 (PST)
+          let featureMoment = moment(new Date(feature.created))
+          let featureTime = featureMoment.format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"
           return (<ExpansionPanel 
               key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
               <div> 
               <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
-              <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { new Date(feature.created).toDateString() } at { new Date(feature.created).toTimeString() } </Typography> </div>
+              <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { featureTime } </Typography> </div>
             </ExpansionPanelSummary>
             <Divider />
             <ExpansionPanelActions>
