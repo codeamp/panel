@@ -479,7 +479,7 @@ export default class Releases extends React.Component {
   }
 
   stopReleaseButton(release) {
-    if (release.state !== "failed" || release.state !== "complete") {
+    if (release.state !== "failed" && release.state !== "complete") {
       return (
         <Button
         className={styles.drawerButton}
