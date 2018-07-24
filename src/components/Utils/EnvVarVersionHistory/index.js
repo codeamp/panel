@@ -6,6 +6,9 @@ import Table, { TableCell, TableHead, TableBody, TableRow } from 'material-ui/Ta
 import Paper from 'material-ui/Paper';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 @observer
 export default class EnvVarVersionHistory extends React.Component {
@@ -52,7 +55,7 @@ export default class EnvVarVersionHistory extends React.Component {
                         {secret.user.email}
                       </TableCell>
                       <TableCell>
-                        {new Date(secret.created).toString()}
+                        {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
                       </TableCell>
                     </TableRow>
                   )
