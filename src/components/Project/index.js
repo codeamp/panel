@@ -19,6 +19,7 @@ import ProjectReleases from 'components/Project/Releases';
 import ProjectSettings from 'components/Project/Settings';
 import ProjectServices from 'components/Project/Services';
 import ProjectExtensions from 'components/Project/Extensions';
+import ProjectEnvironment from 'components/Project/Environment';
 import Loading from 'components/Utils/Loading';
 import DoesNotExist404 from 'components/Utils/DoesNotExist404';
 import Typography from 'material-ui/Typography';
@@ -274,6 +275,11 @@ class Project extends React.Component {
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
             <ProjectSettings {...props} />
           )}/>
+          <Route exact path='/projects/:slug' render={(props) => (
+            <ProjectEnvironment {...props}>
+              <Project socket={socket} {...props} />
+            </ProjectEnvironment>
+          )} />
           <Route component={DoesNotExist404} />
         </Switch>
       </div>
