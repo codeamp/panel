@@ -23,6 +23,9 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 const inlineStyles = {
   addButton: {
@@ -264,7 +267,7 @@ export default class Environments extends React.Component {
                       {env.isDefault.toString()}
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toString()}
+                      {moment(new Date(env.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
                     </TableCell>
                   </TableRow>
                 )

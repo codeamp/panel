@@ -23,6 +23,9 @@ import Chip from 'material-ui/Chip';
 import { FormControl } from 'material-ui/Form';
 import Card, { CardContent } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 const kibanaAppLogTemplate = process.env.REACT_APP_KIBANA_LINK_TEMPLATE
 const kibanaReleaseLogTemplate = process.env.REACT_APP_KIBANA_RELEASE_TEMPLATE
@@ -111,7 +114,7 @@ class ReleaseView extends React.Component {
                   { this.props.release.headFeature.message}
                 </Typography>
                 <Typography component="p" className={styles.featureAuthor}>
-                  by <b> { (this.props.release.user !== null && this.props.release.user.email !== "") ? this.props.release.user.email : <Chip label="CD" className={styles.continuousDelivery} />} </b> - { new Date(this.props.release.created).toString() }
+                  by <b> { (this.props.release.user !== null && this.props.release.user.email !== "") ? this.props.release.user.email : <Chip label="CD" className={styles.continuousDelivery} />} </b> - { moment(new Date(this.props.release.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }
                 </Typography>
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
@@ -734,6 +737,7 @@ export default class Releases extends React.Component {
                 return releaseExtension.extension
               })
 
+              console.log(release.id)
               return (<ReleaseView
                 key={release.id}
                 extensions={extensions}

@@ -22,6 +22,10 @@ import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
+
 
 @graphql(gql`
   query {
@@ -176,21 +180,21 @@ export default class Users extends React.Component {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map(function(env, idx){
+              {users.map(function(user, idx){
                 return (
                   <TableRow
                     hover
                     tabIndex={-1}
                     onClick={()=> self.onClick(idx)}
-                    key={env.id}>
+                    key={user.id}>
                     <TableCell>
-                      {env.email}
+                      {user.email}
                     </TableCell>
                     <TableCell>
-                      {env.permissions.length}
+                      {user.permissions.length}
                     </TableCell>
                     <TableCell>
-                      {new Date(env.created).toString()}
+                      {moment(new Date(user.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
                     </TableCell>
                   </TableRow>
                 )

@@ -36,6 +36,9 @@ import gql from 'graphql-tag';
 import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
+import jstz from 'jstimezonedetect';
+import moment from 'moment';
+import 'moment-timezone';
 
 @inject("store") 
 @graphql(gql`
@@ -606,7 +609,7 @@ export default class Services extends React.Component {
                       <TableCell> { service.type }</TableCell>
                       <TableCell> { service.ports.length}</TableCell>
                       <TableCell> { service.serviceSpec.name}</TableCell>
-                      <TableCell> { new Date(service.created).toString()}</TableCell>
+                      <TableCell> { moment(new Date(service.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }</TableCell>
                     </TableRow>
                   )
                 })}
