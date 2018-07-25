@@ -547,12 +547,12 @@ export default class Releases extends React.Component {
     } else {
       return (<div>
         <Button
-        className={styles.drawerButton}
-        variant="raised"
-        color="secondary"
-        onClick={()=> this.rollbackRelease(release)}>
-        Rollback
-      </Button>
+          className={styles.drawerButton}
+          variant="raised"
+          color="secondary"
+          onClick={()=> this.rollbackRelease(release)}>
+          Rollback
+        </Button>
       <Button
         className={styles.drawerButton}
         color="primary"
@@ -725,6 +725,16 @@ export default class Releases extends React.Component {
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
                 </Typography>
+                {project.releases.entries.length > 1 &&
+                  <Button
+                    className={styles.drawerButton}
+                    variant="raised"
+                    color="secondary"
+                    style={{ display: "inline-block", float: "right" }}>
+                    onClick={()=> this.rollbackRelease(project.releases.entries[1])}>
+                    Rollback
+                  </Button>                
+                }
                 <Typography variant="subheading" style={{ display: "inline-block", float: "right" }}>
                 <a id="kibana-log-link" href={generateKibanaLink(kibanaAppLogTemplate, {"##PROJECT-NAMESPACE##": `${this.props.store.app.currentEnvironment.key}-${this.props.data.project.slug}`})} target="_blank" className={styles.kibanaLogLink}>
                   APPLICATION LOGS
