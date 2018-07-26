@@ -133,9 +133,12 @@ export default class Extensions extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      drawerOpen: false,
-      dirtyFormDialogOpen: false,
+      userHasUnsavedChanges: false,
+      showDrawer: false,
+      showDiscardEditsConfirmDialog: false,
     }
+
+    this.handleFormChanged = this.handleFormChanged.bind(this)
   }
   
   initAdminExtensionsForm(formInitials = {}) {
@@ -193,10 +196,47 @@ export default class Extensions extends React.Component {
       }],
     };
 
-    const hooks = {};
+    var handleFormChanged = this.handleFormChanged.bind(this)
+    const $hooks = {
+      onAdd(instance) {
+        // console.log('-> onAdd HOOK', instance.path || 'form');
+        handleFormChanged()
+      },
+      onDel(instance) {
+        // console.log('-> onDel HOOK', instance.path || 'form');
+        handleFormChanged()
+      },
+      onSubmit(instance){
+        // console.log('-> onSubmit HOOK', instance.path || 'form');
+      },
+      onSuccess(instance){
+        // console.log('Form Values!', instance.values())
+      },
+      sync(instance){
+        // console.log('sync', instance)
+      },
+      onChange(instance){
+        // console.log(instance.values())
+        handleFormChanged()
+      }
+    };
+
+    const hooks = {
+      'name': $hooks,
+      'key': $hooks,
+      'type': $hooks,
+      'config': $hooks,
+      'config[]': $hooks,
+      'config[].key': $hooks,
+      'config[].value': $hooks,
+      'config[].allowOverride': $hooks,
+      'environmentID': $hooks,
+      'component': $hooks,
+    }
+
     const handlers = {};
     const plugins = { dvr: validatorjs };
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers }, { plugins })    
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { handlers , plugins })    
   }
 
   componentWillMount(){
@@ -219,16 +259,32 @@ export default class Extensions extends React.Component {
   }
 
   openDrawer(){
-    this.setState({ drawerOpen: true, dialogOpen: false })
+    this.setState({ showDrawer: true, dialogOpen: false })
   }
 
   closeDrawer(force = false){
-    if(!force && this.form.isDirty){
-      this.setState({ dirtyFormDialogOpen: true })
-    } else {
-      this.setState({ drawerOpen: false, dialogOpen: false, saving: false, dirtyFormDialogOpen: false })
+    if(force || this.state.userHasUnsavedChanges === false){
+      this.setState({
+        dialogOpen: false, 
+        saving: false,
+        userHasUnsavedChanges: false,
+        showDrawer: false,
+        showDiscardEditsConfirmDialog: false
+      })
     }
   }  
+
+  handleFormChanged() {
+    this.setState({userHasUnsavedChanges: true})
+  }
+
+  handleCancelForm() {
+    if (this.state.userHasUnsavedChanges === true) {
+      this.setState({showDiscardEditsConfirmDialog:true})
+    } else {
+      this.closeDrawer()
+    }
+  }
 
   handleClick(e, extension, index){
     this.form = this.initAdminExtensionsForm({
@@ -406,8 +462,8 @@ export default class Extensions extends React.Component {
           classes={{
             paper: styles.drawer
           }}
-          onClose={() => {this.closeDrawer()}}          
-          open={this.state.drawerOpen}
+          onClose={() => {this.handleCancelForm()}}          
+          open={this.state.showDrawer}
         >
             <div className={styles.createServiceBar}>
               <AppBar position="static" color="default">
@@ -482,7 +538,7 @@ export default class Extensions extends React.Component {
                     }
 
                     <Button
-                      onClick={() => {this.closeDrawer()}}>
+                      onClick={() => {this.handleCancelForm()}}>
                       Cancel
                     </Button>
                   </Grid>
@@ -492,7 +548,7 @@ export default class Extensions extends React.Component {
         </Drawer>
 
         {/* Used for confirmation of escaping panel if dirty form */}
-        <Dialog open={this.state.dirtyFormDialogOpen}>
+        <Dialog open={this.state.showDiscardEditsConfirmDialog}>
           <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
@@ -500,7 +556,7 @@ export default class Extensions extends React.Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+            <Button onClick={()=> this.setState({ showDiscardEditsConfirmDialog: false })} color="primary">
               Cancel
             </Button>
             <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
@@ -511,7 +567,7 @@ export default class Extensions extends React.Component {
 
         {extensions[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogTitle>{"Are you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will delete the extension spec.
