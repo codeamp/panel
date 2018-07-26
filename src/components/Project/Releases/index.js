@@ -732,7 +732,7 @@ export default class Releases extends React.Component {
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
                 </Typography>                
-                {project.releases.entries.length > 1 &&     
+                {project.releases.entries.length > 1 && project.releases.entries[1].state === "complete" &&
                   <span>           
                     <Dialog open={this.state.openConfirmRollbackModal}>
                       <DialogTitle>{"Are you sure you want to rollback?"}</DialogTitle>
