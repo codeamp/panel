@@ -593,6 +593,20 @@ export default class Releases extends React.Component {
     </FormControl>)
   }
 
+  getLatestSuccessfulRelease() {
+    const { project } = this.props.data;
+    var release = null
+
+    project.releases.entries.forEach(function(tmpRelease){
+      if(tmpRelease.state === "complete"){
+        release = tmpRelease
+        return
+      }
+    })
+
+    return release
+  }
+
   renderDrawer(){
 		if (this.state.drawerRelease === null){
 			return null
@@ -731,7 +745,7 @@ export default class Releases extends React.Component {
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
                 </Typography>                
-                {project.releases.entries.length > 1 && project.releases.entries[1].state === "complete" &&
+                {project.releases.entries.length > 1 && this.getLatestSuccessfulRelease() !== null &&
                   <span>           
                     <Dialog open={this.state.openConfirmRollbackModal}>
                       <DialogTitle>{"Are you sure you want to rollback?"}</DialogTitle>
@@ -745,7 +759,7 @@ export default class Releases extends React.Component {
                         <Button onClick={()=> this.setState({ openConfirmRollbackModal: false })} color="primary">
                           Cancel
                         </Button>
-                        <Button onClick={() => {this.rollbackRelease(project.releases.entries[1])}} style={{ color: "red" }}>
+                        <Button onClick={() => {this.rollbackRelease(this.getLatestSuccessfulRelease())}} style={{ color: "red" }}>
                           Confirm
                         </Button>
                       </DialogActions>
