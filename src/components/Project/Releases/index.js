@@ -11,6 +11,12 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
 import Grid from 'material-ui/Grid';
+import Dialog, {
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from 'material-ui/Dialog';
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
@@ -282,12 +288,12 @@ mutation StopRelease($id: ID!) {
 `, { name: "stopRelease" })
 
 export default class Releases extends React.Component {
-  state = {
-    drawerRelease: null,
-  };
-
   constructor(props) {
     super(props)
+    this.state = {
+      openConfirmRollbackModal: false,
+      drawerRelease: null,
+    }
     this.props.data.refetch()
 
     const { socket, match } = this.props;
@@ -464,7 +470,7 @@ export default class Releases extends React.Component {
   }
 
   closeDrawer(){
-    this.setState({ drawerOpen: false, drawerRelease: null })
+    this.setState({ drawerOpen: false, drawerRelease: null, openConfirmRollbackModal: false })
   }
 
   stopRelease(release) {
@@ -547,12 +553,12 @@ export default class Releases extends React.Component {
     } else {
       return (<div>
         <Button
-        className={styles.drawerButton}
-        variant="raised"
-        color="secondary"
-        onClick={()=> this.rollbackRelease(release)}>
-        Rollback
-      </Button>
+          className={styles.drawerButton}
+          variant="raised"
+          color="secondary"
+          onClick={()=> this.rollbackRelease(release)}>
+          Rollback
+        </Button>
       <Button
         className={styles.drawerButton}
         color="primary"
@@ -724,8 +730,37 @@ export default class Releases extends React.Component {
               <CardContent>
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
-                </Typography>
-                <Typography variant="subheading" style={{ display: "inline-block", float: "right" }}>
+                </Typography>                
+                {project.releases.entries.length > 1 && project.releases.entries[1].state === "complete" &&
+                  <span>           
+                    <Dialog open={this.state.openConfirmRollbackModal}>
+                      <DialogTitle>{"Are you sure you want to rollback?"}</DialogTitle>
+                      <DialogContent>
+                        <DialogContentText>
+                          {"Rolling back to "}
+                          <b>{project.releases.entries[1].headFeature.message} </b>
+                        </DialogContentText>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={()=> this.setState({ openConfirmRollbackModal: false })} color="primary">
+                          Cancel
+                        </Button>
+                        <Button onClick={() => {this.rollbackRelease(project.releases.entries[1])}} style={{ color: "red" }}>
+                          Confirm
+                        </Button>
+                      </DialogActions>
+                    </Dialog>                          
+                    <Button
+                      className={styles.drawerButton}
+                      variant="raised"
+                      color="secondary"
+                      style={{ display: "inline-block", float: "right" }}
+                      onClick={()=> {this.setState({ openConfirmRollbackModal: true })}}>
+                      Rollback
+                    </Button> 
+                  </span>               
+                }
+                <Typography variant="subheading" style={{ paddingRight: 40, display: "inline-block", float: "right" }}>
                 <a id="kibana-log-link" href={generateKibanaLink(kibanaAppLogTemplate, {"##PROJECT-NAMESPACE##": `${this.props.store.app.currentEnvironment.key}-${this.props.data.project.slug}`})} target="_blank" className={styles.kibanaLogLink}>
                   APPLICATION LOGS
                 </a>
@@ -737,7 +772,6 @@ export default class Releases extends React.Component {
                 return releaseExtension.extension
               })
 
-              console.log(release.id)
               return (<ReleaseView
                 key={release.id}
                 extensions={extensions}
