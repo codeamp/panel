@@ -491,50 +491,47 @@ export default class Projects extends React.Component {
                         let extensionStatuses = []
 
                         if(project.releases.entries.length > 0) {
-                          switch(project.releases.entries[0].state){
-                            case "complete":
-                              color = "green"
-                              break;
-                            case "waiting":
-                              color = "yellow"
-                              break;
-                            case "failed":
-                              color = "red"
-                              break;
-                            default:
-                              break;
-                          }
-
                           project.releases.entries[0].releaseExtensions.forEach(function(releaseExtension){
                             let status = "lightgray"
+                            let textColor = "white"
+
                             switch(releaseExtension.state){
                               case "complete":
                                 status = "green"
                                 break;
-                              case "waiting":
-                                status = "yellow"
-                                break;
                               case "fetching":
+                              case "waiting":
+                              case "running":
                                 status = "yellow"
+                                textColor = "black"
                                 break;
                               case "failed":
                                 status = "red"
+                                break;
+                              case "canceled":
+                                status = "purple"
                                 break;
                               default:
                                 break;
                             }                            
                             extensionStatuses.push(
-                              <span key={releaseExtension.id} style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal" }}>
+                              <span key={releaseExtension.id} style={{ border: "2px solid black", margin: 4, backgroundColor: status, padding: 5, fontWeight: "normal", color: textColor }}>
                                 {releaseExtension.extension.extension.key}
                               </span>
                             )
                           })
+                        } else {
+                          extensionStatuses.push(
+                              <span key='no-releases' style={{ border: "2px solid black", margin: 4, backgroundColor: "black", padding: 5, fontWeight: "normal", color: "white" }}>
+                                No Releases
+                              </span>
+                            )
                         }
 
                         return (
-                          <div key={env.id + project.id} style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "center", fontWeight: "bold" }}>
+                          <div key={env.id + project.id} style={{ backgroundColor: color, padding: 10, border: "1px solid black", margin: 4, textAlign: "left", fontWeight: "bold" }}>
                             <Link to={"/projects/" + project.slug + "/" + env.key}>
-                              {env.name + "(" + env.key + ")"} &nbsp;
+                              {env.name} &nbsp;
                             </Link>
                             {extensionStatuses}
                           </div>
