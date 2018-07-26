@@ -607,7 +607,8 @@ export default class Releases extends React.Component {
   getLatestSuccessfulRelease() {
     const { project } = this.props.data;
 
-    for(var i = 0; i <= project.releases.entries.length; i++){
+    for(var i = 0; i < project.releases.entries.length; i++){
+      console.log(project.releases.entries)
       const tmpRelease = project.releases.entries[i]
       if(tmpRelease.state === "complete"){
         return tmpRelease
