@@ -461,8 +461,6 @@ export default class Releases extends React.Component {
     const { createRelease } = this.props;
     const { refetch } = this.props.data;
 
-    console.log(release)
-
     createRelease({
       variables: { 
         id: release.id, 
@@ -608,7 +606,6 @@ export default class Releases extends React.Component {
     const { project } = this.props.data;
 
     for(var i = 0; i < project.releases.entries.length; i++){
-      console.log(project.releases.entries)
       const tmpRelease = project.releases.entries[i]
       if(tmpRelease.state === "complete"){
         return tmpRelease
