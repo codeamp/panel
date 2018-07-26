@@ -288,14 +288,11 @@ mutation StopRelease($id: ID!) {
 `, { name: "stopRelease" })
 
 export default class Releases extends React.Component {
-  state = {
-    drawerRelease: null,
-  };
-
   constructor(props) {
     super(props)
     this.state = {
       openConfirmRollbackModal: false,
+      drawerRelease: null,
     }
     this.props.data.refetch()
 
@@ -597,7 +594,8 @@ export default class Releases extends React.Component {
   }
 
   renderDrawer(){
-		if (this.state.drawerRelease == null){
+    console.log(this.state.drawerRelease)
+		if (this.state.drawerRelease === null){
 			return null
     }
 
