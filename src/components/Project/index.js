@@ -254,9 +254,14 @@ class Project extends React.Component {
           </Grid>
         </Grid>
         <Switch>
-          <Route exact path='/projects/:slug/:environment' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
-          )}/>
+          <Route exact path='/projects/:slug/:environment' render={(props) => {
+            if(props.match.url.substr(props.match.url.length - 1) === "/"){
+              this.props.history.push(props.match.url + 'features')
+            } else {
+              this.props.history.push(props.match.url + '/features')
+            }
+            return (<div></div>)
+          }}/>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
             <ProjectFeatures history={history} {...props} socket={socket} />
           )}/>
