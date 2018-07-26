@@ -495,7 +495,6 @@ export default class Projects extends React.Component {
                             let status = "lightgray"
                             let textColor = "white"
 
-                            console.log(releaseExtension.state)
                             switch(releaseExtension.state){
                               case "complete":
                                 status = "green"
