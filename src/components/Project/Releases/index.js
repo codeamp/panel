@@ -20,6 +20,7 @@ import Dialog, {
 import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
 import ExtensionStateFailedIcon from 'material-ui-icons/Error';
+import ExtensionStateCanceledIcon from 'material-ui-icons/Fingerprint';
 import Loading from 'components/Utils/Loading';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -67,6 +68,8 @@ class ReleaseView extends React.Component {
               return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
             case "failed":
               return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+            case "canceled":
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
             default:
               return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
           }
@@ -92,6 +95,9 @@ class ReleaseView extends React.Component {
       break;
       case "running":
         state = (<CircularProgress className={styles.progress} color="secondary" />)
+      break;
+      case "canceled":
+        state = (<Chip label="CANCELED" style={{ backgroundColor: "purple", color: "white" }} />)
       break;
       case "failed":
         state = (<Chip label="FAILED" style={{ backgroundColor: "red", color: "white" }} />)
@@ -365,6 +371,9 @@ export default class Releases extends React.Component {
           }
           if(release.releaseExtensions[i].state === "failed"){
               stateIcon = <ExtensionStateFailedIcon />
+          }
+          if(release.releaseExtensions[i].state === "canceled"){
+              stateIcon = <ExtensionStateCanceledIcon />
           }
           return (
             <TableRow
