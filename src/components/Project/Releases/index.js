@@ -594,7 +594,6 @@ export default class Releases extends React.Component {
   }
 
   renderDrawer(){
-    console.log(this.state.drawerRelease)
 		if (this.state.drawerRelease === null){
 			return null
     }
