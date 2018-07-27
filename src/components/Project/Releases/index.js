@@ -607,7 +607,7 @@ export default class Releases extends React.Component {
 
     for(var i = 0; i < project.releases.entries.length; i++){
       const tmpRelease = project.releases.entries[i]
-      if(tmpRelease.state === "complete"){
+      if(tmpRelease.state === "complete" && tmpRelease.id !== project.currentRelease.id){
         return tmpRelease
       }
     }
