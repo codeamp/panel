@@ -831,9 +831,6 @@ export default class Releases extends React.Component {
       firstRowIndex = ((paginator.page - 1) * paginator.rowsPerPage) + 1
       lastRowIndex = firstRowIndex + project.releases.entries.length - 1
     }    
-
-
-    console.log(project)
     
     return (
       <div>
