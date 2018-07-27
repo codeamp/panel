@@ -760,7 +760,7 @@ export default class Releases extends React.Component {
                       <DialogContent>
                         <DialogContentText>
                           {"Rolling back to "}
-                          <b>{project.releases.entries[1].headFeature.message} </b>
+                          <b>{this.getLatestSuccessfulRelease().headFeature.message} </b>
                         </DialogContentText>
                       </DialogContent>
                       <DialogActions>
