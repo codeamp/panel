@@ -642,6 +642,8 @@ export default class Releases extends React.Component {
         break;
     }
 
+    var latestSuccessfulRelease = this.getLatestSuccessfulRelease()
+
     return (
 			<Drawer
 				anchor="right"
@@ -753,21 +755,21 @@ export default class Releases extends React.Component {
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
                 </Typography>                
-                {project.releases.entries.length > 1 && this.getLatestSuccessfulRelease() !== null &&
+                {project.releases.entries.length > 1 && latestSuccessfulRelease !== null &&
                   <span>           
                     <Dialog open={this.state.openConfirmRollbackModal}>
                       <DialogTitle>{"Are you sure you want to rollback?"}</DialogTitle>
                       <DialogContent>
                         <DialogContentText>
                           {"Rolling back to "}
-                          <b>{this.getLatestSuccessfulRelease().headFeature.message} </b>
+                          <b>{latestSuccessfulRelease.headFeature.message} </b>
                         </DialogContentText>
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={()=> this.setState({ openConfirmRollbackModal: false })} color="primary">
                           Cancel
                         </Button>
-                        <Button onClick={() => {this.rollbackRelease(this.getLatestSuccessfulRelease())}} style={{ color: "red" }}>
+                        <Button onClick={() => {this.rollbackRelease(latestSuccessfulRelease)}} style={{ color: "red" }}>
                           Confirm
                         </Button>
                       </DialogActions>
