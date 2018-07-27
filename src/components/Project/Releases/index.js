@@ -607,7 +607,7 @@ export default class Releases extends React.Component {
 
     for(var i = 0; i < project.releases.entries.length; i++){
       const tmpRelease = project.releases.entries[i]
-      if(tmpRelease.state === "complete"){
+      if(tmpRelease.state === "complete" && tmpRelease.id !== project.currentRelease.id){
         return tmpRelease
       }
     }
@@ -743,7 +743,9 @@ export default class Releases extends React.Component {
     if(loading){
       return (<Loading />)
     }
-
+    
+    let latestSuccessfulRelease = this.getLatestSuccessfulRelease()
+    
     return (
       <div>
         <Grid container spacing={16}>
@@ -753,21 +755,21 @@ export default class Releases extends React.Component {
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
                 </Typography>                
-                {project.releases.entries.length > 1 && this.getLatestSuccessfulRelease() !== null &&
+                {project.releases.entries.length > 1 && latestSuccessfulRelease !== null &&
                   <span>           
                     <Dialog open={this.state.openConfirmRollbackModal}>
                       <DialogTitle>{"Are you sure you want to rollback?"}</DialogTitle>
                       <DialogContent>
                         <DialogContentText>
                           {"Rolling back to "}
-                          <b>{project.releases.entries[1].headFeature.message} </b>
+                          <b>{latestSuccessfulRelease.headFeature.message} </b>
                         </DialogContentText>
                       </DialogContent>
                       <DialogActions>
                         <Button onClick={()=> this.setState({ openConfirmRollbackModal: false })} color="primary">
                           Cancel
                         </Button>
-                        <Button onClick={() => {this.rollbackRelease(this.getLatestSuccessfulRelease())}} style={{ color: "red" }}>
+                        <Button onClick={() => {this.rollbackRelease(latestSuccessfulRelease)}} style={{ color: "red" }}>
                           Confirm
                         </Button>
                       </DialogActions>
