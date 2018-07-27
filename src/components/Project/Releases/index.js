@@ -893,16 +893,7 @@ export default class Releases extends React.Component {
 
                 handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
               )})
-            }
-            
-            <Pagination 
-              firstRowIndex={firstRowIndex}
-              lastRowIndex={lastRowIndex}
-              paginator={paginator}
-              handleNextButtonClick={this.setNextPage.bind(this)}
-              handleBackButtonClick={this.setPreviousPage.bind(this)}
-            />           
-
+            }        
             {(project.releases.entries.length === 0) && <Card square={true}>
               <CardContent>
                 <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
@@ -913,6 +904,13 @@ export default class Releases extends React.Component {
                 </Typography>                  
               </CardContent>
             </Card>}
+            <Pagination 
+              firstRowIndex={firstRowIndex}
+              lastRowIndex={lastRowIndex}
+              paginator={paginator}
+              handleNextButtonClick={this.setNextPage.bind(this)}
+              handleBackButtonClick={this.setPreviousPage.bind(this)}
+            />               
           </Grid>
         </Grid>
         {this.renderDrawer()}
