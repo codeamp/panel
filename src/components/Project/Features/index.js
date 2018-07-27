@@ -127,7 +127,7 @@ export default class Features extends React.Component {
         headFeatureID: feature.id, 
         projectID: project.id, 
         environmentID: this.props.store.app.currentEnvironment.id,
-        forceRebuild: false,
+        forceRebuild: true,
       },
     }).then(({data}) => {
       this.props.data.refetch()
