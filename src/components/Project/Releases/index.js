@@ -642,8 +642,6 @@ export default class Releases extends React.Component {
         break;
     }
 
-    var latestSuccessfulRelease = this.getLatestSuccessfulRelease()
-
     return (
 			<Drawer
 				anchor="right"
@@ -745,7 +743,9 @@ export default class Releases extends React.Component {
     if(loading){
       return (<Loading />)
     }
-
+    
+    let latestSuccessfulRelease = this.getLatestSuccessfulRelease()
+    
     return (
       <div>
         <Grid container spacing={16}>
