@@ -594,6 +594,7 @@ export default class Services extends React.Component {
     }
 
     if (service.preStopHook !== "") {
+      newState.showAdvancedSettings = true
       newState.showLifecycleSettings = true
     }
 
