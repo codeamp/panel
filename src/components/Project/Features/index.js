@@ -6,7 +6,7 @@ import Typography from 'material-ui/Typography';
 import Card, { CardContent } from 'material-ui/Card';
 import { NavLink } from 'react-router-dom';
 import Button from 'material-ui/Button';
-//import IconButton from 'material-ui/IconButton';
+import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
 import { graphql } from 'react-apollo';
 import Loading from 'components/Utils/Loading';
@@ -17,6 +17,7 @@ import ExpansionPanel, {
   ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import CachedIcon from 'material-ui-icons/Cached';
 import Divider from 'material-ui/Divider';
 import { MenuItem } from 'material-ui/Menu';
 import { FormControl } from 'material-ui/Form';
@@ -92,6 +93,12 @@ mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: 
   }
 }
 `, { name: "createRelease" })
+
+@graphql(gql`
+mutation Mutation($projectID: ID!, $environmentID: ID!, $new: Boolean) {
+  getGitCommits(projectID: $projectID, environmentID: $environmentID, new: $new)
+}
+`, { name: "getGitCommits" })
 
 export default class Features extends React.Component {
   constructor(props){
@@ -198,6 +205,19 @@ export default class Features extends React.Component {
       </div>
       )
   }
+  
+  syncGitCommits() {
+    console.log('syncGitCommits')
+    const { project } = this.props.data;
+    
+    this.props.getGitCommits({
+      variables: {
+        projectID: project.id, 
+        environmentID: this.props.store.app.currentEnvironment.id,        
+        new: true,
+      }
+    })
+  }
 
   setFilterAndRefetchFeatures(e) {
     let showDeployed = false
@@ -245,6 +265,11 @@ export default class Features extends React.Component {
                 <Typography variant="title">
                   Features
                   <form autoComplete="off" style={{ display: "inline-block", float: "right" }}>                 
+                    <IconButton 
+                      onClick={this.syncGitCommits.bind(this)}
+                      style={{ display: "inline-block", marginRight: 20}}>
+                      <CachedIcon/>
+                    </IconButton>                                      
                     <FormControl>
                       <Select
                         open={this.state.filterOpen}
