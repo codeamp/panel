@@ -209,6 +209,7 @@ export default class Features extends React.Component {
   syncGitCommits() {
     console.log('syncGitCommits')
     const { project } = this.props.data;
+    var self = this
 
     this.props.getGitCommits({
       variables: {
@@ -216,6 +217,8 @@ export default class Features extends React.Component {
         environmentID: this.props.store.app.currentEnvironment.id,        
         new: true,
       }
+    }).then(function(data){
+      self.props.data.refetch()
     })
   }
 
