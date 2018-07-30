@@ -805,8 +805,9 @@ export default class Services extends React.Component {
                                         Deployment Strategy
                                     </Typography>
                                   </ExpansionPanelSummary>
+                                  <Divider/>
                                   <ExpansionPanelDetails>
-                                    <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
+                                    <Grid item xs={12} className={styles.settingsPanelOpen} key={this.form.$('deploymentStrategy').id}>
                                       <Grid item xs={12}>
                                         <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
                                       </Grid>
@@ -1042,8 +1043,9 @@ export default class Services extends React.Component {
                                         Lifecycle
                                     </Typography>
                                   </ExpansionPanelSummary>
+                                  <Divider/>
                                   <ExpansionPanelDetails>
-                                    <Grid item xs={12} key={this.form.$('preStopHook').id}>
+                                    <Grid item xs={12} key={this.form.$('preStopHook').id} className={styles.settingsPanelOpen}>
                                       <Grid item xs={12}>
                                         <InputField field={this.form.$('preStopHook')} fullWidth={true} />
                                       </Grid>
