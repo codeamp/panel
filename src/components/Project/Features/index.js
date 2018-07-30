@@ -250,9 +250,7 @@ export default class Features extends React.Component {
 
   setupSocketHandlers(){
     const { socket, match } = this.props;
-    console.log('socket handler', match.url.substring(1, match.url.length) + '/features')
     socket.on(match.url.substring(1, match.url.length) + '/features', (data) => {
-      console.log('new feature!')
       this.props.data.refetch()
     });    
   }
