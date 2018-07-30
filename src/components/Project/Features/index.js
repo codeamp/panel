@@ -4,6 +4,7 @@ import styles from './style.module.css';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import Typography from 'material-ui/Typography';
 import Card, { CardContent } from 'material-ui/Card';
+import { CircularProgress } from 'material-ui/Progress';
 import { NavLink } from 'react-router-dom';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
@@ -111,6 +112,7 @@ export default class Features extends React.Component {
       filterOpen: false,
       filter: "new",
       showDeployed: false,
+      syncingCommits: false,
     };
 
     this.setFilterAndRefetchFeatures.bind(this);
@@ -207,9 +209,10 @@ export default class Features extends React.Component {
   }
   
   syncGitCommits() {
-    console.log('syncGitCommits')
     const { project } = this.props.data;
     var self = this
+    
+    this.setState({ syncingCommits: true })
 
     this.props.getGitCommits({
       variables: {
@@ -218,7 +221,10 @@ export default class Features extends React.Component {
         new: true,
       }
     }).then(function(data){
-      self.props.data.refetch()
+      setTimeout(function(){
+        self.props.data.refetch()
+        self.setState({ syncingCommits: false })
+      }, 2000)      
     })
   }
 
@@ -272,7 +278,7 @@ export default class Features extends React.Component {
                     <IconButton 
                       onClick={this.syncGitCommits.bind(this)}
                       style={{ display: "inline-block", marginRight: 20}}>
-                      <CachedIcon/>
+                      {this.state.syncingCommits ? (<CircularProgress />) : (<CachedIcon/>)}
                     </IconButton>                                      
                     <FormControl>
                       <Select
