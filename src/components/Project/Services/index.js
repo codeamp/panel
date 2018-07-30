@@ -365,7 +365,7 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[].name': "Name",
       'readinessProbe.httpHeaders[].value': "Value",
 
-      'preStopHook': "PreStopHook"
+      'preStopHook': "Command"
     };
 
     const initials = formInitials
@@ -1046,6 +1046,9 @@ export default class Services extends React.Component {
                                   <Divider/>
                                   <ExpansionPanelDetails>
                                     <Grid item xs={12} key={this.form.$('preStopHook').id} className={styles.settingsPanelOpen}>
+                                      <Typography variant={"subheading"}>
+                                          PreStop ExecHook
+                                      </Typography>
                                       <Grid item xs={12}>
                                         <InputField field={this.form.$('preStopHook')} fullWidth={true} />
                                       </Grid>
