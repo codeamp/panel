@@ -63,7 +63,7 @@ class ReleaseView extends React.Component {
     if(this.props.release.finished !== null && releaseFinished.getTime() > 0) {
       currentTime = new Date(this.props.release.finished)
       var diff = currentTime - new Date(this.props.release.created).getTime();
-      this.state.timer = diff/1000      
+      this.state.timer = "Completed in " + diff/1000 + " seconds."
     } else {
       if(this.props.release.state === "failed" || this.props.release.state === "complete") {
         this.state.timer = ""
@@ -170,7 +170,7 @@ class ReleaseView extends React.Component {
                 </div>
                 <div style={{ display: "inline-block", float: "right", marginTop: 5 }}>
                   <Typography variant="subheading">
-                    {"Completed in " + this.state.timer + " seconds."}
+                    {this.state.timer}
                   </Typography>
                 </div>
               </Grid>
