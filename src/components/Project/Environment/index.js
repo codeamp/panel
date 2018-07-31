@@ -48,7 +48,7 @@ export default class Environment extends React.Component {
 
     return (
       <div className={styles.root}>
-        <Typography className={styles.title} variant="title"> Select environment </Typography>
+        <Typography className={styles.title} variant="title"> Select Environment </Typography>
         {environments.map((environment) => {
         return (
         <Button variant="raised" key={environment.id} className={styles.button} onClick={() => {this.handleEnvironmentSelect(environment)}} >
