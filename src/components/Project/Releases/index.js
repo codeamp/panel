@@ -125,7 +125,7 @@ class ReleaseView extends React.Component {
   startTimer() {
     var self = this
     setInterval(function(){
-      self.setState({ timer: (self.state.timer + 1) + " seconds."})
+      self.setState({ timer: self.state.timer + 1})
     }, 1000)
   }  
 
