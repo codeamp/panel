@@ -50,7 +50,8 @@ class ReleaseView extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      timer: 0
+      timer: 0,
+      timerInterval: null,
     }
 
     if(this.props.release === null) {
@@ -87,6 +88,10 @@ class ReleaseView extends React.Component {
   componentDidUpdate(prevProps) {
     console.log('componentDidUpdate', this.props.release.state !== prevProps.release.state)
     if(prevProps.release.state !== this.props.release.state) {
+      if(this.state.timerInterval !== null) {
+        clearInterval(this.state.timerInterval)
+      }
+      
       let currentTime = new Date(this.props.release.finished)
       let diff = currentTime - new Date(this.props.release.created).getTime();
       this.setState({ timer: "Completed in " + Math.floor(diff/1000) + " seconds."})
@@ -133,9 +138,11 @@ class ReleaseView extends React.Component {
 
   startTimer() {
     var self = this
-    setInterval(function(){
+    var timerInterval = setInterval(function(){
       self.setState({ timer: self.state.timer + 1})
     }, 1000)
+
+    this.setState({ timerInterval: timerInterval })
   }  
 
   render() {
