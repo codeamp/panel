@@ -59,9 +59,8 @@ class ReleaseView extends React.Component {
     }
     
     let currentTime = Date.now()
-    console.log(this.props.release.finshed != null)
-    if(this.props.release.finished != null) {
-      console.log("HELLO")
+    let releaseFinished = new Date(this.props.release.finished)
+    if(this.props.release.finished !== null && releaseFinished.getTime() > 0) {
       currentTime = new Date(this.props.release.finished)
       var diff = currentTime - new Date(this.props.release.created).getTime();
       this.state.timer = diff/1000      
@@ -257,6 +256,7 @@ class ReleaseView extends React.Component {
           state
           stateMessage
           created
+          finished
           user {
             email
           }
