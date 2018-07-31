@@ -65,7 +65,7 @@ class ReleaseView extends React.Component {
     if(this.props.release.finished !== null && releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
       currentTime = new Date(this.props.release.finished)
       diff = currentTime - new Date(this.props.release.created).getTime();
-      this.state.timer = "Completed in " + Math.floor(diff/1000) + " seconds."
+      this.state.timer = Math.floor(diff/1000)
     } else {
       if(this.props.release.state === "failed" || this.props.release.state === "complete") {
         this.state.timer = ""
@@ -82,6 +82,18 @@ class ReleaseView extends React.Component {
       startTimer()      
     }  
   }  
+  
+  getReadableDuration(seconds) {
+    var hours   = Math.floor(seconds / 3600);
+    var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+    var seconds = seconds - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+
+    return hours+':'+minutes+':'+seconds;
+  }
 
   componentDidUpdate(prevProps) {
     if(prevProps.release.state !== this.props.release.state) {
@@ -91,7 +103,7 @@ class ReleaseView extends React.Component {
 
       let currentTime = new Date(this.props.release.finished)
       let diff = currentTime - new Date(this.props.release.created).getTime();
-      this.setState({ timer: "Completed in " + Math.floor(diff/1000) + " seconds."})
+      this.setState({ timer: Math.floor(diff/1000) })
     }
   }
 
@@ -188,7 +200,7 @@ class ReleaseView extends React.Component {
                 </div>
                 <div style={{ display: "inline-block", float: "right", marginTop: 5 }}>
                   <Typography variant="subheading">
-                    {this.state.timer}
+                    {this.getReadableDuration(this.state.timer)}
                   </Typography>
                 </div>
               </Grid>
