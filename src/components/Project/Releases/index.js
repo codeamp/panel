@@ -59,8 +59,9 @@ class ReleaseView extends React.Component {
     }
     
     let currentTime = Date.now()
-    if(this.props.release.finished !== "") {
-      console.log(this.props.release.finished)
+    console.log(this.props.release.finshed != null)
+    if(this.props.release.finished != null) {
+      console.log("HELLO")
       currentTime = new Date(this.props.release.finished)
     }
 
