@@ -65,12 +65,12 @@ class ReleaseView extends React.Component {
     if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
       currentTime = new Date(this.props.release.finished)
       diff = currentTime - new Date(this.props.release.created).getTime();
-      this.state.timer = Math.floor(diff/1000)
+      this.setState({ timer: Math.floor(diff/1000) })
     }
 
     if(this.props.release.state !== "failed" && this.props.release.state !== "complete") {
       diff = Date.now() - new Date(this.props.release.created).getTime();
-      this.state.timer = Math.floor(diff/1000)
+      this.setState({ timer: Math.floor(diff/1000) })
 
       this.startTimer = this.startTimer.bind(this)
       this.startTimer()      
@@ -80,7 +80,7 @@ class ReleaseView extends React.Component {
   getReadableDuration(seconds) {
     var hours   = Math.floor(seconds / 3600);
     var minutes = Math.floor((seconds - (hours * 3600)) / 60);
-    var seconds = seconds - (hours * 3600) - (minutes * 60);
+    seconds = seconds - (hours * 3600) - (minutes * 60);
 
     if (hours < 10) {
       hours = "0" + hours
