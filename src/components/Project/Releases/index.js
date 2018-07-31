@@ -79,6 +79,7 @@ class ReleaseView extends React.Component {
   }  
 
   componentDidUpdate(prevProps) {
+    console.log('componentDidUpdate', this.props.release.state !== prevProps.release.state)
     if(this.props.release.state !== prevProps.release.state) {
       this.forceUpdate()
     }
