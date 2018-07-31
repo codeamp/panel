@@ -47,6 +47,16 @@ function generateKibanaLink(linkTemplate, replacementHash) {
 }
 
 class ReleaseView extends React.Component {  
+  constructor(props){
+    super(props)
+    this.state = {
+      timer: 0
+    }
+
+    let startTimer = this.startTimer.bind(this)
+    startTimer()
+  }
+
   renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
     // filter out 'once' types
@@ -84,6 +94,13 @@ class ReleaseView extends React.Component {
       </div>
     )
   }
+
+  startTimer() {
+    var self = this
+    setInterval(function(){
+      self.setState({ timer: self.state.timer + 1})
+    }, 1000)
+  }  
 
   render() {
     const { release, currentRelease } = this.props;
@@ -131,6 +148,11 @@ class ReleaseView extends React.Component {
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
                 </div>
+                <div style={{ display: "inline-block", float: "right", marginTop: 5 }}>
+                  <Typography variant="subheading">
+                    {this.state.timer}
+                  </Typography>
+                </div>
               </Grid>
               <Grid item xs={2} style={{textAlign: "right"}}> 
                 {state}
@@ -172,6 +194,7 @@ class ReleaseView extends React.Component {
         }
         releaseExtensions {
           id
+          finished
           extension {
             id
             extension {
@@ -225,6 +248,7 @@ class ReleaseView extends React.Component {
           }        
           releaseExtensions {
             id
+            finished
             artifacts
             extension {
               id
