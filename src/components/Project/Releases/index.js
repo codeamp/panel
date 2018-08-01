@@ -107,7 +107,7 @@ class ReleaseView extends React.Component {
     }
 
     if(prevProps.release.started !== this.props.release.started) {
-      diff = Date.now() - new Date(this.props.release.started).getTime();
+      let diff = Date.now() - new Date(this.props.release.started).getTime();
       this.setState({ timer: Math.floor(diff/1000) })
 
       this.startTimer = this.startTimer.bind(this)
