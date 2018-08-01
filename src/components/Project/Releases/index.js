@@ -71,7 +71,7 @@ class ReleaseView extends React.Component {
     if(this.props.release.state !== "failed" && this.props.release.state !== "complete") {
       diff = Date.now() - new Date(this.props.release.started).getTime();
       this.setState({ timer: Math.floor(diff/1000) })
-      
+
 
       this.startTimer = this.startTimer.bind(this)
       this.startTimer()      
@@ -253,6 +253,7 @@ class ReleaseView extends React.Component {
         }
         releaseExtensions {
           id
+          started
           finished
           extension {
             id
@@ -265,6 +266,8 @@ class ReleaseView extends React.Component {
           state
           stateMessage
         }
+        started
+        finished
         created
         user {
           email
@@ -295,6 +298,7 @@ class ReleaseView extends React.Component {
           state
           stateMessage
           created
+          started
           finished
           user {
             email
@@ -308,6 +312,7 @@ class ReleaseView extends React.Component {
           }        
           releaseExtensions {
             id
+            started
             finished
             artifacts
             extension {
