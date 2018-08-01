@@ -65,12 +65,12 @@ class ReleaseView extends React.Component {
     if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
       currentTime = new Date(this.props.release.finished)
       diff = currentTime - new Date(this.props.release.started).getTime();
-      this.setState({ timer: Math.floor(diff/1000) })
+      this.state.timer = Math.floor(diff/1000)
     }
 
     if(this.props.release.state !== "failed" && this.props.release.state !== "complete") {
       diff = Date.now() - new Date(this.props.release.started).getTime();
-      this.setState({ timer: Math.floor(diff/1000) })
+      this.state.timer = Math.floor(diff/1000)
 
 
       this.startTimer = this.startTimer.bind(this)
