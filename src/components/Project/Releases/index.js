@@ -98,7 +98,7 @@ class ReleaseView extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(prevProps.release.state !== this.props.release.state) {
+    if(prevProps.release.state !== this.props.release.state || prevProps.release.finished !== this.props.release.finished) {
       if(this.timerInterval !== null) {
         clearInterval(this.timerInterval)
       }
