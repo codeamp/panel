@@ -210,7 +210,7 @@ class ReleaseView extends React.Component {
                 </div>
                 <div style={{ display: "inline-block", float: "right", marginTop: 5 }}>
                   <Typography variant="subheading">
-                    {this.getReadableDuration(this.state.timer)}
+                    Time Elapsed: {this.getReadableDuration(this.state.timer)}
                   </Typography>
                 </div>
               </Grid>
