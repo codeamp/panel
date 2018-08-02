@@ -214,7 +214,6 @@ class ReleaseView extends React.Component {
                   </Typography>
                 </div>
               </Grid>
-              
               <Grid item xs={2} style={{textAlign: "right"}}> 
                 {state}
                 {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
