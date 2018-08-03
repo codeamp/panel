@@ -208,9 +208,9 @@ class ReleaseView extends React.Component {
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
                 </div>
-                <div style={{ display: "inline-block", float: "right", marginTop: 5 }}>
+                <div style={{ display: "inline-block", marginLeft: 35, marginTop: 5 }}>
                   <Typography variant="subheading">
-                    Time Elapsed: {this.getReadableDuration(this.state.timer)}
+                    {this.getReadableDuration(this.state.timer)}
                   </Typography>
                 </div>
               </Grid>
