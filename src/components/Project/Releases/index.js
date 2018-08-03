@@ -208,15 +208,15 @@ class ReleaseView extends React.Component {
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
                 </div>
-                <div style={{ display: "inline-block", marginLeft: 35, marginTop: 5 }}>
-                  <Typography variant="subheading">
-                    Run time: {this.getReadableDuration(this.state.timer)}
-                  </Typography>
-                </div>
               </Grid>
               <Grid item xs={2} style={{textAlign: "right"}}> 
                 {state}
                 {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
+                <div style={{ marginTop: 40 }}>
+                  <Typography variant="subheading">
+                    {this.getReadableDuration(this.state.timer)}
+                  </Typography>
+                </div>                
               </Grid>
             </Grid>
           </CardContent>
