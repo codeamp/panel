@@ -47,6 +47,80 @@ function generateKibanaLink(linkTemplate, replacementHash) {
 }
 
 class ReleaseView extends React.Component {  
+  constructor(props){
+    super(props)
+    this.state = {
+      timer: 0,
+      timerInterval: null,
+    }
+
+    if(this.props.release === null) {
+      return
+    }
+
+    let currentTime = Date.now()
+    let releaseFinished = new Date(this.props.release.finished)
+    var diff = 0 
+
+    if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
+      currentTime = new Date(this.props.release.finished)
+      diff = currentTime - new Date(this.props.release.started).getTime();
+      this.state.timer = Math.floor(diff/1000)
+    }
+
+    if(new Date(this.props.release.started).getTime() > 0
+       && new Date(this.props.release.finished).getTime() < 0) {
+      diff = Date.now() - new Date(this.props.release.started).getTime();
+      this.state.timer = Math.floor(diff/1000)
+
+
+      this.startTimer = this.startTimer.bind(this)
+      this.startTimer()      
+    }  
+  }  
+  
+  getReadableDuration(seconds) {
+    var hours   = Math.floor(seconds / 3600);
+    var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+    seconds = seconds - (hours * 3600) - (minutes * 60);
+
+    if (hours < 10) {
+      hours = "0" + hours
+    }
+    if (minutes < 10) {
+      minutes = "0" + minutes
+    }
+    if (seconds < 10) {
+      seconds = "0" + seconds
+    }
+
+    if(parseInt(hours) < 1) {
+      return minutes+':'+seconds;
+    } else {
+      return hours+':'+minutes+':'+seconds;
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if(prevProps.release.state !== this.props.release.state || prevProps.release.finished !== this.props.release.finished) {
+      if(this.timerInterval !== null) {
+        clearInterval(this.timerInterval)
+      }
+
+      let currentTime = new Date(this.props.release.finished)
+      let diff = currentTime - new Date(this.props.release.started).getTime();
+      this.setState({ timer: Math.floor(diff/1000) })
+    }
+
+    if(prevProps.release.started !== this.props.release.started) {
+      let diff = Date.now() - new Date(this.props.release.started).getTime();
+      this.setState({ timer: Math.floor(diff/1000) })
+
+      this.startTimer = this.startTimer.bind(this)
+      this.startTimer()         
+    }
+  }
+
   renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
     // filter out 'once' types
@@ -84,6 +158,13 @@ class ReleaseView extends React.Component {
       </div>
     )
   }
+
+  startTimer() {
+    var self = this
+    this.timerInterval = setInterval(function(){
+      self.setState({ timer: self.state.timer + 1})
+    }, 1000)
+  }  
 
   render() {
     const { release, currentRelease } = this.props;
@@ -135,6 +216,11 @@ class ReleaseView extends React.Component {
               <Grid item xs={2} style={{textAlign: "right"}}> 
                 {state}
                 {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
+                <div style={{ marginTop: 40 }}>
+                  <Typography variant="subheading">
+                    {this.getReadableDuration(this.state.timer)}
+                  </Typography>
+                </div>                
               </Grid>
             </Grid>
           </CardContent>
@@ -172,6 +258,8 @@ class ReleaseView extends React.Component {
         }
         releaseExtensions {
           id
+          started
+          finished
           extension {
             id
             extension {
@@ -183,6 +271,8 @@ class ReleaseView extends React.Component {
           state
           stateMessage
         }
+        started
+        finished
         created
         user {
           email
@@ -213,6 +303,8 @@ class ReleaseView extends React.Component {
           state
           stateMessage
           created
+          started
+          finished
           user {
             email
           }
@@ -225,6 +317,8 @@ class ReleaseView extends React.Component {
           }        
           releaseExtensions {
             id
+            started
+            finished
             artifacts
             extension {
               id
