@@ -56,14 +56,8 @@ class ReleaseView extends React.Component {
 
     if(this.props.release === null) {
       return
-    }
+    }    
     this.startTimer = this.startTimer.bind(this)
-    this.initializeTimer = this.initializeTimer.bind(this)
-
-    this.initializeTimer()
-  }  
-
-  initializeTimer() {
     let currentTime = Date.now()
     let releaseFinished = new Date(this.props.release.finished)
     var diff = 0 
@@ -71,17 +65,17 @@ class ReleaseView extends React.Component {
     if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
       currentTime = new Date(this.props.release.finished)
       diff = currentTime - new Date(this.props.release.started).getTime();
-      this.setState({ timer: Math.floor(diff/1000) })
+      this.state.timer = Math.floor(diff/1000)
     }
 
     if(new Date(this.props.release.started).getTime() > 0
        && new Date(this.props.release.finished).getTime() < 0) {
       diff = Date.now() - new Date(this.props.release.started).getTime();
-      this.setState({ timer: Math.floor(diff/1000) })
+      this.state.timer = Math.floor(diff/1000)
 
       this.startTimer()      
-    }      
-  }
+    }          
+  }  
   
   getReadableDuration(seconds) {
     var hours   = Math.floor(seconds / 3600);
