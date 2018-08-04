@@ -94,6 +94,8 @@ class ReleaseView extends React.Component {
 
     if(parseInt(hours, 10) < 1) {
       return minutes+' minutes '+seconds + ' seconds';
+    } else if(parseInt(minutes, 10) < 1) {
+      return seconds + ' seconds';
     } else {
       return hours+' hours '+minutes+' minutes '+seconds + ' seconds';
     }
