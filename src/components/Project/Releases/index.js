@@ -97,12 +97,12 @@ class ReleaseView extends React.Component {
         if(parseInt(seconds, 10) < 1){
           return "No information on runtime."
         }
-        return seconds + ' seconds';  
+        return seconds + ' sec';  
       }
-      return minutes+' minutes '+seconds + ' seconds';
+      return minutes+' min. '+seconds + ' sec.';
     }
     
-    return hours+' hours '+minutes+' minutes '+seconds + ' seconds';
+    return hours+' h. '+minutes+' min. '+seconds + ' sec.';
   }
 
   componentDidUpdate(prevProps) {
