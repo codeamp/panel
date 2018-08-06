@@ -4,9 +4,10 @@ import styles from './style.module.css';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import Typography from 'material-ui/Typography';
 import Card, { CardContent } from 'material-ui/Card';
+import { CircularProgress } from 'material-ui/Progress';
 import { NavLink } from 'react-router-dom';
 import Button from 'material-ui/Button';
-//import IconButton from 'material-ui/IconButton';
+import IconButton from 'material-ui/IconButton';
 import Grid from 'material-ui/Grid';
 import { graphql } from 'react-apollo';
 import Loading from 'components/Utils/Loading';
@@ -17,6 +18,7 @@ import ExpansionPanel, {
   ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import CachedIcon from 'material-ui-icons/Cached';
 import Divider from 'material-ui/Divider';
 import { MenuItem } from 'material-ui/Menu';
 import { FormControl } from 'material-ui/Form';
@@ -93,6 +95,12 @@ mutation Mutation($headFeatureID: String!, $projectID: String!, $environmentID: 
 }
 `, { name: "createRelease" })
 
+@graphql(gql`
+mutation Mutation($projectID: ID!, $environmentID: ID!, $new: Boolean) {
+  getGitCommits(projectID: $projectID, environmentID: $environmentID, new: $new)
+}
+`, { name: "getGitCommits" })
+
 export default class Features extends React.Component {
   constructor(props){
     super(props)
@@ -104,6 +112,7 @@ export default class Features extends React.Component {
       filterOpen: false,
       filter: "new",
       showDeployed: false,
+      syncingCommits: false,
     };
 
     this.setFilterAndRefetchFeatures.bind(this);
@@ -198,6 +207,26 @@ export default class Features extends React.Component {
       </div>
       )
   }
+  
+  syncGitCommits() {
+    const { project } = this.props.data;
+    var self = this
+    
+    this.setState({ syncingCommits: true })
+
+    this.props.getGitCommits({
+      variables: {
+        projectID: project.id, 
+        environmentID: this.props.store.app.currentEnvironment.id,        
+        new: true,
+      }
+    }).then(function(data){
+      setTimeout(function(){
+        self.props.data.refetch()
+        self.setState({ syncingCommits: false })
+      }, 2000)      
+    })
+  }
 
   setFilterAndRefetchFeatures(e) {
     let showDeployed = false
@@ -221,7 +250,6 @@ export default class Features extends React.Component {
 
   setupSocketHandlers(){
     const { socket, match } = this.props;
-
     socket.on(match.url.substring(1, match.url.length) + '/features', (data) => {
       this.props.data.refetch()
     });    
@@ -245,6 +273,11 @@ export default class Features extends React.Component {
                 <Typography variant="title">
                   Features
                   <form autoComplete="off" style={{ display: "inline-block", float: "right" }}>                 
+                    <IconButton 
+                      onClick={this.syncGitCommits.bind(this)}
+                      style={{ display: "inline-block", marginRight: 20}}>
+                      {this.state.syncingCommits ? (<CircularProgress />) : (<CachedIcon/>)}
+                    </IconButton>                                      
                     <FormControl>
                       <Select
                         open={this.state.filterOpen}
