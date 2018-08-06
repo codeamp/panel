@@ -49,10 +49,7 @@ function generateKibanaLink(linkTemplate, replacementHash) {
 class ReleaseView extends React.Component {  
   constructor(props){
     super(props)
-    this.state = {
-      timer: 0,
-      timerInterval: null,
-    }
+    this.startTimer = this.startTimer.bind(this)
 
     if(this.props.release === null) {
       return
@@ -61,22 +58,30 @@ class ReleaseView extends React.Component {
     let currentTime = Date.now()
     let releaseFinished = new Date(this.props.release.finished)
     var diff = 0 
+    let timer =  0
+    let startTimer = false
 
     if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
       currentTime = new Date(this.props.release.finished)
       diff = currentTime - new Date(this.props.release.started).getTime();
-      this.state.timer = Math.floor(diff/1000)
+      timer = Math.floor(diff/1000)
     }
 
     if(new Date(this.props.release.started).getTime() > 0
        && new Date(this.props.release.finished).getTime() < 0) {
       diff = Date.now() - new Date(this.props.release.started).getTime();
-      this.state.timer = Math.floor(diff/1000)
+      timer = Math.floor(diff/1000)
+      startTimer = true
+    }
 
+    this.state = {
+      timer: timer,
+      timerInterval: null,
+    }    
 
-      this.startTimer = this.startTimer.bind(this)
+    if(startTimer) {
       this.startTimer()      
-    }  
+    }
   }  
   
   getReadableDuration(seconds) {
@@ -94,7 +99,7 @@ class ReleaseView extends React.Component {
       seconds = "0" + seconds
     }
 
-    if(parseInt(hours) < 1) {
+    if(parseInt(hours, 10) < 1) {
       return minutes+':'+seconds;
     } else {
       return hours+':'+minutes+':'+seconds;
