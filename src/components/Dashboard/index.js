@@ -188,12 +188,13 @@ export default class Dashboard extends React.Component {
                 if (!project.bookmarked) {
                   return null
                 }
-                let style={}
+                let className={}
                 if (!this.state.hover === false && this.state.hover.id === project.id) {
-                  style={backgroundColor:"rgba(33, 150, 243, 0.12)", userSelect:"none"}
+                  className=styles.bookmarkedProjectHover
+                  console.log(className)
                 }
                 return (                  
-                  <Card key={project.id} style={style}>
+                  <Card key={project.id} className={className}>
                     <CardContent
                       tabIndex={-1}
                       onClick={()=> this.onClickProject(project)}
@@ -201,7 +202,7 @@ export default class Dashboard extends React.Component {
                       onMouseLeave={()=> { this.onMouseLeave(project) }}
                       key={project.id}
                       history={this.props.history}>
-                        <StarIcon style={{float:"left", paddingRight:10}}/>
+                        <StarIcon className={styles.bookmarkedProjectGlyph}/>
                         <Typography variant="subheading">
                         {project.name}
                         </Typography>
@@ -211,7 +212,7 @@ export default class Dashboard extends React.Component {
               }, this)}
               {bookmarkedProjects.length === 0 &&
                 <Card style={{padding: 20}}>
-                  <Typography variant="subheading" style={{ userSelect: "none", textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                  <Typography variant="subheading" className={styles.bookmarkedProjectsEmpty}>
                     There are no bookmarked projects.
                   </Typography>
                 </Card>

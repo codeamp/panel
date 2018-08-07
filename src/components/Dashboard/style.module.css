@@ -24,6 +24,24 @@
   font-weight: 500;
 }
 
+.bookmarkedProjectsEmpty {
+  user-select: none;
+  text-align: center;
+  font-weight: 500;
+  font-size: 23;
+  color: gray;
+}
+
+.bookmarkedProjectHover {
+  background-color: rgba(33, 150, 243, 0.12);
+  user-select: none;
+}
+
+.bookmarkedProjectGlyph {
+  float: left;
+  padding-right: 10px;
+}
+
 .projectsCard{
   background-color: #1bc98e;
 }
