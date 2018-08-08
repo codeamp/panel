@@ -144,7 +144,7 @@ export default class App extends React.Component {
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
-                    <Dashboard projects={projects.entries} />
+                    <Dashboard projects={projects.entries} history={this.props.history}/>
                   )} />
                   <Route exact path='/create' render={(props) => (
                     <Create projects={projects.entries} type={"create"} {...props} />
