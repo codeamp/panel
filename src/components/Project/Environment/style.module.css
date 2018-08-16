@@ -5,8 +5,17 @@
 }
 
 .title {
+  font-size: 30px;
+  font-weight: 500;
+  user-select: none;
+  padding-bottom: 10px;
+}
+
+.project {
+  padding-bottom: 25px;
   font-size: 40px;
   font-weight: 500;
+  user-select: none;
 }
 
 .caption {

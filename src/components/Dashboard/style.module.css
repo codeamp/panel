@@ -17,11 +17,36 @@
 .bigNumber {
   font-size: 80px;
   color: white;
+  user-select: none;
+  text-shadow: 2px 2px 2px #444444;
 }
 
 .title {
   color: #faf1f1;
   font-weight: 500;
+  user-select: none;
+  text-shadow: 2px 2px 2px #444444;
+}
+
+.bookmarks {
+  width: '100%';
+  margin-top: 25px;
+}
+
+.bookmarkLink:link {
+  user-select: none;
+}
+
+.bookmarkLink:visited {
+  user-select: none;
+}
+
+.bookmarkLink:hover {
+  user-select: none;
+}
+
+.bookmarkLink:active {
+  user-select: none;
 }
 
 .bookmarkedProjectsEmpty {
@@ -32,7 +57,7 @@
   color: gray;
 }
 
-.bookmarkedProjectHover {
+.bookmarkedProject:hover {
   background-color: rgba(33, 150, 243, 0.12);
   user-select: none;
 }
@@ -40,22 +65,27 @@
 .bookmarkedProjectGlyph {
   float: left;
   padding-right: 10px;
+  color: rgba(0,0,0,0.54);
 }
 
 .projectsCard{
   background-color: #1bc98e;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .featuresCard{
   background-color: #9f86ff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .releasesCard{
   background-color: #e64759;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .usersCard{
   background-color: #e4d836;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .innerWaiting {

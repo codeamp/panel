@@ -2,6 +2,7 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import Grid from 'material-ui/Grid';
+import Link from 'react-router-dom/Link';
 import Typography from 'material-ui/Typography';
 import Card, { CardContent } from 'material-ui/Card';
 import Loading from 'components/Utils/Loading';
@@ -57,9 +58,6 @@ export default class Dashboard extends React.Component {
       expanded: null,
       hover: null,
     };
-
-    this.onClickProject = this.onClickProject.bind(this)
-    this.onMouseEnter = this.onMouseEnter.bind(this)
   }
 
   handleClick = event => {
@@ -88,18 +86,6 @@ export default class Dashboard extends React.Component {
   copyGitHash(featureHash){
     this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash, open: true });
   }  
-
-  onClickProject(project) {
-    this.props.history.push("/projects/" + project.slug + "/environments")
-  };
-
-  onMouseEnter(project) {
-    this.setState({hover:project})
-  };
-
-  onMouseLeave(project) {
-    this.setState({hover:null})
-  };
 
   render() {
     const { loading, projects, releases, features, users } = this.props.data;
@@ -174,7 +160,7 @@ export default class Dashboard extends React.Component {
             </Grid>
           </Grid>                   
         </div>
-        <div className={styles.root}>
+        <div className={styles.bookmarks}>
           <Grid container spacing={16}>
             <Grid item xs={12}>
               <Card style={{userSelect:"none"}}>
@@ -188,25 +174,19 @@ export default class Dashboard extends React.Component {
                 if (!project.bookmarked) {
                   return null
                 }
-                let className={}
-                if (!this.state.hover === false && this.state.hover.id === project.id) {
-                  className=styles.bookmarkedProjectHover
-                  console.log(className)
-                }
                 return (                  
-                  <Card key={project.id} className={className}>
-                    <CardContent
-                      tabIndex={-1}
-                      onClick={()=> this.onClickProject(project)}
-                      onMouseEnter={()=> { this.onMouseEnter(project) }}
-                      onMouseLeave={()=> { this.onMouseLeave(project) }}
-                      key={project.id}
-                      history={this.props.history}>
-                        <StarIcon className={styles.bookmarkedProjectGlyph}/>
-                        <Typography variant="subheading">
-                        {project.name}
-                        </Typography>
-                    </CardContent>
+                  <Card key={project.id} className={styles.bookmarkedProject}>
+                    <Link to={"/projects/" + project.slug + "/environments"}>
+                      <CardContent
+                        tabIndex={-1}
+                        key={project.id}
+                        history={this.props.history}>
+                          <StarIcon className={styles.bookmarkedProjectGlyph}/>
+                          <Typography variant="subheading" style={{"userSelect":"none"}}>
+                          {project.name}
+                          </Typography>
+                      </CardContent>
+                    </Link>
                   </Card>
                 )
               }, this)}

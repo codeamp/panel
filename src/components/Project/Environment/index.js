@@ -48,6 +48,7 @@ export default class Environment extends React.Component {
 
     return (
       <div className={styles.root}>
+        <Typography className={styles.project} variant="title"> {this.props.match.params.slug} </Typography>
         <Typography className={styles.title} variant="title"> Select Environment </Typography>
         {environments.map((environment) => {
         return (
