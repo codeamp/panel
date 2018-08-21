@@ -602,7 +602,8 @@ export default class Releases extends React.Component {
         className={styles.drawerButton}
         color="secondary"
         variant="raised"
-        onClick={() => this.stopRelease(release)}>
+        onClick={() => this.stopRelease(release)}
+        disabled>
           Stop Release
         </Button>
       )
