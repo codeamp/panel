@@ -596,27 +596,27 @@ export default class Releases extends React.Component {
   }
 
   stopReleaseButton(release) {
-    if (release.state === "fetching" || release.state === "waiting") {
-      return (
-        <Button
-        className={styles.drawerButton}
-        color="secondary"
-        variant="raised"
-        onClick={() => this.stopRelease(release)}
-        disabled>
-          Stop Release
-        </Button>
-      )
-    }
-    return (
-      <Button
-        className={styles.drawerButton}
-        color="secondary"
-        variant="raised"
-        disabled>
-        Stop Release
-        </Button>
-    )
+    // if (release.state === "fetching" || release.state === "waiting") {
+    //   return (
+    //     <Button
+    //     className={styles.drawerButton}
+    //     color="secondary"
+    //     variant="raised"
+    //     onClick={() => this.stopRelease(release)}
+    //     disabled>
+    //       Stop Release
+    //     </Button>
+    //   )
+    // }
+    // return (
+    //   <Button
+    //     className={styles.drawerButton}
+    //     color="secondary"
+    //     variant="raised"
+    //     disabled>
+    //     Stop Release
+    //     </Button>
+    // )
   }
   
   releaseActionButton(release) {
