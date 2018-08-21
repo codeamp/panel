@@ -596,26 +596,31 @@ export default class Releases extends React.Component {
   }
 
   stopReleaseButton(release) {
-    if (release.state === "fetching" || release.state === "waiting") {
-      return (
-        <Button
-        className={styles.drawerButton}
-        color="secondary"
-        variant="raised"
-        onClick={() => this.stopRelease(release)}>
-          Stop Release
-        </Button>
-      )
-    }
-    return (
-      <Button
-        className={styles.drawerButton}
-        color="secondary"
-        variant="raised"
-        disabled>
-        Stop Release
-        </Button>
-    )
+    // ADB 8/21/18
+    // Temporarily diasbling cancel/'stop release' button until it works
+    // as advertised.
+    // if (release.state === "fetching" || release.state === "waiting") {
+    //   return (
+    //     <Button
+    //     className={styles.drawerButton}
+    //     color="secondary"
+    //     variant="raised"
+    //     onClick={() => this.stopRelease(release)}
+    //     disabled>
+    //       Stop Release
+    //     </Button>
+    //   )
+    // }
+    // return (
+    //   <Button
+    //     className={styles.drawerButton}
+    //     color="secondary"
+    //     variant="raised"
+    //     disabled>
+    //     Stop Release
+    //     </Button>
+    // )
+    return null
   }
   
   releaseActionButton(release) {
@@ -628,7 +633,7 @@ export default class Releases extends React.Component {
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-          Cancel
+          Dismiss
         </Button>
         {this.stopReleaseButton(release)}
         </div>
@@ -655,7 +660,7 @@ export default class Releases extends React.Component {
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-          Cancel
+          Dismiss
         </Button>
       </div>)
     } else {
@@ -671,7 +676,7 @@ export default class Releases extends React.Component {
         className={styles.drawerButton}
         color="primary"
         onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-        Cancel
+        Dismiss
       </Button>
     </div>)
     }
