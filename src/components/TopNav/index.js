@@ -16,6 +16,8 @@ import Button from 'material-ui/Button';
 import _ from "lodash"
 import Logo from './logo_white.png';
 import styles from './style.module.css';
+import Link from 'react-router-dom/Link';
+import ReactDOM from 'react-dom';
 
 const GET_PROJECTS = gql`
   query Projects($projectSearch: ProjectSearchInput){
@@ -37,14 +39,14 @@ const GET_PROJECTS = gql`
 
 @inject("store") @observer
 @graphql(GET_PROJECTS, {
-	options: (props) => ({
-		variables: {
-			projectSearch: {
-				bookmarked: true,
-			}
+  options: (props) => ({
+    variables: {
+      projectSearch: {
+        bookmarked: true,
+      }
     },
     fetchPolicy: "network-only",
-	})
+  })
 })
 
 class TopNav extends React.Component {
@@ -85,11 +87,11 @@ class TopNav extends React.Component {
     const cleanedValue = this.escapeRegExp(projectQuery.trim().toLowerCase());
     
     clearTimeout(this.timeout) 
-		if(cleanedValue !== ''){
+    if(cleanedValue !== ''){
       this.timeout = setTimeout(() => {
         this.props.data.refetch({ projectSearch: { repository: cleanedValue, bookmarked: false }})
       }, 300)
-		}
+    }
   }
 
   renderBookmarks(e){
@@ -120,7 +122,9 @@ class TopNav extends React.Component {
         }
         break;
       case "Enter":
-        this.onSuggestionItemClick(this.state.projects[this.state.selectedSuggestionIndex])
+        if (this.state.selectedSuggestionIndex in this.state.projects) {
+          this.onSuggestionItemClick(this.state.projects[this.state.selectedSuggestionIndex])
+        }
         break;
       case "Escape":
         this.setState({ showSuggestions: false, hovering: false })
@@ -132,6 +136,10 @@ class TopNav extends React.Component {
 
   onSuggestionItemClick(suggestion){
     let currentEnv = this.props.store.app.currentEnvironment
+    if (currentEnv.key === null) {
+      currentEnv = "environments"
+    }
+
     this.props.history.push('/projects/'+suggestion.project.slug+"/"+currentEnv.key)      
     this.hideSuggestions(true)
     this.setState({ projectQuery: "" })
@@ -140,6 +148,13 @@ class TopNav extends React.Component {
   onChange(e){
     this.getSuggestions(e.target.value)
     this.setState({ projectQuery: e.target.value, showSuggestions: true })
+  }
+
+  onBlur(e){
+    const domNode = ReactDOM.findDOMNode(this)
+    if (!domNode || !domNode.contains(e.relatedTarget)) {
+        this.hideSuggestions(true)
+    }    
   }
 
   componentWillReceiveProps(nextProps){
@@ -160,13 +175,13 @@ class TopNav extends React.Component {
       <div>
         <AppBar position="static" className={styles.appBar}>
             <Toolbar>
-              <Grid container spacing={24}>
+              <Grid container spacing={24} style={{"borderWidth":"3px"}}>
                 <Grid item xs={2}>
                   <NavLink to="/" exact style={{ color: "white" }}>
                     <img src={Logo} alt="Codeamp" className={styles.logo}/>
                   </NavLink>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={6} onBlur={(e)=>this.onBlur(e)}>
                   <div style={{position: "relative"}}>
                   <TextField
                     fullWidth={true}
@@ -188,22 +203,24 @@ class TopNav extends React.Component {
                     onKeyUp={(e) => this.searchBarKeyPressHandler(e)}
                     onClick={(e)=>this.renderBookmarks(e)}
                     onChange={(e)=>this.onChange(e)}
-                    onBlur={(e)=>this.hideSuggestions()}
+                    
                   />
-                  <div className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
+                  <div tabIndex="0" className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
                     {this.state.projects.map(function(project, index){
                       return (
-                        <Paper
-                          key={project.id}
-                          className={index === self.state.selectedSuggestionIndex ? styles.selectedSuggestion : styles.suggestion}
-                          square={true}>
-                          <ListItem
-                            onMouseEnter={() => self.setState({ hovering: true })}
-                            onMouseLeave={() => self.setState({ hovering: false })}
-                            onClick={()=>self.onSuggestionItemClick(project)}>
-                            <ListItemText primary={project.label} />
-                          </ListItem>
-                        </Paper>
+                        <Link 
+                        key={"link-" + project.id}
+                        to={"/projects/" + project.project.slug + "/environments"}
+                        onClick = {(e)=>self.hideSuggestions(true)}>
+                          <Paper
+                            key={project.id}
+                            className={styles.suggestion}
+                            square={true}>
+                            <ListItem>                            
+                              <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
+                            </ListItem>
+                          </Paper>
+                        </Link>
                       )
                     })}
                     </div>
