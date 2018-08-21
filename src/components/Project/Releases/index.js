@@ -596,6 +596,9 @@ export default class Releases extends React.Component {
   }
 
   stopReleaseButton(release) {
+    // ADB 8/21/18
+    // Temporarily diasbling cancel/'stop release' button until it works
+    // as advertised.
     // if (release.state === "fetching" || release.state === "waiting") {
     //   return (
     //     <Button
@@ -617,6 +620,7 @@ export default class Releases extends React.Component {
     //     Stop Release
     //     </Button>
     // )
+    return null
   }
   
   releaseActionButton(release) {
@@ -629,7 +633,7 @@ export default class Releases extends React.Component {
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-          Cancel
+          Dismiss
         </Button>
         {this.stopReleaseButton(release)}
         </div>
@@ -656,7 +660,7 @@ export default class Releases extends React.Component {
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-          Cancel
+          Dismiss
         </Button>
       </div>)
     } else {
@@ -672,7 +676,7 @@ export default class Releases extends React.Component {
         className={styles.drawerButton}
         color="primary"
         onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-        Cancel
+        Dismiss
       </Button>
     </div>)
     }
