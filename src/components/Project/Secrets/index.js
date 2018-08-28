@@ -196,15 +196,12 @@ export default class Secrets extends React.Component {
   }
 
   onSubmit(e) {
-    console.log("on submit")
-
     this.setState({ saving: true})
     this.form.$('key').set('disabled', false)
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
-  onClick(projectID, secret, secretIdx){
-    console.log("Secret:", secret)
+  onClick(project, secret, secretIdx){   
     if(secret !== null){
       // find this
       this.form = this.initProjectSecretsForm({
@@ -214,20 +211,20 @@ export default class Secrets extends React.Component {
         'id': secret.id,
         'index': secretIdx,
         'isSecret': secret.isSecret,
-        'projectID': projectID,
+        'projectID': project.id,
         'environmentID': this.props.store.app.currentEnvironment.id,
-        'scope': 'project',
+        'scope': "project",
       })
       this.form.$('key').set('disabled', true)
       this.form.$('isSecret').set('disabled', true)
 
-      this.openDrawer()
+      console.log(project)
+      this.openDrawer(project)
     }
   }
 
   onClickVersion(versionIdx) {
-    console.log("onClickVersion")
-    this.form.$('value').set(this.props.data.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
+    this.form.$('value').set(this.state.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
   }
 
   onError(form){
@@ -237,44 +234,39 @@ export default class Secrets extends React.Component {
   }
 
   onSuccess(form){
-    console.log("on success")
+    form.$('projectID').set(this.state.project.id)
+    form.$('environmentID').set(this.props.store.app.currentEnvironment.id)
+    form.$('scope').set('project')
+
     var self = this
-
-    console.log(form.values())
-
-    this.form.$('key').set('disabled', false)
-    if(this.form.values()['id'] === ''){
+    form.$('key').set('disabled', false)
+    if(form.values()['id'] === ''){
       this.props.createSecret({
         variables: form.values(),
       }).then(({data}) => {
-        console.log(data)
-        this.setState({})
-        this.closeDrawer(true)
+        self.setState()
+        self.closeDrawer(true)
       });
     } else {
       this.props.updateSecret({
         variables: form.values(),
       }).then(({data}) => {
-        self.setState({})
-        self.form.$('key').set('disabled', true)
-        self.form.$('id').set(data.updateSecret.id)
-        self.form.$('value').set(data.updateSecret.value)
+        form.$('key').set('disabled', true)
+        form.$('id').set(data.updateSecret.id)
+        form.$('value').set(data.updateSecret.value)
         self.setState({ saving: false })
-
-        this.closeDrawer(true)
+        self.closeDrawer(true)
       });
     }
   }
 
   handleProjectLoaded(project){
-
     if (this.state.project !== project) {
       this.setState({project:project})
     }
   }
 
   handleRequestClose = value => {
-    console.log("handleRequestClose")
     this.form = this.initProjectSecretsForm({
       'type': value,
     })
@@ -283,8 +275,9 @@ export default class Secrets extends React.Component {
     this.openDrawer()
   };
 
-  openDrawer(){
-    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
+  openDrawer(project){
+    console.log(project)
+    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false , project: project || this.state.project})
   }
 
   closeDrawer(force = false){
@@ -356,7 +349,6 @@ export default class Secrets extends React.Component {
           handleBackButtonClick={this.setPreviousPage.bind(this)}
           handleNextButtonClick={this.setNextPage.bind(this)}
           handleOutOfBounds={this.handleOutOfBounds.bind(this)}
-          handleProjectLoaded={this.handleProjectLoaded.bind(this)}
           onClick={this.onClick.bind(this)}
           limit={this.state.limit}
           page={this.state.page}/> 

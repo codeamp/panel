@@ -43,6 +43,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
   }
 }`, {
   options: (props) => ({
+    fetchPolicy: "network-only",
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
@@ -73,13 +74,6 @@ export default class SecretsPaginator extends React.Component {
       this.handleOutOfBounds()
   }
 
-  handleProjectLoaded(){
-    if (this.props.handleProjectLoaded != null) {
-      const {project} = this.props.data
-      this.props.handleProjectLoaded(project)
-    }
-  }
-
   handleOutOfBounds(){  
     const { page, limit } = this.props;
     const { loading } = this.props.data
@@ -108,7 +102,7 @@ export default class SecretsPaginator extends React.Component {
   onClick(idx) {
     const { project } = this.props.data
 
-    this.props.onClick(project.id, project.secrets.entries[idx], idx)
+    this.props.onClick(project, project.secrets.entries[idx], idx)
   }
 
   render() {
