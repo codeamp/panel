@@ -122,19 +122,22 @@ export default class Secrets extends React.Component {
     }
 
     // check url query params
-    console.log(this.props.history.location)
     if(this.props.history.location.search !== ""){
       const searchParams  = new URLSearchParams(this.props.history.location.search)
       let limit           = parseInt(searchParams.get("limit"), 10) || this.state.limit
       let page            = parseInt(searchParams.get("page"), 10) || this.state.page
       if (page < 1){
         page = 1
+      }   
 
-        this.props.history.push({
-          pathname: this.props.location.pathname,
-          search: '?page=' + page + "&limit=" + limit
-        })
-      }      
+      if(limit < 1){
+        limit = this.state.limit
+      }   
+
+      this.props.history.push({
+        pathname: this.props.location.pathname,
+        search: '?page=' + page + "&limit=" + limit
+      })
 
       // eslint-disable-next-line react/no-direct-mutation-state
       this.state.page = page - 1
@@ -322,6 +325,16 @@ export default class Secrets extends React.Component {
     })
   }
 
+  handleOutOfBounds(maxPage, limit){
+    console.log("handleOutOfBounds")
+    this.props.history.push({
+      pathname: this.props.location.pathname,
+      search: '?page=' + maxPage + "&limit=" + limit
+    })
+
+    this.setState({page:maxPage-1, limit:limit})
+  }
+
   render() {
     let project = {
       secrets : []
@@ -332,6 +345,7 @@ export default class Secrets extends React.Component {
         <SecretsPaginator {...this.props}
           handleBackButtonClick={this.setPreviousPage.bind(this)}
           handleNextButtonClick={this.setNextPage.bind(this)}
+          handleOutOfBounds={this.handleOutOfBounds.bind(this)}
           onClick={this.onClick.bind(this)}
           limit={this.state.limit}
           page={this.state.page}/> 

@@ -59,11 +59,30 @@ export default class SecretsPaginator extends React.Component {
 
     this.handleNextButtonClick = this.handleNextButtonClick.bind(this)
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this)
+    this.handleOutOfBounds = this.handleOutOfBounds.bind(this)
     this.onClick = this.onClick.bind(this)
     
     this.state = {
       limit: props.limit || this.props.store.app.paginator.limit || 7,
       page: props.page || 0,
+    }
+  }
+
+  componentDidUpdate(){
+      this.handleOutOfBounds()
+  }
+
+  handleOutOfBounds(){  
+    const { page, limit } = this.props;
+    const { loading } = this.props.data
+    if (loading) {
+      return
+    }
+    const { count } = this.props.data.project.secrets
+    
+    let maxPage = Math.ceil(count / limit)
+    if ( page > maxPage ){
+      this.props.handleOutOfBounds(maxPage, limit)
     }
   }
 
