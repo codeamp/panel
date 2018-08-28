@@ -72,8 +72,6 @@ import _ from 'lodash';
               }
             }     
           }
-          page
-          nextCursor
           __typename
         }
       }
@@ -129,8 +127,6 @@ import _ from 'lodash';
           }
         }     
       }
-      page
-      nextCursor
       __typename
     }
   }

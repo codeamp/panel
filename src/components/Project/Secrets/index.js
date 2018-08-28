@@ -14,8 +14,6 @@ import Dialog, {
 import Menu, { MenuItem } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
-import Loading from 'components/Utils/Loading';
-import PanelTable from 'components/Utils/Table';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AddIcon from 'material-ui-icons/Add';
 import styles from './style.module.css';
@@ -27,54 +25,10 @@ import gql from 'graphql-tag';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';
-import jstz from 'jstimezonedetect';
-import moment from 'moment';
-import 'moment-timezone';
+import SecretsPaginator from './paginator';
 
 @inject("store") @observer
-@graphql(gql`
-query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
-  project(slug: $slug, environmentID: $environmentID) {
-    id
-    name
-    secrets(params:$params) {
-      nextCursor
-      page
-      count
-      entries {
-        id
-        key
-        value
-        isSecret
-        user {
-          id
-          email
-        }
-        versions {
-          value
-          created
-          user {
-            id
-            email
-          }
-        }
-        type
-        created
-      }
-    }
-  }
-}`, {
-  options: (props) => ({
-    variables: {
-      slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
-      params: {
-        limit: props.limit || props.store.app.paginator.limit,
-        cursor: props.store.app.paginator.cursor,
-      },
-    }
-  })
-})
+
 
 @graphql(gql`
   mutation CreateSecret ($key: String!, $value: String!, $projectID: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
@@ -156,25 +110,37 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
 export default class Secrets extends React.Component {
   constructor(props){
     super(props)
+
     this.state = {
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
-      cursorStack: [],
+      limit: props.limit || this.props.store.app.paginator.limit,
+      page: 0,
     }
 
     // check url query params
+    console.log(this.props.history.location)
     if(this.props.history.location.search !== ""){
-        const cursor = new URLSearchParams(this.props.history.location.search).get("cursor")
-        if(cursor !== "" && cursor !== null){
-            this.props.store.app.setPaginator({
-                limit: this.props.limit || this.props.store.app.paginator.limit,
-                cursor: cursor,
-            })
-            this.props.data.refetch()
-        }
+      const searchParams  = new URLSearchParams(this.props.history.location.search)
+      let limit           = parseInt(searchParams.get("limit"), 10) || this.state.limit
+      let page            = parseInt(searchParams.get("page"), 10) || this.state.page
+      if (page < 1){
+        page = 1
+
+        this.props.history.push({
+          pathname: this.props.location.pathname,
+          search: '?page=' + page + "&limit=" + limit
+        })
+      }      
+
+      // eslint-disable-next-line react/no-direct-mutation-state
+      this.state.page = page - 1
+
+      // eslint-disable-next-line react/no-direct-mutation-state
+      this.state.limit = limit
     }
   }
 
@@ -226,14 +192,14 @@ export default class Secrets extends React.Component {
   }
 
   onSubmit(e) {
-
     this.setState({ saving: true})
     this.form.$('key').set('disabled', false)
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
-  onClick(secretIdx){
-    const secret = this.props.data.project.secrets.entries[secretIdx]
+  onClick(projectID, secret, secretIdx){
+    console.log(projectID, secret, secretIdx)
+
     if(secret !== null){
       // find this
       this.form = this.initProjectSecretsForm({
@@ -243,8 +209,9 @@ export default class Secrets extends React.Component {
         'id': secret.id,
         'index': secretIdx,
         'isSecret': secret.isSecret,
-        'projectID': this.props.data.project.id,
+        'projectID': projectID,
         'environmentID': this.props.store.app.currentEnvironment.id,
+        'scope': 'project',
       })
       this.form.$('key').set('disabled', true)
       this.form.$('isSecret').set('disabled', true)
@@ -254,6 +221,7 @@ export default class Secrets extends React.Component {
   }
 
   onClickVersion(versionIdx) {
+    console.log("onClickVersion")
     this.form.$('value').set(this.props.data.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
   }
 
@@ -263,9 +231,6 @@ export default class Secrets extends React.Component {
   }
 
   onSuccess(form){
-    form.$('projectID').set(this.props.data.project.id)
-    form.$('environmentID').set(this.props.store.app.currentEnvironment.id)
-    form.$('scope').set('project')
     var self = this
 
     this.form.$('key').set('disabled', false)
@@ -273,23 +238,27 @@ export default class Secrets extends React.Component {
       this.props.createSecret({
         variables: form.values(),
       }).then(({data}) => {
-        this.props.data.refetch()
+        console.log(data)
+        this.setState({})
         this.closeDrawer(true)
       });
     } else {
       this.props.updateSecret({
         variables: form.values(),
       }).then(({data}) => {
-        self.props.data.refetch()
+        self.setState({})
         self.form.$('key').set('disabled', true)
         self.form.$('id').set(data.updateSecret.id)
         self.form.$('value').set(data.updateSecret.value)
         self.setState({ saving: false })
+
+        this.closeDrawer(true)
       });
     }
   }
 
   handleRequestClose = value => {
+    console.log("handleRequestClose")
     this.form = this.initProjectSecretsForm({
       'type': value,
     })
@@ -323,102 +292,49 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
-  setNextPage(){
-    let cursorStack = this.state.cursorStack
-    let nextCursor = this.props.data.project.secrets.nextCursor
+  setNextPage(totalPages){
+    let limit = this.state.limit
+    let page = this.state.page + 1
+    if (page >= totalPages) {
+      return
+    }
 
-    this.props.data.refetch({
-      params: {
-        limit: this.props.limit || this.props.store.app.paginator.limit,
-        cursor: nextCursor,
-      }
-    }).then(({data}) => {
-      cursorStack.push(this.props.store.app.paginator.cursor)
-      this.setState({
-        cursorStack: cursorStack
-      })
-      this.props.store.app.setPaginator({
-        limit: this.props.limit || this.props.store.app.paginator.limit,
-        cursor: nextCursor,
-      })
+    this.setState({page: page, limit: limit})
 
-      if(nextCursor !== null){
-        this.props.history.push({
-          pathname: this.props.location.pathname,
-          search: '?cursor=' + nextCursor
-        })
-      } else {
-        this.props.data.refetch()
-      }
+    this.props.history.replace({
+      pathname: this.props.location.pathname,
+      search: '?page=' + (page+1) + "&limit=" + this.state.limit
     })
   }
 
   setPreviousPage(){
-    let cursorStack = this.state.cursorStack
-    let cursor = cursorStack.pop()
+    let limit = this.state.limit
+    let page = this.state.page - 1
+    if (page < 0) {
+      return
+    }    
 
-    this.setState({
-      cursorStack: cursorStack
-    })
-    this.props.store.app.setPaginator({
-      limit: this.props.limit || this.props.store.app.paginator.limit,
-      cursor: cursor,
-    })
+    this.setState({page: page, limit: limit})
 
-    if(cursor !== null){
-      this.props.history.push({
-        pathname: this.props.location.pathname,
-        search: '?cursor=' + cursor
-      })
-    } else {
-      this.props.data.refetch()
-    }
+    this.props.history.push({
+      pathname: this.props.location.pathname,
+      search: '?page=' + (page+1) + "&limit=" + this.state.limit
+    })
   }
 
   render() {
-    const { loading, project } = this.props.data;
-    if(loading){
-      return (
-        <Loading />
-      )
+    let project = {
+      secrets : []
     }
 
     return (
       <div>
-        <PanelTable
-          title={"Secrets"}
-          rows={project.secrets.entries}
+        <SecretsPaginator {...this.props}
           handleBackButtonClick={this.setPreviousPage.bind(this)}
           handleNextButtonClick={this.setNextPage.bind(this)}
           onClick={this.onClick.bind(this)}
-          paginator={{
-            count: project.secrets.count,
-            nextCursor: project.secrets.nextCursor,
-            page: project.secrets.page,
-            rowsPerPage: this.props.limit || this.props.store.app.paginator.limit,
-          }}
-          columns={[{
-            label: "Key",
-            getVal: function(row){return row.key},
-          }, {
-            label: "Type",
-            getVal: function(row){return row.type},
-          }, {
-            label: "Protected",
-            getVal: function(row){
-              if(row.isSecret)
-                return "yes"
-              return "no"
-            },
-          }, {
-            label: "Creator",
-            getVal: function(row){return row.user.email},
-          }, {
-            label: "Created",
-            getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},
-          }]}
-        />
-
+          limit={this.state.limit}
+          page={this.state.page}/> 
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
             className={styles.addButton}
             onClick={this.handleAddClick.bind(this)}>

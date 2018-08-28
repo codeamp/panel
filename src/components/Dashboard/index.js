@@ -13,8 +13,6 @@ import StarIcon from 'material-ui-icons/Star';
 @graphql(gql`
   query AllObjects($projectSearch: ProjectSearchInput){
     projects(projectSearch: $projectSearch) {
-      nextCursor
-      page
       count
       entries {
         id
@@ -38,7 +36,6 @@ import StarIcon from 'material-ui-icons/Star';
     variables: {
       projectSearch: {
         bookmarked: true,
-        repository: "/",
       }
     },
     fetchPolicy: 'network-only'

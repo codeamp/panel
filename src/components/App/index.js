@@ -30,8 +30,6 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
       permissions
     }
     projects(projectSearch: $projectSearch){
-      page
-      nextCursor
       count
       entries {
         id

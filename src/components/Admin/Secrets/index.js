@@ -45,8 +45,6 @@ import 'moment-timezone';
       created
     }
     secrets {
-      nextCursor
-      page
       count
       entries {
         id
@@ -55,9 +53,6 @@ import 'moment-timezone';
         created
         scope
         isSecret
-        project {
-          id
-        }
         user {
           id
           email
@@ -76,6 +71,7 @@ import 'moment-timezone';
             email
           }
         }
+        __typename
       }
     }
   }
@@ -402,7 +398,7 @@ export default class Secrets extends React.Component {
                       {secret.environment.name}
                     </TableCell>
                     <TableCell>
-                      {secret.user.email}
+                      {secret.user ? secret.user.email : "--"}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
