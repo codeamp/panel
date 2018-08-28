@@ -11,7 +11,7 @@ export default class Pagination extends React.Component {
 
       let lastPage = Math.ceil(paginator.count / paginator.limit)
       return(
-        <div style={{ paddingLeft: 25, textAlign: "left"}}>          
+        <div hidden={paginator.count <= 0} style={{ paddingLeft: 25, textAlign: "left"}}>          
             <Typography style={{userSelect:"none"}}>
               {paginator.page + 1} of {lastPage}
               <IconButton
