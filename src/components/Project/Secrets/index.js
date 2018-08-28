@@ -119,6 +119,7 @@ export default class Secrets extends React.Component {
       dirtyFormDialogOpen: false,
       limit: props.limit || this.props.store.app.paginator.limit,
       page: 0,
+      project: null
     }
 
     // check url query params
@@ -195,12 +196,15 @@ export default class Secrets extends React.Component {
   }
 
   onSubmit(e) {
+    console.log("on submit")
+
     this.setState({ saving: true})
     this.form.$('key').set('disabled', false)
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   onClick(projectID, secret, secretIdx){
+    console.log("Secret:", secret)
     if(secret !== null){
       // find this
       this.form = this.initProjectSecretsForm({
@@ -227,12 +231,16 @@ export default class Secrets extends React.Component {
   }
 
   onError(form){
+    console.log("onerror")
     // todo
     this.setState({ saving: false })
   }
 
   onSuccess(form){
+    console.log("on success")
     var self = this
+
+    console.log(form.values())
 
     this.form.$('key').set('disabled', false)
     if(this.form.values()['id'] === ''){
@@ -255,6 +263,13 @@ export default class Secrets extends React.Component {
 
         this.closeDrawer(true)
       });
+    }
+  }
+
+  handleProjectLoaded(project){
+
+    if (this.state.project !== project) {
+      this.setState({project:project})
     }
   }
 
@@ -324,7 +339,6 @@ export default class Secrets extends React.Component {
   }
 
   handleOutOfBounds(maxPage, limit){
-    console.log("handleOutOfBounds")
     this.props.history.push({
       pathname: this.props.location.pathname,
       search: '?page=' + maxPage + "&limit=" + limit
@@ -334,16 +348,15 @@ export default class Secrets extends React.Component {
   }
 
   render() {
-    let project = {
-      secrets : []
-    }
-
+    const { project } = this.state
+    
     return (
       <div>
         <SecretsPaginator {...this.props}
           handleBackButtonClick={this.setPreviousPage.bind(this)}
           handleNextButtonClick={this.setNextPage.bind(this)}
           handleOutOfBounds={this.handleOutOfBounds.bind(this)}
+          handleProjectLoaded={this.handleProjectLoaded.bind(this)}
           onClick={this.onClick.bind(this)}
           limit={this.state.limit}
           page={this.state.page}/> 
@@ -417,7 +430,7 @@ export default class Secrets extends React.Component {
                       </Grid>
                     }
 
-                    {this.form.values()['index'] >= 0 && project.secrets.entries[this.form.values()['index']] &&
+                    {this.form.values()['index'] >= 0 && project && project.secrets.entries[this.form.values()['index']] &&
                       <EnvVarVersionHistory
                         versions={project.secrets.entries[this.form.values()['index']].versions}
                         onClickVersion={this.onClickVersion.bind(this)}
@@ -473,7 +486,7 @@ export default class Secrets extends React.Component {
           </DialogActions>
         </Dialog>
 
-        {project.secrets.entries.length > 0 && project.secrets.entries[this.form.values()['index']] &&
+        {project && project.secrets.entries.length > 0 && project.secrets.entries[this.form.values()['index']] &&
             <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
               <DialogTitle>{"Are you sure you want to delete " + project.secrets.entries[this.form.values()['index']].key + "?"}</DialogTitle>
               <DialogContent>

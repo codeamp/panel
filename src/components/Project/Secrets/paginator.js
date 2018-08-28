@@ -73,6 +73,13 @@ export default class SecretsPaginator extends React.Component {
       this.handleOutOfBounds()
   }
 
+  handleProjectLoaded(){
+    if (this.props.handleProjectLoaded != null) {
+      const {project} = this.props.data
+      this.props.handleProjectLoaded(project)
+    }
+  }
+
   handleOutOfBounds(){  
     const { page, limit } = this.props;
     const { loading } = this.props.data
