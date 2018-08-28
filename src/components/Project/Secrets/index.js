@@ -201,8 +201,6 @@ export default class Secrets extends React.Component {
   }
 
   onClick(projectID, secret, secretIdx){
-    console.log(projectID, secret, secretIdx)
-
     if(secret !== null){
       // find this
       this.form = this.initProjectSecretsForm({

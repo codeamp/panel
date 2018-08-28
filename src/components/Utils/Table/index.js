@@ -19,16 +19,16 @@ export default class PanelTable extends React.Component {
         <Grid item xs={12} style={{ textAlign: "center" }}>
           <Paper className={styles.tablePaper}>
             <Toolbar>
-              <Typography variant="title">
+              <Typography variant="title" style={{userSelect:"none"}}>
                 {title}
               </Typography>
             </Toolbar>
             <Table>
               <TableHead>
                 <TableRow>
-                  {columns.map(col =>
+                  {columns.map((col,idx) =>
                     (
-                      <TableCell key={col.label}>
+                      <TableCell key={idx} style={{userSelect:"none"}}>
                         {col.label}
                       </TableCell>
                     ))}
@@ -46,7 +46,8 @@ export default class PanelTable extends React.Component {
                       {columns.map(function(col, colIdx){
                         return (
                           <TableCell
-                            key={colIdx}>
+                            key={colIdx}
+                            style={{userSelect:"none"}}>
                             {col.getVal(row)}
                           </TableCell>
                         )

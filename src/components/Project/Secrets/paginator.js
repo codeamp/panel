@@ -9,6 +9,7 @@ import 'brace/theme/github';
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
+import LockIcon from 'material-ui-icons/Lock';
 
 @inject("store") @observer
 @graphql(gql`
@@ -133,8 +134,8 @@ export default class SecretsPaginator extends React.Component {
             label: "Protected",
             getVal: function(row){
               if(row.isSecret)
-                return "yes"
-              return "no"
+                return (<LockIcon/>)
+              return ""
             },
           }, {
             label: "Creator",
