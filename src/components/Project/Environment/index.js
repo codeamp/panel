@@ -28,18 +28,20 @@ import gql from 'graphql-tag';
 export default class Environment extends React.Component {
   constructor(props){
     super(props)
-    this.state = {}
+    this.state = {
+
+    }
   }
 
   handleEnvironmentSelect(environment) {
     this.props.store.app.setCurrentEnv({
-      id: environment.id,
-      color: environment.color,
-      name: environment.name,
-      key: environment.key
+      id: environment.id, 
+      color: environment.color, 
+      name: environment.name, 
+      key: environment.key 
     })
-    this.props.history.push('/projects/'+this.props.match.params.slug+"/"+environment.key)
-  }
+    this.props.history.push('/projects/'+this.props.match.params.slug+"/"+environment.key)      
+  } 
 
   renderEnvironmentSelector() {
     const { environments } = this.props.data;
@@ -70,17 +72,17 @@ export default class Environment extends React.Component {
     environments.map((env) => {
       if(env.key === currentEnv.key || env.key === this.props.match.params.environment){
         matched = true
-
+        
         if(!currentEnv.key) {
           this.props.store.app.setCurrentEnv({
-            id: env.id,
-            color: env.color,
-            name: env.name,
-            key: env.key
+            id: env.id, 
+            color: env.color, 
+            name: env.name, 
+            key: env.key 
           })
 
           if(!this.props.match.params.environment) {
-            this.props.history.push('/projects/' + env.key + "/" + this.props.match.params.slug)
+            this.props.history.push('/projects/' + env.key + "/" + this.props.match.params.slug)      
           }
         }
 
