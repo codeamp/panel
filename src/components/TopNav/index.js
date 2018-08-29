@@ -40,11 +40,6 @@ const GET_PROJECTS = gql`
 @inject("store") @observer
 @graphql(GET_PROJECTS, {
   options: (props) => ({
-    variables: {
-      projectSearch: {
-        bookmarked: true,
-      }
-    },
     fetchPolicy: "network-only",
   })
 })

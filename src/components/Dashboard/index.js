@@ -11,8 +11,8 @@ import styles from './style.module.css';
 import StarIcon from 'material-ui-icons/Star';
 
 @graphql(gql`
-  query AllObjects($projectSearch: ProjectSearchInput){
-    projects(projectSearch: $projectSearch) {
+  query {
+    projects {
       count
       entries {
         id
@@ -33,11 +33,6 @@ import StarIcon from 'material-ui-icons/Star';
   }
 `,{
   options: {
-    variables: {
-      projectSearch: {
-        bookmarked: false,
-      }
-    },
     fetchPolicy: 'network-only'
   }
 })
