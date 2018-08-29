@@ -27,6 +27,7 @@ const GET_PROJECTS = gql`
         name
         slug
         repository
+        bookmarked
         environments {
           id
           name
@@ -75,7 +76,7 @@ class TopNav extends React.Component {
 
   getSuggestions(projectQuery) {
     if(!projectQuery){
-      this.props.data.refetch({ projectSearch: { bookmarked: true }})
+      this.props.data.refetch({ projectSearch: { repository: projectQuery }})
       return
     }
 
@@ -211,7 +212,7 @@ class TopNav extends React.Component {
                             key={project.id}
                             className={styles.suggestion}
                             square={true}>
-                            <ListItem>                            
+                            <ListItem>                  
                               <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
                             </ListItem>
                           </Paper>
