@@ -34,7 +34,7 @@ import LockIcon from 'material-ui-icons/Lock';
 import AddIcon from 'material-ui-icons/Add';
 import MissingSecretIcon from 'material-ui-icons/Report';
 import EnvIcon from 'material-ui-icons/Explicit';
-import FileIcon from 'material-ui-icons/Description';
+import FileIcon from 'material-ui-icons/Note';
 import BuildArgIcon from 'material-ui-icons/Memory';
 
 @inject("store") @observer

@@ -39,7 +39,7 @@ import 'moment-timezone';
 import LockIcon from 'material-ui-icons/Lock';
 import MissingSecretIcon from 'material-ui-icons/Report';
 import EnvIcon from 'material-ui-icons/Explicit';
-import FileIcon from 'material-ui-icons/Description';
+import FileIcon from 'material-ui-icons/Note';
 import BuildArgIcon from 'material-ui-icons/Memory';
 import ExtensionIcon from 'material-ui-icons/Extension';
 import GlobalIcon from 'material-ui-icons/Public';
