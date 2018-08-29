@@ -32,6 +32,10 @@ import moment from 'moment';
 import 'moment-timezone';
 import LockIcon from 'material-ui-icons/Lock';
 import AddIcon from 'material-ui-icons/Add';
+import MissingSecretIcon from 'material-ui-icons/Report';
+import EnvIcon from 'material-ui-icons/Explicit';
+import FileIcon from 'material-ui-icons/Description';
+import BuildArgIcon from 'material-ui-icons/Memory';
 
 @inject("store") @observer
 @graphql(gql`
@@ -188,7 +192,7 @@ export default class SecretsPaginator extends React.Component {
     const { count } = this.props.data.project.secrets
     
     let maxPage = Math.ceil(count / limit)
-    if ( page > maxPage ){
+    if ( page+1 > maxPage ){
       this.props.handleOutOfBounds(maxPage, limit)
     }
   }
@@ -385,7 +389,18 @@ export default class SecretsPaginator extends React.Component {
               getVal: function(row){return row.key},
             }, {
               label: "Type",
-              getVal: function(row){return row.type},
+              getVal: function(row){
+                switch(row.type){
+                  case "file":
+                    return (<FileIcon/>)
+                  case "build":
+                    return (<BuildArgIcon/>)
+                  case "env":
+                    return (<EnvIcon/>)
+                  default:
+                    return row.type
+                }
+              },
             }, {
               label: "Protected",
               getVal: function(row){
@@ -395,7 +410,7 @@ export default class SecretsPaginator extends React.Component {
               },
             }, {
               label: "Creator",
-              getVal: function(row){return row.user.email},
+              getVal: function(row){return row.user ? row.user.email : (<MissingSecretIcon/>)},
             }, {
               label: "Created",
               getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},
