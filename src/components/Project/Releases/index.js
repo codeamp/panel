@@ -46,7 +46,7 @@ function generateKibanaLink(linkTemplate, replacementHash) {
   return linkTemplate
 }
 
-class ReleaseView extends React.Component {  
+class ReleaseView extends React.Component {
   constructor(props){
     super(props)
     this.startTimer = this.startTimer.bind(this)
@@ -57,7 +57,7 @@ class ReleaseView extends React.Component {
 
     let currentTime = Date.now()
     let releaseFinished = new Date(this.props.release.finished)
-    var diff = 0 
+    var diff = 0
     let timer =  0
     let startTimer = false
 
@@ -77,13 +77,13 @@ class ReleaseView extends React.Component {
     this.state = {
       timer: timer,
       timerInterval: null,
-    }    
+    }
 
     if(startTimer) {
-      this.startTimer()      
+      this.startTimer()
     }
-  }  
-  
+  }
+
   getReadableDuration(seconds) {
     var hours   = Math.floor(seconds / 3600);
     var minutes = Math.floor((seconds - (hours * 3600)) / 60);
@@ -122,17 +122,17 @@ class ReleaseView extends React.Component {
       this.setState({ timer: Math.floor(diff/1000) })
 
       this.startTimer = this.startTimer.bind(this)
-      this.startTimer()         
+      this.startTimer()
     }
   }
 
-  renderReleaseExtensionStatuses() { 
+  renderReleaseExtensionStatuses() {
     const { release, extensions } = this.props;
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
         if(extension.extension.type === "once") {
             return false
-        } 
+        }
         return true
     })
 
@@ -140,15 +140,15 @@ class ReleaseView extends React.Component {
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
-          switch(release.releaseExtensions[i].state){  
+          switch(release.releaseExtensions[i].state){
             case "waiting":
               return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
             case "complete":
               return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
             case "failed":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)
             case "canceled":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
+              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)
             default:
               return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
           }
@@ -156,7 +156,7 @@ class ReleaseView extends React.Component {
       }
       return null
     })
-    
+
     return (
       <div style={{ display: "inline-block" }}>
         { projectExtensionLights }
@@ -169,13 +169,13 @@ class ReleaseView extends React.Component {
     this.timerInterval = setInterval(function(){
       self.setState({ timer: self.state.timer + 1})
     }, 1000)
-  }  
+  }
 
   render() {
     const { release, currentRelease } = this.props;
-    
+
     let state
-    switch(release.state) {  
+    switch(release.state) {
       case "waiting":
         state = (<CircularProgress className={styles.progress} />)
       break;
@@ -218,14 +218,14 @@ class ReleaseView extends React.Component {
                   {this.renderReleaseExtensionStatuses()}
                 </div>
               </Grid>
-              <Grid item xs={2} style={{textAlign: "right"}}> 
+              <Grid item xs={2} style={{textAlign: "right"}}>
                 {state}
                 {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
                 <div style={{ marginTop: 40 }}>
                   <Typography variant="subheading">
                     {this.getReadableDuration(this.state.timer)}
                   </Typography>
-                </div>                
+                </div>
               </Grid>
             </Grid>
           </CardContent>
@@ -319,7 +319,7 @@ class ReleaseView extends React.Component {
           environment {
             id
             key
-          }        
+          }
           releaseExtensions {
             id
             started
@@ -402,14 +402,14 @@ export default class Releases extends React.Component {
     this.props.data.refetch()
 
     const { socket, match } = this.props;
-    
+
     socket.on(match.url.substring(1, match.url.length), (data) => {
       this.props.data.refetch()
-    });    
-    
+    });
+
     socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
       this.props.data.refetch()
-    });        
+    });
 
     const fields = [
       'id',
@@ -456,12 +456,12 @@ export default class Releases extends React.Component {
     const filteredExtensions = extensions.filter(function(extension){
         if(extension.extension.type === "once") {
             return false
-        } 
+        }
         return true
     })
 
     const releaseExtensions = filteredExtensions.map(function(extension){
-      let stateIcon = <CircularProgress size={25} /> 
+      let stateIcon = <CircularProgress size={25} />
 
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
@@ -492,7 +492,7 @@ export default class Releases extends React.Component {
 
         return null
     })
-    
+
     return (
       <div>
         <Paper className={styles.root}>
@@ -526,7 +526,7 @@ export default class Releases extends React.Component {
           </Table>
         </Paper>
       </div>
-    )   
+    )
   }
 
   handleToggleDrawer(release, e){
@@ -541,9 +541,9 @@ export default class Releases extends React.Component {
     const { refetch } = this.props.data;
 
     createRelease({
-      variables: { 
-        headFeatureID: release.headFeature.id, 
-        projectID: release.project.id, 
+      variables: {
+        headFeatureID: release.headFeature.id,
+        projectID: release.project.id,
         environmentID: release.environment.id,
         forceRebuild: forceRebuild,
       },
@@ -561,10 +561,10 @@ export default class Releases extends React.Component {
     const { refetch } = this.props.data;
 
     createRelease({
-      variables: { 
-        id: release.id, 
-        headFeatureID: release.headFeature.id, 
-        projectID: release.project.id, 
+      variables: {
+        id: release.id,
+        headFeatureID: release.headFeature.id,
+        projectID: release.project.id,
         environmentID: release.environment.id,
         forceRebuild: false,
       },
@@ -599,30 +599,43 @@ export default class Releases extends React.Component {
     // ADB 8/21/18
     // Temporarily diasbling cancel/'stop release' button until it works
     // as advertised.
-    // if (release.state === "fetching" || release.state === "waiting") {
-    //   return (
-    //     <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     onClick={() => this.stopRelease(release)}
-    //     disabled>
-    //       Stop Release
-    //     </Button>
-    //   )
-    // }
-    // return (
-    //   <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     disabled>
-    //     Stop Release
-    //     </Button>
-    // )
+
+    let disable = false
+
+    release.releaseExtensions.map(function(releaseExtension) {
+      if(releaseExtension.extension.extension.type === "deployment" && releaseExtension.state === "running") {
+        disable = true
+      }
+    })
+
+    if(release.state === "completed" || release.state === "failed") {
+      disable = true
+    }
+
+    if(disabled) {
+      return (
+        <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          disabled>
+          Stop Release
+          </Button>
+      )
+    } else {
+      return (
+        <Button
+        className={styles.drawerButton}
+        color="secondary"
+        variant="raised"
+        onClick={() => this.stopRelease(release)}>
+          Stop Release
+        </Button>
+      ) 
+    }   
     return null
   }
-  
+
   releaseActionButton(release) {
     let { currentRelease } = this.props.data.project;
 
@@ -637,7 +650,7 @@ export default class Releases extends React.Component {
         </Button>
         {this.stopReleaseButton(release)}
         </div>
-      ); 
+      );
     }
 
     if (_.has(currentRelease, 'id') && currentRelease.id === release.id) {
@@ -655,7 +668,7 @@ export default class Releases extends React.Component {
           color="secondary"
           onClick={()=> this.redeployRelease(release, true)}>
           Rebuild & Redeploy
-        </Button>        
+        </Button>
         <Button
           className={styles.drawerButton}
           color="primary"
@@ -795,26 +808,26 @@ export default class Releases extends React.Component {
 										Git Info
 									</Typography>
 								</CardContent>
-							</Card>                       
+							</Card>
 							<Card square={true}>
-								<CardContent>                                     
+								<CardContent>
 									<Typography variant="body1">
 										<b>HEAD</b> : <a target="_blank" href={baseGitUrl + release.headFeature.hash }>{release.headFeature.hash}</a>
-									</Typography>                  
+									</Typography>
 								</CardContent>
-							</Card>                  
+							</Card>
 							<Card square={true}>
-								<CardContent>                                               
+								<CardContent>
 									<Typography variant="body1">
 										<b>TAIL</b> : <a  target="_blank" href={baseGitUrl + release.tailFeature.hash }>{release.tailFeature.hash}</a>
-									</Typography>                                  
+									</Typography>
 								</CardContent>
-							</Card>                                    
+							</Card>
 						</Grid>
-						<Grid item xs={12}>                
+						<Grid item xs={12}>
               {this.renderReleaseExtensionTable()}
 						</Grid>
-						<Grid item xs={12}>                
+						<Grid item xs={12}>
               <Card className={styles.card}>
                 <CardContent>
                   <Typography variant="headline" component="h2">
@@ -839,17 +852,17 @@ export default class Releases extends React.Component {
 					</Grid>
 				</div>
 			</Drawer>
-    ) 
+    )
   }
-  
+
   render() {
     const { loading, project } = this.props.data;
     if(loading){
       return (<Loading />)
     }
-    
+
     let latestSuccessfulRelease = this.getLatestSuccessfulRelease()
-    
+
     return (
       <div>
         <Grid container spacing={16}>
@@ -858,9 +871,9 @@ export default class Releases extends React.Component {
               <CardContent>
                 <Typography variant="title" style={{ display: "inline-block" }}>
                   Releases
-                </Typography>                
+                </Typography>
                 {project.releases.entries.length > 1 && latestSuccessfulRelease !== null &&
-                  <span>           
+                  <span>
                     <Dialog open={this.state.openConfirmRollbackModal}>
                       <DialogTitle>{"Are you sure you want to rollback?"}</DialogTitle>
                       <DialogContent>
@@ -877,7 +890,7 @@ export default class Releases extends React.Component {
                           Confirm
                         </Button>
                       </DialogActions>
-                    </Dialog>                          
+                    </Dialog>
                     <Button
                       className={styles.drawerButton}
                       variant="raised"
@@ -885,14 +898,14 @@ export default class Releases extends React.Component {
                       style={{ display: "inline-block", float: "right" }}
                       onClick={()=> {this.setState({ openConfirmRollbackModal: true })}}>
                       Rollback
-                    </Button> 
-                  </span>               
+                    </Button>
+                  </span>
                 }
                 <Typography variant="subheading" style={{ paddingRight: 40, display: "inline-block", float: "right" }}>
                 <a id="kibana-log-link" href={generateKibanaLink(kibanaAppLogTemplate, {"##PROJECT-NAMESPACE##": `${this.props.store.app.currentEnvironment.key}-${this.props.data.project.slug}`})} target="_blank" className={styles.kibanaLogLink}>
                   APPLICATION LOGS
                 </a>
-              </Typography>                              
+              </Typography>
               </CardContent>
             </Card>
             {project.releases.entries.map((release) => {
@@ -919,7 +932,7 @@ export default class Releases extends React.Component {
                 </Typography>
                 <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
                   Do some work and deploy a feature <NavLink to={"/projects/" + project.slug + "/features"}><strong>here.</strong></NavLink>
-                </Typography>                  
+                </Typography>
               </CardContent>
             </Card>}
           </Grid>
