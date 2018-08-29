@@ -135,7 +135,6 @@ import _ from 'lodash';
     fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
-        repository: "",
         bookmarked: false,
       },
     },

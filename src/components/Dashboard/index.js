@@ -35,7 +35,7 @@ import StarIcon from 'material-ui-icons/Star';
   options: {
     variables: {
       projectSearch: {
-        bookmarked: true,
+        bookmarked: false,
       }
     },
     fetchPolicy: 'network-only'

@@ -395,6 +395,7 @@ export default class SecretsPaginator extends React.Component {
                     return (<FileIcon/>)
                   case "build":
                     return (<BuildArgIcon/>)
+                  case "protected-env":
                   case "env":
                     return (<EnvIcon/>)
                   default:
@@ -422,9 +423,9 @@ export default class SecretsPaginator extends React.Component {
             anchorEl={this.state.anchorEl}
             open={this.state.addEnvVarMenuOpen}
         >
-          <MenuItem onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
-          <MenuItem onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
-          <MenuItem onClick={() => this.handleRequestClose("file")}>File</MenuItem>
+          <MenuItem onClick={() => this.handleRequestClose("env")}><EnvIcon/>EnvVar</MenuItem>
+          <MenuItem onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
+          <MenuItem onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
         </Menu>
 
         <Drawer
