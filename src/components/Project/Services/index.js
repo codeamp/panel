@@ -45,7 +45,7 @@ import 'moment-timezone';
 query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
-    services(params: { limit: 100}){
+    services{
       entries {
         id
         name
