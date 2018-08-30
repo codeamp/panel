@@ -268,7 +268,7 @@ class Project extends React.Component {
             <ProjectServices {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets limit={100} {...props} />
+            <ProjectSecrets  history={history} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
             <ProjectExtensions {...props} socket={socket} />

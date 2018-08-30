@@ -8,13 +8,11 @@ import Card, { CardContent } from 'material-ui/Card';
 import Loading from 'components/Utils/Loading';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
-import StarIcon from 'material-ui-icons/Star';
+import BookmarkedIcon from 'material-ui-icons/Star';
 
 @graphql(gql`
-  query AllObjects($projectSearch: ProjectSearchInput){
-    projects(projectSearch: $projectSearch) {
-      nextCursor
-      page
+  query {
+    projects {
       count
       entries {
         id
@@ -35,12 +33,6 @@ import StarIcon from 'material-ui-icons/Star';
   }
 `,{
   options: {
-    variables: {
-      projectSearch: {
-        bookmarked: true,
-        repository: "/",
-      }
-    },
     fetchPolicy: 'network-only'
   }
 })
@@ -181,7 +173,7 @@ export default class Dashboard extends React.Component {
                         tabIndex={-1}
                         key={project.id}
                         history={this.props.history}>
-                          <StarIcon className={styles.bookmarkedProjectGlyph}/>
+                          <BookmarkedIcon className={styles.bookmarkedProjectGlyph}/>
                           <Typography variant="subheading" style={{"userSelect":"none"}}>
                           {project.name}
                           </Typography>

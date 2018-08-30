@@ -36,6 +36,14 @@ import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
 
+import LockIcon from 'material-ui-icons/Lock';
+import MissingSecretIcon from 'material-ui-icons/Report';
+import EnvIcon from 'material-ui-icons/Explicit';
+import FileIcon from 'material-ui-icons/Note';
+import BuildArgIcon from 'material-ui-icons/Memory';
+import ExtensionIcon from 'material-ui-icons/Extension';
+import GlobalIcon from 'material-ui-icons/Public';
+
 @inject("store") @observer
 @graphql(gql`
   query {
@@ -45,8 +53,6 @@ import 'moment-timezone';
       created
     }
     secrets {
-      nextCursor
-      page
       count
       entries {
         id
@@ -55,9 +61,6 @@ import 'moment-timezone';
         created
         scope
         isSecret
-        project {
-          id
-        }
         user {
           id
           email
@@ -76,6 +79,7 @@ import 'moment-timezone';
             email
           }
         }
+        __typename
       }
     }
   }
@@ -321,6 +325,31 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
+  getTypeGlyph(secret){
+    switch(secret.type){
+      case "file":
+        return <FileIcon/>
+      case "build":
+        return <BuildArgIcon/>
+      case "protected-env":
+      case "env":
+        return <EnvIcon/>
+      default:
+        return secret.type
+    }
+  }
+
+  getScopeGlyph(secret){
+    switch(secret.scope){
+      case "global":
+        return <GlobalIcon/>
+      case "extension":
+        return <ExtensionIcon/>
+      default:
+        return secret.scope
+    }
+  }
+
   render() {
     let { loading, secrets, environments } = this.props.data;
 
@@ -390,19 +419,19 @@ export default class Secrets extends React.Component {
                       {secret.key}
                     </TableCell>
                     <TableCell>
-                      {secret.type}
+                      {self.getTypeGlyph(secret)}
                     </TableCell>
                     <TableCell>
-                      {secret.isSecret ? "yes" : "no" }
+                      {secret.isSecret ? <LockIcon/> : "" }
                     </TableCell>
                     <TableCell>
-                      {secret.scope}
+                      {self.getScopeGlyph(secret)}
                     </TableCell>
                     <TableCell>
                       {secret.environment.name}
                     </TableCell>
                     <TableCell>
-                      {secret.user.email}
+                      {secret.user ? secret.user.email : <MissingSecretIcon/>}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
@@ -432,9 +461,9 @@ export default class Secrets extends React.Component {
                 <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}>File</MenuItem>
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}><EnvIcon/>EnvVar</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>

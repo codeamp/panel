@@ -14,47 +14,40 @@ export default class PanelTable extends React.Component {
     const { title, columns, rows, paginator } = this.props;
     var self = this;
 
-    let firstRowIndex = 1
-    let lastRowIndex = rows.length
-
-    if(paginator.page !== 1){
-      firstRowIndex = ((paginator.page - 1) * paginator.rowsPerPage) + 1
-      lastRowIndex = firstRowIndex + rows.length - 1
-    }
-  
     return (
       <Grid container justify="center" alignItems="center">
         <Grid item xs={12} style={{ textAlign: "center" }}>
           <Paper className={styles.tablePaper}>
             <Toolbar>
-              <Typography variant="title">
+              <Typography variant="title" style={{userSelect:"none"}}>
                 {title}
               </Typography>
             </Toolbar>
             <Table>
               <TableHead>
                 <TableRow>
-                  {columns.map(col =>
+                  {columns.map((col,idx) =>
                     (
-                      <TableCell>
+                      <TableCell key={idx} style={{userSelect:"none"}}>
                         {col.label}
                       </TableCell>
                     ))}
                 </TableRow>    
               </TableHead>
               <TableBody>
-                {rows.map(function(row, idx){
+                { rows && rows.map(function(row, idx){
                   return (
                     <TableRow
                       hover
                       tabIndex={-1}
                       onClick={() => self.props.onClick(idx)}
-                      key={row.id}
+                      key={idx}
                     >
                       {columns.map(function(col, colIdx){
                         return (
                           <TableCell
-                            key={colIdx}>
+                            key={colIdx}
+                            style={{userSelect:"none"}}>
                             {col.getVal(row)}
                           </TableCell>
                         )
@@ -62,15 +55,13 @@ export default class PanelTable extends React.Component {
                     </TableRow>
                   )
                 })}
-                <Pagination 
-                  firstRowIndex={firstRowIndex}
-                  lastRowIndex={lastRowIndex}
+              </TableBody>
+            </Table>
+            <Pagination 
                   paginator={paginator}
                   handleNextButtonClick={this.props.handleNextButtonClick}
                   handleBackButtonClick={this.props.handleBackButtonClick}
-                />                
-              </TableBody>
-            </Table>
+                />   
           </Paper>
         </Grid>
       </Grid>          

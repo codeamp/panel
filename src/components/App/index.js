@@ -30,8 +30,6 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
       permissions
     }
     projects(projectSearch: $projectSearch){
-      page
-      nextCursor
       count
       entries {
         id
@@ -47,6 +45,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
   }
 `, {
 	options: (props) => ({
+    errorPolicy: "all",
     fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
@@ -88,13 +87,13 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { loading, projects, user } = this.props.data;
+    const { loading, projects, user, error } = this.props.data;
 
     if (process.env.REACT_APP_SENTRY_DSN) {
       Raven.config(process.env.REACT_APP_SENTRY_DSN).install()
     }
 
-    if(this.props.data.networkStatus === 8){
+    if(this.props.data.networkStatus === 8 || error){
       return (
 
         <div className={styles.root}>

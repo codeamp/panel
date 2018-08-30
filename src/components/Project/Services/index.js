@@ -40,12 +40,15 @@ import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
 
+import OneShotIcon from 'material-ui-icons/LooksOne';
+import GeneralIcon from 'material-ui-icons/Autorenew';
+
 @inject("store") 
 @graphql(gql`
 query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
-    services(params: { limit: 100}){
+    services{
       entries {
         id
         name
@@ -618,6 +621,17 @@ export default class Services extends React.Component {
     });
   }
 
+  getServiceTypeGlyph(service){
+    switch(service.type){
+      case "one-shot":
+        return <OneShotIcon/>
+      case "general":
+        return <GeneralIcon/>
+      default:
+        return service.type
+    }
+  }
+
   render() {
     const { loading, project, serviceSpecs } = this.props.data;
     if(loading){
@@ -682,7 +696,7 @@ export default class Services extends React.Component {
                       <TableCell> { service.name } </TableCell>
                       <TableCell> { service.count } </TableCell>
                       <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
-                      <TableCell> { service.type }</TableCell>
+                      <TableCell> { this.getServiceTypeGlyph(service) }</TableCell>
                       <TableCell> { service.ports.length}</TableCell>
                       <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { moment(new Date(service.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }</TableCell>
@@ -710,8 +724,8 @@ export default class Services extends React.Component {
                 <Grow in={this.state.showAddServiceMenu} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
-                      <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}><OneShotIcon/>One-shot service</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("general")}><GeneralIcon/>General</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>
