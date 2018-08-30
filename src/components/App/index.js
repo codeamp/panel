@@ -93,7 +93,20 @@ export default class App extends React.Component {
       Raven.config(process.env.REACT_APP_SENTRY_DSN).install()
     }
 
-    if(this.props.data.networkStatus === 8 || error){
+    let serverError = false
+    if (error) {
+      let errorStr = error.toString()
+      let problemWithUser = false
+      if (errorStr.indexOf("invalid access token") >= 0) {
+        problemWithUser = true
+      } else if (errorStr.indexOf("record not found") >= 0){
+        problemWithUser = true
+      }
+
+      serverError = !problemWithUser
+    }
+
+    if(this.props.data.networkStatus === 8 || serverError){
       return (
 
         <div className={styles.root}>
