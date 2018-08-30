@@ -305,7 +305,7 @@ export default class SecretsPaginator extends React.Component {
 
 
   onClickVersion(versionIdx) {
-    this.form.$('value').set(this.state.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
+    this.form.$('value').set(this.props.data.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
   }
 
   onError(form){
