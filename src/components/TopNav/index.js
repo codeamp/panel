@@ -42,6 +42,11 @@ const GET_PROJECTS = gql`
 @graphql(GET_PROJECTS, {
   options: (props) => ({
     fetchPolicy: "network-only",
+    variables: {
+      projectSearch: {
+        bookmarked: true
+      }
+    }
   })
 })
 
@@ -76,7 +81,7 @@ class TopNav extends React.Component {
 
   getSuggestions(projectQuery) {
     if(!projectQuery){
-      this.props.data.refetch({ projectSearch: { repository: projectQuery }})
+      this.props.data.refetch({ projectSearch: { repository: projectQuery, bookmarked: true }})
       return
     }
 

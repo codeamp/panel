@@ -10,6 +10,8 @@ import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
 
+import MissingSecretIcon from 'material-ui-icons/Report';
+
 @observer
 export default class EnvVarVersionHistory extends React.Component {
   render() {
@@ -52,7 +54,7 @@ export default class EnvVarVersionHistory extends React.Component {
                         {versions.length - idx}
                       </TableCell>
                       <TableCell>
-                        {secret.user.email}
+                        {secret.user ? secret.user.email : <MissingSecretIcon/> }
                       </TableCell>
                       <TableCell>
                         {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
