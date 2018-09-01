@@ -18,7 +18,7 @@
     "jstimezonedetect": "^1.0.6",
     "lodash": ">=4.17.5",
     "material-ui": "^1.0.0-beta.47",
-    "material-ui-icons": ">=1.0.0-beta.17",
+    "material-ui-icons": "^1.0.0-beta.36",
     "mobx": "^4.2.1",
     "mobx-react": "^5.1.2",
     "mobx-react-form": ">=1.32.2",

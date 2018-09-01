@@ -14,6 +14,7 @@ import TopNav from 'components/TopNav';
 import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
 import Project from 'components/Project';
+import Projects from 'components/Projects';
 import ProjectEnvironment from 'components/Project/Environment';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
@@ -157,6 +158,9 @@ export default class App extends React.Component {
                 <Switch>
                   <Route exact path='/' render={(props) => (
                     <Dashboard projects={projects.entries} history={this.props.history}/>
+                  )} />
+                  <Route exact path='/projects' render={(props) => (
+                      <Projects socket={socket} {...props} />
                   )} />
                   <Route exact path='/create' render={(props) => (
                     <Create projects={projects.entries} type={"create"} {...props} />

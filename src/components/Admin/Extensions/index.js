@@ -4,8 +4,6 @@ import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
-import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Dialog, {
@@ -14,8 +12,8 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from 'material-ui-icons/Add';
-import CloseIcon from 'material-ui-icons/Close';
+import AddIcon from '@material-ui/icons/Add';
+import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
@@ -27,6 +25,23 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import Switch from 'material-ui/Switch';
+
+import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
+import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
+import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
+
+import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import FileIcon from '@material-ui/icons/Note';
+import BuildArgIcon from '@material-ui/icons/Memory';
+
+import ExpansionPanel, {
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  // ExpansionPanelActions,
+} from 'material-ui/ExpansionPanel';
+import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import Divider from 'material-ui/Divider';
+import Card, { CardContent } from 'material-ui/Card';
 
 const inlineStyles = {
   addButton: {
@@ -136,6 +151,7 @@ export default class Extensions extends React.Component {
       userHasUnsavedChanges: false,
       showDrawer: false,
       showDiscardEditsConfirmDialog: false,
+      extensionsMapByKey: {},
     }
 
     this.handleFormChanged = this.handleFormChanged.bind(this)
@@ -163,7 +179,7 @@ export default class Extensions extends React.Component {
       'config[].key': 'required|string',
       'config[].value': 'required|string',
       'config[].allowOverride': 'required|boolean',
-      'component': 'required|string',
+      'component': 'string',
     };
     const labels = {
       'name': 'Name',
@@ -171,7 +187,7 @@ export default class Extensions extends React.Component {
       'type': 'Type',
       'config': 'Config',
       'config[].key': 'Key',
-      'config[].value': 'Value',
+      'config[].value': 'Environment Variable',
       'config[].allowOverride': 'Override',
       'component': 'React Component',
       'environmentID': 'Environment',
@@ -199,24 +215,18 @@ export default class Extensions extends React.Component {
     var handleFormChanged = this.handleFormChanged.bind(this)
     const $hooks = {
       onAdd(instance) {
-        // console.log('-> onAdd HOOK', instance.path || 'form');
         handleFormChanged()
       },
       onDel(instance) {
-        // console.log('-> onDel HOOK', instance.path || 'form');
         handleFormChanged()
       },
       onSubmit(instance){
-        // console.log('-> onSubmit HOOK', instance.path || 'form');
       },
       onSuccess(instance){
-        // console.log('Form Values!', instance.values())
       },
       sync(instance){
-        // console.log('sync', instance)
       },
       onChange(instance){
-        // console.log(instance.values())
         handleFormChanged()
       }
     };
@@ -247,6 +257,24 @@ export default class Extensions extends React.Component {
     })
   }
 
+  componentWillReceiveProps(props){
+    const { data } = props;
+    
+    if (data && !data.loading){
+      let extensionsMap = {}
+      data.extensions.forEach((x)=>{
+        let key = x.name
+        if (!extensionsMap[key]){
+          extensionsMap[key] = [x]
+        } else {          
+          extensionsMap[key].push(x)
+        }
+      })
+
+      this.setState({extensionsMapByKey: extensionsMap})
+    }
+  }
+
   createNewExtension() {
     this.form = this.initAdminExtensionsForm({
       'type': 'Workflow',
@@ -257,22 +285,6 @@ export default class Extensions extends React.Component {
     
     this.openDrawer()
   }
-
-  openDrawer(){
-    this.setState({ showDrawer: true, dialogOpen: false })
-  }
-
-  closeDrawer(force = false){
-    if(force || this.state.userHasUnsavedChanges === false){
-      this.setState({
-        dialogOpen: false, 
-        saving: false,
-        userHasUnsavedChanges: false,
-        showDrawer: false,
-        showDiscardEditsConfirmDialog: false
-      })
-    }
-  }  
 
   handleFormChanged() {
     this.setState({userHasUnsavedChanges: true})
@@ -349,6 +361,21 @@ export default class Extensions extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
+  mapSecretType(secret){
+    switch(secret.type){
+      case "file":
+        return (<FileIcon className={styles.variablesIcons}/>)
+      case "env":
+      case "protected-env":
+        return (<EnvVarIcon className={styles.variablesIcons}/>)
+      case "build":
+        return (<BuildArgIcon className={styles.variablesIcons}/>)
+      default:
+        return null
+    }
+    
+  }
+
   setOptions(){
     const { secrets, environments } = this.props.data    
     // filter secrets by env of current extension if exists
@@ -367,7 +394,8 @@ export default class Extensions extends React.Component {
     secretOptions = envSecrets.map(function(secret){
       return {
         key: secret.id,
-        value: "(" + secret.key + ") => " + secret.value,
+        icon: self.mapSecretType(secret),
+        value: secret.key
       }
     })
 
@@ -394,8 +422,93 @@ export default class Extensions extends React.Component {
     })
   }
 
+  getExtensionTypeGlyph(extension) {
+    switch(extension.type){
+      case "workflow":
+        return (<ExtensionWorkflowIcon className={styles.extensionIcon}/>)
+      case "deployment":
+       return (<ExtensionDeploymentIcon className={styles.extensionIcon}/>)
+      case "once":
+        return (<ExtensionOnceIcon className={styles.extensionIcon}/>)
+      default:
+        return extension.type
+    }
+  }
+
+  handleExpansionPanelChange = panel => (event, expanded) => {
+    this.setState({
+      expandedExtensionGrouping: expanded ? panel : false,
+    });
+  };
+
+
+  renderExtensions = (extensions) => {
+    return (
+      <div>
+      {Object.keys(extensions).map( (key, idx) => {
+        return this.renderExtensionGrouping(key, extensions[key])
+      })}
+      </div>
+    )
+  }
+
+  renderExtensionConfigDetails(extension, idx) {
+    return (
+      <div key={extension.key+":"+idx} className={styles.detailsItem}>
+        <ExpansionPanel 
+          key={extension.key+":"+idx} expanded={true} onChange={() => {}}> 
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+            <Grid container spacing={24} className={styles.extensionTitle}>
+              <Grid item xs={2}>
+                <Typography variant="body1" style={{ fontSize: 14 }}>
+                  <b> { extension.environment.name } </b> 
+                </Typography>             
+              </Grid>      
+            </Grid>
+          </ExpansionPanelSummary>
+
+          <Divider />
+
+          <ExpansionPanelDetails className={styles.details}>
+            {"Details"}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      </div>
+    )
+  }
+
+  renderExtensionGrouping(key, extensionGrouping){
+    return (
+      <ExpansionPanel 
+        key={key} expanded={this.state.expandedExtensionGrouping === key} onChange={this.handleExpansionPanelChange(key)}> 
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+          <Grid container spacing={24} className={styles.extensionTitle}>
+            <Grid item xs={2}>
+              <Typography variant="body1" style={{ fontSize: 14 }}>
+                <b> { key } </b> 
+              </Typography>             
+            </Grid>            
+            <Grid item xs={2}>
+              {this.getExtensionTypeGlyph(extensionGrouping[0])}     
+            </Grid>            
+            
+          </Grid>>
+        </ExpansionPanelSummary>
+
+        <Divider />
+
+        <ExpansionPanelDetails className={styles.details}>
+          {extensionGrouping.map( (extension, idx) => {
+            return this.renderExtensionConfigDetails(extension, idx)
+          })}
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
+  }
+
   render() {
-    const { loading, extensions } = this.props.data;
+    const { loading } = this.props.data;
+    const { extensionsMapByKey } = this.state
 
     if(loading){
       return (
@@ -407,56 +520,23 @@ export default class Extensions extends React.Component {
       <div className={styles.root}>
         <Grid container spacing={24}>
           <Grid item xs={12}>
-            <Paper>
-              <Toolbar>
-                <div>
-                  <Typography variant="title">
-                    Extensions
-                  </Typography>
-                </div>
-              </Toolbar>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      Name
-                    </TableCell>
-                    <TableCell>
-                      Environment
-                    </TableCell>
-                    <TableCell>
-                      Type
-                    </TableCell>
-                    <TableCell>
-                      Component
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {extensions.map( (extension, index) => {
-                    return (
-                      <TableRow
-                        hover
-                        onClick={event => this.handleClick(event, extension, index)}
-                        tabIndex={-1}
-                        key={extension.id}>
-                        <TableCell> { extension.name} </TableCell>
-                        <TableCell> { extension.environment ? extension.environment.name : '' } </TableCell>
-                        <TableCell> { extension.type } </TableCell>
-                        <TableCell> { extension.component } </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </Paper>
+            <Card>
+              <CardContent>     
+                <Typography variant="title">
+                  Extensions
+                </Typography>              
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
+        {this.renderExtensions(extensionsMapByKey)}
+
         <Button variant="fab" aria-label="Add" type="submit" color="primary"
               style={inlineStyles.addButton}
               onClick={() => {this.createNewExtension()}}>
               <AddIcon />
         </Button>
+
         <Drawer
           anchor="right"
           classes={{
@@ -565,24 +645,7 @@ export default class Extensions extends React.Component {
           </DialogActions>
         </Dialog>
 
-        {extensions[this.form.values()['index']] != null &&
-          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Are you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                This will delete the extension spec.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={this.handleDeleteExtension.bind(this)} color="accent">
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
-        }
+       
 
       </div>
     );

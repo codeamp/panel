@@ -9,10 +9,27 @@
 .createServiceBar {
 }
 
+.extensionTitle {
+}
+
+.extensionIcon {
+
+}
+
 
 .drawerBody {
     flex-grow: 1;
     margin-top: 10px;
+}
+
+.details {
+	align-items: 'center';
+	flex-direction: column;
+}
+
+.detailsItem {
+	flex-direction: column;
+	margin: 15px;
 }
 
 
