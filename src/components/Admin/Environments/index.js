@@ -252,7 +252,6 @@ export default class Environments extends React.Component {
             </TableHead>
             <TableBody>
               {environments.map(function(env, idx){
-                console.log(env.isDefault)
                 return (
                   <TableRow
                     hover

@@ -408,7 +408,7 @@ export default class Secrets extends React.Component {
             <TableBody>
               {secrets.entries.map(function(secret, idx){
                 let emptyValue
-                if (secret.value === '') {
+                if (secret.user === null) {
                   emptyValue = styles.emptyValue
                 }
                 return (

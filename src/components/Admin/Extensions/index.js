@@ -27,6 +27,15 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import Switch from 'material-ui/Switch';
+import Tooltip from 'components/Utils/Tooltip';
+
+import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
+import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
+import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
+
+import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import FileIcon from '@material-ui/icons/Note';
+import BuildArgIcon from '@material-ui/icons/Memory';
 
 const inlineStyles = {
   addButton: {
@@ -199,25 +208,19 @@ export default class Extensions extends React.Component {
     var handleFormChanged = this.handleFormChanged.bind(this)
     const $hooks = {
       onAdd(instance) {
-        // console.log('-> onAdd HOOK', instance.path || 'form');
-        handleFormChanged(instance)
+        handleFormChanged()
       },
       onDel(instance) {
-        // console.log('-> onDel HOOK', instance.path || 'form');
-        handleFormChanged(instance)
+        handleFormChanged()
       },
       onSubmit(instance){
-        // console.log('-> onSubmit HOOK', instance.path || 'form');
       },
       onSuccess(instance){
-        // console.log('Form Values!', instance.values())
       },
       sync(instance){
-        // console.log('sync', instance)
       },
       onChange(instance){
-        // console.log(instance.values())
-        handleFormChanged(instance)
+        handleFormChanged()
       }
     };
 
@@ -274,8 +277,7 @@ export default class Extensions extends React.Component {
     }
   }  
 
-  handleFormChanged(instance) {
-    console.log("handleFormChanged", instance)
+  handleFormChanged() {
     this.setState({userHasUnsavedChanges: true})
   }
 
@@ -288,7 +290,6 @@ export default class Extensions extends React.Component {
   }
 
   handleClick(e, extension, index){
-    console.log("handleclick")
     this.form = this.initAdminExtensionsForm({
       id: extension.id,
       index: index,
@@ -351,6 +352,21 @@ export default class Extensions extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
+  mapSecretType(secret){
+    switch(secret.type){
+      case "file":
+        return (<FileIcon className={styles.variablesIcons}/>)
+      case "env":
+      case "protected-env":
+        return (<EnvVarIcon className={styles.variablesIcons}/>)
+      case "build":
+        return (<BuildArgIcon className={styles.variablesIcons}/>)
+      default:
+        return null
+    }
+    
+  }
+
   setOptions(){
     const { secrets, environments } = this.props.data    
     // filter secrets by env of current extension if exists
@@ -358,7 +374,7 @@ export default class Extensions extends React.Component {
     var envSecrets = secrets.entries
     if(this.form.$('environmentID').value){
       envSecrets = secrets.entries.filter(function(secret){
-        if(secret.type === "env" && self.form.$('environmentID').value === secret.environment.id){
+        if(self.form.$('environmentID').value === secret.environment.id){
           return true
         }
         return false
@@ -369,7 +385,8 @@ export default class Extensions extends React.Component {
     secretOptions = envSecrets.map(function(secret){
       return {
         key: secret.id,
-        value: secret.id + " : " + secret.key
+        icon: self.mapSecretType(secret),
+        value: secret.key
       }
     })
 
@@ -396,6 +413,19 @@ export default class Extensions extends React.Component {
     })
   }
 
+  getExtensionTypeGlyph(extension) {
+    switch(extension.type){
+      case "workflow":
+      return (<Tooltip title="Workflow" icon={<ExtensionWorkflowIcon/>}/>)
+      case "deployment":
+      return (<Tooltip title="Deployment" icon={<ExtensionDeploymentIcon/>}/>)
+      case "once":
+        return (<Tooltip title="Once" icon={<ExtensionOnceIcon/>}/>)
+      default:
+        return extension.type
+    }
+  }
+
   render() {
     const { loading, extensions } = this.props.data;
 
@@ -405,7 +435,6 @@ export default class Extensions extends React.Component {
       )
     }    
 
-    console.log("rerender")
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -445,7 +474,7 @@ export default class Extensions extends React.Component {
                         key={extension.id}>
                         <TableCell> { extension.name} </TableCell>
                         <TableCell> { extension.environment ? extension.environment.name : '' } </TableCell>
-                        <TableCell> { extension.type } </TableCell>
+                        <TableCell> { this.getExtensionTypeGlyph(extension) } </TableCell>
                         <TableCell> { extension.component } </TableCell>
                       </TableRow>
                     )

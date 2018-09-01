@@ -475,7 +475,7 @@ export default class SecretsPaginator extends React.Component {
                             value={this.form.values()['value']}
                             name="file-content"
                             editorProps={{$blockScrolling: true}}
-                            focus="true"
+                            focus={true}
                           />
                           <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
                           <Typography variant="caption"> Hide value after saving </Typography>
