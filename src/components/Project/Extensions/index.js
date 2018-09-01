@@ -16,8 +16,8 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
-import ExtensionStateFailedIcon from 'material-ui-icons/Error';
+import ExtensionStateCompleteIcon from '@material-ui/icons/CheckCircle';
+import ExtensionStateFailedIcon from '@material-ui/icons/Error';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';

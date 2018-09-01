@@ -5,14 +5,14 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
 import IconButton from 'material-ui/IconButton';
-import SettingsIcon from 'material-ui-icons/Settings';
-import FeaturesIcon from 'material-ui-icons/Input';
-import ReleasesIcon from 'material-ui-icons/Timeline';
-import ServicesIcon from 'material-ui-icons/Widgets';
-import SecretIcon from 'material-ui-icons/VpnKey';
-import ExtensionsIcon from 'material-ui-icons/Extension';
-import StarBorderIcon from 'material-ui-icons/StarBorder';
-import StarIcon from 'material-ui-icons/Star';
+import SettingsIcon from '@material-ui/icons/Settings';
+import FeaturesIcon from '@material-ui/icons/Input';
+import ReleasesIcon from '@material-ui/icons/Timeline';
+import ServicesIcon from '@material-ui/icons/Widgets';
+import SecretIcon from '@material-ui/icons/VpnKey';
+import ExtensionsIcon from '@material-ui/icons/Extension';
+import StarBorderIcon from '@material-ui/icons/StarBorder';
+import StarIcon from '@material-ui/icons/Star';
 import ProjectFeatures from 'components/Project/Features';
 import ProjectSecrets from 'components/Project/Secrets';
 import ProjectReleases from 'components/Project/Releases';
@@ -223,7 +223,7 @@ class Project extends React.Component {
             <Toolbar style={{paddingLeft: "0px"}}>
               {bookmarked}
               <Typography variant="title">
-                {project.slug} <span className={styles.gitBranch}>({project.gitBranch})</span>
+                {project.name} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
             </Toolbar>
           </Grid>

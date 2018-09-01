@@ -14,8 +14,8 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from 'material-ui-icons/Add';
-import CloseIcon from 'material-ui-icons/Close';
+import AddIcon from '@material-ui/icons/Add';
+import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
@@ -163,7 +163,7 @@ export default class Extensions extends React.Component {
       'config[].key': 'required|string',
       'config[].value': 'required|string',
       'config[].allowOverride': 'required|boolean',
-      'component': 'required|string',
+      'component': 'string',
     };
     const labels = {
       'name': 'Name',
@@ -171,7 +171,7 @@ export default class Extensions extends React.Component {
       'type': 'Type',
       'config': 'Config',
       'config[].key': 'Key',
-      'config[].value': 'Value',
+      'config[].value': 'Environment Variable',
       'config[].allowOverride': 'Override',
       'component': 'React Component',
       'environmentID': 'Environment',
@@ -200,11 +200,11 @@ export default class Extensions extends React.Component {
     const $hooks = {
       onAdd(instance) {
         // console.log('-> onAdd HOOK', instance.path || 'form');
-        handleFormChanged()
+        handleFormChanged(instance)
       },
       onDel(instance) {
         // console.log('-> onDel HOOK', instance.path || 'form');
-        handleFormChanged()
+        handleFormChanged(instance)
       },
       onSubmit(instance){
         // console.log('-> onSubmit HOOK', instance.path || 'form');
@@ -217,7 +217,7 @@ export default class Extensions extends React.Component {
       },
       onChange(instance){
         // console.log(instance.values())
-        handleFormChanged()
+        handleFormChanged(instance)
       }
     };
 
@@ -274,7 +274,8 @@ export default class Extensions extends React.Component {
     }
   }  
 
-  handleFormChanged() {
+  handleFormChanged(instance) {
+    console.log("handleFormChanged", instance)
     this.setState({userHasUnsavedChanges: true})
   }
 
@@ -287,6 +288,7 @@ export default class Extensions extends React.Component {
   }
 
   handleClick(e, extension, index){
+    console.log("handleclick")
     this.form = this.initAdminExtensionsForm({
       id: extension.id,
       index: index,
@@ -356,7 +358,7 @@ export default class Extensions extends React.Component {
     var envSecrets = secrets.entries
     if(this.form.$('environmentID').value){
       envSecrets = secrets.entries.filter(function(secret){
-        if(self.form.$('environmentID').value === secret.environment.id){
+        if(secret.type === "env" && self.form.$('environmentID').value === secret.environment.id){
           return true
         }
         return false
@@ -367,7 +369,7 @@ export default class Extensions extends React.Component {
     secretOptions = envSecrets.map(function(secret){
       return {
         key: secret.id,
-        value: "(" + secret.key + ") => " + secret.value,
+        value: secret.id + " : " + secret.key
       }
     })
 
@@ -403,6 +405,7 @@ export default class Extensions extends React.Component {
       )
     }    
 
+    console.log("rerender")
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -493,11 +496,11 @@ export default class Extensions extends React.Component {
                   <Grid item xs={12}>
                     <Typography variant="title">Config</Typography>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item sm={12}>
                     {this.form.$('config').map((kv, i) => {
                         return (
                         <Grid container spacing={24} key={kv.id}>
-                            <Grid item xs={5}>
+                            <Grid item xs={4}>
                                 <InputField field={kv.$('key')} fullWidth={true} />
                             </Grid>
                             <Grid item xs={4}>
@@ -514,7 +517,7 @@ export default class Extensions extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd}>
+                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd} disabled={!this.form.$('environmentID').value}>
                       Add Config
                     </Button>
                   </Grid>

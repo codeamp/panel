@@ -30,12 +30,13 @@ import PanelTable from 'components/Utils/Table';
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
-import LockIcon from 'material-ui-icons/Lock';
-import AddIcon from 'material-ui-icons/Add';
-import MissingSecretIcon from 'material-ui-icons/Report';
-import EnvIcon from 'material-ui-icons/Explicit';
-import FileIcon from 'material-ui-icons/Note';
-import BuildArgIcon from 'material-ui-icons/Memory';
+import ProtectedIcon from '@material-ui/icons/Lock';
+import AddIcon from '@material-ui/icons/Add';
+import MissingSecretIcon from '@material-ui/icons/Report';
+import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import FileIcon from '@material-ui/icons/Note';
+import BuildArgIcon from '@material-ui/icons/Memory';
+import Tooltip from 'components/Utils/Tooltip';
 
 @inject("store") @observer
 @graphql(gql`
@@ -392,12 +393,12 @@ export default class SecretsPaginator extends React.Component {
               getVal: function(row){
                 switch(row.type){
                   case "file":
-                    return (<FileIcon/>)
+                    return (<Tooltip title="File" icon={<FileIcon/>}/>)
                   case "build":
-                    return (<BuildArgIcon/>)
+                    return (<Tooltip title="Build Arg"icon={<BuildArgIcon/>}/>)
                   case "protected-env":
                   case "env":
-                    return (<EnvIcon/>)
+                    return (<Tooltip title="Environment Variable" icon={<EnvVarIcon/>}/>)
                   default:
                     return row.type
                 }
@@ -406,12 +407,12 @@ export default class SecretsPaginator extends React.Component {
               label: "Protected",
               getVal: function(row){
                 if(row.isSecret)
-                  return (<LockIcon/>)
+                  return (<Tooltip title="Protected" icon={<ProtectedIcon/>}/>)
                 return ""
               },
             }, {
               label: "Creator",
-              getVal: function(row){return row.user ? row.user.email : (<MissingSecretIcon/>)},
+              getVal: function(row){return row.user ? row.user.email : (<Tooltip title="Missing Author or Version" icon={<MissingSecretIcon/>}/>)},
             }, {
               label: "Created",
               getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},
@@ -423,7 +424,7 @@ export default class SecretsPaginator extends React.Component {
             anchorEl={this.state.anchorEl}
             open={this.state.addEnvVarMenuOpen}
         >
-          <MenuItem onClick={() => this.handleRequestClose("env")}><EnvIcon/>EnvVar</MenuItem>
+          <MenuItem onClick={() => this.handleRequestClose("env")}><EnvVarIcon/>EnvVar</MenuItem>
           <MenuItem onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
           <MenuItem onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
         </Menu>
@@ -560,3 +561,4 @@ export default class SecretsPaginator extends React.Component {
     )
   }
 }
+

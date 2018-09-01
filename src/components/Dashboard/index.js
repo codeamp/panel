@@ -8,7 +8,7 @@ import Card, { CardContent } from 'material-ui/Card';
 import Loading from 'components/Utils/Loading';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
-import BookmarkedIcon from 'material-ui-icons/Star';
+import BookmarkedIcon from '@material-ui/icons/Star';
 
 @graphql(gql`
   query {
