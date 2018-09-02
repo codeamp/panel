@@ -1,9 +1,6 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
-import Drawer from 'material-ui/Drawer';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Dialog, {
@@ -12,7 +9,6 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
@@ -43,13 +39,10 @@ import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
 import Card, { CardContent } from 'material-ui/Card';
 
-const inlineStyles = {
-  addButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-  }
-}
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
 
 @graphql(gql`
 query {
@@ -149,9 +142,12 @@ export default class Extensions extends React.Component {
     super(props)
     this.state = {
       userHasUnsavedChanges: false,
-      showDrawer: false,
       showDiscardEditsConfirmDialog: false,
+      showExtensionsConfigID: {},
+      expandCreateExtensionPanel: {},
       extensionsMapByKey: {},
+      expandedExtensionGrouping: {},
+      secretValuesMap: {},
     }
 
     this.handleFormChanged = this.handleFormChanged.bind(this)
@@ -271,7 +267,15 @@ export default class Extensions extends React.Component {
         }
       })
 
-      this.setState({extensionsMapByKey: extensionsMap})
+      let secretValuesMap = {}
+      data.secrets.entries.forEach((x) =>{
+        let key = x.id
+        secretValuesMap[key] = x.value
+      })
+
+      console.log(secretValuesMap)
+
+      this.setState({extensionsMapByKey: extensionsMap, secretValuesMap: secretValuesMap})
     }
   }
 
@@ -282,20 +286,10 @@ export default class Extensions extends React.Component {
       'config[].allowOverride': false,
     })
     this.setOptions()
-    
-    this.openDrawer()
   }
 
   handleFormChanged() {
     this.setState({userHasUnsavedChanges: true})
-  }
-
-  handleCancelForm() {
-    if (this.state.userHasUnsavedChanges === true) {
-      this.setState({showDiscardEditsConfirmDialog:true})
-    } else {
-      this.closeDrawer()
-    }
   }
 
   handleClick(e, extension, index){
@@ -319,8 +313,6 @@ export default class Extensions extends React.Component {
     
     this.form.update({ config: config })
     this.setOptions()
-
-    this.openDrawer()
   }
 
   onSuccess(form){
@@ -330,26 +322,25 @@ export default class Extensions extends React.Component {
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer(true)
+        this.setState({ saving: false })
       });
     } else {
       this.props.updateExtension({
         variables: this.form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer(true)
+        this.setState({ saving: false })        
       });
     }
   }
 
   handleDeleteExtension() {
     this.setState({ saving: true })
-    var that = this
+
     this.props.deleteExtension({
       variables: this.form.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
-      that.closeDrawer(true)
     });
   }
 
@@ -435,9 +426,31 @@ export default class Extensions extends React.Component {
     }
   }
 
-  handleExpansionPanelChange = panel => (event, expanded) => {
+  toggleCreateExtensionPanel = panel => (event, expanded) => {
+    if(expanded){
+      this.createNewExtension()
+    }
+
     this.setState({
-      expandedExtensionGrouping: expanded ? panel : false,
+      expandCreateExtensionPanel: expanded,
+    });
+  };
+
+  toggleExtensionConfigOpen = panel => (event, expanded) => {
+    let configPanelMap = this.state.showExtensionsConfigID
+    configPanelMap[panel] = expanded ? panel : null
+
+    this.setState({
+      showExtensionsConfigID: configPanelMap
+    });
+  };
+
+  handleExpansionPanelChange = panel => (event, expanded) => {
+    let expandedExtensions = this.state.expandedExtensionGrouping
+    expandedExtensions[panel] = expanded ? panel : null
+
+    this.setState({
+      expandedExtensionGrouping: expandedExtensions
     });
   };
 
@@ -453,10 +466,11 @@ export default class Extensions extends React.Component {
   }
 
   renderExtensionConfigDetails(extension, idx) {
+    let key=extension.key+":"+extension.environment.id + ":" + idx
     return (
-      <div key={extension.key+":"+idx} className={styles.detailsItem}>
+      <div key={key} className={styles.detailsItem}>
         <ExpansionPanel 
-          key={extension.key+":"+idx} expanded={true} onChange={() => {}}> 
+          key={key} expanded={!!this.state.showExtensionsConfigID[key]} onChange={this.toggleExtensionConfigOpen(key)}> 
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
             <Grid container spacing={24} className={styles.extensionTitle}>
               <Grid item xs={2}>
@@ -470,7 +484,32 @@ export default class Extensions extends React.Component {
           <Divider />
 
           <ExpansionPanelDetails className={styles.details}>
-            {"Details"}
+            {extension.config.map((kv, i) => {
+              let secretValue = this.state.secretValuesMap[kv.value]
+              return (
+                <Grid container spacing={16} key={key + ":" + i}>
+                    <Grid item xs={3}>
+                        <FormControl fullWidth={true}>
+                          <Input value={kv.key}/>
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={1}>
+                        
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FormControl fullWidth={true}>
+                          <Input value={secretValue}/>
+                        </FormControl>
+                    </Grid>
+
+                    <Grid item xs={1}>
+                      <IconButton>
+                        <CloseIcon/>
+                      </IconButton>
+                    </Grid>
+                </Grid>
+                )
+            })}
           </ExpansionPanelDetails>
         </ExpansionPanel>
       </div>
@@ -480,9 +519,9 @@ export default class Extensions extends React.Component {
   renderExtensionGrouping(key, extensionGrouping){
     return (
       <ExpansionPanel 
-        key={key} expanded={this.state.expandedExtensionGrouping === key} onChange={this.handleExpansionPanelChange(key)}> 
+        key={key} expanded={!!this.state.expandedExtensionGrouping[key]} onChange={this.handleExpansionPanelChange(key)}> 
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
-          <Grid container spacing={24} className={styles.extensionTitle}>
+          <Grid container spacing={16} className={styles.extensionTitle}>
             <Grid item xs={2}>
               <Typography variant="body1" style={{ fontSize: 14 }}>
                 <b> { key } </b> 
@@ -490,8 +529,7 @@ export default class Extensions extends React.Component {
             </Grid>            
             <Grid item xs={2}>
               {this.getExtensionTypeGlyph(extensionGrouping[0])}     
-            </Grid>            
-            
+            </Grid>                        
           </Grid>>
         </ExpansionPanelSummary>
 
@@ -506,6 +544,97 @@ export default class Extensions extends React.Component {
     )
   }
 
+  renderCreateNewExtension(){
+    return (
+      <ExpansionPanel 
+        key={"create-new-extension"} expanded={this.state.expandCreateExtensionPanel === true} onChange={this.toggleCreateExtensionPanel()}
+        className={styles.createNewExtensionPanel}> 
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+          <Grid container spacing={16} className={styles.extensionTitle}>
+            <Grid item xs={2}>
+              <Typography variant="body1" style={{ fontSize: 14 }}>
+                <b> { "Add Extension" } </b> 
+              </Typography>             
+            </Grid>            
+          </Grid>>
+        </ExpansionPanelSummary>
+
+        <Divider />
+
+        <ExpansionPanelDetails className={styles.createNewExtension}>
+          <div className={styles.createServiceBar}>
+            <form onSubmit={(e) => e.preventDefault()}>
+              <Grid container spacing={24} className={styles.grid}>
+                <Grid item xs={4}>
+                  <InputField field={this.form.$('name')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <InputField field={this.form.$('key')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID'/>
+                </Grid>
+                <Grid item xs={4}>
+                  <SelectField field={this.form.$('type')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <InputField field={this.form.$('component')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="title">Config</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  {this.form.$('config').map((kv, i) => {
+                      return (
+                      <Grid container spacing={24} key={kv.id}>
+                          <Grid item xs={5}>
+                              <InputField field={kv.$('key')} fullWidth={true} />
+                          </Grid>
+                          <Grid item xs={4}>
+                              <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
+                          </Grid>
+                          <Grid item xs={1}>
+                              <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
+                          </Grid>
+                          <Grid item xs={1}>
+                            <IconButton>
+                              <CloseIcon onClick={kv.onDel} />
+                            </IconButton>
+                          </Grid>
+                      </Grid>
+                      )
+                  })}
+                  <Button color="default" variant="raised" onClick={this.form.$('config').onAdd}>
+                    Add Config
+                  </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <Button color="primary"
+                      className={styles.buttonSpacing}
+                      disabled={this.state.saving}
+                      type="submit"
+                      variant="raised"
+                      onClick={this.onSubmit.bind(this)}>
+                        Add Extension
+                  </Button>
+
+                  {this.form.values()['id'] !== '' &&
+                    <Button
+                      disabled={this.state.saving}
+                      style={{ color: "red" }}
+                      onClick={()=>this.setState({ dialogOpen: true })}>
+                      Delete
+                    </Button>
+                  }
+                </Grid>
+              </Grid>
+            </form>
+          </div>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
+  }
+
   render() {
     const { loading } = this.props.data;
     const { extensionsMapByKey } = this.state
@@ -515,7 +644,6 @@ export default class Extensions extends React.Component {
         <Loading />
       )
     }    
-
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -529,103 +657,8 @@ export default class Extensions extends React.Component {
             </Card>
           </Grid>
         </Grid>
+        {this.renderCreateNewExtension()}
         {this.renderExtensions(extensionsMapByKey)}
-
-        <Button variant="fab" aria-label="Add" type="submit" color="primary"
-              style={inlineStyles.addButton}
-              onClick={() => {this.createNewExtension()}}>
-              <AddIcon />
-        </Button>
-
-        <Drawer
-          anchor="right"
-          classes={{
-            paper: styles.drawer
-          }}
-          onClose={() => {this.handleCancelForm()}}          
-          open={this.state.showDrawer}
-        >
-            <div className={styles.createServiceBar}>
-              <AppBar position="static" color="default">
-                <Toolbar>
-                  <Typography variant="title" color="inherit">
-                    Extensions
-                  </Typography>
-                </Toolbar>
-              </AppBar>
-              <form onSubmit={(e) => e.preventDefault()}>
-                <Grid container spacing={24} className={styles.grid}>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('name')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('key')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID'/>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <SelectField field={this.form.$('type')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('component')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="title">Config</Typography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {this.form.$('config').map((kv, i) => {
-                        return (
-                        <Grid container spacing={24} key={kv.id}>
-                            <Grid item xs={5}>
-                                <InputField field={kv.$('key')} fullWidth={true} />
-                            </Grid>
-                            <Grid item xs={4}>
-                                <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
-                            </Grid>
-                            <Grid item xs={1}>
-                                <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
-                            </Grid>
-                            <Grid item xs={1}>
-                              <IconButton>
-                                <CloseIcon onClick={kv.onDel} />
-                              </IconButton>
-                            </Grid>
-                        </Grid>
-                        )
-                    })}
-                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd}>
-                      Add Config
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button color="primary"
-                        className={styles.buttonSpacing}
-                        disabled={this.state.saving}
-                        type="submit"
-                        variant="raised"
-                        onClick={this.onSubmit.bind(this)}>
-                          Save
-                    </Button>
-
-                    {this.form.values()['id'] !== '' &&
-                      <Button
-                        disabled={this.state.saving}
-                        style={{ color: "red" }}
-                        onClick={()=>this.setState({ dialogOpen: true })}>
-                        Delete
-                      </Button>
-                    }
-
-                    <Button
-                      onClick={() => {this.handleCancelForm()}}>
-                      Cancel
-                    </Button>
-                  </Grid>
-                </Grid>
-              </form>
-            </div>
-        </Drawer>
 
         {/* Used for confirmation of escaping panel if dirty form */}
         <Dialog open={this.state.showDiscardEditsConfirmDialog}>
@@ -639,14 +672,11 @@ export default class Extensions extends React.Component {
             <Button onClick={()=> this.setState({ showDiscardEditsConfirmDialog: false })} color="primary">
               Cancel
             </Button>
-            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+            <Button onClick={() => {}} style={{ color: "red" }}>
               Confirm
             </Button>
           </DialogActions>
         </Dialog>
-
-       
-
       </div>
     );
   }

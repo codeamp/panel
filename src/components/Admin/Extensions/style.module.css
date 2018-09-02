@@ -29,7 +29,7 @@
 
 .detailsItem {
 	flex-direction: column;
-	margin: 15px;
+	margin: 5px;
 }
 
 
@@ -41,4 +41,8 @@
 
 .buttonSpacing {
     margin-right: 24px;
+}
+
+.createNewExtensionPanel {
+	margin-bottom: 15px;
 }
