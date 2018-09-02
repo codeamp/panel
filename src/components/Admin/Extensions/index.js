@@ -433,17 +433,17 @@ export default class Extensions extends React.Component {
   setFormOptions(form){
     const { secrets, environments } = this.props.data    
     // filter secrets by env of current extension if exists
-    var self = this
     var envSecrets = secrets.entries
     if(form.$('environmentID').value){
       envSecrets = secrets.entries.filter(function(secret){
-        if(self.form.$('environmentID').value === secret.environment.id){
+        if(form.$('environmentID').value === secret.environment.id){
           return true
         }
         return false
       })
     }
 
+    var self=this
     var secretOptions = []
     secretOptions = envSecrets.map(function(secret){
       return {
@@ -459,7 +459,7 @@ export default class Extensions extends React.Component {
         key: env.id,
         value: env.name,
       }
-    })    
+    }) 
 
     form.state.extra({
       config: secretOptions,
@@ -565,7 +565,7 @@ export default class Extensions extends React.Component {
             {mobxForm && mobxForm.$('config').map((kv, i) => {
                 return (
                   <Grid container spacing={16} key={kv.id}>
-                      <Grid item xs={3}>
+                      <Grid item xs={2}>
                           <InputField field={kv.$('key')} fullWidth={true} />
                       </Grid>
                       <Grid item xs={4}>
