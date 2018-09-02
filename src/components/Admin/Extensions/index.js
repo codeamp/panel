@@ -39,11 +39,6 @@ import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
 import Card, { CardContent } from 'material-ui/Card';
 
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import FormControl from '@material-ui/core/FormControl';
-
 @graphql(gql`
 query {
   extensions {
@@ -148,6 +143,7 @@ export default class Extensions extends React.Component {
       extensionsMapByKey: {},
       expandedExtensionGrouping: {},
       secretValuesMap: {},
+      extensionMobxForms: {},
     }
 
     this.handleFormChanged = this.handleFormChanged.bind(this)
@@ -270,10 +266,8 @@ export default class Extensions extends React.Component {
       let secretValuesMap = {}
       data.secrets.entries.forEach((x) =>{
         let key = x.id
-        secretValuesMap[key] = x.value
+        secretValuesMap[key] = x.key
       })
-
-      console.log(secretValuesMap)
 
       this.setState({extensionsMapByKey: extensionsMap, secretValuesMap: secretValuesMap})
     }
@@ -436,12 +430,79 @@ export default class Extensions extends React.Component {
     });
   };
 
-  toggleExtensionConfigOpen = panel => (event, expanded) => {
+  setFormOptions(form){
+    const { secrets, environments } = this.props.data    
+    // filter secrets by env of current extension if exists
+    var self = this
+    var envSecrets = secrets.entries
+    if(form.$('environmentID').value){
+      envSecrets = secrets.entries.filter(function(secret){
+        if(self.form.$('environmentID').value === secret.environment.id){
+          return true
+        }
+        return false
+      })
+    }
+
+    var secretOptions = []
+    secretOptions = envSecrets.map(function(secret){
+      return {
+        key: secret.id,
+        icon: self.mapSecretType(secret),
+        value: secret.key
+      }
+    })
+
+    var envOptions = []
+    envOptions = environments.map(function(env){
+      return {
+        key: env.id,
+        value: env.name,
+      }
+    })    
+
+    form.state.extra({
+      config: secretOptions,
+      environmentID: envOptions,      
+    })    
+
+    return form
+  }
+
+  toggleExtensionConfigOpen = (panel,extension) => (event, expanded) => {
+    // Is there a mobx for this one?
+    let mobxForms = this.state.extensionMobxForms
+    if (!(panel in mobxForms)){
+      let form = this.initAdminExtensionsForm({
+        id: extension.id,
+        index: 0,
+        name: extension.name,
+        key: extension.key,
+        environmentID: extension.environment.id,
+        component: extension.component,
+        type: extension.type,
+      })
+
+      let config = extension.config.map((c) => {
+        if (typeof c.allowOverride === 'undefined') {
+          return {key: c.key, value: c.value, allowOverride: false};
+        } else {
+          return c; 
+        }
+      })
+
+      form.update({ config: config })
+      form = this.setFormOptions(form)
+
+      mobxForms[panel] = form
+    }
+
     let configPanelMap = this.state.showExtensionsConfigID
     configPanelMap[panel] = expanded ? panel : null
 
     this.setState({
-      showExtensionsConfigID: configPanelMap
+      showExtensionsConfigID: configPanelMap,
+      extensionMobxForms: mobxForms,
     });
   };
 
@@ -465,12 +526,28 @@ export default class Extensions extends React.Component {
     )
   }
 
+  renderMobxReactComponent(mobxForm){
+    if (mobxForm){
+      return (
+        <Grid container spacing={16} key="simple-key">
+          <Grid item xs={2}>
+            <InputField field={mobxForm.$('component')} fullWidth={true} />
+          </Grid>
+        </Grid>
+      )
+    }else {
+      return null
+    }
+  }
+
   renderExtensionConfigDetails(extension, idx) {
     let key=extension.key+":"+extension.environment.id + ":" + idx
+
+    let mobxForm = this.state.extensionMobxForms[key]
     return (
       <div key={key} className={styles.detailsItem}>
         <ExpansionPanel 
-          key={key} expanded={!!this.state.showExtensionsConfigID[key]} onChange={this.toggleExtensionConfigOpen(key)}> 
+          key={key} expanded={!!this.state.showExtensionsConfigID[key]} onChange={this.toggleExtensionConfigOpen(key, extension)}> 
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
             <Grid container spacing={24} className={styles.extensionTitle}>
               <Grid item xs={2}>
@@ -484,32 +561,28 @@ export default class Extensions extends React.Component {
           <Divider />
 
           <ExpansionPanelDetails className={styles.details}>
-            {extension.config.map((kv, i) => {
-              let secretValue = this.state.secretValuesMap[kv.value]
-              return (
-                <Grid container spacing={16} key={key + ":" + i}>
-                    <Grid item xs={3}>
-                        <FormControl fullWidth={true}>
-                          <Input value={kv.key}/>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={1}>
-                        
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FormControl fullWidth={true}>
-                          <Input value={secretValue}/>
-                        </FormControl>
-                    </Grid>
-
-                    <Grid item xs={1}>
-                      <IconButton>
-                        <CloseIcon/>
-                      </IconButton>
-                    </Grid>
-                </Grid>
+            {this.renderMobxReactComponent(mobxForm)}
+            {mobxForm && mobxForm.$('config').map((kv, i) => {
+                return (
+                  <Grid container spacing={16} key={kv.id}>
+                      <Grid item xs={3}>
+                          <InputField field={kv.$('key')} fullWidth={true} />
+                      </Grid>
+                      <Grid item xs={4}>
+                          <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
+                      </Grid>
+                      <Grid item xs={1}>
+                          <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
+                      </Grid>
+                      <Grid item xs={1}>
+                        <IconButton>
+                          <CloseIcon onClick={kv.onDel} />
+                        </IconButton>
+                      </Grid>
+                  </Grid>
                 )
             })}
+            <div/>
           </ExpansionPanelDetails>
         </ExpansionPanel>
       </div>
