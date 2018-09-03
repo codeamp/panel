@@ -78,7 +78,7 @@ export default class LoadBalancer extends React.Component {
     const rules = {}
     const labels = {
         'service': 'SERVICE',
-        'type': 'ACCESS',
+        'type': 'SCOPE',
         'listener_pairs': 'LISTENER PAIRS',
         'listener_pairs[].port': 'PORT',
         'listener_pairs[].containerPort': 'CONTAINER PORT',
@@ -89,13 +89,13 @@ export default class LoadBalancer extends React.Component {
     const extra = {
         'type': [{
             'key': 'internal',
-            'value': 'Internal'
+            'value': 'Intra-Cluster'
         }, {
             'key': 'external',
-            'value': 'External'
+            'value': 'Public',
         }, {
             'key': 'office',
-            'value': 'Office'
+            'value': 'Private'
         }],
         'listener_pairs[].serviceProtocol': [{
             'key': 'http',

@@ -142,15 +142,15 @@ class ReleaseView extends React.Component {
           // get state { waiting => yellow, failed => red, complete => green}
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              return (<Chip key={extension.id+i} label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
             case "complete":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
+              return (<Chip key={extension.id+i} label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
             case "failed":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+              return (<Chip key={extension.id+i} label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
             case "canceled":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
+              return (<Chip key={extension.id+i} label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
             default:
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              return (<Chip key={extension.id+i} label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
           }
         }
       }
@@ -598,29 +598,31 @@ export default class Releases extends React.Component {
   stopReleaseButton(release) {
     // ADB 8/21/18
     // Temporarily diasbling cancel/'stop release' button until it works
-    // as advertised.
-    // if (release.state === "fetching" || release.state === "waiting") {
-    //   return (
-    //     <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     onClick={() => this.stopRelease(release)}
-    //     disabled>
-    //       Stop Release
-    //     </Button>
-    //   )
-    // }
-    // return (
-    //   <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     disabled>
-    //     Stop Release
-    //     </Button>
-    // )
-    return null
+    // as advertised. Reenabling for admins only.
+    const { user } = this.props.data
+    if(user.permissions.includes("admin")){
+      if (release.state === "fetching" || release.state === "waiting") {
+        return (
+          <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          onClick={() => this.stopRelease(release)}>
+            Stop Release
+          </Button>
+        )
+      }
+      return (
+        <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised">
+          Stop Release
+          </Button>
+      )
+    } else {
+      return null
+    }
   }
   
   releaseActionButton(release) {
