@@ -190,6 +190,7 @@ export default class App extends React.Component {
               'aria-describedby': 'message-id',
               className: styles.snackbarContent,
             }}
+            autoHideDuration={2700}
             message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
             action={
               <Button color="inherit" size="small" onClick={() => {this.props.store.app.setSnackbar({ open: false })}}>
