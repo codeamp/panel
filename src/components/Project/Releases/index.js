@@ -616,7 +616,8 @@ export default class Releases extends React.Component {
         <Button
           className={styles.drawerButton}
           color="secondary"
-          variant="raised">
+          variant="raised"
+          disabled>
           Stop Release
           </Button>
       )
