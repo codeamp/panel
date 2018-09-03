@@ -27,6 +27,17 @@
 	flex-direction: column;
 }
 
+.actions {
+	align-items: 'flex-end';
+	flex-direction: row;
+	margin-right: 25px;
+}
+
+.configActions {
+	flex-direction: row;
+	align: center;
+}
+
 .detailsItem {
 	flex-direction: column;
 	margin: 5px;

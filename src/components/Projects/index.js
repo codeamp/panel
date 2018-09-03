@@ -27,6 +27,7 @@ import BookmarkedIcon from '@material-ui/icons/Star';
           __typename
         }
       }  
+      count
     }
   }
 `, {
@@ -34,7 +35,6 @@ import BookmarkedIcon from '@material-ui/icons/Star';
     fetchPolicy: "network-only",
     variables: {
       projectSearch: {
-        bookmarked: false,
       },
     },
   })
@@ -62,7 +62,7 @@ export default class Projects extends React.Component {
             <Toolbar>
               <div>
                 <Typography variant="title">
-                  Projects
+                  Projects ({projects.count})
                 </Typography>
               </div>
             </Toolbar>

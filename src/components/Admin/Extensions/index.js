@@ -26,14 +26,15 @@ import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
 import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
 import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
 
-import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import EnvVarIcon from '@material-ui/icons/Explicit';
 import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
+import DeleteIcon from '@material-ui/icons/DeleteForever';
 
 import ExpansionPanel, {
   ExpansionPanelDetails,
   ExpansionPanelSummary,
-  // ExpansionPanelActions,
+  ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import Divider from 'material-ui/Divider';
@@ -138,12 +139,15 @@ export default class Extensions extends React.Component {
     this.state = {
       userHasUnsavedChanges: false,
       showDiscardEditsConfirmDialog: false,
+      saving: false,
       showExtensionsConfigID: {},
       expandCreateExtensionPanel: {},
       extensionsMapByKey: {},
       expandedExtensionGrouping: {},
       secretValuesMap: {},
       extensionMobxForms: {},
+      showConfirmDeleteExtension: false,
+      pendingDeletionForm: null,
     }
 
     this.handleFormChanged = this.handleFormChanged.bind(this)
@@ -310,17 +314,17 @@ export default class Extensions extends React.Component {
   }
 
   onSuccess(form){
-    this.setState({ saving: true })
-    if(this.form.values().id === ''){
+    this.setState({ saving: true, expandCreateExtensionPanel: false })
+    if(form.values().id === ''){
       this.props.createExtension({
-        variables: this.form.values(),
+        variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
         this.setState({ saving: false })
       });
     } else {
       this.props.updateExtension({
-        variables: this.form.values(),
+        variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
         this.setState({ saving: false })        
@@ -328,13 +332,18 @@ export default class Extensions extends React.Component {
     }
   }
 
-  handleDeleteExtension() {
+  queueDeleteExtension(form) {
+    this.setState({ pendingDeletionForm: form, showConfirmDeleteExtension: true })
+  }
+
+  handleDeleteExtension(){
     this.setState({ saving: true })
 
     this.props.deleteExtension({
-      variables: this.form.values(),
+      variables: this.state.pendingDeletionForm.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
+      this.setState({pendingDeletionForm: null, showConfirmDeleteExtension: false})
     });
   }
 
@@ -342,8 +351,8 @@ export default class Extensions extends React.Component {
     return
   }
 
-  onSubmit(e){
-    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+  onSubmit(e, form){
+    form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   mapSecretType(secret){
@@ -398,8 +407,8 @@ export default class Extensions extends React.Component {
     })    
   }
 
-  handleSwitchChange(e, checked) {
-    this.form.$('config').map((kv, i) => {
+  handleSwitchChange(e, form, checked) {
+    form.$('config').map((kv, i) => {
       if(i === parseInt(e.target.value, 10)) {
         kv.set({allowOverride: checked}) 
       }
@@ -544,13 +553,14 @@ export default class Extensions extends React.Component {
     let key=extension.key+":"+extension.environment.id + ":" + idx
 
     let mobxForm = this.state.extensionMobxForms[key]
+    let self=this
     return (
       <div key={key} className={styles.detailsItem}>
         <ExpansionPanel 
           key={key} expanded={!!this.state.showExtensionsConfigID[key]} onChange={this.toggleExtensionConfigOpen(key, extension)}> 
           <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
             <Grid container spacing={24} className={styles.extensionTitle}>
-              <Grid item xs={2}>
+              <Grid item xs={6}>
                 <Typography variant="body1" style={{ fontSize: 14 }}>
                   <b> { extension.environment.name } </b> 
                 </Typography>             
@@ -564,7 +574,7 @@ export default class Extensions extends React.Component {
             {this.renderMobxReactComponent(mobxForm)}
             {mobxForm && mobxForm.$('config').map((kv, i) => {
                 return (
-                  <Grid container spacing={16} key={kv.id}>
+                  <Grid container spacing={40} key={kv.id}>
                       <Grid item xs={2}>
                           <InputField field={kv.$('key')} fullWidth={true} />
                       </Grid>
@@ -572,7 +582,7 @@ export default class Extensions extends React.Component {
                           <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
                       </Grid>
                       <Grid item xs={1}>
-                          <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
+                          <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={(event,checked) => this.handleSwitchChange(event, mobxForm, checked)}/>
                       </Grid>
                       <Grid item xs={1}>
                         <IconButton>
@@ -582,8 +592,28 @@ export default class Extensions extends React.Component {
                   </Grid>
                 )
             })}
-            <div/>
+            {mobxForm && (
+              <Grid container spacing={40} className={styles.configActions} align="center">
+                <Grid item xs={2}>
+                  <Button color="default" variant="raised" onClick={mobxForm.$('config').onAdd}>
+                    Add Config
+                  </Button>
+                </Grid>    
+                <Grid item xs={2}>
+                  <Button color="default" variant="raised" onClick={(e) => this.onSubmit(e, mobxForm)}>
+                    Save
+                  </Button>
+                </Grid>   
+              </Grid>
+            )}
+            
           </ExpansionPanelDetails>
+
+          <Divider />
+
+          <ExpansionPanelActions>
+            <DeleteIcon className={styles.actions} onClick={()=>self.queueDeleteExtension(mobxForm)}/>
+          </ExpansionPanelActions>
         </ExpansionPanel>
       </div>
     )
@@ -654,7 +684,10 @@ export default class Extensions extends React.Component {
                   <InputField field={this.form.$('component')} fullWidth={true} />
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="title">Config</Typography>
+                  <Typography variant="title">
+                    Config
+                  </Typography>
+                  <Divider />
                 </Grid>
                 <Grid item xs={12}>
                   {this.form.$('config').map((kv, i) => {
@@ -667,7 +700,7 @@ export default class Extensions extends React.Component {
                               <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
                           </Grid>
                           <Grid item xs={1}>
-                              <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
+                              <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={(event, checked) => this.handleSwitchChange(event, this.form, checked)}/>
                           </Grid>
                           <Grid item xs={1}>
                             <IconButton>
@@ -687,7 +720,7 @@ export default class Extensions extends React.Component {
                       disabled={this.state.saving}
                       type="submit"
                       variant="raised"
-                      onClick={this.onSubmit.bind(this)}>
+                      onClick={(e) => this.onSubmit(e, this.form)}>
                         Add Extension
                   </Button>
 
@@ -733,19 +766,19 @@ export default class Extensions extends React.Component {
         {this.renderCreateNewExtension()}
         {this.renderExtensions(extensionsMapByKey)}
 
-        {/* Used for confirmation of escaping panel if dirty form */}
-        <Dialog open={this.state.showDiscardEditsConfirmDialog}>
-          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+        {/* Used for confirmation of deleting extension panel */}
+        <Dialog open={this.state.showConfirmDeleteExtension}>
+          <DialogTitle>{"Are you sure you want to delete?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {"You'll lose any progress made so far."}
+              {"This extension will be gone forever."}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={()=> this.setState({ showDiscardEditsConfirmDialog: false })} color="primary">
+            <Button onClick={()=> this.setState({ showConfirmDeleteExtension: false, pendingDeletionForm: null })} color="primary">
               Cancel
             </Button>
-            <Button onClick={() => {}} style={{ color: "red" }}>
+            <Button onClick={() => {this.handleDeleteExtension()}} style={{ color: "red" }}>
               Confirm
             </Button>
           </DialogActions>
