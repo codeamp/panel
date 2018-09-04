@@ -280,11 +280,11 @@ export default class ProjectExtensions extends React.Component {
   getExtensionTypeGlyph(extension) {
     switch(extension.type){
       case "workflow":
-      return (<Tooltip title="Workflow" icon={<ExtensionWorkflowIcon/>}/>)
+      return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
       case "deployment":
-      return (<Tooltip title="Deployment" icon={<ExtensionDeploymentIcon/>}/>)
+      return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
       case "once":
-        return (<Tooltip title="Once" icon={<ExtensionOnceIcon/>}/>)
+        return (<Tooltip title="Once"><ExtensionOnceIcon/></Tooltip>)
       default:
         return extension.type
     }
@@ -440,10 +440,10 @@ export default class ProjectExtensions extends React.Component {
           {project.extensions.map(extension => {
             let stateIcon = <CircularProgress size={25} />
             if(extension.state === "complete"){
-              stateIcon = <Tooltip title="Clear" icon={<ExtensionStateCompleteIcon size={25}/>}/>
+              stateIcon = <Tooltip title="Clear"><ExtensionStateCompleteIcon size={25}/></Tooltip>
             }
             if(extension.state === "failed"){
-              stateIcon = <Tooltip title="Consider" icon = {<ExtensionStateFailedIcon />}/>
+              stateIcon = <Tooltip title="Consider"><ExtensionStateFailedIcon /></Tooltip>
             }            
             return (
             <TableRow

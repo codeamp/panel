@@ -15,11 +15,11 @@ const styles = theme => ({
 });
 
 function SimpleTooltips(props) {
-  const { title, icon } = props;
+  const { title, children } = props;
   return (    
       <div>
         <Tooltip title={title}>
-            {icon}
+        {children}
         </Tooltip>
       </div>   
   );
@@ -27,7 +27,6 @@ function SimpleTooltips(props) {
 
 SimpleTooltips.propTypes = {
   title: PropTypes.string.isRequired,
-  icon: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(SimpleTooltips);

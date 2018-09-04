@@ -330,12 +330,12 @@ export default class Secrets extends React.Component {
   getTypeGlyph(secret){
     switch(secret.type){
       case "file":
-        return <Tooltip title="File" icon={<FileIcon/>}/>
+        return <Tooltip title="File" ><FileIcon/></Tooltip>
       case "build":
-        return <Tooltip title="Build Arg" icon={<BuildArgIcon/>}/>
+        return <Tooltip title="Build Arg"><BuildArgIcon/></Tooltip>
       case "protected-env":
       case "env":
-        return <Tooltip title="Environment Variable" icon={<EnvVarIcon/>}/>
+        return <Tooltip title="Environment Variable"><EnvVarIcon/></Tooltip>
       default:
         return secret.type
     }
@@ -344,9 +344,9 @@ export default class Secrets extends React.Component {
   getScopeGlyph(secret){
     switch(secret.scope){
       case "global":
-        return <Tooltip title="Global" icon={<GlobalIcon/>}/>
+        return <Tooltip title="Global"><GlobalIcon/></Tooltip>
       case "extension":
-        return <Tooltip title="Extension" icon={<ExtensionIcon/>}/>
+        return <Tooltip title="Extension"><ExtensionIcon/></Tooltip>
       default:
         return secret.scope
     }
@@ -424,7 +424,7 @@ export default class Secrets extends React.Component {
                       {self.getTypeGlyph(secret)}
                     </TableCell>
                     <TableCell>
-                      {secret.isSecret ? (<Tooltip title="Protected" icon={<ProtectedIcon/>}/>) : "" }
+                      {secret.isSecret ? (<Tooltip title="Protected"><ProtectedIcon/></Tooltip>) : "" }
                     </TableCell>
                     <TableCell>
                       {self.getScopeGlyph(secret)}
@@ -433,7 +433,7 @@ export default class Secrets extends React.Component {
                       {secret.environment.name}
                     </TableCell>
                     <TableCell>
-                      {secret.user ? secret.user.email : (<Tooltip title="Missing Author or Version" icon={<MissingSecretIcon/>}/>)}
+                      {secret.user ? secret.user.email : (<Tooltip title="Missing Author or Version"><MissingSecretIcon/></Tooltip>)}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}

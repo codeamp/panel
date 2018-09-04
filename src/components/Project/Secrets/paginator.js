@@ -393,12 +393,12 @@ export default class SecretsPaginator extends React.Component {
               getVal: function(row){
                 switch(row.type){
                   case "file":
-                    return (<Tooltip title="File" icon={<FileIcon/>}/>)
+                    return (<Tooltip title="File"><FileIcon/></Tooltip>)
                   case "build":
-                    return (<Tooltip title="Build Arg"icon={<BuildArgIcon/>}/>)
+                    return (<Tooltip title="Build Arg"><BuildArgIcon/></Tooltip>)
                   case "protected-env":
                   case "env":
-                    return (<Tooltip title="Environment Variable" icon={<EnvVarIcon/>}/>)
+                    return (<Tooltip title="Environment Variable"><EnvVarIcon/></Tooltip>)
                   default:
                     return row.type
                 }
@@ -407,12 +407,12 @@ export default class SecretsPaginator extends React.Component {
               label: "Protected",
               getVal: function(row){
                 if(row.isSecret)
-                  return (<Tooltip title="Protected" icon={<ProtectedIcon/>}/>)
+                  return (<Tooltip title="Protected"><ProtectedIcon/></Tooltip>)
                 return ""
               },
             }, {
               label: "Creator",
-              getVal: function(row){return row.user ? row.user.email : (<Tooltip title="Missing Author or Version" icon={<MissingSecretIcon/>}/>)},
+              getVal: function(row){return row.user ? row.user.email : (<Tooltip title="Missing Author or Version"><MissingSecretIcon/></Tooltip>)},
             }, {
               label: "Created",
               getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},

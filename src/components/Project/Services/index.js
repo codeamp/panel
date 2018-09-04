@@ -625,9 +625,9 @@ export default class Services extends React.Component {
   getServiceTypeGlyph(service){
     switch(service.type){
       case "one-shot":
-        return <Tooltip title="One-Shot" icon={<OneShotIcon/>}/>
+        return <Tooltip title="One-Shot"><OneShotIcon/></Tooltip>
       case "general":
-        return <Tooltip title="General" icon={<GeneralIcon/>}/>
+        return <Tooltip title="General"><GeneralIcon/></Tooltip>
       default:
         return service.type
     }

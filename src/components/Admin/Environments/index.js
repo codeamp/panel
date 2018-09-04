@@ -267,7 +267,7 @@ export default class Environments extends React.Component {
                         </svg>
                     </TableCell>
                     <TableCell>
-                      {env.isDefault === true ? <Tooltip title="Default" icon={<DefaultIcon/>}/> : ""}
+                      {env.isDefault === true ? <Tooltip title="Default" ><DefaultIcon/></Tooltip> : ""}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(env.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}

@@ -416,11 +416,11 @@ export default class Extensions extends React.Component {
   getExtensionTypeGlyph(extension) {
     switch(extension.type){
       case "workflow":
-      return (<Tooltip title="Workflow" icon={<ExtensionWorkflowIcon/>}/>)
+      return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
       case "deployment":
-      return (<Tooltip title="Deployment" icon={<ExtensionDeploymentIcon/>}/>)
+      return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
       case "once":
-        return (<Tooltip title="Once" icon={<ExtensionOnceIcon/>}/>)
+        return (<Tooltip title="Once"><ExtensionOnceIcon/></Tooltip>)
       default:
         return extension.type
     }
