@@ -13,10 +13,11 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from 'material-ui-icons/Add';
+import AddIcon from '@material-ui/icons/Add';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
+import Tooltip from 'components/Utils/Tooltip';
 import styles from './style.module.css';
 import { observer } from 'mobx-react';
 import validatorjs from 'validatorjs';
@@ -26,6 +27,8 @@ import gql from 'graphql-tag';
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
+
+import DefaultIcon from '@material-ui/icons/Done';
 
 const inlineStyles = {
   addButton: {
@@ -264,7 +267,7 @@ export default class Environments extends React.Component {
                         </svg>
                     </TableCell>
                     <TableCell>
-                      {env.isDefault.toString()}
+                      {env.isDefault === true ? <Tooltip title="Default" ><DefaultIcon/></Tooltip> : ""}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(env.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}

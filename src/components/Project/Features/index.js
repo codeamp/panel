@@ -17,8 +17,8 @@ import ExpansionPanel, {
   ExpansionPanelSummary,
   ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
-import CachedIcon from 'material-ui-icons/Cached';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import CachedIcon from '@material-ui/icons/Cached';
 import Divider from 'material-ui/Divider';
 import { MenuItem } from 'material-ui/Menu';
 import { FormControl } from 'material-ui/Form';
