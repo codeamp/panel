@@ -25,11 +25,14 @@ import Switch from 'material-ui/Switch';
 import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
 import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
 import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
+import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
 
 import EnvVarIcon from '@material-ui/icons/Explicit';
 import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
 import DeleteIcon from '@material-ui/icons/DeleteForever';
+
+import Tooltip from 'components/Utils/Tooltip';
 
 import ExpansionPanel, {
   ExpansionPanelDetails,
@@ -419,11 +422,13 @@ export default class Extensions extends React.Component {
   getExtensionTypeGlyph(extension) {
     switch(extension.type){
       case "workflow":
-        return (<ExtensionWorkflowIcon className={styles.extensionIcon}/>)
+        return (<Tooltip title="Workflow"><ExtensionWorkflowIcon className={styles.extensionIcon}/></Tooltip>)
       case "deployment":
-       return (<ExtensionDeploymentIcon className={styles.extensionIcon}/>)
+       return (<Tooltip title="Deployment"><ExtensionDeploymentIcon className={styles.extensionIcon}/></Tooltip>)
       case "once":
-        return (<ExtensionOnceIcon className={styles.extensionIcon}/>)
+        return (<Tooltip title="Once"><ExtensionOnceIcon className={styles.extensionIcon}/></Tooltip>)
+      case "notification":
+        return (<Tooltip title="Notification"><ExtensionNotificationIcon className={styles.extensionIcon}/></Tooltip>)
       default:
         return extension.type
     }

@@ -25,7 +25,7 @@ import gql from 'graphql-tag';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      skipProject: props.project === null,
+      skipProject: !!props.project,
     }
   })
 })
@@ -60,11 +60,11 @@ export default class Environment extends React.Component {
         <Typography className={styles.project} variant="title"> {project.name} </Typography>
         <Typography className={styles.title} variant="title"> Select Environment </Typography>
         {environments.map((environment) => {
-        return (
-        <Button variant="raised" key={environment.id} className={styles.button} onClick={() => {this.handleEnvironmentSelect(environment)}} >
-          {environment.name}
-        </Button>
-        )
+          return (
+            <Button variant="raised" key={environment.id} className={styles.button} onClick={() => {this.handleEnvironmentSelect(environment)}} >
+              {environment.name}
+            </Button>
+          )
         })}
       </div>
     );
