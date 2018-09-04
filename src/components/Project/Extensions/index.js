@@ -34,6 +34,7 @@ import Tooltip from 'components/Utils/Tooltip';
 import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
 import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
 import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
+import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
 
 @inject("store") 
 
@@ -280,11 +281,13 @@ export default class ProjectExtensions extends React.Component {
   getExtensionTypeGlyph(extension) {
     switch(extension.type){
       case "workflow":
-      return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
+        return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
       case "deployment":
-      return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
+        return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
       case "once":
         return (<Tooltip title="Once"><ExtensionOnceIcon/></Tooltip>)
+      case "notification":
+        return (<Tooltip title="Notification"><ExtensionNotificationIcon/></Tooltip>)
       default:
         return extension.type
     }
