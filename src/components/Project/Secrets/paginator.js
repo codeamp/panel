@@ -12,7 +12,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import Menu, { MenuItem } from 'material-ui/Menu';
+import { MenuItem, MenuList } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
@@ -37,6 +37,11 @@ import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
 import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
 import Tooltip from 'components/Utils/Tooltip';
+
+import { Manager, Target, Popper } from 'react-popper';
+import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
+import Grow from 'material-ui/transitions/Grow';
+import Paper from 'material-ui/Paper';
 
 @inject("store") @observer
 @graphql(gql`
@@ -369,11 +374,6 @@ export default class SecretsPaginator extends React.Component {
 
     return (
       <div>
-       <Button variant="fab" aria-label="Add" type="submit" color="primary"
-            className={styles.addButton}
-            onClick={this.handleAddClick.bind(this)}>
-            <AddIcon />
-        </Button>
         <PanelTable
             title={"Secrets"}
             rows={project.secrets ? project.secrets.entries : []}
@@ -419,15 +419,34 @@ export default class SecretsPaginator extends React.Component {
             }]}
           />     
 
-        <Menu
-            id="simple-menu"
-            anchorEl={this.state.anchorEl}
-            open={this.state.addEnvVarMenuOpen}
-        >
-          <MenuItem onClick={() => this.handleRequestClose("env")}><EnvVarIcon/>EnvVar</MenuItem>
-          <MenuItem onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
-          <MenuItem onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
-        </Menu>
+        <div className={styles.addButton}>
+          <Manager>
+            <Target>
+              <Button variant="fab" aria-label="Add" type="submit" color="primary"
+                aria-owns={this.state.addEnvVarMenuOpen ? 'menu-list' : null}
+                aria-haspopup="true"
+                onClick={this.handleAddClick.bind(this)}>
+                <AddIcon />
+              </Button>
+            </Target>
+            <Popper
+              placement="bottom-start"
+              eventsEnabled={this.state.addEnvVarMenuOpen}
+            >
+              <ClickAwayListener onClickAway={()=>this.setState({ addEnvVarMenuOpen: false })}>
+                <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
+                  <Paper>
+                    <MenuList role="menu">
+                      <MenuItem onClick={() => this.handleRequestClose("env")}><EnvIcon/>EnvVar</MenuItem>
+                      <MenuItem onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
+                      <MenuItem onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
+                    </MenuList>
+                  </Paper>
+                </Grow>
+              </ClickAwayListener>
+            </Popper>
+          </Manager>
+        </div>
 
         <Drawer
             anchor="right"
