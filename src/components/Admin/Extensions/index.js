@@ -562,7 +562,7 @@ export default class Extensions extends React.Component {
             <Grid container spacing={24} className={styles.extensionTitle}>
               <Grid item xs={6}>
                 <Typography variant="body1" style={{ fontSize: 14 }}>
-                  <b> { extension.environment.name } </b> 
+                  { extension.environment.name }
                 </Typography>             
               </Grid>      
             </Grid>
@@ -627,7 +627,7 @@ export default class Extensions extends React.Component {
           <Grid container spacing={16} className={styles.extensionTitle}>
             <Grid item xs={2}>
               <Typography variant="body1" style={{ fontSize: 14 }}>
-                <b> { key } </b> 
+                { key }
               </Typography>             
             </Grid>            
             <Grid item xs={2}>
