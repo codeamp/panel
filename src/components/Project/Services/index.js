@@ -3,13 +3,13 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import AppBar from 'material-ui/AppBar';
-import AddIcon from 'material-ui-icons/Add';
+import AddIcon from '@material-ui/icons/Add';
 import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';
 import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
-import CloseIcon from 'material-ui-icons/Close';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import CloseIcon from '@material-ui/icons/Close';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import Input from 'material-ui/Input';
 import Dialog, {
@@ -39,9 +39,10 @@ import Grow from 'material-ui/transitions/Grow';
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
+import Tooltip from 'components/Utils/Tooltip';
 
-import OneShotIcon from 'material-ui-icons/LooksOne';
-import GeneralIcon from 'material-ui-icons/Autorenew';
+import OneShotIcon from '@material-ui/icons/LooksOne';
+import GeneralIcon from '@material-ui/icons/Autorenew';
 
 @inject("store") 
 @graphql(gql`
@@ -624,9 +625,9 @@ export default class Services extends React.Component {
   getServiceTypeGlyph(service){
     switch(service.type){
       case "one-shot":
-        return <OneShotIcon/>
+        return <Tooltip title="One-Shot"><OneShotIcon/></Tooltip>
       case "general":
-        return <GeneralIcon/>
+        return <Tooltip title="General"><GeneralIcon/></Tooltip>
       default:
         return service.type
     }

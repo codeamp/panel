@@ -10,7 +10,7 @@ import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
 
-import MissingSecretIcon from 'material-ui-icons/Report';
+import MissingSecretIcon from '@material-ui/icons/Report';
 
 @observer
 export default class EnvVarVersionHistory extends React.Component {

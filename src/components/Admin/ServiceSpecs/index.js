@@ -13,7 +13,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from 'material-ui-icons/Add';
+import AddIcon from '@material-ui/icons/Add';
 import InputField from 'components/Form/input-field';
 import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';

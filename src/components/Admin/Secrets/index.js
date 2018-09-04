@@ -18,7 +18,8 @@ import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import SelectField from 'components/Form/select-field';
 import Loading from 'components/Utils/Loading';
-import AddIcon from 'material-ui-icons/Add';
+import Tooltip from 'components/Utils/Tooltip';
+import AddIcon from '@material-ui/icons/Add';
 import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
@@ -32,17 +33,18 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';
+
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
 
-import LockIcon from 'material-ui-icons/Lock';
-import MissingSecretIcon from 'material-ui-icons/Report';
-import EnvIcon from 'material-ui-icons/Explicit';
-import FileIcon from 'material-ui-icons/Note';
-import BuildArgIcon from 'material-ui-icons/Memory';
-import ExtensionIcon from 'material-ui-icons/Extension';
-import GlobalIcon from 'material-ui-icons/Public';
+import ProtectedIcon from '@material-ui/icons/Lock';
+import MissingSecretIcon from '@material-ui/icons/Report';
+import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import FileIcon from '@material-ui/icons/Note';
+import BuildArgIcon from '@material-ui/icons/Memory';
+import ExtensionIcon from '@material-ui/icons/Extension';
+import GlobalIcon from '@material-ui/icons/Public';
 
 @inject("store") @observer
 @graphql(gql`
@@ -328,12 +330,12 @@ export default class Secrets extends React.Component {
   getTypeGlyph(secret){
     switch(secret.type){
       case "file":
-        return <FileIcon/>
+        return <Tooltip title="File" ><FileIcon/></Tooltip>
       case "build":
-        return <BuildArgIcon/>
+        return <Tooltip title="Build Arg"><BuildArgIcon/></Tooltip>
       case "protected-env":
       case "env":
-        return <EnvIcon/>
+        return <Tooltip title="Environment Variable"><EnvVarIcon/></Tooltip>
       default:
         return secret.type
     }
@@ -342,9 +344,9 @@ export default class Secrets extends React.Component {
   getScopeGlyph(secret){
     switch(secret.scope){
       case "global":
-        return <GlobalIcon/>
+        return <Tooltip title="Global"><GlobalIcon/></Tooltip>
       case "extension":
-        return <ExtensionIcon/>
+        return <Tooltip title="Extension"><ExtensionIcon/></Tooltip>
       default:
         return secret.scope
     }
@@ -406,7 +408,7 @@ export default class Secrets extends React.Component {
             <TableBody>
               {secrets.entries.map(function(secret, idx){
                 let emptyValue
-                if (secret.value === '') {
+                if (secret.user === null) {
                   emptyValue = styles.emptyValue
                 }
                 return (
@@ -422,7 +424,7 @@ export default class Secrets extends React.Component {
                       {self.getTypeGlyph(secret)}
                     </TableCell>
                     <TableCell>
-                      {secret.isSecret ? <LockIcon/> : "" }
+                      {secret.isSecret ? (<Tooltip title="Protected"><ProtectedIcon/></Tooltip>) : "" }
                     </TableCell>
                     <TableCell>
                       {self.getScopeGlyph(secret)}
@@ -431,7 +433,7 @@ export default class Secrets extends React.Component {
                       {secret.environment.name}
                     </TableCell>
                     <TableCell>
-                      {secret.user ? secret.user.email : <MissingSecretIcon/>}
+                      {secret.user ? secret.user.email : (<Tooltip title="Missing Author or Version"><MissingSecretIcon/></Tooltip>)}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
@@ -461,7 +463,7 @@ export default class Secrets extends React.Component {
                 <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}><EnvIcon/>EnvVar</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}><EnvVarIcon/>EnvVar</MenuItem>
                       <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
                       <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
                     </MenuList>
