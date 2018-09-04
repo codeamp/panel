@@ -437,7 +437,7 @@ export default class SecretsPaginator extends React.Component {
                 <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem onClick={() => this.handleRequestClose("env")}><EnvIcon/>EnvVar</MenuItem>
+                      <MenuItem onClick={() => this.handleRequestClose("env")}><EnvVarIcon/>EnvVar</MenuItem>
                       <MenuItem onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
                       <MenuItem onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
                     </MenuList>
