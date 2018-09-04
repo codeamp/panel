@@ -612,7 +612,9 @@ export default class Extensions extends React.Component {
           <Divider />
 
           <ExpansionPanelActions>
-            <DeleteIcon className={styles.actions} onClick={()=>self.queueDeleteExtension(mobxForm)}/>
+            <Button variant="raised" color="default" aria-label="Add" onClick={()=>self.queueDeleteExtension(mobxForm)} className={styles.actions}>
+              <DeleteIcon/>
+            </Button>
           </ExpansionPanelActions>
         </ExpansionPanel>
       </div>
