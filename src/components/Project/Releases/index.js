@@ -133,24 +133,35 @@ class ReleaseView extends React.Component {
         return extension.extension.type !== "once"             
     })
 
-    const projectExtensionLights = filteredExtensions.forEach(function(extension){
+    const projectExtensionLights = filteredExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
+          
+          let style = { backgroundColor: "yellow", color: "black", marginRight: 4 }
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              style = { backgroundColor: "yellow", color: "black", marginRight: 4 }
+              break
             case "complete":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
+              style = { backgroundColor: "green", color: "white", marginRight: 4 }
+              break
             case "failed":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+              style = { backgroundColor: "red", color: "white", marginRight: 4 }
+              break
             case "canceled":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
+              style = { backgroundColor: "purple", color: "white", marginRight: 4 }
+              break
             default:
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              break
           }
+
+          let label = release.releaseExtensions[i].extension.extension.name
+          return (<Chip key={label} label={label} style={style} />)
         }
       }
+
+      return null
     })
     
     return (
