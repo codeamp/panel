@@ -130,7 +130,7 @@ export default class LeftNav extends React.Component {
                   {nav.icon}
                 </ListItemIcon>}
                 {nav.icon && nav.count > 0 &&  <ListItemIcon>
-                  <Badge className={styles.badge} badgeContent={nav.count} color="primary">
+                  <Badge className={styles.badge} badgeContent={nav.count} color={nav.badgeColor || "primary"}>
                     {nav.icon}
                   </Badge>
                 </ListItemIcon>}
