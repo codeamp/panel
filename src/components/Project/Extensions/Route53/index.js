@@ -197,11 +197,11 @@ export default class LoadBalancer extends React.Component {
     
     var extraOptions = []
     project.extensions.forEach(function(extension){
-      let artifact = _.find(extension.artifacts, function(a) { return "dns" in a });
+      let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
       if (!artifact) {
         return
       }
-      let dns = artifact["dns"]
+      let dns = artifact.value
       if(extension.extension.key.includes("loadbalancer") && extension.customConfig.type !== "internal") {
         extraOptions.push({
           key: extension.id,
