@@ -22,9 +22,13 @@ export default observer(({field, autoWidth, extraKey, fullWidth }) => {
 
   let renderWithTooltip = (option) => {
     return (
-      <Tooltip key={option.key} title={option.tooltip}>
-        {renderWithoutTooltip(option)}
-      </Tooltip>
+        <MenuItem
+          key={option.key}
+          value={option.key}>
+          <Tooltip title={option.tooltip}>
+            <div>{option.value}</div>
+          </Tooltip>
+        </MenuItem>
     )
   }
 
