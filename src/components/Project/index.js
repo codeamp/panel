@@ -143,23 +143,16 @@ class Project extends React.Component {
     }
 
     // count deployable features by comparing currentRelease created and feature created
-    var deployableFeatures = 0
-    if(project.currentRelease !== null){
-      project.features.entries.forEach(function(feature){
-        if(new Date(feature.created).getTime() > new Date(project.currentRelease.headFeature.created).getTime()){
-          deployableFeatures += 1
-        }
-      })
-    } else {
-      deployableFeatures = project.features.entries.length
-    }
+    let deployableFeatures = project.features.entries.length
+    if(project.currentRelease){
+      deployableFeatures = project.features.entries.filter(function(feature){
+        return (new Date(feature.created).getTime() > new Date(project.currentRelease.headFeature.created).getTime())
+      }).length
+    } 
 
-    var releasesInProgress = 0
-    project.releases.entries.forEach(function(release){
-      if(release.state === "waiting"){
-        releasesInProgress += 1
-      }
-    })
+    let releasesInProgress = project.releases.entries.filter(function(release){
+      return release.state === "waiting"
+    }).length
 
     this.props.store.app.leftNavItems = [
         {
