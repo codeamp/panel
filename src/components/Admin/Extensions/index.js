@@ -22,7 +22,7 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import Switch from 'material-ui/Switch';
 
-import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
+import ExtensionInfraComponentIcon from '@material-ui/icons/ListAlt';
 import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
 import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
 import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
@@ -207,7 +207,7 @@ export default class Extensions extends React.Component {
         value: 'Notification',
       }, {
         key: 'once',
-        value: 'Once',
+        value: 'Infra Component',
       }],
     };
 
@@ -426,7 +426,7 @@ export default class Extensions extends React.Component {
       case "deployment":
        return (<Tooltip title="Deployment"><ExtensionDeploymentIcon className={styles.extensionIcon}/></Tooltip>)
       case "once":
-        return (<Tooltip title="Once"><ExtensionOnceIcon className={styles.extensionIcon}/></Tooltip>)
+        return (<Tooltip title="Infra Component"><ExtensionInfraComponentIcon className={styles.extensionIcon}/></Tooltip>)
       case "notification":
         return (<Tooltip title="Notification"><ExtensionNotificationIcon className={styles.extensionIcon}/></Tooltip>)
       default:
