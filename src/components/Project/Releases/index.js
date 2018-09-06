@@ -601,7 +601,11 @@ export default class Releases extends React.Component {
     // as advertised. Reenabling for admins only.
     const { user } = this.props.data
     if(user.permissions.includes("admin")){
-      if (release.state === "fetching" || release.state === "waiting") {
+      let deploymentTypeRunning = release.releaseExtensions.filter(function(releaseExtension){
+        return releaseExtension.state === "running" && releaseExtension.type === "deployment"
+      }).length !== 0
+
+      if (["waiting", "fetching", "running"].includes(release.state) && !deploymentTypeRunning) {
         return (
           <Button
           className={styles.drawerButton}
