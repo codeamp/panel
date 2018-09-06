@@ -150,8 +150,8 @@ class Project extends React.Component {
       }).length
     } 
 
-    let releasesInProgress = project.releases.entries.filter(function(release){
-      return release.state === "waiting"
+    let releasesQueued = project.releases.entries.filter(function(release){
+      return ["waiting", "running"].includes(release.state)
     }).length
 
     this.props.store.app.leftNavItems = [
@@ -167,7 +167,7 @@ class Project extends React.Component {
           icon: <ReleasesIcon />,
           name: "Releases",
           slug: this.props.match.url + "/releases",
-          count: releasesInProgress,
+          count: releasesQueued,
           badgeColor: "secondary",
         },
         {
