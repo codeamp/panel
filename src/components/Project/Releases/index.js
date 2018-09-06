@@ -182,7 +182,7 @@ class ReleaseView extends React.Component {
     let timestamp = moment(new Date(this.props.release.created)).format("ddd, MMM Do, YYYY HH:mm:ss")
     let timezone = moment.tz(jstz.determine().name()).format('z')
 
-    let author = "Automated Deployment"
+    let author = "Continuous Deploy"
     if (this.props.release.user !== null && this.props.release.user.email !== ""){
       author = this.props.release.user.email
     }
