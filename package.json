@@ -27,7 +27,7 @@
     "lodash": ">=4.17.5",
     "material-ui": "^1.0.0-beta.47",
     "mobx": "^4.4.0",
-    "mobx-react": "^5.2.6",
+    "mobx-react": "^5.2.8",
     "mobx-react-form": "^1.35.1",
     "moment": "^2.22.2",
     "moment-timezone": "^0.5.21",
