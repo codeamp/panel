@@ -47,7 +47,7 @@ import GeneralIcon from '@material-ui/icons/Autorenew';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 
-import Paginator from './paginator';
+import Paginator from 'components/Utils/Paginator';
 
 const SERVICES_QUERY= gql`query Project($slug: String, $environmentID: String, $params: PaginatorInput!) {
   project(slug: $slug, environmentID: $environmentID) {
