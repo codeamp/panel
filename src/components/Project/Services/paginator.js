@@ -88,7 +88,7 @@ export default class Paginator extends React.Component {
 					return (
             <div>
               {this.props.render(loading, data, error)}
-              {this.props.renderControls && this.props.renderControls(this.onClickPreviousPage.bind(this), this.onClickNextPage.bind(this), data, this.state.page, this.state.totalPages)}
+              {this.props.renderControls && this.props.renderControls(loading, this.onClickPreviousPage.bind(this), this.onClickNextPage.bind(this), data, this.state.page, this.state.totalPages)}
             </div>
           )
   			}}

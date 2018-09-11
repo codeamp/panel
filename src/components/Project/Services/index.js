@@ -191,7 +191,7 @@ export default class Services extends React.Component {
       const searchParams  = new URLSearchParams(this.props.history.location.search)
       let limit           = parseInt(searchParams.get("limit"), 10) || this.state.limit
       let page            = parseInt(searchParams.get("page"), 10) || this.state.page
-      if (page < 1){
+      if (page < 1 || !page ){
         page = 1
       }   
 
@@ -322,7 +322,6 @@ export default class Services extends React.Component {
   }
 
   editService(service, index){
-    console.log("editService")
     this.form = this.initProjectServicesForm({
       name: service.name,
       count: service.count,
@@ -1161,9 +1160,14 @@ export default class Services extends React.Component {
     })
   }
 
-  renderPaginatorControls(onBackPressed, onNextClicked, data, page, lastPage){
+  renderPaginatorControls(loading, onBackPressed, onNextClicked, data, page, lastPage){
+    if (loading) { 
+      return null
+    }
+
+
     return (
-      <div hidden={page === lastPage === 1} style={{ paddingLeft: 25, textAlign: "left"}}>          
+      <div hidden={(lastPage === 1)} style={{ paddingLeft: 25, textAlign: "left"}}>          
         <Typography style={{userSelect:"none"}}>
           {page + 1} of {lastPage}
           <IconButton
