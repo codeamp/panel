@@ -45,7 +45,7 @@ export default class Paginator extends React.Component {
     if(this.props.countPages){
       let maxPage = this.props.countPages(data, this.state.limit)
       if (this.state.page > maxPage) {
-        this.setState({page:maxPage-1, totalPages: maxPage})
+        this.setState({page: maxPage-1, totalPages: maxPage})
 
         if(this.props.onPageChanged) {
           this.props.onPageChanged(maxPage-1, this.state.limit)
