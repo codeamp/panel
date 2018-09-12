@@ -18,6 +18,3 @@ plopfile.js
 plop-templates
 *.swp
 .vscode
-
-# merging
-*.orig
