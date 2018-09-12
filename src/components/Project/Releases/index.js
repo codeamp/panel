@@ -17,7 +17,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
+import DoubleRightIcon from '@material-ui/icons/Code';
 import ExtensionStateCompleteIcon from '@material-ui/icons/CheckCircle';
 import ExtensionStateFailedIcon from '@material-ui/icons/Error';
 import ExtensionStateCanceledIcon from '@material-ui/icons/Fingerprint';
