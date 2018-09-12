@@ -65,7 +65,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
         fetchPolicy: 'network-only',
       },
       query: {
-        errorPolicy: 'apollo-link',
+        errorPolicy: 'all',
       },
       mutate: {
         errorPolicy: 'all',  
