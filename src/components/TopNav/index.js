@@ -27,6 +27,7 @@ const GET_PROJECTS = gql`
         name
         slug
         repository
+        bookmarked
         environments {
           id
           name
@@ -40,12 +41,12 @@ const GET_PROJECTS = gql`
 @inject("store") @observer
 @graphql(GET_PROJECTS, {
   options: (props) => ({
+    fetchPolicy: "network-only",
     variables: {
       projectSearch: {
-        bookmarked: true,
+        bookmarked: true
       }
-    },
-    fetchPolicy: "network-only",
+    }
   })
 })
 
@@ -80,7 +81,7 @@ class TopNav extends React.Component {
 
   getSuggestions(projectQuery) {
     if(!projectQuery){
-      this.props.data.refetch({ projectSearch: { bookmarked: true }})
+      this.props.data.refetch({ projectSearch: { repository: projectQuery, bookmarked: true }})
       return
     }
 
@@ -216,7 +217,7 @@ class TopNav extends React.Component {
                             key={project.id}
                             className={styles.suggestion}
                             square={true}>
-                            <ListItem>                            
+                            <ListItem>                  
                               <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
                             </ListItem>
                           </Paper>

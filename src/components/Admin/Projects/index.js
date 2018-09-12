@@ -72,8 +72,6 @@ import _ from 'lodash';
               }
             }     
           }
-          page
-          nextCursor
           __typename
         }
       }
@@ -129,8 +127,6 @@ import _ from 'lodash';
           }
         }     
       }
-      page
-      nextCursor
       __typename
     }
   }
@@ -139,7 +135,6 @@ import _ from 'lodash';
     fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
-        repository: "",
         bookmarked: false,
       },
     },

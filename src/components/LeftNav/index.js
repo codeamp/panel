@@ -5,20 +5,20 @@ import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
 import Drawer from 'material-ui/Drawer';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
-import PlaylistAddIcon from 'material-ui-icons/PlaylistAdd';
-import DashboardIcon from 'material-ui-icons/Dashboard';
-import SupervisorAccountIcon from 'material-ui-icons/SupervisorAccount';
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
 import Collapse from 'material-ui/transitions/Collapse';
-import ExpandLess from 'material-ui-icons/ExpandLess';
-import ExpandMore from 'material-ui-icons/ExpandMore';
-import ServiceSpecIcon from 'material-ui-icons/Description';
-import ExtensionIcon from 'material-ui-icons/Extension';
-import SecretIcon from 'material-ui-icons/VpnKey';
-import EnvironmentIcon from 'material-ui-icons/Public';
-import UsersIcon from 'material-ui-icons/AccountCircle';
-import ProjectsIcon from 'material-ui-icons/Subscriptions';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import ServiceSpecIcon from '@material-ui/icons/Description';
+import ExtensionIcon from '@material-ui/icons/Extension';
+import SecretIcon from '@material-ui/icons/VpnKey';
+import EnvironmentIcon from '@material-ui/icons/Public';
+import UsersIcon from '@material-ui/icons/AccountCircle';
+import ProjectsIcon from '@material-ui/icons/Subscriptions';
 
 @withRouter
 @inject("store") @observer

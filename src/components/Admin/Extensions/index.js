@@ -14,8 +14,8 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from 'material-ui-icons/Add';
-import CloseIcon from 'material-ui-icons/Close';
+import AddIcon from '@material-ui/icons/Add';
+import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
@@ -27,6 +27,16 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import Switch from 'material-ui/Switch';
+import Tooltip from 'components/Utils/Tooltip';
+
+import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
+import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
+import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
+import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
+
+import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import FileIcon from '@material-ui/icons/Note';
+import BuildArgIcon from '@material-ui/icons/Memory';
 
 const inlineStyles = {
   addButton: {
@@ -163,7 +173,7 @@ export default class Extensions extends React.Component {
       'config[].key': 'required|string',
       'config[].value': 'required|string',
       'config[].allowOverride': 'required|boolean',
-      'component': 'required|string',
+      'component': 'string',
     };
     const labels = {
       'name': 'Name',
@@ -171,7 +181,7 @@ export default class Extensions extends React.Component {
       'type': 'Type',
       'config': 'Config',
       'config[].key': 'Key',
-      'config[].value': 'Value',
+      'config[].value': 'Environment Variable',
       'config[].allowOverride': 'Override',
       'component': 'React Component',
       'environmentID': 'Environment',
@@ -199,24 +209,18 @@ export default class Extensions extends React.Component {
     var handleFormChanged = this.handleFormChanged.bind(this)
     const $hooks = {
       onAdd(instance) {
-        // console.log('-> onAdd HOOK', instance.path || 'form');
         handleFormChanged()
       },
       onDel(instance) {
-        // console.log('-> onDel HOOK', instance.path || 'form');
         handleFormChanged()
       },
       onSubmit(instance){
-        // console.log('-> onSubmit HOOK', instance.path || 'form');
       },
       onSuccess(instance){
-        // console.log('Form Values!', instance.values())
       },
       sync(instance){
-        // console.log('sync', instance)
       },
       onChange(instance){
-        // console.log(instance.values())
         handleFormChanged()
       }
     };
@@ -349,6 +353,21 @@ export default class Extensions extends React.Component {
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
+  mapSecretType(secret){
+    switch(secret.type){
+      case "file":
+        return (<FileIcon className={styles.variablesIcons}/>)
+      case "env":
+      case "protected-env":
+        return (<EnvVarIcon className={styles.variablesIcons}/>)
+      case "build":
+        return (<BuildArgIcon className={styles.variablesIcons}/>)
+      default:
+        return null
+    }
+    
+  }
+
   setOptions(){
     const { secrets, environments } = this.props.data    
     // filter secrets by env of current extension if exists
@@ -367,7 +386,8 @@ export default class Extensions extends React.Component {
     secretOptions = envSecrets.map(function(secret){
       return {
         key: secret.id,
-        value: "(" + secret.key + ") => " + secret.value,
+        icon: self.mapSecretType(secret),
+        value: secret.key
       }
     })
 
@@ -392,6 +412,21 @@ export default class Extensions extends React.Component {
       }
       return null
     })
+  }
+
+  getExtensionTypeGlyph(extension) {
+    switch(extension.type){
+      case "workflow":
+        return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
+      case "deployment":
+        return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
+      case "once":
+        return (<Tooltip title="Once"><ExtensionOnceIcon/></Tooltip>)
+      case "notification":
+        return (<Tooltip title="Notification"><ExtensionNotificationIcon/></Tooltip>)
+      default:
+        return extension.type
+    }
   }
 
   render() {
@@ -442,7 +477,7 @@ export default class Extensions extends React.Component {
                         key={extension.id}>
                         <TableCell> { extension.name} </TableCell>
                         <TableCell> { extension.environment ? extension.environment.name : '' } </TableCell>
-                        <TableCell> { extension.type } </TableCell>
+                        <TableCell> { this.getExtensionTypeGlyph(extension) } </TableCell>
                         <TableCell> { extension.component } </TableCell>
                       </TableRow>
                     )
@@ -493,11 +528,11 @@ export default class Extensions extends React.Component {
                   <Grid item xs={12}>
                     <Typography variant="title">Config</Typography>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item sm={12}>
                     {this.form.$('config').map((kv, i) => {
                         return (
                         <Grid container spacing={24} key={kv.id}>
-                            <Grid item xs={5}>
+                            <Grid item xs={4}>
                                 <InputField field={kv.$('key')} fullWidth={true} />
                             </Grid>
                             <Grid item xs={4}>
@@ -514,7 +549,7 @@ export default class Extensions extends React.Component {
                         </Grid>
                         )
                     })}
-                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd}>
+                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd} disabled={!this.form.$('environmentID').value}>
                       Add Config
                     </Button>
                   </Grid>
