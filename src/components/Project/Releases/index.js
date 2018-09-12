@@ -204,7 +204,7 @@ class ReleaseView extends React.Component {
               <Grid item xs={10}>
                 <Typography className={styles.featureCommitMsg}>
                   { this.props.release.tailFeature.hash.substring(0, 8) }
-                  &nbsp;>>&nbsp;
+                  &nbsp;➜&nbsp;
                   { this.props.release.headFeature.hash.substring(0, 8) }
                 </Typography>
                 <Typography>
