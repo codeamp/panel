@@ -59,8 +59,7 @@
     font-weight: 500;
 }
 
-.featureAuthor {
-    font-weight: 100;
+.detailsLine {
 }
 
 .feature {
@@ -220,9 +219,10 @@
   color: white;
 }
 
-.continuousDelivery {
-    background-color: #2bbd17;
-    color: white;
+.authorBadge {
+    background-color: #cccccc;
+    color: black;
+    vertical-align: center;
 }
 
 .inline {
