@@ -661,6 +661,9 @@ export default class Services extends React.Component {
   }
 
   renderDrawer() {
+          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " + 
+                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " + 
+                     serviceSpec.memoryLimit + "mb | T/o: " + serviceSpec.terminationGracePeriod + "s",
     return (
       <Drawer
           anchor="right"
