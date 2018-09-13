@@ -616,29 +616,36 @@ export default class Releases extends React.Component {
   stopReleaseButton(release) {
     // ADB 8/21/18
     // Temporarily diasbling cancel/'stop release' button until it works
-    // as advertised.
-    // if (release.state === "fetching" || release.state === "waiting") {
-    //   return (
-    //     <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     onClick={() => this.stopRelease(release)}
-    //     disabled>
-    //       Stop Release
-    //     </Button>
-    //   )
-    // }
-    // return (
-    //   <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     disabled>
-    //     Stop Release
-    //     </Button>
-    // )
-    return null
+    // as advertised. Reenabling for admins only.
+    const { user } = this.props.data
+    if(user.permissions.includes("admin")){
+      let deploymentTypeRunning = release.releaseExtensions.filter(function(releaseExtension){
+        return releaseExtension.state === "running" && releaseExtension.type === "deployment"
+      }).length !== 0
+
+      if (["waiting", "fetching", "running"].includes(release.state) && !deploymentTypeRunning) {
+        return (
+          <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          onClick={() => this.stopRelease(release)}>
+            Stop Release
+          </Button>
+        )
+      }
+      return (
+        <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          disabled>
+          Stop Release
+          </Button>
+      )
+    } else {
+      return null
+    }
   }
   
   releaseActionButton(release) {

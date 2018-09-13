@@ -7,6 +7,7 @@ import FormControl from 'material-ui/Form/FormControl';
 import MenuItem from 'material-ui/Menu/MenuItem';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
+import Tooltip from 'components/Utils/Tooltip';
 
 export default observer(({field, autoWidth, extraKey, fullWidth }) => {
   let extraOptions = field.extra
@@ -17,6 +18,28 @@ export default observer(({field, autoWidth, extraKey, fullWidth }) => {
     } else {
       extraOptions = []
     }
+  }
+
+  let renderWithTooltip = (option) => {
+    return (
+        <MenuItem
+          key={option.key}
+          value={option.key}>
+          <Tooltip title={option.tooltip}>
+            <div>{option.value}</div>
+          </Tooltip>
+        </MenuItem>
+    )
+  }
+
+  let renderWithoutTooltip = (option) => {
+    return (
+        <MenuItem
+          key={option.key}
+          value={option.key}>
+          {option.value}
+        </MenuItem>
+    )
   }
 
   return (
@@ -30,13 +53,13 @@ export default observer(({field, autoWidth, extraKey, fullWidth }) => {
           className={styles.selectField}
           input={<Input id={field.value} />}
         >
-          {extraOptions.map(option => (
-          <MenuItem
-            key={option.key}
-            value={option.key}>
-            {option.value}
-          </MenuItem>
-          ))}
+          {extraOptions.map( (option) => {
+            if(option.tooltip){
+              return renderWithTooltip(option)
+            } else {
+              return renderWithoutTooltip(option)
+            }
+          })}
         </Select>
         <FormHelperText> {field.helperText} </FormHelperText>
       </FormControl>

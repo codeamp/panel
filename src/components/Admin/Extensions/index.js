@@ -1,11 +1,6 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
-import Drawer from 'material-ui/Drawer';
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
-import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import Dialog, {
@@ -14,7 +9,6 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
@@ -27,24 +21,27 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import Switch from 'material-ui/Switch';
-import Tooltip from 'components/Utils/Tooltip';
 
-import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
+import ExtensionInfraComponentIcon from '@material-ui/icons/ListAlt';
 import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
 import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
 import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
 
-import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import EnvVarIcon from '@material-ui/icons/Explicit';
 import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
+import DeleteIcon from '@material-ui/icons/DeleteForever';
 
-const inlineStyles = {
-  addButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-  }
-}
+import Tooltip from 'components/Utils/Tooltip';
+
+import ExpansionPanel, {
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  ExpansionPanelActions,
+} from 'material-ui/ExpansionPanel';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Divider from 'material-ui/Divider';
+import Card, { CardContent } from 'material-ui/Card';
 
 @graphql(gql`
 query {
@@ -144,8 +141,16 @@ export default class Extensions extends React.Component {
     super(props)
     this.state = {
       userHasUnsavedChanges: false,
-      showDrawer: false,
       showDiscardEditsConfirmDialog: false,
+      saving: false,
+      showExtensionsConfigID: {},
+      expandCreateExtensionPanel: {},
+      extensionsMapByKey: {},
+      expandedExtensionGrouping: {},
+      secretValuesMap: {},
+      extensionMobxForms: {},
+      showConfirmDeleteExtension: false,
+      pendingDeletionForm: null,
     }
 
     this.handleFormChanged = this.handleFormChanged.bind(this)
@@ -202,7 +207,7 @@ export default class Extensions extends React.Component {
         value: 'Notification',
       }, {
         key: 'once',
-        value: 'Once',
+        value: 'Infra Component',
       }],
     };
 
@@ -251,6 +256,30 @@ export default class Extensions extends React.Component {
     })
   }
 
+  componentWillReceiveProps(props){
+    const { data } = props;
+    
+    if (data && !data.loading){
+      let extensionsMap = {}
+      data.extensions.forEach((x)=>{
+        let key = x.name
+        if (!extensionsMap[key]){
+          extensionsMap[key] = [x]
+        } else {          
+          extensionsMap[key].push(x)
+        }
+      })
+
+      let secretValuesMap = {}
+      data.secrets.entries.forEach((x) =>{
+        let key = x.id
+        secretValuesMap[key] = x.key
+      })
+
+      this.setState({extensionsMapByKey: extensionsMap, secretValuesMap: secretValuesMap})
+    }
+  }
+
   createNewExtension() {
     this.form = this.initAdminExtensionsForm({
       'type': 'Workflow',
@@ -258,36 +287,10 @@ export default class Extensions extends React.Component {
       'config[].allowOverride': false,
     })
     this.setOptions()
-    
-    this.openDrawer()
   }
-
-  openDrawer(){
-    this.setState({ showDrawer: true, dialogOpen: false })
-  }
-
-  closeDrawer(force = false){
-    if(force || this.state.userHasUnsavedChanges === false){
-      this.setState({
-        dialogOpen: false, 
-        saving: false,
-        userHasUnsavedChanges: false,
-        showDrawer: false,
-        showDiscardEditsConfirmDialog: false
-      })
-    }
-  }  
 
   handleFormChanged() {
     this.setState({userHasUnsavedChanges: true})
-  }
-
-  handleCancelForm() {
-    if (this.state.userHasUnsavedChanges === true) {
-      this.setState({showDiscardEditsConfirmDialog:true})
-    } else {
-      this.closeDrawer()
-    }
   }
 
   handleClick(e, extension, index){
@@ -311,37 +314,39 @@ export default class Extensions extends React.Component {
     
     this.form.update({ config: config })
     this.setOptions()
-
-    this.openDrawer()
   }
 
   onSuccess(form){
-    this.setState({ saving: true })
-    if(this.form.values().id === ''){
+    this.setState({ saving: true, expandCreateExtensionPanel: false })
+    if(form.values().id === ''){
       this.props.createExtension({
-        variables: this.form.values(),
+        variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer(true)
+        this.setState({ saving: false })
       });
     } else {
       this.props.updateExtension({
-        variables: this.form.values(),
+        variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer(true)
+        this.setState({ saving: false })        
       });
     }
   }
 
-  handleDeleteExtension() {
+  queueDeleteExtension(form) {
+    this.setState({ pendingDeletionForm: form, showConfirmDeleteExtension: true })
+  }
+
+  handleDeleteExtension(){
     this.setState({ saving: true })
-    var that = this
+
     this.props.deleteExtension({
-      variables: this.form.values(),
+      variables: this.state.pendingDeletionForm.values(),
     }).then(({ data }) => {
       this.props.data.refetch()
-      that.closeDrawer(true)
+      this.setState({pendingDeletionForm: null, showConfirmDeleteExtension: false})
     });
   }
 
@@ -349,8 +354,8 @@ export default class Extensions extends React.Component {
     return
   }
 
-  onSubmit(e){
-    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+  onSubmit(e, form){
+    form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   mapSecretType(secret){
@@ -405,8 +410,8 @@ export default class Extensions extends React.Component {
     })    
   }
 
-  handleSwitchChange(e, checked) {
-    this.form.$('config').map((kv, i) => {
+  handleSwitchChange(e, form, checked) {
+    form.$('config').map((kv, i) => {
       if(i === parseInt(e.target.value, 10)) {
         kv.set({allowOverride: checked}) 
       }
@@ -417,208 +422,374 @@ export default class Extensions extends React.Component {
   getExtensionTypeGlyph(extension) {
     switch(extension.type){
       case "workflow":
-        return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
+        return (<Tooltip title="Workflow"><ExtensionWorkflowIcon className={styles.extensionIcon}/></Tooltip>)
       case "deployment":
-        return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
+       return (<Tooltip title="Deployment"><ExtensionDeploymentIcon className={styles.extensionIcon}/></Tooltip>)
       case "once":
-        return (<Tooltip title="Once"><ExtensionOnceIcon/></Tooltip>)
+        return (<Tooltip title="Infra Component"><ExtensionInfraComponentIcon className={styles.extensionIcon}/></Tooltip>)
       case "notification":
-        return (<Tooltip title="Notification"><ExtensionNotificationIcon/></Tooltip>)
+        return (<Tooltip title="Notification"><ExtensionNotificationIcon className={styles.extensionIcon}/></Tooltip>)
       default:
         return extension.type
     }
   }
 
+  toggleCreateExtensionPanel = panel => (event, expanded) => {
+    if(expanded){
+      this.createNewExtension()
+    }
+
+    this.setState({
+      expandCreateExtensionPanel: expanded,
+    });
+  };
+
+  setFormOptions(form){
+    const { secrets, environments } = this.props.data    
+    // filter secrets by env of current extension if exists
+    var envSecrets = secrets.entries
+    if(form.$('environmentID').value){
+      envSecrets = secrets.entries.filter(function(secret){
+        if(form.$('environmentID').value === secret.environment.id){
+          return true
+        }
+        return false
+      })
+    }
+
+    var self=this
+    var secretOptions = []
+    secretOptions = envSecrets.map(function(secret){
+      return {
+        key: secret.id,
+        icon: self.mapSecretType(secret),
+        value: secret.key
+      }
+    })
+
+    var envOptions = []
+    envOptions = environments.map(function(env){
+      return {
+        key: env.id,
+        value: env.name,
+      }
+    }) 
+
+    form.state.extra({
+      config: secretOptions,
+      environmentID: envOptions,      
+    })    
+
+    return form
+  }
+
+  toggleExtensionConfigOpen = (panel,extension) => (event, expanded) => {
+    // Is there a mobx for this one?
+    let mobxForms = this.state.extensionMobxForms
+    if (!(panel in mobxForms)){
+      let form = this.initAdminExtensionsForm({
+        id: extension.id,
+        index: 0,
+        name: extension.name,
+        key: extension.key,
+        environmentID: extension.environment.id,
+        component: extension.component,
+        type: extension.type,
+      })
+
+      let config = extension.config.map((c) => {
+        if (typeof c.allowOverride === 'undefined') {
+          return {key: c.key, value: c.value, allowOverride: false};
+        } else {
+          return c; 
+        }
+      })
+
+      form.update({ config: config })
+      form = this.setFormOptions(form)
+
+      mobxForms[panel] = form
+    }
+
+    let configPanelMap = this.state.showExtensionsConfigID
+    configPanelMap[panel] = expanded ? panel : null
+
+    this.setState({
+      showExtensionsConfigID: configPanelMap,
+      extensionMobxForms: mobxForms,
+    });
+  };
+
+  handleExpansionPanelChange = panel => (event, expanded) => {
+    let expandedExtensions = this.state.expandedExtensionGrouping
+    expandedExtensions[panel] = expanded ? panel : null
+
+    this.setState({
+      expandedExtensionGrouping: expandedExtensions
+    });
+  };
+
+
+  renderExtensions = (extensions) => {
+    return (
+      <div>
+      {Object.keys(extensions).map( (key, idx) => {
+        return this.renderExtensionGrouping(key, extensions[key])
+      })}
+      </div>
+    )
+  }
+
+  renderMobxReactComponent(mobxForm){
+    if (mobxForm){
+      return (
+        <Grid container spacing={16} key="simple-key">
+          <Grid item xs={2}>
+            <InputField field={mobxForm.$('component')} fullWidth={true} />
+          </Grid>
+        </Grid>
+      )
+    }else {
+      return null
+    }
+  }
+
+  renderExtensionConfigDetails(extension, idx) {
+    let key=extension.key+":"+extension.environment.id + ":" + idx
+
+    let mobxForm = this.state.extensionMobxForms[key]
+    let self=this
+    return (
+      <div key={key} className={styles.detailsItem}>
+        <ExpansionPanel 
+          key={key} expanded={!!this.state.showExtensionsConfigID[key]} onChange={this.toggleExtensionConfigOpen(key, extension)}> 
+          <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+            <Grid container spacing={24} className={styles.extensionTitle}>
+              <Grid item xs={6}>
+                <Typography variant="body1" style={{ fontSize: 14 }}>
+                  { extension.environment.name }
+                </Typography>             
+              </Grid>      
+            </Grid>
+          </ExpansionPanelSummary>
+
+          <Divider />
+
+          <ExpansionPanelDetails className={styles.details}>
+            {this.renderMobxReactComponent(mobxForm)}
+            {mobxForm && mobxForm.$('config').map((kv, i) => {
+                return (
+                  <Grid container spacing={40} key={kv.id}>
+                      <Grid item xs={2}>
+                          <InputField field={kv.$('key')} fullWidth={true} />
+                      </Grid>
+                      <Grid item xs={4}>
+                          <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
+                      </Grid>
+                      <Grid item xs={1}>
+                          <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={(event,checked) => this.handleSwitchChange(event, mobxForm, checked)}/>
+                      </Grid>
+                      <Grid item xs={1}>
+                        <IconButton>
+                          <CloseIcon onClick={kv.onDel} />
+                        </IconButton>
+                      </Grid>
+                  </Grid>
+                )
+            })}
+            {mobxForm && (
+              <Grid container spacing={40} className={styles.configActions} align="center">
+                <Grid item xs={2}>
+                  <Button color="default" variant="raised" onClick={mobxForm.$('config').onAdd}>
+                    Add Config
+                  </Button>
+                </Grid>    
+                <Grid item xs={2}>
+                  <Button color="default" variant="raised" onClick={(e) => this.onSubmit(e, mobxForm)}>
+                    Save
+                  </Button>
+                </Grid>   
+              </Grid>
+            )}
+            
+          </ExpansionPanelDetails>
+
+          <Divider />
+
+          <ExpansionPanelActions>
+            <Button variant="raised" color="default" aria-label="Add" onClick={()=>self.queueDeleteExtension(mobxForm)} className={styles.actions}>
+              <DeleteIcon/>
+            </Button>
+          </ExpansionPanelActions>
+        </ExpansionPanel>
+      </div>
+    )
+  }
+
+  renderExtensionGrouping(key, extensionGrouping){
+    return (
+      <ExpansionPanel 
+        key={key} expanded={!!this.state.expandedExtensionGrouping[key]} onChange={this.handleExpansionPanelChange(key)}> 
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+          <Grid container spacing={16} className={styles.extensionTitle}>
+            <Grid item xs={2}>
+              <Typography variant="body1" style={{ fontSize: 14 }}>
+                { key }
+              </Typography>             
+            </Grid>            
+            <Grid item xs={2}>
+              {this.getExtensionTypeGlyph(extensionGrouping[0])}     
+            </Grid>                        
+          </Grid>>
+        </ExpansionPanelSummary>
+
+        <Divider />
+
+        <ExpansionPanelDetails className={styles.details}>
+          {extensionGrouping.map( (extension, idx) => {
+            return this.renderExtensionConfigDetails(extension, idx)
+          })}
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
+  }
+
+  renderCreateNewExtension(){
+    return (
+      <ExpansionPanel 
+        key={"create-new-extension"} expanded={this.state.expandCreateExtensionPanel === true} onChange={this.toggleCreateExtensionPanel()}
+        className={styles.createNewExtensionPanel}> 
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+          <Grid container spacing={16} className={styles.extensionTitle}>
+            <Grid item xs={2}>
+              <Typography variant="body1" style={{ fontSize: 14 }}>
+                <b> { "Add Extension" } </b> 
+              </Typography>             
+            </Grid>            
+          </Grid>>
+        </ExpansionPanelSummary>
+
+        <Divider />
+
+        <ExpansionPanelDetails className={styles.createNewExtension}>
+          <div className={styles.createServiceBar}>
+            <form onSubmit={(e) => e.preventDefault()}>
+              <Grid container spacing={24} className={styles.grid}>
+                <Grid item xs={4}>
+                  <InputField field={this.form.$('name')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <InputField field={this.form.$('key')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID'/>
+                </Grid>
+                <Grid item xs={4}>
+                  <SelectField field={this.form.$('type')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <InputField field={this.form.$('component')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="title">
+                    Config
+                  </Typography>
+                  <Divider />
+                </Grid>
+                <Grid item xs={12}>
+                  {this.form.$('config').map((kv, i) => {
+                      return (
+                      <Grid container spacing={24} key={kv.id}>
+                          <Grid item xs={5}>
+                              <InputField field={kv.$('key')} fullWidth={true} />
+                          </Grid>
+                          <Grid item xs={4}>
+                              <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
+                          </Grid>
+                          <Grid item xs={1}>
+                              <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={(event, checked) => this.handleSwitchChange(event, this.form, checked)}/>
+                          </Grid>
+                          <Grid item xs={1}>
+                            <IconButton>
+                              <CloseIcon onClick={kv.onDel} />
+                            </IconButton>
+                          </Grid>
+                      </Grid>
+                      )
+                  })}
+                  <Button color="default" variant="raised" onClick={this.form.$('config').onAdd}>
+                    Add Config
+                  </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <Button color="primary"
+                      className={styles.buttonSpacing}
+                      disabled={this.state.saving}
+                      type="submit"
+                      variant="raised"
+                      onClick={(e) => this.onSubmit(e, this.form)}>
+                        Add Extension
+                  </Button>
+
+                  {this.form.values()['id'] !== '' &&
+                    <Button
+                      disabled={this.state.saving}
+                      style={{ color: "red" }}
+                      onClick={()=>this.setState({ dialogOpen: true })}>
+                      Delete
+                    </Button>
+                  }
+                </Grid>
+              </Grid>
+            </form>
+          </div>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
+  }
+
   render() {
-    const { loading, extensions } = this.props.data;
+    const { loading } = this.props.data;
+    const { extensionsMapByKey } = this.state
 
     if(loading){
       return (
         <Loading />
       )
     }    
-
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
           <Grid item xs={12}>
-            <Paper>
-              <Toolbar>
-                <div>
-                  <Typography variant="title">
-                    Extensions
-                  </Typography>
-                </div>
-              </Toolbar>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      Name
-                    </TableCell>
-                    <TableCell>
-                      Environment
-                    </TableCell>
-                    <TableCell>
-                      Type
-                    </TableCell>
-                    <TableCell>
-                      Component
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {extensions.map( (extension, index) => {
-                    return (
-                      <TableRow
-                        hover
-                        onClick={event => this.handleClick(event, extension, index)}
-                        tabIndex={-1}
-                        key={extension.id}>
-                        <TableCell> { extension.name} </TableCell>
-                        <TableCell> { extension.environment ? extension.environment.name : '' } </TableCell>
-                        <TableCell> { this.getExtensionTypeGlyph(extension) } </TableCell>
-                        <TableCell> { extension.component } </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </Paper>
+            <Card>
+              <CardContent>     
+                <Typography variant="title">
+                  Extensions
+                </Typography>              
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
-        <Button variant="fab" aria-label="Add" type="submit" color="primary"
-              style={inlineStyles.addButton}
-              onClick={() => {this.createNewExtension()}}>
-              <AddIcon />
-        </Button>
-        <Drawer
-          anchor="right"
-          classes={{
-            paper: styles.drawer
-          }}
-          onClose={() => {this.handleCancelForm()}}          
-          open={this.state.showDrawer}
-        >
-            <div className={styles.createServiceBar}>
-              <AppBar position="static" color="default">
-                <Toolbar>
-                  <Typography variant="title" color="inherit">
-                    Extensions
-                  </Typography>
-                </Toolbar>
-              </AppBar>
-              <form onSubmit={(e) => e.preventDefault()}>
-                <Grid container spacing={24} className={styles.grid}>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('name')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('key')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <SelectField field={this.form.$('environmentID')} fullWidth={true} extraKey='environmentID'/>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <SelectField field={this.form.$('type')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('component')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="title">Config</Typography>
-                  </Grid>
-                  <Grid item sm={12}>
-                    {this.form.$('config').map((kv, i) => {
-                        return (
-                        <Grid container spacing={24} key={kv.id}>
-                            <Grid item xs={4}>
-                                <InputField field={kv.$('key')} fullWidth={true} />
-                            </Grid>
-                            <Grid item xs={4}>
-                                <EnvVarSelectField field={kv.$('value')} fullWidth={true} extraKey="config" />
-                            </Grid>
-                            <Grid item xs={1}>
-                                <Switch checked={kv.$('allowOverride').value} value={i.toString()} onChange={this.handleSwitchChange.bind(this)}/>
-                            </Grid>
-                            <Grid item xs={1}>
-                              <IconButton>
-                                <CloseIcon onClick={kv.onDel} />
-                              </IconButton>
-                            </Grid>
-                        </Grid>
-                        )
-                    })}
-                    <Button color="default" variant="raised" onClick={this.form.$('config').onAdd} disabled={!this.form.$('environmentID').value}>
-                      Add Config
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button color="primary"
-                        className={styles.buttonSpacing}
-                        disabled={this.state.saving}
-                        type="submit"
-                        variant="raised"
-                        onClick={this.onSubmit.bind(this)}>
-                          Save
-                    </Button>
+        {this.renderCreateNewExtension()}
+        {this.renderExtensions(extensionsMapByKey)}
 
-                    {this.form.values()['id'] !== '' &&
-                      <Button
-                        disabled={this.state.saving}
-                        style={{ color: "red" }}
-                        onClick={()=>this.setState({ dialogOpen: true })}>
-                        Delete
-                      </Button>
-                    }
-
-                    <Button
-                      onClick={() => {this.handleCancelForm()}}>
-                      Cancel
-                    </Button>
-                  </Grid>
-                </Grid>
-              </form>
-            </div>
-        </Drawer>
-
-        {/* Used for confirmation of escaping panel if dirty form */}
-        <Dialog open={this.state.showDiscardEditsConfirmDialog}>
-          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+        {/* Used for confirmation of deleting extension panel */}
+        <Dialog open={this.state.showConfirmDeleteExtension}>
+          <DialogTitle>{"Are you sure you want to delete?"}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              {"You'll lose any progress made so far."}
+              {"This extension will be gone forever."}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={()=> this.setState({ showDiscardEditsConfirmDialog: false })} color="primary">
+            <Button onClick={()=> this.setState({ showConfirmDeleteExtension: false, pendingDeletionForm: null })} color="primary">
               Cancel
             </Button>
-            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+            <Button onClick={() => {this.handleDeleteExtension()}} style={{ color: "red" }}>
               Confirm
             </Button>
           </DialogActions>
         </Dialog>
-
-        {extensions[this.form.values()['index']] != null &&
-          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Are you sure you want to delete " + extensions[this.form.values()['index']].name + "?"}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                This will delete the extension spec.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={this.handleDeleteExtension.bind(this)} color="accent">
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
-        }
-
       </div>
     );
   }

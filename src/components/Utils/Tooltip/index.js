@@ -15,13 +15,11 @@ const styles = theme => ({
 });
 
 function SimpleTooltips(props) {
-  const { title, children } = props;
+  const { classes, ...other} = props;
   return (    
-      <div>
-        <Tooltip title={title}>
-        {children}
-        </Tooltip>
-      </div>   
+    <Tooltip {...other} >
+      {props.children}
+    </Tooltip>
   );
 }
 

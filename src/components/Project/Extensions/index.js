@@ -31,7 +31,7 @@ import TextField from 'material-ui/TextField';
 
 import Tooltip from 'components/Utils/Tooltip';
 
-import ExtensionOnceIcon from '@material-ui/icons/LooksOne';
+import ExtensionInfraComponentIcon from '@material-ui/icons/ListAlt';
 import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
 import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
 import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
@@ -285,7 +285,7 @@ export default class ProjectExtensions extends React.Component {
       case "deployment":
         return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
       case "once":
-        return (<Tooltip title="Once"><ExtensionOnceIcon/></Tooltip>)
+        return (<Tooltip title="Infra Component"><ExtensionInfraComponentIcon/></Tooltip>)
       case "notification":
         return (<Tooltip title="Notification"><ExtensionNotificationIcon/></Tooltip>)
       default:
