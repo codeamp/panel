@@ -50,6 +50,15 @@ export default class LeftNav extends React.Component {
               </ListItem>
             </NavLink>
 
+            <NavLink to="/projects" exact activeClassName={styles.active}>
+              <ListItem button>
+                <ListItemIcon>
+                  <ProjectsIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="Projects" />
+              </ListItem>
+            </NavLink>
+
             <NavLink to="/create" exact activeClassName={styles.active}>
               <ListItem button>
                 <ListItemIcon>
@@ -130,7 +139,7 @@ export default class LeftNav extends React.Component {
                   {nav.icon}
                 </ListItemIcon>}
                 {nav.icon && nav.count > 0 &&  <ListItemIcon>
-                  <Badge className={styles.badge} badgeContent={nav.count} color="primary">
+                  <Badge className={styles.badge} badgeContent={nav.count} color={nav.badgeColor || "primary"}>
                     {nav.icon}
                   </Badge>
                 </ListItemIcon>}
