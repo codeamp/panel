@@ -50,6 +50,15 @@ export default class LeftNav extends React.Component {
               </ListItem>
             </NavLink>
 
+            <NavLink to="/projects" exact activeClassName={styles.active}>
+              <ListItem button>
+                <ListItemIcon>
+                  <ProjectsIcon />
+                </ListItemIcon>
+                <ListItemText inset primary="Projects" />
+              </ListItem>
+            </NavLink>
+
             <NavLink to="/create" exact activeClassName={styles.active}>
               <ListItem button>
                 <ListItemIcon>

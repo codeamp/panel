@@ -647,6 +647,9 @@ export default class Services extends React.Component {
         return {
           key: serviceSpec.id,
           value: serviceSpec.name,
+          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " + 
+                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " + 
+                     serviceSpec.memoryLimit + "mb | T/o: " + serviceSpec.terminationGracePeriod + "s",
         }
       })
     })
