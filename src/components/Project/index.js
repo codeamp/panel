@@ -49,6 +49,12 @@ import Grid from 'material-ui/Grid';
            created
          }
       }
+      releases {
+        entries{
+          id
+          state
+        }
+      }
       features(params: { limit: 25}){
         entries {
           id
@@ -137,17 +143,16 @@ class Project extends React.Component {
     }
 
     // count deployable features by comparing currentRelease created and feature created
-    var deployableFeatures = 0
-    if(project.currentRelease !== null){
-      project.features.entries.map(function(feature){
-        if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
-          deployableFeatures += 1
-        }
-        return null
-      })
-    } else {
-      deployableFeatures = project.features.entries.length
-    }
+    let deployableFeatures = project.features.entries.length
+    if(project.currentRelease){
+      deployableFeatures = project.features.entries.filter(function(feature){
+        return (new Date(feature.created).getTime() > new Date(project.currentRelease.headFeature.created).getTime())
+      }).length
+    } 
+
+    let releasesQueued = project.releases.entries.filter(function(release){
+      return ["waiting", "running"].includes(release.state)
+    }).length
 
     this.props.store.app.leftNavItems = [
         {
@@ -162,6 +167,8 @@ class Project extends React.Component {
           icon: <ReleasesIcon />,
           name: "Releases",
           slug: this.props.match.url + "/releases",
+          count: releasesQueued,
+          badgeColor: "secondary",
         },
         {
           key: "30",
