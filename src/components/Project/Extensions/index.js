@@ -592,7 +592,7 @@ export default class ProjectExtensions extends React.Component {
           </Grid>
 
           <Grid item xs={12}>
-            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} parentextension={this.state.extensionDrawer.extension} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
  
           {extension.artifacts &&
