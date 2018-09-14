@@ -111,12 +111,11 @@ export default class Ingress extends React.Component {
   }
 
   componentDidMount() {
+    this.initializeForm()
     this.props.onRef(this)
-    // if(this.props.init){
-    //   this.initializeForm(this.props.init)
-    // } else {
-    //   this.initializeForm()
-    // }
+    if(this.props.init){
+      this.form.update(this.props.init)
+    }
   }
 
   componentWillUnmount() {
@@ -139,32 +138,17 @@ export default class Ingress extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.services, this.state.ingressControllers, this.form)
-
-    if (this.state.services !== [] &&
-        this.state.ingressControllers !== [] &&
-        !this.form) {
-          
-          if (this.props.init) {
-            this.initializeForm(this.props.init)
-          } else {
-            this.initializeForm()
-          }
-
-          this.form.state.extra({
-            service: this.state.services,
-            ingress: this.state.ingressControllers
-          })
-      
-          
-    }
+    this.form.set('extra', {
+      service: this.state.services,
+      ingress: this.state.ingressControllers
+    })
   }
 
   values(){
     return this.form.values() 
   }
 
-  initializeForm(defaultValues = {}) {
+  initializeForm() {
     const fields = [
       'service',
       'subdomain',
@@ -177,15 +161,13 @@ export default class Ingress extends React.Component {
         'ingress': "INGRESS",
         'service': "SERVICE"
     }
+    const initials = {}
     const types = {}
     const extra = {
         'ingress': this.state.ingressControllers,
         'service': this.state.services
     }
     const hooks = {};
-
-    const initials = defaultValues
-
 
     const plugins = { dvr: validatorjs }
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
@@ -238,7 +220,6 @@ export default class Ingress extends React.Component {
         <Loading />
       );
     }
-    
     return (
         <div>
             <form onSubmit={(e) => e.preventDefault()}>
