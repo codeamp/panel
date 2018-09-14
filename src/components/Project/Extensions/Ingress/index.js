@@ -23,7 +23,7 @@ function getIngressControllers(ingressControllerSecret) {
       ingress_name: parts[0],
       ingress_id: parts[1],
       ingress_dns: parts[2],
-      key: parts[0],
+      key: parts[1],
       value: parts[1]
 
     }
@@ -31,6 +31,20 @@ function getIngressControllers(ingressControllerSecret) {
   
   return controllers
 
+}
+
+function getServicePorts(services) {
+  let servicePorts = []
+  for (let i = 0; i < services.length; i++) {
+    for (let j = 0; j < services[i].ports.length; j++) {
+      servicePorts.push({
+        key: services[i].name+":"+services[i].ports[j].port,
+        value: services[i].name+":"+services[i].ports[j].port
+      })
+    }
+  }
+
+  return servicePorts
 }
 
 @graphql(gql`
@@ -61,11 +75,18 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
 
 }`,{
   options: (props) => {
-    let ingressControllerConfigs = props.parentextension.config.filter((item) => {
-      if (item.key.toLowerCase() === "ingress_controllers") {
-        return item.value
-      }
-    })
+    let ingressControllerConfigs = []
+    let ingressControllerID = ""
+    if (props.parentextension != null) {
+      ingressControllerConfigs = props.parentextension.config.filter((item) => {
+        if (item.key.toLowerCase() === "ingress_controllers") {
+          return true
+        }
+      })
+
+      ingressControllerID = ingressControllerConfigs[0].value
+    }
+
 
     //TODO: Error handle empty ingress controller config
     //TODO: handle multiple ingress controller configurations
@@ -73,7 +94,7 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
       variables: {
         slug: props.match.params.slug,
         environmentID: props.store.app.currentEnvironment.id,
-        ingressControllerID: ingressControllerConfigs[0].value
+        ingressControllerID: ingressControllerID
       }
   }}
 })
@@ -84,16 +105,18 @@ export default class Ingress extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      ingressControllers: []
+      ingressControllers: [],
+      services: []
     }
   }
 
   componentDidMount() {
-    this.initializeForm()
     this.props.onRef(this)
-    if(this.props.init){
-      this.form.update(this.props.init)
-    }
+    // if(this.props.init){
+    //   this.initializeForm(this.props.init)
+    // } else {
+    //   this.initializeForm()
+    // }
   }
 
   componentWillUnmount() {
@@ -103,76 +126,66 @@ export default class Ingress extends React.Component {
   static getDerivedStateFromProps(props, state) {
     let newState = state
     
-    let {ingressController} = props.data
+    let {ingressController, project} = props.data
     if (ingressController != null) {
       newState.ingressControllers = getIngressControllers(ingressController)
+    }
+
+    if (project != null && project.services != null) {
+      newState.services = getServicePorts(project.services.entries)
     }
 
     return newState
   }
 
   componentDidUpdate(prevProps, prevState) {
-    this.initializeForm()
+    console.log(this.state.services, this.state.ingressControllers, this.form)
+
+    if (this.state.services !== [] &&
+        this.state.ingressControllers !== [] &&
+        !this.form) {
+          
+          if (this.props.init) {
+            this.initializeForm(this.props.init)
+          } else {
+            this.initializeForm()
+          }
+
+          this.form.state.extra({
+            service: this.state.services,
+            ingress: this.state.ingressControllers
+          })
+      
+          
+    }
   }
 
   values(){
     return this.form.values() 
   }
 
-  initializeForm() {
+  initializeForm(defaultValues = {}) {
     const fields = [
       'service',
-      'type',
       'subdomain',
       'ingress',
-      'listener_pairs',
-      'listener_pairs[].port',
-      'listener_pairs[].containerPort',
-      'listener_pairs[].serviceProtocol',
+      'service'
     ]
     const rules = {}
     const labels = {
-        'service': 'SERVICE',
-        'type': 'ACCESS',
         'subdomain': "SUBDOMAIN",
         'ingress': "INGRESS",
-        'listener_pairs': 'LISTENER PAIRS',
-        'listener_pairs[].port': 'PORT',
-        'listener_pairs[].containerPort': 'CONTAINER PORT',
-        'listener_pairs[].serviceProtocol': 'PROTOCOL',
+        'service': "SERVICE"
     }
-    const initials = {}
     const types = {}
     const extra = {
-        'type': [{
-            'key': 'internal',
-            'value': 'Internal'
-        }, {
-            'key': 'external',
-            'value': 'External'
-        }, {
-            'key': 'office',
-            'value': 'Office'
-        }],
         'ingress': this.state.ingressControllers,
-        'listener_pairs[].serviceProtocol': [{
-            'key': 'http',
-            'value': 'HTTP'
-        }, {
-            'key': 'https',
-            'value': 'HTTPS'
-        }, {
-            'key': 'ssl',
-            'value': 'SSL'
-        }, {
-            'key': 'tcp',
-            'value': 'TCP'
-        }, {
-            'key': 'udp',
-            'value': 'UDP'
-        }]
+        'service': this.state.services
     }
     const hooks = {};
+
+    const initials = defaultValues
+
 
     const plugins = { dvr: validatorjs }
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
@@ -225,7 +238,7 @@ export default class Ingress extends React.Component {
         <Loading />
       );
     }
-
+    
     return (
         <div>
             <form onSubmit={(e) => e.preventDefault()}>
@@ -233,6 +246,7 @@ export default class Ingress extends React.Component {
                     <Grid item xs={12}>
                         <InputField fullWidth={true} field={this.form.$('subdomain')} />
                         <SelectField fullWidth={true} field={this.form.$('ingress')} />
+                        <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
                     </Grid>
                 </Grid>
             </form>
