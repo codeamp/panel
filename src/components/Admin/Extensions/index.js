@@ -302,6 +302,7 @@ export default class Extensions extends React.Component {
       environmentID: extension.environment.id,
       component: extension.component,
       type: extension.type,
+      'config[].allowOverride': false,
     })
 
     let config = extension.config.map((c) => {
@@ -495,6 +496,7 @@ export default class Extensions extends React.Component {
         environmentID: extension.environment.id,
         component: extension.component,
         type: extension.type,
+        'config[].allowOverride': false,
       })
 
       let config = extension.config.map((c) => {
