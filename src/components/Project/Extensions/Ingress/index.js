@@ -23,8 +23,8 @@ function getIngressControllers(ingressControllerSecret) {
       ingress_name: parts[0],
       ingress_id: parts[1],
       ingress_dns: parts[2],
-      key: parts[1],
-      value: parts[1]
+      key: primal,
+      value: parts[0]
 
     }
   })
@@ -153,19 +153,31 @@ export default class Ingress extends React.Component {
       'service',
       'subdomain',
       'ingress',
-      'service'
+      'service',
+      'type'
     ]
     const rules = {}
     const labels = {
         'subdomain': "SUBDOMAIN",
         'ingress': "INGRESS",
-        'service': "SERVICE"
+        'service': "SERVICE",
+        'type': "TYPE"
     }
     const initials = {}
     const types = {}
     const extra = {
         'ingress': this.state.ingressControllers,
-        'service': this.state.services
+        'service': this.state.services,
+        'type': [
+          {
+            "key": "loadbalancer",
+            "value": "Loadbalancer"
+          },
+          {
+            "key": "clusterip",
+            "value": "Cluster IP"
+          }
+        ]
     }
     const hooks = {};
 
@@ -223,12 +235,25 @@ export default class Ingress extends React.Component {
     return (
         <div>
             <form onSubmit={(e) => e.preventDefault()}>
-                <Grid container spacing={24}>
-                    <Grid item xs={12}>
-                        <InputField fullWidth={true} field={this.form.$('subdomain')} />
-                        <SelectField fullWidth={true} field={this.form.$('ingress')} />
-                        <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
-                    </Grid>
+                <Grid container spacing={24} direction={'row'}>
+                      <Grid container direction={'row'}>
+                        <Grid item xs={12} >
+                          <SelectField fullWidth={true} field={this.form.$('type')}/>
+                        </Grid>
+                        <Grid item xs={12}>
+                          <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
+                        </Grid>
+                      </Grid>
+                      { this.form.$('type').value === "loadbalancer" &&
+                      <Grid container direction={'row'}>
+                        <Grid item xs={12}>
+                          <InputField fullWidth={true} field={this.form.$('subdomain')} />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <SelectField fullWidth={true} field={this.form.$('ingress')} />
+                        </Grid>
+                      </Grid>
+                      }
                 </Grid>
             </form>
         </div>
