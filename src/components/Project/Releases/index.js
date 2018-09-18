@@ -17,7 +17,6 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
 import ExtensionStateCompleteIcon from '@material-ui/icons/CheckCircle';
 import ExtensionStateFailedIcon from '@material-ui/icons/Error';
 import ExtensionStateCanceledIcon from '@material-ui/icons/Fingerprint';
@@ -130,30 +129,37 @@ class ReleaseView extends React.Component {
     const { release, extensions } = this.props;
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
-        if(extension.extension.type === "once") {
-            return false
-        } 
-        return true
+        return extension.extension.type !== "once"             
     })
 
     const projectExtensionLights = filteredExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
+          
+          let style = { backgroundColor: "yellow", color: "black", marginRight: 4 }
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              style = { backgroundColor: "yellow", color: "black", marginRight: 4 }
+              break
             case "complete":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
+              style = { backgroundColor: "green", color: "white", marginRight: 4 }
+              break
             case "failed":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+              style = { backgroundColor: "red", color: "white", marginRight: 4 }
+              break
             case "canceled":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
+              style = { backgroundColor: "purple", color: "white", marginRight: 4 }
+              break
             default:
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              break
           }
+
+          let label = release.releaseExtensions[i].extension.extension.name
+          return (<Chip key={label} label={label} style={style} />)
         }
       }
+
       return null
     })
     
@@ -170,6 +176,22 @@ class ReleaseView extends React.Component {
       self.setState({ timer: self.state.timer + 1})
     }, 1000)
   }  
+
+  renderDetailsLine() {
+    let timestamp = moment(new Date(this.props.release.created)).format("ddd, MMM Do, YYYY HH:mm:ss")
+    let timezone = moment.tz(jstz.determine().name()).format('z')
+
+    let author = "Continuous Deploy"
+    if (this.props.release.user !== null && this.props.release.user.email !== ""){
+      author = this.props.release.user.email
+    }
+        
+    return (      
+      <div className={styles.detailsLine}>
+        by <Chip label={author} className={styles.authorBadge} /> {timestamp} ({timezone})
+      </div>      
+    )
+  }
 
   render() {
     const { release, currentRelease } = this.props;
@@ -205,15 +227,13 @@ class ReleaseView extends React.Component {
               <Grid item xs={10}>
                 <Typography className={styles.featureCommitMsg}>
                   { this.props.release.tailFeature.hash.substring(0, 8) }
-                  <DoubleRightIcon />
+                  &nbsp;➜&nbsp;
                   { this.props.release.headFeature.hash.substring(0, 8) }
                 </Typography>
                 <Typography>
                   { this.props.release.headFeature.message}
                 </Typography>
-                <Typography component="p" className={styles.featureAuthor}>
-                  by <b> { (this.props.release.user !== null && this.props.release.user.email !== "") ? this.props.release.user.email : <Chip label="CD" className={styles.continuousDelivery} />} </b> - { moment(new Date(this.props.release.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }
-                </Typography>
+                { this.renderDetailsLine() }
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
                 </div>
@@ -454,10 +474,7 @@ export default class Releases extends React.Component {
 
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
-        if(extension.extension.type === "once") {
-            return false
-        } 
-        return true
+        return extension.extension.type !== "once"
     })
 
     const releaseExtensions = filteredExtensions.map(function(extension){
@@ -598,29 +615,36 @@ export default class Releases extends React.Component {
   stopReleaseButton(release) {
     // ADB 8/21/18
     // Temporarily diasbling cancel/'stop release' button until it works
-    // as advertised.
-    // if (release.state === "fetching" || release.state === "waiting") {
-    //   return (
-    //     <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     onClick={() => this.stopRelease(release)}
-    //     disabled>
-    //       Stop Release
-    //     </Button>
-    //   )
-    // }
-    // return (
-    //   <Button
-    //     className={styles.drawerButton}
-    //     color="secondary"
-    //     variant="raised"
-    //     disabled>
-    //     Stop Release
-    //     </Button>
-    // )
-    return null
+    // as advertised. Reenabling for admins only.
+    const { user } = this.props.data
+    if(user.permissions.includes("admin")){
+      let deploymentTypeRunning = release.releaseExtensions.filter(function(releaseExtension){
+        return releaseExtension.state === "running" && releaseExtension.type === "deployment"
+      }).length !== 0
+
+      if (["waiting", "fetching", "running"].includes(release.state) && !deploymentTypeRunning) {
+        return (
+          <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          onClick={() => this.stopRelease(release)}>
+            Stop Release
+          </Button>
+        )
+      }
+      return (
+        <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          disabled>
+          Stop Release
+          </Button>
+      )
+    } else {
+      return null
+    }
   }
   
   releaseActionButton(release) {

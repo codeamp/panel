@@ -290,7 +290,7 @@ export default class Services extends React.Component {
     ];
 
     const rules = {
-      'name': 'string|required',
+      'name': 'string|required|min:1|max:63',
       'serviceSpecID': 'string|required',
       'command': 'string|required',
       'count': 'numeric|required|min:0',
@@ -647,6 +647,9 @@ export default class Services extends React.Component {
         return {
           key: serviceSpec.id,
           value: serviceSpec.name,
+          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " + 
+                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " + 
+                     serviceSpec.memoryLimit + "mb | T/o: " + serviceSpec.terminationGracePeriod + "s",
         }
       })
     })
