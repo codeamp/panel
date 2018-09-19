@@ -140,9 +140,7 @@ export default class Ingress extends React.Component {
       service: this.state.services,
       ingress: this.state.ingressControllers
     })
-
-    console.log("component updated")
-
+    
     if (this.form.$('type').value === "loadbalancer") {
       this.form.$('protocol').set("TCP")
     }

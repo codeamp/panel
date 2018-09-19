@@ -91,7 +91,7 @@ export default class Route53Ingress extends React.Component {
     ]
     const rules = {}
     const labels = {
-        'subdomain': 'SUBDOMAIN',
+        'subdomain': 'DOMAIN',
         'loadbalancer': 'LOADBALANCER',
         'loadbalancer_fqdn': 'LOADBALANCER FQDN',
         'loadbalancer_type': 'LOADBALANCER TYPE',
@@ -140,7 +140,9 @@ export default class Route53Ingress extends React.Component {
     project.extensions.map((extension) => {
       if(extension.id === extensionId) {
         let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
+        let subdomain = _.find(extension.artifacts, function(a) { return a.key === "subdomain"})
 
+        this.form.$('subdomain').set(subdomain.value);
         this.form.$('loadbalancer_fqdn').set(artifact.value);
         this.form.$('loadbalancer_type').set(extension.customConfig.type);
       }
@@ -149,6 +151,7 @@ export default class Route53Ingress extends React.Component {
     
     return (
       <Grid item xs={12}>
+        <InputField fullWidth={true} field={this.form.$('subdomain')} disabled/>
         <InputField fullWidth={true} field={this.form.$('loadbalancer_fqdn')} disabled/>
         <InputField fullWidth={true} field={this.form.$('loadbalancer_type')} disabled/>
       </Grid>
@@ -160,10 +163,10 @@ export default class Route53Ingress extends React.Component {
       <div>
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}> */}
               {/* <InputField fullWidth={true} field={this.form.$('subdomain')} /> */}
-              <SelectField fullWidth={true} field={this.form.$('subdomain')} extraKey={'subdomains'} />
-            </Grid>
+              {/* <SelectField fullWidth={true} field={this.form.$('subdomain')} extraKey={'subdomains'} /> */}
+            {/* </Grid> */}
             <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('loadbalancer')} extraKey={'extensions'} />
             </Grid>
@@ -215,7 +218,7 @@ export default class Route53Ingress extends React.Component {
 
         domainOptions.push({
           key: subdomain.value,
-          value: subdomain.value
+          value: fqdn.value
         })
       }
     })
