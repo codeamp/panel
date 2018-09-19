@@ -161,7 +161,8 @@ export default class Route53Ingress extends React.Component {
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
             <Grid item xs={12}>
-              <InputField fullWidth={true} field={this.form.$('subdomain')} />
+              {/* <InputField fullWidth={true} field={this.form.$('subdomain')} /> */}
+              <SelectField fullWidth={true} field={this.form.$('subdomain')} extraKey={'subdomains'} />
             </Grid>
             <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('loadbalancer')} extraKey={'extensions'} />
@@ -195,24 +196,33 @@ export default class Route53Ingress extends React.Component {
       );
     }
     
-    var extraOptions = []
+    let extraOptions = []
+    let domainOptions = []
     project.extensions.forEach(function(extension){
-      console.log(extension.artifacts)
-      let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
-      if (!artifact) {
+      let controller = _.find(extension.artifacts, function(a) { return a.key === "ingress_controller" });
+      if (!controller) {
         return
       }
-      let dns = artifact.value
+
+      let fqdn = _.find(extension.artifacts, function(a) { return a.key === "fqdn"})
+      let subdomain = _.find(extension.artifacts, function(a) { return a.key === "subdomain"})
+
       if(extension.extension.key.includes("ingress") && extension.customConfig.type === "loadbalancer") {
         extraOptions.push({
           key: extension.id,
-          value: extension.extension.name + " (" + dns + ")",
+          value: fqdn.value + " (" + controller.value + ")",
+        })
+
+        domainOptions.push({
+          key: subdomain.value,
+          value: subdomain.value
         })
       }
     })
 
     this.form.state.extra({
         extensions: extraOptions,
+        subdomains: domainOptions,
     })
 
     if(type === "enabled"){
