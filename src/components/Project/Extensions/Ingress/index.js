@@ -1,9 +1,5 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
-import Button from 'material-ui/Button';
-import IconButton from 'material-ui/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
-import Typography from 'material-ui/Typography';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import Loading from 'components/Utils/Loading';
@@ -82,6 +78,7 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
         if (item.key.toLowerCase() === "ingress_controllers") {
           return true
         }
+        return false
       })
 
       ingressControllerID = ingressControllerConfigs[0].value
@@ -224,8 +221,7 @@ export default class Ingress extends React.Component {
   }
 
   render(){
-    const { loading, project, ingressController} = this.props.data;
-    const { type } = this.props;
+    const { loading } = this.props.data;
 
     if(loading){
       return (
