@@ -2,6 +2,7 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
+import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
 import validatorjs from 'validatorjs';
 import { observer, inject } from 'mobx-react';
@@ -103,7 +104,7 @@ export default class Ingress extends React.Component {
     super(props)
     this.state = {
       ingressControllers: [],
-      services: []
+      services: [],
     }
   }
 
@@ -139,6 +140,12 @@ export default class Ingress extends React.Component {
       service: this.state.services,
       ingress: this.state.ingressControllers
     })
+
+    console.log("component updated")
+
+    if (this.form.$('type').value === "loadbalancer") {
+      this.form.$('protocol').set("TCP")
+    }
   }
 
   values(){
@@ -151,13 +158,15 @@ export default class Ingress extends React.Component {
       'subdomain',
       'ingress',
       'service',
-      'type'
+      'type',
+      'protocol'
     ]
     const rules = {}
     const labels = {
         'subdomain': "SUBDOMAIN",
         'ingress': "INGRESS",
         'service': "SERVICE",
+        'protocol': "PROTOCOL",
         'type': "TYPE"
     }
     const initials = {}
@@ -174,7 +183,8 @@ export default class Ingress extends React.Component {
             "key": "clusterip",
             "value": "Cluster IP"
           }
-        ]
+        ],
+        'protocol': ["TCP", "UDP"]
     }
     const hooks = {};
 
@@ -228,6 +238,9 @@ export default class Ingress extends React.Component {
         <Loading />
       );
     }
+
+    let disabeProtocol = this.form.$('type').value === "loadbalancer" ? true : false
+
     return (
         <div>
             <form onSubmit={(e) => e.preventDefault()}>
@@ -236,8 +249,11 @@ export default class Ingress extends React.Component {
                         <Grid item xs={12} >
                           <SelectField fullWidth={true} field={this.form.$('type')}/>
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={8}>
                           <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
+                        </Grid>
+                        <Grid item xs={4}>
+                          <RadioField field={this.form.$('protocol')} disabled={disabeProtocol}/>
                         </Grid>
                       </Grid>
                       { this.form.$('type').value === "loadbalancer" &&
