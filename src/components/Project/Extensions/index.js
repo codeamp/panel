@@ -504,9 +504,11 @@ export default class ProjectExtensions extends React.Component {
     let type = extension.type
     let config = []
     let saveButtonText = "Save"
+    let extensionData
     
     if(extension.__typename === "Extension"){
       const ext = extension
+      extensionData = extension
       name = ext.name
       type = ext.type
       ext.config.map(function(obj){
@@ -521,6 +523,7 @@ export default class ProjectExtensions extends React.Component {
       config = []
       name = extension.extension.name
       type = extension.extension.type
+      extensionData = extension.extension
       extension.config.map(function(obj){
         let _obj = _.clone(obj)
         _obj.value = obj.value
@@ -592,7 +595,7 @@ export default class ProjectExtensions extends React.Component {
           </Grid>
 
           <Grid item xs={12}>
-            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} parentExtension={extensionData} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
  
           {extension.artifacts &&
