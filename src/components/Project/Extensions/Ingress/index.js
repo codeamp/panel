@@ -74,8 +74,8 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
   options: (props) => {
     let ingressControllerConfigs = []
     let ingressControllerID = ""
-    if (props.parentextension != null) {
-      ingressControllerConfigs = props.parentextension.config.filter((item) => {
+    if (props.parentExtension != null) {
+      ingressControllerConfigs = props.parentExtension.config.filter((item) => {
         if (item.key.toLowerCase() === "ingress_controllers") {
           return true
         }
