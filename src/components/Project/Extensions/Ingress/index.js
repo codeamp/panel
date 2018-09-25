@@ -138,8 +138,7 @@ export default class Ingress extends React.Component {
     this.state = {
       ingressControllers: [],
       upstreamApexDomains: [],
-      services: [],
-      addButtonDisabled: false
+      services: []
     }
   }
 
@@ -180,10 +179,12 @@ export default class Ingress extends React.Component {
       ingress: this.state.ingressControllers,
     })
 
-    //TODO: What's the diff from above?
-    // Setting via above method does _not_ work
-    this.form.state.extra({
-      apex: this.state.upstreamApexDomains
+    // set options for each upstream domain
+    this.form.$('upstream_domains').map((field) => {
+      field.set('extra', {
+        apex: this.state.upstreamApexDomains
+      })
+      return "updated"
     })
     
     if (this.form.$('type').value === "loadbalancer") {
@@ -223,7 +224,7 @@ export default class Ingress extends React.Component {
     const extra = {
         'ingress': this.state.ingressControllers,
         'service': this.state.services,
-        'apex': this.state.upstreamApexDomains,
+        'upstream_domains[].apex': this.state.upstreamApexDomains,
         'type': [
           {
             "key": "loadbalancer",
@@ -262,7 +263,6 @@ export default class Ingress extends React.Component {
   }
 
   onAdd(extension, event){
-    this.setState({ addButtonDisabled: true })
     if(this.form){
       this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
     }
@@ -322,7 +322,7 @@ export default class Ingress extends React.Component {
                               <InputField fullWidth={true} field={domain.$('subdomain')} />
                             </Grid>
                             <Grid item xs={4}>
-                              <SelectField fullWidth={true} field={domain.$('apex')} extraKey={'apex'} />
+                              <SelectField fullWidth={true} field={domain.$('apex')} />
                             </Grid>
                             <Grid item xs={2}>
                               <IconButton>
