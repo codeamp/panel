@@ -1,6 +1,9 @@
 import React from 'react';
 import Grid from 'material-ui/Grid';
 import InputField from 'components/Form/input-field';
+import Button from 'material-ui/Button';
+import IconButton from 'material-ui/IconButton';
+import CloseIcon from '@material-ui/icons/Close';
 import SelectField from 'components/Form/select-field';
 import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
@@ -30,6 +33,18 @@ function getIngressControllers(ingressControllerSecret) {
 
 }
 
+function getUpstreamApexDomains(upstreamApexDomainsSecret) {
+  let apexes = upstreamApexDomainsSecret.value.split(",")
+  let apexOptions = apexes.map((apex) => {
+    return {
+      key: apex,
+      value: apex
+    }
+  })
+
+  return apexOptions
+}
+
 function getServicePorts(services) {
   let servicePorts = []
   for (let i = 0; i < services.length; i++) {
@@ -45,7 +60,8 @@ function getServicePorts(services) {
 }
 
 @graphql(gql`
-query Project($slug: String, $environmentID: String, $ingressControllerID: String){
+query Project($slug: String, $environmentID: String,
+              $ingressControllerID: String, $upstreamApexDomainsID: String){
   project(slug: $slug, environmentID: $environmentID) {
     id
     services {
@@ -70,10 +86,18 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
     value
   }
 
+  upstreamApexDomains: secret(id: $upstreamApexDomainsID) {
+    id
+    key
+    value
+  }
+
 }`,{
   options: (props) => {
     let ingressControllerConfigs = []
     let ingressControllerID = ""
+    let upstreamApexDomainsConfig = []
+    let upstreamApexDomainsID = ""
     if (props.parentExtension != null) {
       ingressControllerConfigs = props.parentExtension.config.filter((item) => {
         if (item.key.toLowerCase() === "ingress_controllers") {
@@ -81,8 +105,16 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
         }
         return false
       })
-
       ingressControllerID = ingressControllerConfigs[0].value
+
+      upstreamApexDomainsConfig = props.parentExtension.config.filter((item)=> {
+        if (item.key.toLowerCase() === "upstream_apex_domains") {
+          return true
+        }
+        return false
+      })
+
+      upstreamApexDomainsID = upstreamApexDomainsConfig[0].value
     }
 
 
@@ -92,7 +124,8 @@ query Project($slug: String, $environmentID: String, $ingressControllerID: Strin
       variables: {
         slug: props.match.params.slug,
         environmentID: props.store.app.currentEnvironment.id,
-        ingressControllerID: ingressControllerID
+        ingressControllerID: ingressControllerID,
+        upstreamApexDomainsID: upstreamApexDomainsID
       }
   }}
 })
@@ -104,7 +137,9 @@ export default class Ingress extends React.Component {
     super(props)
     this.state = {
       ingressControllers: [],
+      upstreamApexDomains: [],
       services: [],
+      addButtonDisabled: false
     }
   }
 
@@ -123,9 +158,13 @@ export default class Ingress extends React.Component {
   static getDerivedStateFromProps(props, state) {
     let newState = state
     
-    let {ingressController, project} = props.data
+    let {ingressController, upstreamApexDomains, project} = props.data
     if (ingressController != null) {
       newState.ingressControllers = getIngressControllers(ingressController)
+    }
+
+    if (upstreamApexDomains != null) {
+      newState.upstreamApexDomains = getUpstreamApexDomains(upstreamApexDomains)
     }
 
     if (project != null && project.services != null) {
@@ -138,7 +177,13 @@ export default class Ingress extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     this.form.set('extra', {
       service: this.state.services,
-      ingress: this.state.ingressControllers
+      ingress: this.state.ingressControllers,
+    })
+
+    //TODO: What's the diff from above?
+    // Setting via above method does _not_ work
+    this.form.state.extra({
+      apex: this.state.upstreamApexDomains
     })
     
     if (this.form.$('type').value === "loadbalancer") {
@@ -157,7 +202,10 @@ export default class Ingress extends React.Component {
       'ingress',
       'service',
       'type',
-      'protocol'
+      'protocol',
+      'upstream_domains',
+      'upstream_domains[].subdomain',
+      'upstream_domains[].apex'
     ]
     const rules = {}
     const labels = {
@@ -165,13 +213,17 @@ export default class Ingress extends React.Component {
         'ingress': "INGRESS",
         'service': "SERVICE",
         'protocol': "PROTOCOL",
-        'type': "TYPE"
+        'type': "TYPE",
+        'upstream_domains': 'UPSTREAM DOMAINS',
+        'upstream_domains[].subdomain': "UPSTREAM SUBDOMAIN",
+        'upstream_domains[].apex': "APEX"
     }
     const initials = {}
     const types = {}
     const extra = {
         'ingress': this.state.ingressControllers,
         'service': this.state.services,
+        'apex': this.state.upstreamApexDomains,
         'type': [
           {
             "key": "loadbalancer",
@@ -261,6 +313,31 @@ export default class Ingress extends React.Component {
                         </Grid>
                         <Grid item xs={12}>
                           <SelectField fullWidth={true} field={this.form.$('ingress')} />
+                        </Grid>
+                        <Grid item xs={12}>
+                          {this.form.$('upstream_domains').map(function(domain){
+                          return (
+                          <Grid container spacing={24} direction={'row'} key={domain.id}>
+                            <Grid item xs={6}>
+                              <InputField fullWidth={true} field={domain.$('subdomain')} />
+                            </Grid>
+                            <Grid item xs={4}>
+                              <SelectField fullWidth={true} field={domain.$('apex')} extraKey={'apex'} />
+                            </Grid>
+                            <Grid item xs={2}>
+                              <IconButton>
+                                <CloseIcon onClick={domain.onDel} />
+                              </IconButton>
+                            </Grid>                                                                                          
+                          </Grid>                            
+                          )
+                          })}
+                          <Grid item xs={12}>
+                            <Button variant="raised" type="secondary" onClick={this.form.$('upstream_domains').onAdd}>
+                              Add Upstream Domain
+                            </Button>
+                          </Grid>        
+                          <br/>  
                         </Grid>
                       </Grid>
                       }
