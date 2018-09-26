@@ -329,49 +329,49 @@ export default class Ingress extends React.Component {
         <div>
             <form onSubmit={(e) => e.preventDefault()}>
                 <Grid container spacing={24} direction={'row'}>
-                  <Grid container direction={'row'}>
-                    <Grid item xs={12} >
-                      <SelectField fullWidth={true} field={this.form.$('type')}/>
-                    </Grid>
-                    <Grid item xs={8}>
-                      <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
-                    </Grid>
-                    <Grid item xs={4}>
-                      <RadioField field={this.form.$('protocol')} disabled={disabeProtocol}/>
-                    </Grid>
-                  </Grid>
-                  { this.form.$('type').value === "loadbalancer" &&
-                  <Grid container direction={'row'}>
-                    <Grid item xs={12}>
-                      <SelectField fullWidth={true} field={this.form.$('ingress')} />
-                    </Grid>
-                    <Grid item xs={12}>
-                      {this.form.$('upstream_domains').map(function(domain){
-                      return (
-                      <Grid container spacing={24} direction={'row'} key={domain.id}>
-                        <Grid item xs={6}>
-                          <InputField fullWidth={true} field={domain.$('subdomain')} />
+                      <Grid container direction={'row'}>
+                        <Grid item xs={12} >
+                          <SelectField fullWidth={true} field={this.form.$('type')}/>
+                        </Grid>
+                        <Grid item xs={8}>
+                          <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
                         </Grid>
                         <Grid item xs={4}>
-                          <SelectField fullWidth={true} field={domain.$('apex')} />
+                          <RadioField field={this.form.$('protocol')} disabled={disabeProtocol}/>
                         </Grid>
-                        <Grid item xs={2}>
-                          <IconButton>
-                            <CloseIcon onClick={domain.onDel} />
-                          </IconButton>
-                        </Grid>                                                                                          
-                      </Grid>                            
-                      )
-                      })}
-                      <Grid item xs={12}>
-                        <Button variant="raised" type="secondary" onClick={this.form.$('upstream_domains').onAdd}>
-                          Add Upstream Domain
-                        </Button>
-                      </Grid>        
-                      <br/>  
-                    </Grid>
-                  </Grid>
-                  }
+                      </Grid>
+                      { this.form.$('type').value === "loadbalancer" &&
+                      <Grid container direction={'row'}>
+                        <Grid item xs={12}>
+                          <SelectField fullWidth={true} field={this.form.$('ingress')} />
+                        </Grid>
+                        <Grid item xs={12}>
+                          {this.form.$('upstream_domains').map(function(domain){
+                          return (
+                          <Grid container spacing={24} direction={'row'} key={domain.id}>
+                            <Grid item xs={6}>
+                              <InputField fullWidth={true} field={domain.$('subdomain')} />
+                            </Grid>
+                            <Grid item xs={4}>
+                              <SelectField fullWidth={true} field={domain.$('apex')} />
+                            </Grid>
+                            <Grid item xs={2}>
+                              <IconButton>
+                                <CloseIcon onClick={domain.onDel} />
+                              </IconButton>
+                            </Grid>                                                                                          
+                          </Grid>                            
+                          )
+                          })}
+                          <Grid item xs={12}>
+                            <Button variant="raised" type="secondary" onClick={this.form.$('upstream_domains').onAdd}>
+                              Add Upstream Domain
+                            </Button>
+                          </Grid>        
+                          <br/>  
+                        </Grid>
+                      </Grid>
+                      }
                 </Grid>
             </form>
         </div>

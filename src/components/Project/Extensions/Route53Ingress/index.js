@@ -134,7 +134,13 @@ export default class Route53Ingress extends React.Component {
     const initials = {}
     const types = {}
     const extra = {}
-    const hooks = {};
+    const hooks = {
+      "loadbalancer": {
+        onChange: (field) => {
+          this.onIngressSelect(field)
+        }
+      }
+    };
 
     const plugins = { dvr: validatorjs }
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
@@ -195,7 +201,7 @@ export default class Route53Ingress extends React.Component {
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
             <Grid item xs={12}>
-              <SelectField onChange={this.onIngressSelect} fullWidth={true} field={this.form.$('loadbalancer')} />
+              <SelectField fullWidth={true} field={this.form.$('loadbalancer')} />
             </Grid>
             { this.renderFQDN(this.form.values()['loadbalancer']) }
           </Grid>
@@ -216,8 +222,8 @@ export default class Route53Ingress extends React.Component {
     return this.renderLoadBalancerForm(project)
   }
 
-  onIngressSelect(e){
-    let selectedOption = this.state.optionData[e.target.value]
+  onIngressSelect(field){
+    let selectedOption = this.state.optionData[field.value]
     this.setState({
       selectedOption: selectedOption
     })
@@ -225,7 +231,6 @@ export default class Route53Ingress extends React.Component {
     this.form.$('subdomain').set(selectedOption.domain.subdomain)
     this.form.$('loadbalancer_fqdn').set(selectedOption.elbFQDN.value)
     this.form.$('loadbalancer_type').set(selectedOption.type)
-    this.form.$('loadbalancer').set(e.target.value)
   }
 
   render(){
