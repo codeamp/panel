@@ -402,7 +402,7 @@ export default class ProjectExtensions extends React.Component {
       return "";
     }
     for (let artifact of extension.artifacts) {
-      if (artifact.key === "dns" || artifact.key === "fqdn") {
+      if (artifact.key === "dns" || artifact.key === "fqdn" || artifact.key === "table_view") {
         return artifact.value;
       }
     }

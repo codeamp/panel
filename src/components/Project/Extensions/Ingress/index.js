@@ -20,9 +20,6 @@ function getIngressControllers(ingressControllerSecret) {
   let controllers = primals.map((primal) => {
     let parts = primal.split(":")
     return {
-      ingress_name: parts[0],
-      ingress_id: parts[1],
-      ingress_dns: parts[2],
       key: primal,
       value: parts[0]
 
@@ -199,18 +196,17 @@ export default class Ingress extends React.Component {
   initializeForm() {
     const fields = [
       'service',
-      'subdomain',
       'ingress',
       'service',
       'type',
       'protocol',
+      'subdomain',
       'upstream_domains',
       'upstream_domains[].subdomain',
       'upstream_domains[].apex'
     ]
     const rules = {}
     const labels = {
-        'subdomain': "SUBDOMAIN",
         'ingress': "INGRESS",
         'service': "SERVICE",
         'protocol': "PROTOCOL",
@@ -308,9 +304,6 @@ export default class Ingress extends React.Component {
                       </Grid>
                       { this.form.$('type').value === "loadbalancer" &&
                       <Grid container direction={'row'}>
-                        <Grid item xs={12}>
-                          <InputField fullWidth={true} field={this.form.$('subdomain')} />
-                        </Grid>
                         <Grid item xs={12}>
                           <SelectField fullWidth={true} field={this.form.$('ingress')} />
                         </Grid>

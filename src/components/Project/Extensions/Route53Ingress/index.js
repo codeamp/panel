@@ -84,7 +84,6 @@ export default class Route53Ingress extends React.Component {
 
   componentWillMount(){
     const fields = [
-        'subdomain',
         'loadbalancer',
         'loadbalancer_fqdn',
         'loadbalancer_type',
@@ -139,7 +138,7 @@ export default class Route53Ingress extends React.Component {
 
     project.extensions.map((extension) => {
       if(extension.id === extensionId) {
-        let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
+        let artifact = _.find(extension.artifacts, function(a) { return a.key === "elb_dns" });
         let subdomain = _.find(extension.artifacts, function(a) { return a.key === "subdomain"})
 
         this.form.$('subdomain').set(subdomain.value);
@@ -207,18 +206,21 @@ export default class Route53Ingress extends React.Component {
         return
       }
 
-      let fqdn = _.find(extension.artifacts, function(a) { return a.key === "fqdn"})
-      let subdomain = _.find(extension.artifacts, function(a) { return a.key === "subdomain"})
-
+      let controlledApexDomain = _.find(extension.artifacts, function(a) { return a.key === "controlled_apex_domain"})
       if(extension.extension.key.includes("ingress") && extension.customConfig.type === "loadbalancer") {
-        extraOptions.push({
-          key: extension.id,
-          value: fqdn.value + " (" + controller.value + ")",
-        })
 
-        domainOptions.push({
-          key: subdomain.value,
-          value: fqdn.value
+        extension.customConfig.upstream_domains.forEach(function(domain) {
+          if (domain.apex === controlledApexDomain.value) {
+            extraOptions.push({
+              key: extension.id,
+              value: domain.subdomain + '.' + domain.apex + " (" + controller.value + ")",
+            })
+
+            domainOptions.push({
+              key: domain.subdomain,
+              value: domain.subdomain + '.' + domain.apex
+            })
+          }
         })
       }
     })
