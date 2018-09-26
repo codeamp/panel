@@ -9,7 +9,7 @@ import FormHelperText from 'material-ui/Form/FormHelperText';
 import Select from 'material-ui/Select';
 import Tooltip from 'components/Utils/Tooltip';
 
-export default observer(({field, autoWidth, extraKey, fullWidth }) => {
+export default observer(({field, onChange, autoWidth, extraKey, fullWidth }) => {
   let extraOptions = field.extra
 
   if(extraKey){
@@ -51,6 +51,7 @@ export default observer(({field, autoWidth, extraKey, fullWidth }) => {
           autoWidth={autoWidth}
           value={field.value}
           className={styles.selectField}
+          onChange={onChange}
           input={<Input id={field.value} />}
         >
           {extraOptions.map( (option) => {
