@@ -58,7 +58,9 @@ function getServicePorts(services) {
 
 @graphql(gql`
 query Project($slug: String, $environmentID: String,
-              $ingressControllerID: String, $upstreamApexDomainsID: String){
+              $ingressControllerID: String,
+              $upstreamApexDomainsID: String,
+              $controlledApexDomainID: String){
   project(slug: $slug, environmentID: $environmentID) {
     id
     services {
@@ -89,12 +91,20 @@ query Project($slug: String, $environmentID: String,
     value
   }
 
+  controlledApexDomain: secret(id: $controlledApexDomainID) {
+    id
+    key
+    value
+  }
+
 }`,{
   options: (props) => {
     let ingressControllerConfigs = []
     let ingressControllerID = ""
     let upstreamApexDomainsConfig = []
     let upstreamApexDomainsID = ""
+    let controlledApexDomainConfig = []
+    let controlledApexDomainID = ""
     if (props.parentExtension != null) {
       ingressControllerConfigs = props.parentExtension.config.filter((item) => {
         if (item.key.toLowerCase() === "ingress_controllers") {
@@ -112,6 +122,15 @@ query Project($slug: String, $environmentID: String,
       })
 
       upstreamApexDomainsID = upstreamApexDomainsConfig[0].value
+
+      controlledApexDomainConfig = props.parentExtension.config.filter((item) => {
+        if (item.key.toLowerCase() === "controlled_apex_domain") {
+          return true
+        }
+        return false
+      })
+
+      controlledApexDomainID = controlledApexDomainConfig[0].value
     }
 
 
@@ -122,7 +141,8 @@ query Project($slug: String, $environmentID: String,
         slug: props.match.params.slug,
         environmentID: props.store.app.currentEnvironment.id,
         ingressControllerID: ingressControllerID,
-        upstreamApexDomainsID: upstreamApexDomainsID
+        upstreamApexDomainsID: upstreamApexDomainsID,
+        controlledApexDomainID: controlledApexDomainID
       }
   }}
 })
@@ -135,7 +155,8 @@ export default class Ingress extends React.Component {
     this.state = {
       ingressControllers: [],
       upstreamApexDomains: [],
-      services: []
+      services: [],
+      controlledApexDomain: ""
     }
   }
 
@@ -154,7 +175,7 @@ export default class Ingress extends React.Component {
   static getDerivedStateFromProps(props, state) {
     let newState = state
     
-    let {ingressController, upstreamApexDomains, project} = props.data
+    let {ingressController, upstreamApexDomains, controlledApexDomain, project} = props.data
     if (ingressController != null) {
       newState.ingressControllers = getIngressControllers(ingressController)
     }
@@ -165,6 +186,10 @@ export default class Ingress extends React.Component {
 
     if (project != null && project.services != null) {
       newState.services = getServicePorts(project.services.entries)
+    }
+
+    if (controlledApexDomain != null) {
+      newState.controlledApexDomain = controlledApexDomain.value
     }
 
     return newState
@@ -186,6 +211,16 @@ export default class Ingress extends React.Component {
     
     if (this.form.$('type').value === "loadbalancer") {
       this.form.$('protocol').set("TCP")
+
+      let formValues = this.form.values()
+      if(formValues.upstream_domains.length === 0) {
+        this.form.update({
+          upstream_domains: [{
+              subdomain: "",
+              apex: this.state.controlledApexDomain
+            }]
+        })
+      }
     }
   }
 
@@ -205,7 +240,10 @@ export default class Ingress extends React.Component {
       'upstream_domains[].subdomain',
       'upstream_domains[].apex'
     ]
-    const rules = {}
+    const rules = {
+      'upstream_domains[].subdomain': 'string|required',
+      'upstream_domains[].apex': 'string|required'
+    }
     const labels = {
         'ingress': "INGRESS",
         'service': "SERVICE",
@@ -291,49 +329,49 @@ export default class Ingress extends React.Component {
         <div>
             <form onSubmit={(e) => e.preventDefault()}>
                 <Grid container spacing={24} direction={'row'}>
-                      <Grid container direction={'row'}>
-                        <Grid item xs={12} >
-                          <SelectField fullWidth={true} field={this.form.$('type')}/>
-                        </Grid>
-                        <Grid item xs={8}>
-                          <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
+                  <Grid container direction={'row'}>
+                    <Grid item xs={12} >
+                      <SelectField fullWidth={true} field={this.form.$('type')}/>
+                    </Grid>
+                    <Grid item xs={8}>
+                      <SelectField fullWidth={true} field={this.form.$('service')} key={'services'} />
+                    </Grid>
+                    <Grid item xs={4}>
+                      <RadioField field={this.form.$('protocol')} disabled={disabeProtocol}/>
+                    </Grid>
+                  </Grid>
+                  { this.form.$('type').value === "loadbalancer" &&
+                  <Grid container direction={'row'}>
+                    <Grid item xs={12}>
+                      <SelectField fullWidth={true} field={this.form.$('ingress')} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      {this.form.$('upstream_domains').map(function(domain){
+                      return (
+                      <Grid container spacing={24} direction={'row'} key={domain.id}>
+                        <Grid item xs={6}>
+                          <InputField fullWidth={true} field={domain.$('subdomain')} />
                         </Grid>
                         <Grid item xs={4}>
-                          <RadioField field={this.form.$('protocol')} disabled={disabeProtocol}/>
+                          <SelectField fullWidth={true} field={domain.$('apex')} />
                         </Grid>
-                      </Grid>
-                      { this.form.$('type').value === "loadbalancer" &&
-                      <Grid container direction={'row'}>
-                        <Grid item xs={12}>
-                          <SelectField fullWidth={true} field={this.form.$('ingress')} />
-                        </Grid>
-                        <Grid item xs={12}>
-                          {this.form.$('upstream_domains').map(function(domain){
-                          return (
-                          <Grid container spacing={24} direction={'row'} key={domain.id}>
-                            <Grid item xs={6}>
-                              <InputField fullWidth={true} field={domain.$('subdomain')} />
-                            </Grid>
-                            <Grid item xs={4}>
-                              <SelectField fullWidth={true} field={domain.$('apex')} />
-                            </Grid>
-                            <Grid item xs={2}>
-                              <IconButton>
-                                <CloseIcon onClick={domain.onDel} />
-                              </IconButton>
-                            </Grid>                                                                                          
-                          </Grid>                            
-                          )
-                          })}
-                          <Grid item xs={12}>
-                            <Button variant="raised" type="secondary" onClick={this.form.$('upstream_domains').onAdd}>
-                              Add Upstream Domain
-                            </Button>
-                          </Grid>        
-                          <br/>  
-                        </Grid>
-                      </Grid>
-                      }
+                        <Grid item xs={2}>
+                          <IconButton>
+                            <CloseIcon onClick={domain.onDel} />
+                          </IconButton>
+                        </Grid>                                                                                          
+                      </Grid>                            
+                      )
+                      })}
+                      <Grid item xs={12}>
+                        <Button variant="raised" type="secondary" onClick={this.form.$('upstream_domains').onAdd}>
+                          Add Upstream Domain
+                        </Button>
+                      </Grid>        
+                      <br/>  
+                    </Grid>
+                  </Grid>
+                  }
                 </Grid>
             </form>
         </div>
