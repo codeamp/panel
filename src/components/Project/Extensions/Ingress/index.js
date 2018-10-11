@@ -58,9 +58,9 @@ function getServicePorts(services) {
 
 @graphql(gql`
 query Project($slug: String, $environmentID: String,
-              $ingressControllerID: String,
-              $upstreamApexDomainsID: String,
-              $controlledApexDomainID: String){
+            $ingressControllerID: String,
+            $upstreamApexDomainsID: String,
+            $controlledApexDomainID: String){
   project(slug: $slug, environmentID: $environmentID) {
     id
     services {
@@ -112,7 +112,10 @@ query Project($slug: String, $environmentID: String,
         }
         return false
       })
-      ingressControllerID = ingressControllerConfigs[0].value
+
+      if (ingressControllerConfigs.length > 0) {
+        ingressControllerID = ingressControllerConfigs[0].value
+      }
 
       upstreamApexDomainsConfig = props.parentExtension.config.filter((item)=> {
         if (item.key.toLowerCase() === "upstream_apex_domains") {
@@ -121,7 +124,9 @@ query Project($slug: String, $environmentID: String,
         return false
       })
 
-      upstreamApexDomainsID = upstreamApexDomainsConfig[0].value
+      if (upstreamApexDomainsConfig.length > 0) {
+        upstreamApexDomainsID = upstreamApexDomainsConfig[0].value
+      }
 
       controlledApexDomainConfig = props.parentExtension.config.filter((item) => {
         if (item.key.toLowerCase() === "controlled_apex_domain") {
@@ -130,7 +135,9 @@ query Project($slug: String, $environmentID: String,
         return false
       })
 
-      controlledApexDomainID = controlledApexDomainConfig[0].value
+      if (controlledApexDomainConfig.length > 0) {
+        controlledApexDomainID = controlledApexDomainConfig[0].value
+      }
     }
 
 
