@@ -292,7 +292,7 @@ export default class Services extends React.Component {
     const rules = {
       'name': 'string|required|min:1|max:63',
       'serviceSpecID': 'string|required',
-      'command': 'string|required',
+      'command': 'string',
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
       'ports[].protocol': 'required',
