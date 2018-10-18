@@ -13,6 +13,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
@@ -49,6 +50,7 @@ query {
     id
     type
     key
+    cacheable
     name
     component
     environment {
@@ -81,11 +83,12 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtension ($name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+mutation CreateExtension ($name: String!, $key: String!, $type: String!, $cacheable: Boolean!, $environmentID: String!, $config: JSON!, $component: String!) {
     createExtension(extension:{
       name: $name,
       key: $key,
       type: $type,
+      cacheable: $cacheable, 
       environmentID: $environmentID,
       config: $config,
       component: $component,
@@ -98,12 +101,13 @@ mutation CreateExtension ($name: String!, $key: String!, $type: String!, $enviro
 
 
 @graphql(gql`
-mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: String!, $cacheable: Boolean!, $environmentID: String!, $config: JSON!, $component: String!) {
     updateExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
       type: $type,
+      cacheable: $cacheable, 
       environmentID: $environmentID,
       config: $config,
       component: $component,
@@ -116,12 +120,13 @@ mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: Str
 
 
 @graphql(gql`
-mutation DeleteExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+mutation DeleteExtension ($id: String, $name: String!, $key: String!, $type: String!, $cacheable: Boolean!, $environmentID: String!, $config: JSON!, $component: String!) {
     deleteExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
       type: $type,
+      cacheable: $cacheable, 
       environmentID: $environmentID,
       config: $config,
       component: $component,
@@ -162,6 +167,7 @@ export default class Extensions extends React.Component {
       'index',
       'name',
       'key',
+      'cacheable',
       'type',
       'config',
       'config[]',
@@ -184,6 +190,7 @@ export default class Extensions extends React.Component {
       'name': 'Name',
       'key': 'Key',
       'type': 'Type',
+      'cacheable': 'Cacheable',
       'config': 'Config',
       'config[].key': 'Key',
       'config[].value': 'Environment Variable',
@@ -194,6 +201,7 @@ export default class Extensions extends React.Component {
     const initials = formInitials
 
     const types = {
+      'cacheable': 'checkbox',
     };
     const extra = {
       'type': [{
@@ -233,6 +241,7 @@ export default class Extensions extends React.Component {
     const hooks = {
       'name': $hooks,
       'key': $hooks,
+      'cacheable': $hooks,
       'type': $hooks,
       'config': $hooks,
       'config[]': $hooks,
@@ -252,6 +261,7 @@ export default class Extensions extends React.Component {
     this.form = this.initAdminExtensionsForm({
       'type': 'Workflow',
       'environmentID': null,
+      'cacheable': false,
       'config[].allowOverride': false,
     })
   }
@@ -284,6 +294,7 @@ export default class Extensions extends React.Component {
     this.form = this.initAdminExtensionsForm({
       'type': 'Workflow',
       'environmentID': null,
+      'cacheable': false,
       'config[].allowOverride': false,
     })
     this.setOptions()
@@ -299,6 +310,7 @@ export default class Extensions extends React.Component {
       index: index,
       name: extension.name,
       key: extension.key,
+      cacheable: extension.cacheable,
       environmentID: extension.environment.id,
       component: extension.component,
       type: extension.type,
@@ -337,11 +349,15 @@ export default class Extensions extends React.Component {
   }
 
   queueDeleteExtension(form) {
+    console.log(form.values())
     this.setState({ pendingDeletionForm: form, showConfirmDeleteExtension: true })
   }
 
   handleDeleteExtension(){
     this.setState({ saving: true })
+
+    console.log(this.form.values())
+    console.log(this.state.pendingDeletionForm.values())
 
     this.props.deleteExtension({
       variables: this.state.pendingDeletionForm.values(),
@@ -494,6 +510,7 @@ export default class Extensions extends React.Component {
         name: extension.name,
         key: extension.key,
         environmentID: extension.environment.id,
+        cacheable: extension.cacheable,
         component: extension.component,
         type: extension.type,
         'config[].allowOverride': false,
@@ -606,6 +623,9 @@ export default class Extensions extends React.Component {
                     Add Config
                   </Button>
                 </Grid>    
+                <Grid item xs={4}>
+                  <CheckboxField field={mobxForm.$('cacheable')} fullWidth={true} />
+                </Grid>                
                 <Grid item xs={2}>
                   <Button color="default" variant="raised" onClick={(e) => this.onSubmit(e, mobxForm)}>
                     Save
@@ -691,6 +711,9 @@ export default class Extensions extends React.Component {
                 </Grid>
                 <Grid item xs={4}>
                   <InputField field={this.form.$('component')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <CheckboxField field={this.form.$('cacheable')} fullWidth={true} />
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="title">
