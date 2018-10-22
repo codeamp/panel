@@ -190,7 +190,7 @@ export default class Extensions extends React.Component {
       'name': 'Name',
       'key': 'Key',
       'type': 'Type',
-      'cacheable': 'Cacheable',
+      'cacheable': 'Enable caching',
       'config': 'Config',
       'config[].key': 'Key',
       'config[].value': 'Environment Variable',
@@ -588,13 +588,19 @@ export default class Extensions extends React.Component {
             </Grid>
           </ExpansionPanelSummary>
 
-          <Divider />
+          <Divider className={styles.sectionDivider} />
 
           <ExpansionPanelDetails className={styles.details}>
             {this.renderMobxReactComponent(mobxForm)}
+            <Grid item xs={12} style={{ marginBottom: 20, marginTop: 20 }}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} style={{ marginBottom: 20 }}>
+              <Typography variant="subheading"> Config </Typography>
+            </Grid>            
             {mobxForm && mobxForm.$('config').map((kv, i) => {
                 return (
-                  <Grid container spacing={40} key={kv.id}>
+                  <Grid container spacing={40} key={kv.id}>                  
                       <Grid item xs={2}>
                           <InputField field={kv.$('key')} fullWidth={true} />
                       </Grid>
@@ -613,16 +619,21 @@ export default class Extensions extends React.Component {
                 )
             })}
             {mobxForm && (
-              <Grid container spacing={40} className={styles.configActions} align="center">
-                <Grid item xs={2}>
+              <Grid container spacing={40} className={styles.configActions} align="left">
+                <Grid item xs={12}>
                   <Button color="default" variant="raised" onClick={mobxForm.$('config').onAdd}>
                     Add Config
                   </Button>
                 </Grid>    
-                <Grid item xs={4}>
-                  <CheckboxField field={mobxForm.$('cacheable')} fullWidth={true} />
-                </Grid>                
-                <Grid item xs={2}>
+                <Grid item xs={12} className={styles.sectionDivider}>
+                  <Divider />
+                </Grid>
+                <Tooltip placement="bottom-start" title="Whether results from the process should be cached and re-used during deploys">
+                  <Grid item xs={12}>
+                    <CheckboxField field={mobxForm.$('cacheable')} fullWidth={true} />
+                  </Grid>
+                </Tooltip>
+                <Grid item xs={12}>
                   <Button color="default" variant="raised" onClick={(e) => this.onSubmit(e, mobxForm)}>
                     Save
                   </Button>
