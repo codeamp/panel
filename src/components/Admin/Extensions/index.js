@@ -349,15 +349,11 @@ export default class Extensions extends React.Component {
   }
 
   queueDeleteExtension(form) {
-    console.log(form.values())
     this.setState({ pendingDeletionForm: form, showConfirmDeleteExtension: true })
   }
 
   handleDeleteExtension(){
     this.setState({ saving: true })
-
-    console.log(this.form.values())
-    console.log(this.state.pendingDeletionForm.values())
 
     this.props.deleteExtension({
       variables: this.state.pendingDeletionForm.values(),
