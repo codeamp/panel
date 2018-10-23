@@ -46,7 +46,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
         store.app.setSnackbar({ open: true, msg: message }),
       )
     if (networkError){
-      console.log(`[Network error]: ${networkError}`)
+      store.app.setSnackbar({ open: true, msg: networkError })
     }
   });
 
