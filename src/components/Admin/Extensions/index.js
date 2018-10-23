@@ -336,6 +336,7 @@ export default class Extensions extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.props.store.app.setSnackbar({ open: true, msg: 'Extension ' + form.values()['name'] + ' has been created'})
         this.setState({ saving: false })
       });
     } else {
@@ -343,6 +344,7 @@ export default class Extensions extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.props.store.app.setSnackbar({ open: true, msg: 'Extension ' + form.values()['name'] + ' has been updated'})
         this.setState({ saving: false })        
       });
     }
@@ -368,6 +370,7 @@ export default class Extensions extends React.Component {
   }
 
   onSubmit(e, form){
+    console.log('onSubmit')
     form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
