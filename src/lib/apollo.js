@@ -4,6 +4,7 @@ import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { ApolloLink, from } from 'apollo-link';
 import { onError } from "apollo-link-error";
+import store from '../mobx/store.js';
 
 export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
   const httpLink = new HttpLink({
@@ -42,9 +43,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
   const errorLink = onError(({ graphQLErrors, networkError }) => {
     if (graphQLErrors)
       graphQLErrors.map(({ message, locations, path }) =>  
-        console.log(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
-        ),
+        store.app.setSnackbar({ open: true, msg: message }),
       )
     if (networkError){
       console.log(`[Network error]: ${networkError}`)
