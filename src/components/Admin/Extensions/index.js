@@ -759,6 +759,7 @@ export default class Extensions extends React.Component {
         <Loading />
       )
     }    
+    
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>

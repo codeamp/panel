@@ -11,6 +11,8 @@ import ReleasesIcon from '@material-ui/icons/Timeline';
 import ServicesIcon from '@material-ui/icons/Widgets';
 import SecretIcon from '@material-ui/icons/VpnKey';
 import ExtensionsIcon from '@material-ui/icons/Extension';
+import LockIcon from '@material-ui/icons/Lock';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import StarIcon from '@material-ui/icons/Star';
 import ProjectFeatures from 'components/Project/Features';
@@ -24,6 +26,7 @@ import Loading from 'components/Utils/Loading';
 import DoesNotExist404 from 'components/Utils/DoesNotExist404';
 import Typography from 'material-ui/Typography';
 import Toolbar from 'material-ui/Toolbar';
+import Tooltip from 'material-ui/Tooltip';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Button from 'material-ui/Button';
 import { withApollo } from 'react-apollo';
@@ -69,7 +72,14 @@ import Grid from 'material-ui/Grid';
         created
       }
       bookmarked
+      lockedBy {
+        id
+        email
+      }
     }
+    user {
+      id
+    }    
   }`, {
   options: (props) => ({
     variables: {
@@ -83,6 +93,14 @@ import Grid from 'material-ui/Grid';
   mutation BookmarkProject ($id: ID!) {
     bookmarkProject(id: $id)
   }`, { name: "bookmarkProject" }
+)
+
+@graphql(gql`
+  mutation ToggleProjectLock ($projectID: String!, $userID: String!) {
+    toggleProjectLock(projectLock: { projectID: $projectID, userID: $userID }) {
+      id
+    }
+  }`, { name: "toggleProjectLock" }
 )
 
 class Project extends React.Component {
@@ -129,6 +147,17 @@ class Project extends React.Component {
     this.props.bookmarkProject({
       variables: {
         'id': this.props.data.project.id,
+      }
+    }).then(({ data }) => {
+      this.props.data.refetch()
+    })
+  }
+
+  handleToggleProjectLock = () => {
+    this.props.toggleProjectLock({
+      variables: {
+        'projectID': this.props.data.project.id,
+        'userID': this.props.data.user.id,
       }
     }).then(({ data }) => {
       this.props.data.refetch()
@@ -223,6 +252,22 @@ class Project extends React.Component {
         </IconButton>
       )
     }
+
+    let lockState = (
+      <IconButton aria-label="LockState" onClick={this.handleToggleProjectLock.bind(this)}>
+        <LockOpenIcon/>
+      </IconButton>
+    )
+    if(project.lockedBy.email !== "") {
+      lockState = (
+        <Tooltip title={"Currently locked by " + project.lockedBy.email}>
+          <IconButton aria-label="LockState" onClick={this.handleToggleProjectLock.bind(this)}>
+            <LockIcon/>
+          </IconButton>
+        </Tooltip>
+      )
+    }
+
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -232,6 +277,7 @@ class Project extends React.Component {
               <Typography variant="title">
                 {project.name} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
+              {lockState}
             </Toolbar>
           </Grid>
           <Grid item xs={3} style={{textAlign: "right"}}>
