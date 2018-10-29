@@ -631,11 +631,13 @@ export default class Extensions extends React.Component {
                 <Grid item xs={12} className={styles.sectionDivider}>
                   <Divider />
                 </Grid>
-                <Tooltip placement="bottom-start" title="Whether results from the process should be cached and re-used during deploys">
-                  <Grid item xs={12}>
-                    <CheckboxField field={mobxForm.$('cacheable')} fullWidth={true} />
-                  </Grid>
-                </Tooltip>
+                {extension.type === 'workflow' &&
+                  <Tooltip placement="bottom-start" title="Whether results from the process should be cached and re-used during deploys">
+                    <Grid item xs={12}>
+                      <CheckboxField field={mobxForm.$('cacheable')} fullWidth={true} />
+                    </Grid>
+                  </Tooltip>
+                }
                 <Grid item xs={12}>
                   <Button color="default" variant="raised" onClick={(e) => this.onSubmit(e, mobxForm)}>
                     Save
