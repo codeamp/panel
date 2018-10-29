@@ -5,6 +5,7 @@ import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import SelectField from 'components/Form/select-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
 import validatorjs from 'validatorjs';
@@ -236,6 +237,7 @@ export default class Ingress extends React.Component {
       'type',
       'protocol',
       'subdomain',
+      'enable_websockets',
       'upstream_domains',
       'upstream_domains[].subdomain',
       'upstream_domains[].apex'
@@ -248,13 +250,16 @@ export default class Ingress extends React.Component {
         'ingress': "INGRESS",
         'service': "SERVICE",
         'protocol': "PROTOCOL",
+        'enable_websockets': 'ENABLE WEBSOCKETS',
         'type': "TYPE",
         'upstream_domains': 'UPSTREAM DOMAINS',
         'upstream_domains[].subdomain': "UPSTREAM SUBDOMAIN",
         'upstream_domains[].apex': "APEX"
     }
     const initials = {}
-    const types = {}
+    const types = {
+      "enable_websockets": 'checkbox'
+    }
     const extra = {
         'ingress': this.state.ingressControllers,
         'service': this.state.services,
@@ -269,7 +274,7 @@ export default class Ingress extends React.Component {
             "value": "Cluster IP"
           }
         ],
-        'protocol': ["TCP", "UDP"]
+        'protocol': ["TCP", "UDP"],
     }
     const hooks = {};
 
@@ -341,9 +346,12 @@ export default class Ingress extends React.Component {
                         </Grid>
                       </Grid>
                       { this.form.$('type').value === "loadbalancer" &&
-                      <Grid container direction={'row'}>
-                        <Grid item xs={12}>
+                      <Grid container spacing={24} direction={'row'}>
+                        <Grid item xs={8}>
                           <SelectField fullWidth={true} field={this.form.$('ingress')} />
+                        </Grid>
+                        <Grid item xs={4}>
+                          <CheckboxField field={this.form.$('enable_websockets')} />
                         </Grid>
                         <Grid item xs={12}>
                           {this.form.$('upstream_domains').map(function(domain){

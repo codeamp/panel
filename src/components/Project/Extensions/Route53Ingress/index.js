@@ -64,30 +64,65 @@ query Project($slug: String, $environmentID: String){
 export default class Route53Ingress extends React.Component {
   constructor(props){
     super(props)
-    this.state = {}
+    this.state = {
+      domainOptions: [],
+      optionData: {},
+      selectedOption: {}
+    }
+
+    this.onIngressSelect = this.onIngressSelect.bind(this)
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    let project = props.data.project
+
+    if (props.data.loading) {
+      return state
+    }
+
+    let domainOptions = []
+    let optionData = {}
+
+    project.extensions.forEach(function(extension){
+      let controller = _.find(extension.artifacts, function(a) { return a.key === "ingress_controller" });
+      if (!controller) {
+        return
+      }
+      let controlledApexDomain = _.find(extension.artifacts, function(a) { return a.key === "controlled_apex_domain"})
+      let elbFQDN = _.find(extension.artifacts, function(a) { return a.key === "elb_dns"})
+      if(extension.extension.key.includes("ingress") && extension.customConfig.type === "loadbalancer") {
+
+        extension.customConfig.upstream_domains.forEach(function(domain) {
+          if (domain.apex === controlledApexDomain.value) {
+            let optionKey = extension.id + '-' + domain.subdomain + '-' + controlledApexDomain
+            domainOptions.push({
+              key: optionKey,
+              value: domain.subdomain + '.' + domain.apex + " (" + controller.value + ")"
+            })
+
+            optionData[optionKey] = {
+              controller: controller,
+              elbFQDN: elbFQDN,
+              domain: domain,
+              type: extension.customConfig.type,
+            }
+          }
+        })
+      }
+    })
+
+    state.domainOptions = domainOptions
+    state.optionData = optionData
+    return state
   }
 
   componentDidMount() {
-    this.props.onRef(this)
-    if(this.props.init){
-      this.form.update(this.props.init)
-    }
-  }
 
-  componentWillUnmount() {
-    this.props.onRef(undefined)
-  }
-
-  values(){
-    return this.form.values() 
-  }
-
-  componentWillMount(){
     const fields = [
-        'subdomain',
-        'loadbalancer',
-        'loadbalancer_fqdn',
-        'loadbalancer_type',
+      'subdomain',
+      'loadbalancer',
+      'loadbalancer_fqdn',
+      'loadbalancer_type',
     ]
     const rules = {}
     const labels = {
@@ -99,10 +134,33 @@ export default class Route53Ingress extends React.Component {
     const initials = {}
     const types = {}
     const extra = {}
-    const hooks = {};
+    const hooks = {
+      "loadbalancer": {
+        onChange: (field) => {
+          this.onIngressSelect(field)
+        }
+      }
+    };
 
     const plugins = { dvr: validatorjs }
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
+
+    this.props.onRef(this)
+    if(this.props.init){
+      this.form.update(this.props.init)
+    }
+  }
+
+  componentDidUpdate() {
+    this.form.set('extra', {'loadbalancer': this.state.domainOptions})
+  }
+
+  componentWillUnmount() {
+    this.props.onRef(undefined)
+  }
+
+  values(){
+    return this.form.values() 
   }
 
   onError(form){
@@ -123,31 +181,10 @@ export default class Route53Ingress extends React.Component {
     }
   }
 
-  onAdd(extension, event){
-    this.setState({ addButtonDisabled: true })
-    if(this.form){
-      this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
-    }
-  }   
-
   renderFQDN(extensionId) {
     if(!extensionId) {
       return null 
     }
-
-    const { project } = this.props.data;
-
-    project.extensions.map((extension) => {
-      if(extension.id === extensionId) {
-        let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
-        let subdomain = _.find(extension.artifacts, function(a) { return a.key === "subdomain"})
-
-        this.form.$('subdomain').set(subdomain.value);
-        this.form.$('loadbalancer_fqdn').set(artifact.value);
-        this.form.$('loadbalancer_type').set(extension.customConfig.type);
-      }
-      return null
-    })
     
     return (
       <Grid item xs={12}>
@@ -163,12 +200,8 @@ export default class Route53Ingress extends React.Component {
       <div>
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
-            {/* <Grid item xs={12}> */}
-              {/* <InputField fullWidth={true} field={this.form.$('subdomain')} /> */}
-              {/* <SelectField fullWidth={true} field={this.form.$('subdomain')} extraKey={'subdomains'} /> */}
-            {/* </Grid> */}
             <Grid item xs={12}>
-              <SelectField fullWidth={true} field={this.form.$('loadbalancer')} extraKey={'extensions'} />
+              <SelectField fullWidth={true} field={this.form.$('loadbalancer')} />
             </Grid>
             { this.renderFQDN(this.form.values()['loadbalancer']) }
           </Grid>
@@ -189,6 +222,17 @@ export default class Route53Ingress extends React.Component {
     return this.renderLoadBalancerForm(project)
   }
 
+  onIngressSelect(field){
+    let selectedOption = this.state.optionData[field.value]
+    this.setState({
+      selectedOption: selectedOption
+    })
+
+    this.form.$('subdomain').set(selectedOption.domain.subdomain)
+    this.form.$('loadbalancer_fqdn').set(selectedOption.elbFQDN.value)
+    this.form.$('loadbalancer_type').set(selectedOption.type)
+  }
+
   render(){
     const { loading, project } = this.props.data;
     const { type } = this.props;
@@ -198,35 +242,6 @@ export default class Route53Ingress extends React.Component {
         <Loading />
       );
     }
-    
-    let extraOptions = []
-    let domainOptions = []
-    project.extensions.forEach(function(extension){
-      let controller = _.find(extension.artifacts, function(a) { return a.key === "ingress_controller" });
-      if (!controller) {
-        return
-      }
-
-      let fqdn = _.find(extension.artifacts, function(a) { return a.key === "fqdn"})
-      let subdomain = _.find(extension.artifacts, function(a) { return a.key === "subdomain"})
-
-      if(extension.extension.key.includes("ingress") && extension.customConfig.type === "loadbalancer") {
-        extraOptions.push({
-          key: extension.id,
-          value: fqdn.value + " (" + controller.value + ")",
-        })
-
-        domainOptions.push({
-          key: subdomain.value,
-          value: fqdn.value
-        })
-      }
-    })
-
-    this.form.state.extra({
-        extensions: extraOptions,
-        subdomains: domainOptions,
-    })
 
     if(type === "enabled"){
       return this.renderEnabledView(project)
