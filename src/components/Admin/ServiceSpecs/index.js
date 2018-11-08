@@ -297,7 +297,7 @@ export default class ServiceSpecs extends React.Component {
                     </TableCell>
                     <TableCell>
                       Default
-                    </TableCell>
+                    </TableCell>                    
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -371,6 +371,9 @@ export default class ServiceSpecs extends React.Component {
                       <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
                     </Grid>
                   }                
+                  <Grid item xs={12}>
+                    <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
+                  </Grid>                  
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
