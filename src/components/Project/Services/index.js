@@ -603,6 +603,7 @@ export default class Services extends React.Component {
     }
 
     this.setState(newState)
+    this.form.$('serviceSpecID').set('disabled', true)
 
     this.openDrawer()
   }
