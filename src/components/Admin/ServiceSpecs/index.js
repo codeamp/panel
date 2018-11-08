@@ -2,6 +2,7 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
+import CheckboxField from 'components/Form/checkbox-field';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
@@ -25,7 +26,7 @@ import gql from 'graphql-tag';
 
 const inlineStyles = {
   addButton: {
-    position: 'absolute',
+    position: 'fixed',
     bottom: 20,
     right: 20,
   }
@@ -41,6 +42,7 @@ query {
     memoryRequest
     memoryLimit
     terminationGracePeriod
+    isDefault
   }
 }
 `,{
@@ -51,7 +53,7 @@ query {
 
 @graphql(gql`
 mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: String!,
-  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
+  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!, $isDefault: Boolean!) {
     createServiceSpec(serviceSpec:{
     name: $name,
     cpuRequest: $cpuRequest,
@@ -59,6 +61,7 @@ mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: Str
     memoryRequest: $memoryRequest,
     memoryLimit: $memoryLimit,
     terminationGracePeriod: $terminationGracePeriod,
+    isDefault: $isDefault,
     }) {
         id
         name
@@ -68,7 +71,7 @@ mutation CreateServiceSpec ($name: String!, $cpuRequest: String!, $cpuLimit: Str
 
 @graphql(gql`
 mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!,
-  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
+  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!, $isDefault: Boolean!) {
     deleteServiceSpec(serviceSpec:{
     id: $id,
     name: $name,
@@ -77,6 +80,7 @@ mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, 
     memoryRequest: $memoryRequest,
     memoryLimit: $memoryLimit,
     terminationGracePeriod: $terminationGracePeriod,
+    isDefault: $isDefault,
     }) {
         id
         name
@@ -86,7 +90,7 @@ mutation DeleteServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, 
 
 @graphql(gql`
 mutation UpdateServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!,
-  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!) {
+  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!, $isDefault: Boolean!) {
     updateServiceSpec(serviceSpec:{
     id: $id,
     name: $name,
@@ -95,6 +99,7 @@ mutation UpdateServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, 
     memoryRequest: $memoryRequest,
     memoryLimit: $memoryLimit,
     terminationGracePeriod: $terminationGracePeriod,
+    isDefault: $isDefault,
     }) {
         id
         name
@@ -126,6 +131,7 @@ export default class ServiceSpecs extends React.Component {
       'terminationGracePeriod',
       'id',
       'index',
+      'isDefault',
     ];
 
     const rules = {
@@ -144,11 +150,14 @@ export default class ServiceSpecs extends React.Component {
       'memoryRequest': 'Memory Request (mb)',
       'memoryLimit': 'Memory Limit (mb)',
       'terminationGracePeriod': 'Termination Grace Period (seconds)',
+      'isDefault': 'Default profile that will be applied to new services.',
     };
 
     const initials = formInitials;
 
-    const types = {};
+    const types = {
+      'isDefault': 'checkbox',      
+    };
 
     const extra = {};
 
@@ -175,6 +184,7 @@ export default class ServiceSpecs extends React.Component {
       memoryRequest: serviceSpec.memoryRequest,
       memoryLimit: serviceSpec.memoryLimit,
       terminationGracePeriod: serviceSpec.terminationGracePeriod,
+      isDefault: serviceSpec.isDefault,      
       id: serviceSpec.id,
       index: index,
     })
@@ -272,6 +282,9 @@ export default class ServiceSpecs extends React.Component {
                     <TableCell>
                       Timeout (s)
                     </TableCell>
+                    <TableCell>
+                      Default
+                    </TableCell>                    
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -284,12 +297,13 @@ export default class ServiceSpecs extends React.Component {
                         selected={isSelected}
                         tabIndex={-1}
                         key={serviceSpec.id}>
-                        <TableCell> { serviceSpec.name} </TableCell>
+                        <TableCell> { serviceSpec.name } </TableCell>
                         <TableCell> { serviceSpec.cpuRequest}</TableCell>
-                        <TableCell> { serviceSpec.cpuLimit} </TableCell>
-                        <TableCell> { serviceSpec.memoryRequest}</TableCell>
-                        <TableCell> { serviceSpec.memoryLimit}</TableCell>
-                        <TableCell> { serviceSpec.terminationGracePeriod}</TableCell>
+                        <TableCell> { serviceSpec.cpuLimit } </TableCell>
+                        <TableCell> { serviceSpec.memoryRequest }</TableCell>
+                        <TableCell> { serviceSpec.memoryLimit }</TableCell>
+                        <TableCell> { serviceSpec.terminationGracePeriod }</TableCell>
+                        <TableCell> { serviceSpec.isDefault ? "yes" : "no" }</TableCell>
                       </TableRow>
                     )
                   })}
@@ -339,6 +353,9 @@ export default class ServiceSpecs extends React.Component {
                   <Grid item xs={6}>
                     <InputField field={this.form.$('terminationGracePeriod')} fullWidth={true} />
                   </Grid>
+                  <Grid item xs={12}>
+                    <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
+                  </Grid>                  
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
