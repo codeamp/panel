@@ -21,7 +21,7 @@ import Loading from 'components/Utils/Loading';
 
 import Raven from 'raven-js'
 
-const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
+const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI, {transports: ["websocket"]});
 
 @graphql(gql`
   query UserProjects($projectSearch: ProjectSearchInput){
