@@ -89,7 +89,7 @@ query Project($slug: String, $environmentID: String) {
 
 // Mutations
 @graphql(gql`
-mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+mutation CreateService($projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
     $preStopHook: String) {
@@ -97,7 +97,6 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
     projectID: $projectID,
     command: $command,
     name: $name,
-    serviceSpecID: $serviceSpecID,
     count: $count,
     type: $type,
     ports: $ports,
@@ -112,7 +111,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
 }`, { name: "createService" })
 
 @graphql(gql`
-mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
     $preStopHook: String) {
@@ -121,7 +120,6 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     projectID: $projectID,
     command: $command,
     name: $name,
-    serviceSpecID: $serviceSpecID,
     count: $count,
     type: $type,
     ports: $ports,
@@ -136,7 +134,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 }`, { name: "updateService" })
 
 @graphql(gql`
-mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!,
   $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
   $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
   $preStopHook: String) {
@@ -145,7 +143,6 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   projectID: $projectID,
   command: $command,
   name: $name,
-  serviceSpecID: $serviceSpecID,
   count: $count,
   type: $type,
   ports: $ports,
@@ -291,7 +288,6 @@ export default class Services extends React.Component {
 
     const rules = {
       'name': 'string|required|min:1|max:63',
-      'serviceSpecID': 'string|required',
       'command': 'string',
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
@@ -767,9 +763,11 @@ export default class Services extends React.Component {
                     <Grid item xs={3}>
                       <InputField field={this.form.$('count')} fullWidth={true}/>
                     </Grid>
-                    <Grid item xs={9}>
-                      <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
-                    </Grid>
+                    {this.form.values()['id'] !== "" &&                    
+                      <Grid item xs={9}>
+                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
+                      </Grid>
+                    }
                     <Grid item xs={12}>
                         <div>
                           <Grid container spacing={24}>
