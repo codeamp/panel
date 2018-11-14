@@ -199,6 +199,10 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.props.store.app.setSnackbar({ 
+          msg: this.form.values()['name'] + " has been created",
+          open: true,
+        })        
         this.closeDrawer(true)
       });
     } else {
@@ -206,6 +210,10 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch();
+        this.props.store.app.setSnackbar({ 
+          msg: this.form.values()['name'] + " has been updated",
+          open: true,
+        })
         this.closeDrawer(true)
       });
     }
