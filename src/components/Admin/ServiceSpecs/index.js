@@ -15,6 +15,7 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import AddIcon from '@material-ui/icons/Add';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import InputField from 'components/Form/input-field';
 import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
@@ -303,7 +304,7 @@ export default class ServiceSpecs extends React.Component {
                         <TableCell> { serviceSpec.memoryRequest }</TableCell>
                         <TableCell> { serviceSpec.memoryLimit }</TableCell>
                         <TableCell> { serviceSpec.terminationGracePeriod }</TableCell>
-                        <TableCell> { serviceSpec.isDefault ? "yes" : "no" }</TableCell>
+                        <TableCell> { serviceSpec.isDefault ? <CheckCircleIcon /> : "" }</TableCell>
                       </TableRow>
                     )
                   })}
