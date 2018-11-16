@@ -140,7 +140,7 @@ export default class Features extends React.Component {
       },
     }).then(({data}) => {
       this.props.data.refetch()
-      this.props.history.push("/projects/" + this.props.match.params.slug + "/" + this.props.match.params.environment + "/releases")
+      this.props.history.push(`/projects/${this.props.match.params.slug}/${this.props.match.params.environment}/releases`)
     });
   }
 
