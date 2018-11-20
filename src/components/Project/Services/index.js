@@ -24,6 +24,7 @@ import ExpansionPanel, {
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import SelectField from 'components/Form/select-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
@@ -44,9 +45,14 @@ import Tooltip from 'components/Utils/Tooltip';
 import OneShotIcon from '@material-ui/icons/LooksOne';
 import GeneralIcon from '@material-ui/icons/Autorenew';
 
-@inject("store") 
+@inject("store")
 @graphql(gql`
 query Project($slug: String, $environmentID: String) {
+  user {
+    id
+    email
+    permissions
+  }
   project(slug: $slug, environmentID: $environmentID) {
     id
     services{
@@ -66,6 +72,7 @@ query Project($slug: String, $environmentID: String) {
         readinessProbe
         livenessProbe
         preStopHook
+        autoscaleEnabled
       }
     }
   }
@@ -92,6 +99,7 @@ query Project($slug: String, $environmentID: String) {
 mutation CreateService($projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+    $autoscaleEnabled: Boolean!,
     $preStopHook: String) {
     createService(service:{
     projectID: $projectID,
@@ -104,7 +112,8 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!,
     deploymentStrategy: $deploymentStrategy,
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
-    preStopHook: $preStopHook
+    preStopHook: $preStopHook,
+    autoscaleEnabled: $autoscaleEnabled,
     }) {
       id
     }
@@ -114,6 +123,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!,
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+    $autoscaleEnabled: Boolean!,
     $preStopHook: String) {
     updateService(service:{
     id: $id,
@@ -127,7 +137,8 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     deploymentStrategy: $deploymentStrategy,
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
-    preStopHook: $preStopHook
+    preStopHook: $preStopHook,
+    autoscaleEnabled: $autoscaleEnabled,
     }) {
       id
     }
@@ -137,6 +148,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!,
   $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
   $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+  $autoscaleEnabled: Boolean!,
   $preStopHook: String) {
   deleteService(service:{
   id: $id,
@@ -151,6 +163,7 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   readinessProbe: $readinessProbe,
   livenessProbe: $livenessProbe,
   preStopHook: $preStopHook
+  autoscaleEnabled: $autoscaleEnabled,
   }) {
     id
   }
@@ -165,15 +178,16 @@ export default class Services extends React.Component {
       anchorEl: null,
       userHasUnsavedChanges: false,
       saving: false,
+      queryArgsProcessed: false,
 
-      showConfirmDeleteDialog: false,      
+      showConfirmDeleteDialog: false,
       showAddServiceMenu: false,
       showDiscardEditsConfirmDialog: false,
       showAdvancedSettings: false,
       showDeploymentStrategySettings: false,
       showReadinessProbeSettings: false,
       showLivenessProbeSettings: false,
-      showLifecycleSettings: false
+      showLifecycleSettings: false,
     }
 
     this.handleDeleteService = this.handleDeleteService.bind(this)
@@ -192,13 +206,13 @@ export default class Services extends React.Component {
   handleServiceMenuClickAway() {
     if (this.state.showAddServiceMenu === true) {
       this.setState({showAddServiceMenu:false})
-    } 
+    }
   }
 
   handleDrawerClickAway() {
     if (this.state.drawerOpen === true) {
       this.handleCancelForm()
-    } 
+    }
   }
 
   handleCancelForm() {
@@ -244,6 +258,7 @@ export default class Services extends React.Component {
       'ports[].protocol',
       'environmentID',
       'index',
+      'autoscaleEnabled',
       'deploymentStrategy',
       'deploymentStrategy.type',
       'deploymentStrategy.maxUnavailable',
@@ -365,7 +380,8 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[].name': "Name",
       'readinessProbe.httpHeaders[].value': "Value",
 
-      'preStopHook': "Command"
+      'preStopHook': "Command",
+      'autoscaleEnabled': "Enable autoscaling so the suggested service spec is used (experimental)"
     };
 
     const initials = formInitials
@@ -389,6 +405,7 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': 'number',
       'readinessProbe.successThreshold': 'number',
       'readinessProbe.failureThreshold': 'number',
+      'autoscaleEnabled': 'checkbox',
     };
 
     const keys = {};
@@ -456,7 +473,7 @@ export default class Services extends React.Component {
       'ports[]': $hooks,
       'deploymentStrategy': $hooks,
       'readinessProbe': $hooks,
-      
+
       'livenessProbe.method': $hooks,
       'livenessProbe.command': $hooks,
       'livenessProbe.port': $hooks,
@@ -478,7 +495,7 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': $hooks,
       'readinessProbe.successThreshold': $hooks,
       'readinessProbe.failureThreshold': $hooks,
-      
+
       'preStopHook': $hooks
     };
 
@@ -488,11 +505,40 @@ export default class Services extends React.Component {
       autoParseNumbers: true
     }
 
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins, options });    
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins, options });
   }
 
   componentWillMount(){
     this.form = this.initProjectServicesForm()
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(this.state.queryArgsProcessed){
+      return
+    }
+
+    const { project, loading } = nextProps.data;
+    const self = this;
+
+    if(project !== undefined){
+      // check for serviceID argument
+      const args = nextProps.location.search.substr(1).split('=')
+      let serviceID = ""
+
+      for(let i = 0; i < args.length; i++){
+        if(args[i] === 'serviceID' && args.length >= i + 1) {
+          serviceID = args[i+1]
+        }
+      }
+
+      project.services.entries.map(function(service, idx){
+        if(service.id === serviceID){
+          self.editService(service, idx)
+        }
+      })
+    }
+
+    this.setState({ queryArgsProcessed: true })    
   }
 
   onSuccess(form) {
@@ -528,8 +574,8 @@ export default class Services extends React.Component {
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
       'readinessProbe.method': 'default',
-      'livenessProbe.method': 'default'
-    })    
+      'livenessProbe.method': 'default',
+    })
 
     this.openDrawer()
   };
@@ -549,7 +595,7 @@ export default class Services extends React.Component {
           userHasUnsavedChanges: false,
           showAdvancedSettings: false,
         })
-    } 
+    }
   }
 
   editService(service, index){
@@ -562,7 +608,8 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
-      preStopHook: service.preStopHook
+      preStopHook: service.preStopHook,
+      autoscaleEnabled: service.autoscaleEnabled,
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -631,7 +678,9 @@ export default class Services extends React.Component {
   }
 
   render() {
-    const { loading, project, serviceSpecs } = this.props.data;
+    const self = this;
+    const { loading, project, serviceSpecs, user } = this.props.data;
+
     if(loading){
       return (
         <Loading />
@@ -644,12 +693,13 @@ export default class Services extends React.Component {
         return {
           key: serviceSpec.id,
           value: serviceSpec.name,
-          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " + 
-                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " + 
+          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " +
+                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " +
                      serviceSpec.memoryLimit + "mb | T/o: " + serviceSpec.terminationGracePeriod + "s",
         }
       })
     })
+
     return (
       <div>
           <Paper className={styles.tablePaper}>
@@ -679,9 +729,6 @@ export default class Services extends React.Component {
                     Open Ports
                   </TableCell>
                   <TableCell>
-                    Service Spec
-                  </TableCell>
-                  <TableCell>
                     Created
                   </TableCell>
                 </TableRow>
@@ -699,7 +746,6 @@ export default class Services extends React.Component {
                       <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
                       <TableCell> { this.getServiceTypeGlyph(service) }</TableCell>
                       <TableCell> { service.ports.length}</TableCell>
-                      <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { moment(new Date(service.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }</TableCell>
                     </TableRow>
                   )
@@ -763,7 +809,7 @@ export default class Services extends React.Component {
                     <Grid item xs={3}>
                       <InputField field={this.form.$('count')} fullWidth={true}/>
                     </Grid>
-                    {this.form.values()['id'] !== "" &&                    
+                    {this.form.values()['id'] !== "" &&
                       <Grid item xs={9}>
                         <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
                       </Grid>
@@ -842,7 +888,7 @@ export default class Services extends React.Component {
                                   </ExpansionPanelDetails>
                                 </ExpansionPanel>
                               </Grid>
-                              
+
                               <Grid item xs={12}>
                                 <ExpansionPanel expanded={this.state.showReadinessProbeSettings} onChange={this.handleToggleReadinessProbeSettings()}>
                                   <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -1079,6 +1125,11 @@ export default class Services extends React.Component {
                         </ExpansionPanel>
 
                     </Grid>
+                    {user.permissions.includes("admin") &&
+                      <Grid item xs={12}>
+                        <CheckboxField field={this.form.$('autoscaleEnabled')} fullWidth={true} />
+                      </Grid>
+                    }
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}
@@ -1124,7 +1175,7 @@ export default class Services extends React.Component {
               Confirm
             </Button>
           </DialogActions>
-        </Dialog>          
+        </Dialog>
 
         {project.services.entries[this.form.values()['index']] &&
           <Dialog open={this.state.showConfirmDeleteDialog}>

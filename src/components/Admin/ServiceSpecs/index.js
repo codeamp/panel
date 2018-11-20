@@ -3,17 +3,21 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
 import CheckboxField from 'components/Form/checkbox-field';
+import TextField from 'material-ui/TextField';
 import AppBar from 'material-ui/AppBar';
+import Card from 'material-ui/Card';
 import Toolbar from 'material-ui/Toolbar';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
+import Link from 'react-router-dom/Link';
 import Dialog, {
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import Divider from '@material-ui/core/Divider';
 import AddIcon from '@material-ui/icons/Add';
 import DefaultIcon from '@material-ui/icons/Done';
 import InputField from 'components/Form/input-field';
@@ -44,6 +48,24 @@ query {
     memoryLimit
     terminationGracePeriod
     isDefault
+    service {
+      id
+      project {
+        id
+        slug
+      }
+      suggestedServiceSpec {
+        id
+        cpuRequest
+        cpuLimit
+        memoryRequest
+        memoryLimit
+      }
+      environment {
+        id
+        key
+      }
+    }
   }
 }
 `,{
@@ -119,6 +141,7 @@ export default class ServiceSpecs extends React.Component {
       drawerOpen: false,
       saving: false,
       dirtyFormDialogOpen: false,
+      currentServiceSpec: {},
     }
   }
 
@@ -133,6 +156,7 @@ export default class ServiceSpecs extends React.Component {
       'id',
       'index',
       'isDefault',
+      'autoscaleEnabled',
     ];
 
     const rules = {
@@ -150,14 +174,14 @@ export default class ServiceSpecs extends React.Component {
       'cpuLimit': 'CPU Limit (millicpus)',
       'memoryRequest': 'Memory Request (mb)',
       'memoryLimit': 'Memory Limit (mb)',
-      'terminationGracePeriod': 'Termination Grace Period (seconds)',
+      'terminationGracePeriod': 'Timeout (seconds)',
       'isDefault': 'Default profile that will be applied to new services.',
     };
 
     const initials = formInitials;
 
     const types = {
-      'isDefault': 'checkbox',      
+      'isDefault': 'checkbox',
     };
 
     const extra = {};
@@ -166,7 +190,7 @@ export default class ServiceSpecs extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })    
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
   }
 
   componentWillMount(){
@@ -185,12 +209,12 @@ export default class ServiceSpecs extends React.Component {
       memoryRequest: serviceSpec.memoryRequest,
       memoryLimit: serviceSpec.memoryLimit,
       terminationGracePeriod: serviceSpec.terminationGracePeriod,
-      isDefault: serviceSpec.isDefault,      
+      isDefault: serviceSpec.isDefault,
       id: serviceSpec.id,
       index: index,
     })
 
-    this.setState({ selected: serviceSpec.id, drawerOpen: true })
+    this.setState({ currentServiceSpec: serviceSpec, selected: serviceSpec.id, drawerOpen: true })
   }
 
   onSuccess(form){
@@ -199,10 +223,10 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.props.store.app.setSnackbar({ 
-          msg: this.form.values()['name'] + " has been created",
+        this.props.store.app.setSnackbar({
+          msg: form.values()['name'] + " has been created",
           open: true,
-        })        
+        })
         this.closeDrawer(true)
       });
     } else {
@@ -210,8 +234,8 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({ 
-          msg: this.form.values()['name'] + " has been updated",
+        this.props.store.app.setSnackbar({
+          msg: form.values()['name'] + " has been updated",
           open: true,
         })
         this.closeDrawer(true)
@@ -239,7 +263,7 @@ export default class ServiceSpecs extends React.Component {
     } else {
       this.setState({ drawerOpen: false, dirtyFormDialogOpen: false, dialogOpen: false })
     }
-  }  
+  }
 
   onError(){
     // todo
@@ -257,6 +281,8 @@ export default class ServiceSpecs extends React.Component {
         <Loading />
       );
     }
+
+    console.log(serviceSpecs)
 
     return (
       <div className={styles.root}>
@@ -293,7 +319,7 @@ export default class ServiceSpecs extends React.Component {
                     </TableCell>
                     <TableCell>
                       Default
-                    </TableCell>                    
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -362,9 +388,11 @@ export default class ServiceSpecs extends React.Component {
                   <Grid item xs={6}>
                     <InputField field={this.form.$('terminationGracePeriod')} fullWidth={true} />
                   </Grid>
-                  <Grid item xs={12}>
-                    <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
-                  </Grid>                  
+                  {this.state.currentServiceSpec.service === null &&
+                    <Grid item xs={12}>
+                      <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
+                    </Grid>
+                  }
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
@@ -383,13 +411,52 @@ export default class ServiceSpecs extends React.Component {
                         Delete
                       </Button>
                     }
-
                     <Button
                       color="primary"
                       onClick={this.closeDrawer.bind(this)}>
                       Cancel
                     </Button>
                   </Grid>
+                  {this.state.currentServiceSpec.service != null &&
+                  <Grid container spacing={24}>
+                      <Grid item xs={12} style={{ padding: 25 }}>
+                        <Link to={"/projects/" + this.state.currentServiceSpec.service.project.slug + "/" + this.state.currentServiceSpec.service.environment.key + "/services?serviceID=" + this.state.currentServiceSpec.service.id}>
+                          <Typography variant="body2">Edit Service</Typography>
+                        </Link>
+                      </Grid>
+                      <Grid item xs={12} style={{ padding: 25 }}>
+                        <Card style={{ padding: 25 }}>
+                          <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
+                          <Grid container spacing={24}>
+                            <Grid item xs={12}>
+                              <Typography variant="subheading">CPU</Typography>
+                              <Typography variant="body2">(millicpus)</Typography>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuRequest} label={"Request"} disabled/>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuLimit} label={"Limit"} disabled />
+                            </Grid>
+                          </Grid>
+                          <br/>
+                          {/* <Divider style={{ marginTop: 15, marginBottom: 15 }}/> */}
+                          <Grid container spacing={24}>
+                            <Grid item xs={12}>
+                              <Typography variant="subheading">Memory</Typography>
+                              <Typography variant="body2">(mb)</Typography>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryRequest} label={"Request"} disabled/>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryLimit} label={"Limit"} disabled />
+                            </Grid>
+                          </Grid>
+                        </Card>
+                      </Grid>
+                    </Grid>
+                  }
                 </Grid>
               </form>
             </div>
@@ -411,7 +478,7 @@ export default class ServiceSpecs extends React.Component {
               Confirm
             </Button>
           </DialogActions>
-        </Dialog>                  
+        </Dialog>
 
         {serviceSpecs[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
