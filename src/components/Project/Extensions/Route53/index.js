@@ -160,7 +160,7 @@ export default class LoadBalancer extends React.Component {
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
             <Grid item xs={12}>
-              <InputField fullWidth={true} field={this.form.$('subdomain')} />
+              <InputField fullWidth={true} field={this.form.$('subdomain')} autoComplete={'off'}/>
             </Grid>
             <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('loadbalancer')} extraKey={'extensions'} />
