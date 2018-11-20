@@ -21,6 +21,7 @@ import ExtensionStateCompleteIcon from '@material-ui/icons/CheckCircle';
 import ExtensionStateFailedIcon from '@material-ui/icons/Error';
 import ExtensionStateCanceledIcon from '@material-ui/icons/Fingerprint';
 import Loading from 'components/Utils/Loading';
+import Pagination from 'components/Utils/Pagination';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import MobxReactForm from 'mobx-react-form';
@@ -257,7 +258,7 @@ class ReleaseView extends React.Component {
 
 @inject("store") @observer
 @graphql(gql`
-  query Project($slug: String, $environmentID: String){
+  query Project($slug: String, $environmentID: String, $params: PaginatorInput!){
     user {
       id
       email
@@ -321,7 +322,10 @@ class ReleaseView extends React.Component {
           created
         }
       }
-      releases(params: { limit: 15 }){
+      releases(params:$params){
+        nextCursor
+        page
+        count
         entries {
           id
           artifacts
@@ -384,6 +388,10 @@ class ReleaseView extends React.Component {
     variables: {
       slug: props.match.params.slug,
       environmentID: props.store.app.currentEnvironment.id,
+      params: {
+        limit: props.limit || props.store.app.paginator.limit,
+        cursor: props.store.app.paginator.cursor,
+      },      
     },
   })
 })
@@ -418,6 +426,7 @@ export default class Releases extends React.Component {
     this.state = {
       openConfirmRollbackModal: false,
       drawerRelease: null,
+      cursorStack: [], 
     }
     this.props.data.refetch()
 
@@ -430,6 +439,18 @@ export default class Releases extends React.Component {
     socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
       this.props.data.refetch()
     });        
+
+    // check url query params
+    if(this.props.history.location.search !== ""){
+      const cursor = new URLSearchParams(this.props.history.location.search).get("cursor")
+      if(cursor !== "" && cursor !== null){
+          this.props.store.app.setPaginator({
+              limit: this.props.limit || this.props.store.app.paginator.limit,
+              cursor: cursor,
+          })
+          this.props.data.refetch()
+      }
+    }        
 
     const fields = [
       'id',
@@ -865,7 +886,59 @@ export default class Releases extends React.Component {
 			</Drawer>
     ) 
   }
-  
+
+  setNextPage(){
+    let cursorStack = this.state.cursorStack
+    let nextCursor = this.props.data.project.releases.nextCursor
+
+    this.props.data.refetch({
+      params: {
+        limit: this.props.limit || this.props.store.app.paginator.limit,
+        cursor: nextCursor,
+      }
+    }).then(({data}) => {
+      cursorStack.push(this.props.store.app.paginator.cursor)
+      this.setState({
+        cursorStack: cursorStack
+      })
+      this.props.store.app.setPaginator({
+        limit: this.props.limit || this.props.store.app.paginator.limit,
+        cursor: nextCursor,
+      })
+
+      if(nextCursor !== null){
+        this.props.history.push({
+          pathname: this.props.location.pathname,
+          search: '?cursor=' + nextCursor
+        })
+      } else {
+        this.props.data.refetch()
+      }
+    })
+  }
+
+  setPreviousPage(){
+    let cursorStack = this.state.cursorStack
+    let cursor = cursorStack.pop()
+
+    this.setState({
+      cursorStack: cursorStack
+    })
+    this.props.store.app.setPaginator({
+      limit: this.props.limit || this.props.store.app.paginator.limit,
+      cursor: cursor,
+    })
+
+    if(cursor !== null){
+      this.props.history.push({
+        pathname: this.props.location.pathname,
+        search: '?cursor=' + cursor
+      })
+    } else {
+      this.props.data.refetch()
+    }
+  }
+
   render() {
     const { loading, project } = this.props.data;
     if(loading){
@@ -873,6 +946,19 @@ export default class Releases extends React.Component {
     }
     
     let latestSuccessfulRelease = this.getLatestSuccessfulRelease()
+    let paginator={
+      count: project.releases.count,
+      nextCursor: project.releases.nextCursor,
+      page: project.releases.page,
+      rowsPerPage: this.props.limit || this.props.store.app.paginator.limit,
+    }
+    let firstRowIndex = 1
+    let lastRowIndex = project.releases.entries.length
+
+    if(project.releases.page !== 1){
+      firstRowIndex = ((paginator.page - 1) * paginator.rowsPerPage) + 1
+      lastRowIndex = firstRowIndex + project.releases.entries.length - 1
+    }    
     
     return (
       <div>
@@ -935,7 +1021,7 @@ export default class Releases extends React.Component {
 
                 handleOnClick={(e) => this.handleToggleDrawer(release, e)}/>
               )})
-            }
+            }        
             {(project.releases.entries.length === 0) && <Card square={true}>
               <CardContent>
                 <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
@@ -946,6 +1032,13 @@ export default class Releases extends React.Component {
                 </Typography>                  
               </CardContent>
             </Card>}
+            <Pagination 
+              firstRowIndex={firstRowIndex}
+              lastRowIndex={lastRowIndex}
+              paginator={paginator}
+              handleNextButtonClick={this.setNextPage.bind(this)}
+              handleBackButtonClick={this.setPreviousPage.bind(this)}
+            />               
           </Grid>
         </Grid>
         {this.renderDrawer()}

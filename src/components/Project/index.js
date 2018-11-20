@@ -74,7 +74,7 @@ import Grid from 'material-ui/Grid';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
+      environmentID: props.store.app.currentEnvironment.id,    
     }
   })
 })
@@ -269,7 +269,7 @@ class Project extends React.Component {
             <ProjectFeatures history={history} {...props} socket={socket} />
           )}/>
           <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
-            <ProjectReleases {...props} socket={socket} />
+            <ProjectReleases limit={15} {...props} socket={socket} />
           )}/>
           <Route exact path='/projects/:slug/:environment/services' render={(props) => (
             <ProjectServices {...props} />
