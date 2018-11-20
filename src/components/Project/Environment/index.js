@@ -5,6 +5,7 @@ import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
+import DoesNotExist404 from 'components/Utils/DoesNotExist404'
 
 @inject("store") @observer
 
@@ -71,9 +72,13 @@ export default class Environment extends React.Component {
   }
 
   render() {
-    const { loading, environments } = this.props.data;
+    const { loading, environments, project } = this.props.data;
     if(loading){
       return null
+    }
+
+    if (project === null && environments === null) {
+      return <DoesNotExist404/>
     }
 
     let currentEnv = this.props.store.app.currentEnvironment
