@@ -24,6 +24,7 @@ import ExpansionPanel, {
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import SelectField from 'components/Form/select-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
@@ -47,6 +48,11 @@ import GeneralIcon from '@material-ui/icons/Autorenew';
 @inject("store")
 @graphql(gql`
 query Project($slug: String, $environmentID: String) {
+  user {
+    id
+    email
+    permissions
+  }
   project(slug: $slug, environmentID: $environmentID) {
     id
     services{
@@ -66,6 +72,7 @@ query Project($slug: String, $environmentID: String) {
         readinessProbe
         livenessProbe
         preStopHook
+        autoscaleEnabled
       }
     }
   }
@@ -92,6 +99,7 @@ query Project($slug: String, $environmentID: String) {
 mutation CreateService($projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+    $autoscaleEnabled: Boolean!,
     $preStopHook: String) {
     createService(service:{
     projectID: $projectID,
@@ -105,6 +113,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!,
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
     preStopHook: $preStopHook,
+    autoscaleEnabled: $autoscaleEnabled,
     }) {
       id
     }
@@ -114,6 +123,7 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!,
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+    $autoscaleEnabled: Boolean!,
     $preStopHook: String) {
     updateService(service:{
     id: $id,
@@ -128,6 +138,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
     preStopHook: $preStopHook,
+    autoscaleEnabled: $autoscaleEnabled,
     }) {
       id
     }
@@ -137,6 +148,7 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!,
   $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
   $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+  $autoscaleEnabled: Boolean!,
   $preStopHook: String) {
   deleteService(service:{
   id: $id,
@@ -151,6 +163,7 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   readinessProbe: $readinessProbe,
   livenessProbe: $livenessProbe,
   preStopHook: $preStopHook
+  autoscaleEnabled: $autoscaleEnabled,
   }) {
     id
   }
@@ -245,6 +258,7 @@ export default class Services extends React.Component {
       'ports[].protocol',
       'environmentID',
       'index',
+      'autoscaleEnabled',
       'deploymentStrategy',
       'deploymentStrategy.type',
       'deploymentStrategy.maxUnavailable',
@@ -367,6 +381,7 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[].value': "Value",
 
       'preStopHook': "Command",
+      'autoscaleEnabled': "Enable autoscaling so the suggested service spec is used (experimental)"
     };
 
     const initials = formInitials
@@ -390,6 +405,7 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': 'number',
       'readinessProbe.successThreshold': 'number',
       'readinessProbe.failureThreshold': 'number',
+      'autoscaleEnabled': 'checkbox',
     };
 
     const keys = {};
@@ -496,6 +512,35 @@ export default class Services extends React.Component {
     this.form = this.initProjectServicesForm()
   }
 
+  componentWillReceiveProps(nextProps) {
+    if(this.state.queryArgsProcessed){
+      return
+    }
+
+    const { project, loading } = nextProps.data;
+    const self = this;
+
+    if(project !== undefined){
+      // check for serviceID argument
+      const args = nextProps.location.search.substr(1).split('=')
+      let serviceID = ""
+
+      for(let i = 0; i < args.length; i++){
+        if(args[i] === 'serviceID' && args.length >= i + 1) {
+          serviceID = args[i+1]
+        }
+      }
+
+      project.services.entries.map(function(service, idx){
+        if(service.id === serviceID){
+          self.editService(service, idx)
+        }
+      })
+    }
+
+    this.setState({ queryArgsProcessed: true })    
+  }
+
   onSuccess(form) {
     if(form.values()['id'] !== ""){
       this.props.updateService({
@@ -564,6 +609,7 @@ export default class Services extends React.Component {
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
       preStopHook: service.preStopHook,
+      autoscaleEnabled: service.autoscaleEnabled,
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -632,7 +678,8 @@ export default class Services extends React.Component {
   }
 
   render() {
-    const { loading, project, serviceSpecs } = this.props.data;
+    const self = this;
+    const { loading, project, serviceSpecs, user } = this.props.data;
 
     if(loading){
       return (
@@ -1078,6 +1125,11 @@ export default class Services extends React.Component {
                         </ExpansionPanel>
 
                     </Grid>
+                    {user.permissions.includes("admin") &&
+                      <Grid item xs={12}>
+                        <CheckboxField field={this.form.$('autoscaleEnabled')} fullWidth={true} />
+                      </Grid>
+                    }
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}

@@ -3,17 +3,21 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
 import CheckboxField from 'components/Form/checkbox-field';
+import TextField from 'material-ui/TextField';
 import AppBar from 'material-ui/AppBar';
+import Card from 'material-ui/Card';
 import Toolbar from 'material-ui/Toolbar';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import Paper from 'material-ui/Paper';
 import Button from 'material-ui/Button';
+import Link from 'react-router-dom/Link';
 import Dialog, {
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import Divider from '@material-ui/core/Divider';
 import AddIcon from '@material-ui/icons/Add';
 import DefaultIcon from '@material-ui/icons/Done';
 import InputField from 'components/Form/input-field';
@@ -46,6 +50,21 @@ query {
     isDefault
     service {
       id
+      project {
+        id
+        slug
+      }
+      suggestedServiceSpec {
+        id
+        cpuRequest
+        cpuLimit
+        memoryRequest
+        memoryLimit
+      }
+      environment {
+        id
+        key
+      }
     }
   }
 }
@@ -137,6 +156,7 @@ export default class ServiceSpecs extends React.Component {
       'id',
       'index',
       'isDefault',
+      'autoscaleEnabled',
     ];
 
     const rules = {
@@ -262,6 +282,8 @@ export default class ServiceSpecs extends React.Component {
       );
     }
 
+    console.log(serviceSpecs)
+
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -297,7 +319,7 @@ export default class ServiceSpecs extends React.Component {
                     </TableCell>
                     <TableCell>
                       Default
-                    </TableCell>                    
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -370,10 +392,7 @@ export default class ServiceSpecs extends React.Component {
                     <Grid item xs={12}>
                       <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
                     </Grid>
-                  }                
-                  <Grid item xs={12}>
-                    <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
-                  </Grid>                  
+                  }
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
@@ -398,6 +417,46 @@ export default class ServiceSpecs extends React.Component {
                       Cancel
                     </Button>
                   </Grid>
+                  {this.state.currentServiceSpec.service != null &&
+                  <Grid container spacing={24}>
+                      <Grid item xs={12} style={{ padding: 25 }}>
+                        <Link to={"/projects/" + this.state.currentServiceSpec.service.project.slug + "/" + this.state.currentServiceSpec.service.environment.key + "/services?serviceID=" + this.state.currentServiceSpec.service.id}>
+                          <Typography variant="body2">Edit Service</Typography>
+                        </Link>
+                      </Grid>
+                      <Grid item xs={12} style={{ padding: 25 }}>
+                        <Card style={{ padding: 25 }}>
+                          <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
+                          <Grid container spacing={24}>
+                            <Grid item xs={12}>
+                              <Typography variant="subheading">CPU</Typography>
+                              <Typography variant="body2">(millicpus)</Typography>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuRequest} label={"Request"} disabled/>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuLimit} label={"Limit"} disabled />
+                            </Grid>
+                          </Grid>
+                          <br/>
+                          {/* <Divider style={{ marginTop: 15, marginBottom: 15 }}/> */}
+                          <Grid container spacing={24}>
+                            <Grid item xs={12}>
+                              <Typography variant="subheading">Memory</Typography>
+                              <Typography variant="body2">(mb)</Typography>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryRequest} label={"Request"} disabled/>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryLimit} label={"Limit"} disabled />
+                            </Grid>
+                          </Grid>
+                        </Card>
+                      </Grid>
+                    </Grid>
+                  }
                 </Grid>
               </form>
             </div>
