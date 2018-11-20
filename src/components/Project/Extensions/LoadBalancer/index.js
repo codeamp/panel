@@ -2,7 +2,7 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
-import CloseIcon from 'material-ui-icons/Close';
+import CloseIcon from '@material-ui/icons/Close';
 import Typography from 'material-ui/Typography';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
@@ -78,7 +78,7 @@ export default class LoadBalancer extends React.Component {
     const rules = {}
     const labels = {
         'service': 'SERVICE',
-        'type': 'ACCESS',
+        'type': 'SCOPE',
         'listener_pairs': 'LISTENER PAIRS',
         'listener_pairs[].port': 'PORT',
         'listener_pairs[].containerPort': 'CONTAINER PORT',
@@ -89,13 +89,13 @@ export default class LoadBalancer extends React.Component {
     const extra = {
         'type': [{
             'key': 'internal',
-            'value': 'Internal'
+            'value': 'Intra-Cluster'
         }, {
             'key': 'external',
-            'value': 'External'
+            'value': 'Public',
         }, {
             'key': 'office',
-            'value': 'Office'
+            'value': 'Private'
         }],
         'listener_pairs[].serviceProtocol': [{
             'key': 'http',

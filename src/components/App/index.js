@@ -14,6 +14,7 @@ import TopNav from 'components/TopNav';
 import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
 import Project from 'components/Project';
+import Projects from 'components/Projects';
 import ProjectEnvironment from 'components/Project/Environment';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
@@ -30,8 +31,6 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
       permissions
     }
     projects(projectSearch: $projectSearch){
-      page
-      nextCursor
       count
       entries {
         id
@@ -47,6 +46,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
   }
 `, {
 	options: (props) => ({
+    errorPolicy: "all",
     fetchPolicy: "network-only",
 		variables: {
 			projectSearch: {
@@ -88,13 +88,26 @@ export default class App extends React.Component {
   }
 
   render() {
-    const { loading, projects, user } = this.props.data;
+    const { loading, projects, user, error } = this.props.data;
 
     if (process.env.REACT_APP_SENTRY_DSN) {
       Raven.config(process.env.REACT_APP_SENTRY_DSN).install()
     }
 
-    if(this.props.data.networkStatus === 8){
+    let serverError = false
+    if (error) {
+      let errorStr = error.toString()
+      let problemWithUser = false
+      if (errorStr.indexOf("invalid access token") >= 0) {
+        problemWithUser = true
+      } else if (errorStr.indexOf("record not found") >= 0){
+        problemWithUser = true
+      }
+
+      serverError = !problemWithUser
+    }
+
+    if(this.props.data.networkStatus === 8 || serverError){
       return (
 
         <div className={styles.root}>
@@ -144,7 +157,10 @@ export default class App extends React.Component {
               <div className={styles.children}>
                 <Switch>
                   <Route exact path='/' render={(props) => (
-                    <Dashboard projects={projects.entries} />
+                    <Dashboard projects={projects.entries} history={this.props.history}/>
+                  )} />
+                  <Route exact path='/projects' render={(props) => (
+                      <Projects socket={socket} {...props} />
                   )} />
                   <Route exact path='/create' render={(props) => (
                     <Create projects={projects.entries} type={"create"} {...props} />
@@ -174,6 +190,7 @@ export default class App extends React.Component {
               'aria-describedby': 'message-id',
               className: styles.snackbarContent,
             }}
+            autoHideDuration={2700}
             message={<span id="message-id">{this.props.store.app.snackbar.msg}</span>}
             action={
               <Button color="inherit" size="small" onClick={() => {this.props.store.app.setSnackbar({ open: false })}}>

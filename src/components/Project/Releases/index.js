@@ -17,10 +17,9 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import DoubleRightIcon from 'react-icons/lib/fa/angle-double-right';
-import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
-import ExtensionStateFailedIcon from 'material-ui-icons/Error';
-import ExtensionStateCanceledIcon from 'material-ui-icons/Fingerprint';
+import ExtensionStateCompleteIcon from '@material-ui/icons/CheckCircle';
+import ExtensionStateFailedIcon from '@material-ui/icons/Error';
+import ExtensionStateCanceledIcon from '@material-ui/icons/Fingerprint';
 import Loading from 'components/Utils/Loading';
 import Pagination from 'components/Utils/Pagination';
 import { graphql } from 'react-apollo';
@@ -48,34 +47,120 @@ function generateKibanaLink(linkTemplate, replacementHash) {
 }
 
 class ReleaseView extends React.Component {  
+  constructor(props){
+    super(props)
+    this.startTimer = this.startTimer.bind(this)
+
+    if(this.props.release === null) {
+      return
+    }
+
+    let currentTime = Date.now()
+    let releaseFinished = new Date(this.props.release.finished)
+    var diff = 0 
+    let timer =  0
+    let startTimer = false
+
+    if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
+      currentTime = new Date(this.props.release.finished)
+      diff = currentTime - new Date(this.props.release.started).getTime();
+      timer = Math.floor(diff/1000)
+    }
+
+    if(new Date(this.props.release.started).getTime() > 0
+       && new Date(this.props.release.finished).getTime() < 0) {
+      diff = Date.now() - new Date(this.props.release.started).getTime();
+      timer = Math.floor(diff/1000)
+      startTimer = true
+    }
+
+    this.state = {
+      timer: timer,
+      timerInterval: null,
+    }    
+
+    if(startTimer) {
+      this.startTimer()      
+    }
+  }  
+  
+  getReadableDuration(seconds) {
+    var hours   = Math.floor(seconds / 3600);
+    var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+    seconds = seconds - (hours * 3600) - (minutes * 60);
+
+    if (hours < 10) {
+      hours = "0" + hours
+    }
+    if (minutes < 10) {
+      minutes = "0" + minutes
+    }
+    if (seconds < 10) {
+      seconds = "0" + seconds
+    }
+
+    if(parseInt(hours, 10) < 1) {
+      return minutes+':'+seconds;
+    } else {
+      return hours+':'+minutes+':'+seconds;
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if(prevProps.release.state !== this.props.release.state || prevProps.release.finished !== this.props.release.finished) {
+      if(this.timerInterval !== null) {
+        clearInterval(this.timerInterval)
+      }
+
+      let currentTime = new Date(this.props.release.finished)
+      let diff = currentTime - new Date(this.props.release.started).getTime();
+      this.setState({ timer: Math.floor(diff/1000) })
+    }
+
+    if(prevProps.release.started !== this.props.release.started) {
+      let diff = Date.now() - new Date(this.props.release.started).getTime();
+      this.setState({ timer: Math.floor(diff/1000) })
+
+      this.startTimer = this.startTimer.bind(this)
+      this.startTimer()         
+    }
+  }
+
   renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
-        if(extension.extension.type === "once") {
-            return false
-        } 
-        return true
+        return extension.extension.type !== "once"             
     })
 
     const projectExtensionLights = filteredExtensions.map(function(extension){
       for(var i = 0; i < release.releaseExtensions.length; i++){
         if(release.releaseExtensions[i].extension.id === extension.id){
           // get state { waiting => yellow, failed => red, complete => green}
+          
+          let style = { backgroundColor: "yellow", color: "black", marginRight: 4 }
           switch(release.releaseExtensions[i].state){  
             case "waiting":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              style = { backgroundColor: "yellow", color: "black", marginRight: 4 }
+              break
             case "complete":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "green", color: "white", marginRight: 4 }} />)
+              style = { backgroundColor: "green", color: "white", marginRight: 4 }
+              break
             case "failed":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "red", color: "white", marginRight: 4 }} />)               
+              style = { backgroundColor: "red", color: "white", marginRight: 4 }
+              break
             case "canceled":
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "purple", color: "white", marginRight: 4 }} />)               
+              style = { backgroundColor: "purple", color: "white", marginRight: 4 }
+              break
             default:
-              return (<Chip label={release.releaseExtensions[i].extension.extension.name} style={{ backgroundColor: "yellow", color: "black", marginRight: 4 }} />)
+              break
           }
+
+          let label = release.releaseExtensions[i].extension.extension.name
+          return (<Chip key={label} label={label} style={style} />)
         }
       }
+
       return null
     })
     
@@ -83,6 +168,29 @@ class ReleaseView extends React.Component {
       <div style={{ display: "inline-block" }}>
         { projectExtensionLights }
       </div>
+    )
+  }
+
+  startTimer() {
+    var self = this
+    this.timerInterval = setInterval(function(){
+      self.setState({ timer: self.state.timer + 1})
+    }, 1000)
+  }  
+
+  renderDetailsLine() {
+    let timestamp = moment(new Date(this.props.release.created)).format("ddd, MMM Do, YYYY HH:mm:ss")
+    let timezone = moment.tz(jstz.determine().name()).format('z')
+
+    let author = "Continuous Deploy"
+    if (this.props.release.user !== null && this.props.release.user.email !== ""){
+      author = this.props.release.user.email
+    }
+        
+    return (      
+      <div className={styles.detailsLine}>
+        by <Chip label={author} className={styles.authorBadge} /> {timestamp} ({timezone})
+      </div>      
     )
   }
 
@@ -120,15 +228,13 @@ class ReleaseView extends React.Component {
               <Grid item xs={10}>
                 <Typography className={styles.featureCommitMsg}>
                   { this.props.release.tailFeature.hash.substring(0, 8) }
-                  <DoubleRightIcon />
+                  &nbsp;➜&nbsp;
                   { this.props.release.headFeature.hash.substring(0, 8) }
                 </Typography>
                 <Typography>
                   { this.props.release.headFeature.message}
                 </Typography>
-                <Typography component="p" className={styles.featureAuthor}>
-                  by <b> { (this.props.release.user !== null && this.props.release.user.email !== "") ? this.props.release.user.email : <Chip label="CD" className={styles.continuousDelivery} />} </b> - { moment(new Date(this.props.release.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }
-                </Typography>
+                { this.renderDetailsLine() }
                 <div className={styles.statusLights}>
                   {this.renderReleaseExtensionStatuses()}
                 </div>
@@ -136,6 +242,11 @@ class ReleaseView extends React.Component {
               <Grid item xs={2} style={{textAlign: "right"}}> 
                 {state}
                 {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
+                <div style={{ marginTop: 40 }}>
+                  <Typography variant="subheading">
+                    {this.getReadableDuration(this.state.timer)}
+                  </Typography>
+                </div>                
               </Grid>
             </Grid>
           </CardContent>
@@ -173,6 +284,8 @@ class ReleaseView extends React.Component {
         }
         releaseExtensions {
           id
+          started
+          finished
           extension {
             id
             extension {
@@ -184,6 +297,8 @@ class ReleaseView extends React.Component {
           state
           stateMessage
         }
+        started
+        finished
         created
         user {
           email
@@ -217,6 +332,8 @@ class ReleaseView extends React.Component {
           state
           stateMessage
           created
+          started
+          finished
           user {
             email
           }
@@ -229,6 +346,8 @@ class ReleaseView extends React.Component {
           }        
           releaseExtensions {
             id
+            started
+            finished
             artifacts
             extension {
               id
@@ -376,10 +495,7 @@ export default class Releases extends React.Component {
 
     // filter out 'once' types
     const filteredExtensions = extensions.filter(function(extension){
-        if(extension.extension.type === "once") {
-            return false
-        } 
-        return true
+        return extension.extension.type !== "once"
     })
 
     const releaseExtensions = filteredExtensions.map(function(extension){
@@ -518,26 +634,38 @@ export default class Releases extends React.Component {
   }
 
   stopReleaseButton(release) {
-    if (release.state === "fetching" || release.state === "waiting") {
+    // ADB 8/21/18
+    // Temporarily diasbling cancel/'stop release' button until it works
+    // as advertised. Reenabling for admins only.
+    const { user } = this.props.data
+    if(user.permissions.includes("admin")){
+      let deploymentTypeRunning = release.releaseExtensions.filter(function(releaseExtension){
+        return releaseExtension.state === "running" && releaseExtension.type === "deployment"
+      }).length !== 0
+
+      if (["waiting", "fetching", "running"].includes(release.state) && !deploymentTypeRunning) {
+        return (
+          <Button
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          onClick={() => this.stopRelease(release)}>
+            Stop Release
+          </Button>
+        )
+      }
       return (
         <Button
-        className={styles.drawerButton}
-        color="secondary"
-        variant="raised"
-        onClick={() => this.stopRelease(release)}>
+          className={styles.drawerButton}
+          color="secondary"
+          variant="raised"
+          disabled>
           Stop Release
-        </Button>
+          </Button>
       )
+    } else {
+      return null
     }
-    return (
-      <Button
-        className={styles.drawerButton}
-        color="secondary"
-        variant="raised"
-        disabled>
-        Stop Release
-        </Button>
-    )
   }
   
   releaseActionButton(release) {
@@ -550,7 +678,7 @@ export default class Releases extends React.Component {
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-          Cancel
+          Dismiss
         </Button>
         {this.stopReleaseButton(release)}
         </div>
@@ -577,7 +705,7 @@ export default class Releases extends React.Component {
           className={styles.drawerButton}
           color="primary"
           onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-          Cancel
+          Dismiss
         </Button>
       </div>)
     } else {
@@ -593,7 +721,7 @@ export default class Releases extends React.Component {
         className={styles.drawerButton}
         color="primary"
         onClick={()=> this.setState({ drawerOpen: false, drawerRelease: null }) }>
-        Cancel
+        Dismiss
       </Button>
     </div>)
     }

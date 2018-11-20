@@ -1,12 +1,12 @@
 import { ApolloClient } from 'apollo-client';
-import { createHttpLink } from 'apollo-link-http';
+import { HttpLink } from 'apollo-link-http';
 import { setContext } from 'apollo-link-context';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { ApolloLink } from 'apollo-link';
+import { ApolloLink, from } from 'apollo-link';
 import { onError } from "apollo-link-error";
 
 export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
-  const httpLink = createHttpLink({
+  const httpLink = new HttpLink({
     uri: GRAPHQL_URI,
     credentials: 'same-origin'
   });
@@ -49,11 +49,15 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
     if (networkError){
       console.log(`[Network error]: ${networkError}`)
     }
-    return graphQLErrors
   });
 
   return new ApolloClient({
-    link: afterwareLink.concat(errorLink.concat(middlewareLink.concat(httpLink))),
+    link: from([
+      afterwareLink,
+      errorLink,
+      middlewareLink,
+      httpLink,
+    ]),
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
@@ -61,7 +65,7 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
         fetchPolicy: 'network-only',
       },
       query: {
-        errorPolicy: 'all',
+        errorPolicy: 'apollo-link',
       },
       mutate: {
         errorPolicy: 'all',  

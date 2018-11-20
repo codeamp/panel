@@ -35,6 +35,7 @@ export default observer(({field, autoWidth, extraKey, fullWidth, label }) => {
           <MenuItem
             key={option.key}
             value={option.key}>
+            {option.icon}
             {option.value}
           </MenuItem>
           ))}

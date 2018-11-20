@@ -18,7 +18,8 @@ import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
 import SelectField from 'components/Form/select-field';
 import Loading from 'components/Utils/Loading';
-import AddIcon from 'material-ui-icons/Add';
+import Tooltip from 'components/Utils/Tooltip';
+import AddIcon from '@material-ui/icons/Add';
 import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
@@ -32,9 +33,18 @@ import EnvVarVersionHistory from 'components/Utils/EnvVarVersionHistory';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
 import 'brace/theme/github';
+
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
+
+import ProtectedIcon from '@material-ui/icons/Lock';
+import MissingSecretIcon from '@material-ui/icons/Report';
+import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
+import FileIcon from '@material-ui/icons/Note';
+import BuildArgIcon from '@material-ui/icons/Memory';
+import ExtensionIcon from '@material-ui/icons/Extension';
+import GlobalIcon from '@material-ui/icons/Public';
 
 @inject("store") @observer
 @graphql(gql`
@@ -45,8 +55,6 @@ import 'moment-timezone';
       created
     }
     secrets {
-      nextCursor
-      page
       count
       entries {
         id
@@ -55,9 +63,6 @@ import 'moment-timezone';
         created
         scope
         isSecret
-        project {
-          id
-        }
         user {
           id
           email
@@ -76,6 +81,7 @@ import 'moment-timezone';
             email
           }
         }
+        __typename
       }
     }
   }
@@ -321,6 +327,31 @@ export default class Secrets extends React.Component {
     this.form.$('value').set(newValue)
   }
 
+  getTypeGlyph(secret){
+    switch(secret.type){
+      case "file":
+        return <Tooltip title="File" ><FileIcon/></Tooltip>
+      case "build":
+        return <Tooltip title="Build Arg"><BuildArgIcon/></Tooltip>
+      case "protected-env":
+      case "env":
+        return <Tooltip title="Environment Variable"><EnvVarIcon/></Tooltip>
+      default:
+        return secret.type
+    }
+  }
+
+  getScopeGlyph(secret){
+    switch(secret.scope){
+      case "global":
+        return <Tooltip title="Global"><GlobalIcon/></Tooltip>
+      case "extension":
+        return <Tooltip title="Extension"><ExtensionIcon/></Tooltip>
+      default:
+        return secret.scope
+    }
+  }
+
   render() {
     let { loading, secrets, environments } = this.props.data;
 
@@ -377,7 +408,7 @@ export default class Secrets extends React.Component {
             <TableBody>
               {secrets.entries.map(function(secret, idx){
                 let emptyValue
-                if (secret.value === '') {
+                if (secret.user === null) {
                   emptyValue = styles.emptyValue
                 }
                 return (
@@ -390,19 +421,19 @@ export default class Secrets extends React.Component {
                       {secret.key}
                     </TableCell>
                     <TableCell>
-                      {secret.type}
+                      {self.getTypeGlyph(secret)}
                     </TableCell>
                     <TableCell>
-                      {secret.isSecret ? "yes" : "no" }
+                      {secret.isSecret ? (<Tooltip title="Protected"><ProtectedIcon/></Tooltip>) : "" }
                     </TableCell>
                     <TableCell>
-                      {secret.scope}
+                      {self.getScopeGlyph(secret)}
                     </TableCell>
                     <TableCell>
                       {secret.environment.name}
                     </TableCell>
                     <TableCell>
-                      {secret.user.email}
+                      {secret.user ? secret.user.email : (<Tooltip title="Missing Author or Version"><MissingSecretIcon/></Tooltip>)}
                     </TableCell>
                     <TableCell>
                       {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
@@ -432,9 +463,9 @@ export default class Secrets extends React.Component {
                 <Grow in={this.state.addEnvVarMenuOpen} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}>Build Arg</MenuItem>
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}>File</MenuItem>
-                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}>Normal</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("env")}><EnvVarIcon/>EnvVar</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("build")}><BuildArgIcon/>Build Arg</MenuItem>
+                      <MenuItem selected={false} onClick={() => this.handleRequestClose("file")}><FileIcon/>File</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>

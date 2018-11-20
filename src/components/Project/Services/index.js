@@ -3,13 +3,13 @@ import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Button from 'material-ui/Button';
 import AppBar from 'material-ui/AppBar';
-import AddIcon from 'material-ui-icons/Add';
+import AddIcon from '@material-ui/icons/Add';
 import Drawer from 'material-ui/Drawer';
 import IconButton from 'material-ui/IconButton';
 import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
-import CloseIcon from 'material-ui-icons/Close';
-import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
+import CloseIcon from '@material-ui/icons/Close';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import Input from 'material-ui/Input';
 import Dialog, {
@@ -39,13 +39,17 @@ import Grow from 'material-ui/transitions/Grow';
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
+import Tooltip from 'components/Utils/Tooltip';
+
+import OneShotIcon from '@material-ui/icons/LooksOne';
+import GeneralIcon from '@material-ui/icons/Autorenew';
 
 @inject("store") 
 @graphql(gql`
 query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
-    services(params: { limit: 100}){
+    services{
       entries {
         id
         name
@@ -61,6 +65,7 @@ query Project($slug: String, $environmentID: String) {
         deploymentStrategy
         readinessProbe
         livenessProbe
+        preStopHook
       }
     }
   }
@@ -86,7 +91,8 @@ query Project($slug: String, $environmentID: String) {
 @graphql(gql`
 mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
-    $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput) {
+    $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+    $preStopHook: String) {
     createService(service:{
     projectID: $projectID,
     command: $command,
@@ -98,7 +104,8 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
     environmentID: $environmentID,
     deploymentStrategy: $deploymentStrategy,
     readinessProbe: $readinessProbe,
-    livenessProbe: $livenessProbe
+    livenessProbe: $livenessProbe,
+    preStopHook: $preStopHook
     }) {
       id
     }
@@ -107,7 +114,8 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
 @graphql(gql`
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
-    $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput) {
+    $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+    $preStopHook: String) {
     updateService(service:{
     id: $id,
     projectID: $projectID,
@@ -120,7 +128,8 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     environmentID: $environmentID,
     deploymentStrategy: $deploymentStrategy,
     readinessProbe: $readinessProbe,
-    livenessProbe: $livenessProbe
+    livenessProbe: $livenessProbe,
+    preStopHook: $preStopHook
     }) {
       id
     }
@@ -129,7 +138,8 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 @graphql(gql`
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
   $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
-  $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput) {
+  $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
+  $preStopHook: String) {
   deleteService(service:{
   id: $id,
   projectID: $projectID,
@@ -142,7 +152,8 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   environmentID: $environmentID,
   deploymentStrategy: $deploymentStrategy,
   readinessProbe: $readinessProbe,
-  livenessProbe: $livenessProbe
+  livenessProbe: $livenessProbe,
+  preStopHook: $preStopHook
   }) {
     id
   }
@@ -164,7 +175,8 @@ export default class Services extends React.Component {
       showAdvancedSettings: false,
       showDeploymentStrategySettings: false,
       showReadinessProbeSettings: false,
-      showLivenessProbeSettings: false
+      showLivenessProbeSettings: false,
+      showLifecycleSettings: false
     }
 
     this.handleDeleteService = this.handleDeleteService.bind(this)
@@ -214,6 +226,10 @@ export default class Services extends React.Component {
 
   handleToggleReadinessProbeSettings = panel => (event) => {
     this.setState(({showReadinessProbeSettings: !this.state.showReadinessProbeSettings}))
+  }
+
+  handleToggleLifecycleSettings = panel => (event) => {
+    this.setState(({showLifecycleSettings: !this.state.showLifecycleSettings}))
   }
 
   initProjectServicesForm(formInitials  = {}) {
@@ -269,12 +285,14 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[]',
       'readinessProbe.httpHeaders[].name',
       'readinessProbe.httpHeaders[].value',
+
+      'preStopHook'
     ];
 
     const rules = {
-      'name': 'string|required',
+      'name': 'string|required|min:1|max:63',
       'serviceSpecID': 'string|required',
-      'command': 'string|required',
+      'command': 'string',
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
       'ports[].protocol': 'required',
@@ -306,6 +324,8 @@ export default class Services extends React.Component {
       'readinessProbe.failureThreshold': "numeric|min:0",
       'readinessProbe.httpHeaders[].name': "string|required",
       'readinessProbe.httpHeaders[].value': "string|required",
+
+      'preStopHook': "string"
     };
 
     const labels = {
@@ -348,6 +368,8 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[]': "HTTPHeaders",
       'readinessProbe.httpHeaders[].name': "Name",
       'readinessProbe.httpHeaders[].value': "Value",
+
+      'preStopHook': "Command"
     };
 
     const initials = formInitials
@@ -460,6 +482,8 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': $hooks,
       'readinessProbe.successThreshold': $hooks,
       'readinessProbe.failureThreshold': $hooks,
+      
+      'preStopHook': $hooks
     };
 
     const plugins = { dvr: validatorjs };
@@ -542,6 +566,7 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
+      preStopHook: service.preStopHook
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -572,6 +597,11 @@ export default class Services extends React.Component {
       newState.showLivenessProbeSettings = true
     }
 
+    if (service.preStopHook !== "") {
+      newState.showAdvancedSettings = true
+      newState.showLifecycleSettings = true
+    }
+
     this.setState(newState)
 
     this.openDrawer()
@@ -592,6 +622,17 @@ export default class Services extends React.Component {
     });
   }
 
+  getServiceTypeGlyph(service){
+    switch(service.type){
+      case "one-shot":
+        return <Tooltip title="One-Shot"><OneShotIcon/></Tooltip>
+      case "general":
+        return <Tooltip title="General"><GeneralIcon/></Tooltip>
+      default:
+        return service.type
+    }
+  }
+
   render() {
     const { loading, project, serviceSpecs } = this.props.data;
     if(loading){
@@ -606,6 +647,9 @@ export default class Services extends React.Component {
         return {
           key: serviceSpec.id,
           value: serviceSpec.name,
+          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " + 
+                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " + 
+                     serviceSpec.memoryLimit + "mb | T/o: " + serviceSpec.terminationGracePeriod + "s",
         }
       })
     })
@@ -656,7 +700,7 @@ export default class Services extends React.Component {
                       <TableCell> { service.name } </TableCell>
                       <TableCell> { service.count } </TableCell>
                       <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
-                      <TableCell> { service.type }</TableCell>
+                      <TableCell> { this.getServiceTypeGlyph(service) }</TableCell>
                       <TableCell> { service.ports.length}</TableCell>
                       <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { moment(new Date(service.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }</TableCell>
@@ -684,8 +728,8 @@ export default class Services extends React.Component {
                 <Grow in={this.state.showAddServiceMenu} id="menu-list">
                   <Paper>
                     <MenuList role="menu">
-                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}>One-shot service</MenuItem>
-                      <MenuItem onClick={() => this.handleServiceRequest("general")}>General</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("one-shot")}><OneShotIcon/>One-shot service</MenuItem>
+                      <MenuItem onClick={() => this.handleServiceRequest("general")}><GeneralIcon/>General</MenuItem>
                     </MenuList>
                   </Paper>
                 </Grow>
@@ -779,8 +823,9 @@ export default class Services extends React.Component {
                                         Deployment Strategy
                                     </Typography>
                                   </ExpansionPanelSummary>
+                                  <Divider/>
                                   <ExpansionPanelDetails>
-                                    <Grid item xs={12} className={styles.deploymentStrategyForm} key={this.form.$('deploymentStrategy').id}>
+                                    <Grid item xs={12} className={styles.settingsPanelOpen} key={this.form.$('deploymentStrategy').id}>
                                       <Grid item xs={12}>
                                         <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
                                       </Grid>
@@ -1008,6 +1053,28 @@ export default class Services extends React.Component {
                                   </ExpansionPanelDetails>
                                 </ExpansionPanel>
                               </Grid>
+
+                              <Grid item xs={12}>
+                                <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showLifecycleSettings} onChange={this.handleToggleLifecycleSettings()}>
+                                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                    <Typography>
+                                        Lifecycle
+                                    </Typography>
+                                  </ExpansionPanelSummary>
+                                  <Divider/>
+                                  <ExpansionPanelDetails>
+                                    <Grid item xs={12} key={this.form.$('preStopHook').id} className={styles.settingsPanelOpen}>
+                                      <Typography variant={"subheading"}>
+                                          PreStop ExecHook
+                                      </Typography>
+                                      <Grid item xs={12}>
+                                        <InputField field={this.form.$('preStopHook')} fullWidth={true} />
+                                      </Grid>
+                                    </Grid>
+                                  </ExpansionPanelDetails>
+                                </ExpansionPanel>
+                              </Grid>
+
                             </Grid>
                           </ExpansionPanelDetails>
                         </ExpansionPanel>

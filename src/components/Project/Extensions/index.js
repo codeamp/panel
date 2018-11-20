@@ -16,8 +16,8 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import ExtensionStateCompleteIcon from 'material-ui-icons/CheckCircle';
-import ExtensionStateFailedIcon from 'material-ui-icons/Error';
+import ExtensionStateCompleteIcon from '@material-ui/icons/CheckCircle';
+import ExtensionStateFailedIcon from '@material-ui/icons/Error';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -28,6 +28,13 @@ import _ from "lodash"
 import { FormControl } from 'material-ui/Form';
 import Card, { CardContent } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
+
+import Tooltip from 'components/Utils/Tooltip';
+
+import ExtensionInfraComponentIcon from '@material-ui/icons/ListAlt';
+import ExtensionWorkflowIcon from '@material-ui/icons/KeyboardTab';
+import ExtensionDeploymentIcon from '@material-ui/icons/Cake';
+import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
 
 @inject("store") 
 
@@ -270,6 +277,22 @@ export default class ProjectExtensions extends React.Component {
 
   } 
 
+
+  getExtensionTypeGlyph(extension) {
+    switch(extension.type){
+      case "workflow":
+        return (<Tooltip title="Workflow"><ExtensionWorkflowIcon/></Tooltip>)
+      case "deployment":
+        return (<Tooltip title="Deployment"><ExtensionDeploymentIcon/></Tooltip>)
+      case "once":
+        return (<Tooltip title="Infra Component"><ExtensionInfraComponentIcon/></Tooltip>)
+      case "notification":
+        return (<Tooltip title="Notification"><ExtensionNotificationIcon/></Tooltip>)
+      default:
+        return extension.type
+    }
+  }
+
   render() {
     const { loading, project } = this.props.data;
 
@@ -339,7 +362,7 @@ export default class ProjectExtensions extends React.Component {
             key={extension.id}
           >
             <TableCell> { extension.name } </TableCell>
-            <TableCell> { extension.type } </TableCell>
+            <TableCell> { this.getExtensionTypeGlyph(extension) } </TableCell>
           </TableRow>
         );
       }
@@ -379,7 +402,7 @@ export default class ProjectExtensions extends React.Component {
       return "";
     }
     for (let artifact of extension.artifacts) {
-      if (artifact.key === "dns" || artifact.key === "fqdn") {
+      if (artifact.key === "dns" || artifact.key === "fqdn" || artifact.key === "table_view") {
         return artifact.value;
       }
     }
@@ -420,10 +443,10 @@ export default class ProjectExtensions extends React.Component {
           {project.extensions.map(extension => {
             let stateIcon = <CircularProgress size={25} />
             if(extension.state === "complete"){
-              stateIcon = <ExtensionStateCompleteIcon size={25}/>
+              stateIcon = <Tooltip title="Clear"><ExtensionStateCompleteIcon size={25}/></Tooltip>
             }
             if(extension.state === "failed"){
-              stateIcon = <ExtensionStateFailedIcon />
+              stateIcon = <Tooltip title="Consider"><ExtensionStateFailedIcon /></Tooltip>
             }            
             return (
             <TableRow
@@ -433,7 +456,7 @@ export default class ProjectExtensions extends React.Component {
               key={extension.id}>
               <TableCell> { extension.extension.name } </TableCell>
               <TableCell>{ this.renderArtifactRow(extension)} </TableCell>
-              <TableCell> { extension.extension.type } </TableCell>
+              <TableCell> { this.getExtensionTypeGlyph(extension.extension) } </TableCell>
               <TableCell> { stateIcon } </TableCell>
               <TableCell> { new Date(extension.created).toString() }</TableCell>
             </TableRow>
@@ -481,9 +504,11 @@ export default class ProjectExtensions extends React.Component {
     let type = extension.type
     let config = []
     let saveButtonText = "Save"
+    let extensionData
     
     if(extension.__typename === "Extension"){
       const ext = extension
+      extensionData = extension
       name = ext.name
       type = ext.type
       ext.config.map(function(obj){
@@ -498,6 +523,7 @@ export default class ProjectExtensions extends React.Component {
       config = []
       name = extension.extension.name
       type = extension.extension.type
+      extensionData = extension.extension
       extension.config.map(function(obj){
         let _obj = _.clone(obj)
         _obj.value = obj.value
@@ -569,7 +595,7 @@ export default class ProjectExtensions extends React.Component {
           </Grid>
 
           <Grid item xs={12}>
-            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
+            { CustomForm && <CustomForm type={this.state.extensionDrawer.formType} key={extension.id} parentExtension={extensionData} init={extension.customConfig} onRef={ref => (this.customForm = ref)} {...this.props} /> }
           </Grid>
  
           {extension.artifacts &&

@@ -5,14 +5,14 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
 import IconButton from 'material-ui/IconButton';
-import SettingsIcon from 'material-ui-icons/Settings';
-import FeaturesIcon from 'material-ui-icons/Input';
-import ReleasesIcon from 'material-ui-icons/Timeline';
-import ServicesIcon from 'material-ui-icons/Widgets';
-import SecretIcon from 'material-ui-icons/VpnKey';
-import ExtensionsIcon from 'material-ui-icons/Extension';
-import StarBorderIcon from 'material-ui-icons/StarBorder';
-import StarIcon from 'material-ui-icons/Star';
+import SettingsIcon from '@material-ui/icons/Settings';
+import FeaturesIcon from '@material-ui/icons/Input';
+import ReleasesIcon from '@material-ui/icons/Timeline';
+import ServicesIcon from '@material-ui/icons/Widgets';
+import SecretIcon from '@material-ui/icons/VpnKey';
+import ExtensionsIcon from '@material-ui/icons/Extension';
+import StarBorderIcon from '@material-ui/icons/StarBorder';
+import StarIcon from '@material-ui/icons/Star';
 import ProjectFeatures from 'components/Project/Features';
 import ProjectSecrets from 'components/Project/Secrets';
 import ProjectReleases from 'components/Project/Releases';
@@ -48,6 +48,12 @@ import Grid from 'material-ui/Grid';
            id
            created
          }
+      }
+      releases {
+        entries{
+          id
+          state
+        }
       }
       features(params: { limit: 25}){
         entries {
@@ -137,17 +143,16 @@ class Project extends React.Component {
     }
 
     // count deployable features by comparing currentRelease created and feature created
-    var deployableFeatures = 0
-    if(project.currentRelease !== null){
-      project.features.entries.map(function(feature){
-        if(new Date(feature.created).getTime() >= new Date(project.currentRelease.headFeature.created).getTime()){
-          deployableFeatures += 1
-        }
-        return null
-      })
-    } else {
-      deployableFeatures = project.features.entries.length
-    }
+    let deployableFeatures = project.features.entries.length
+    if(project.currentRelease){
+      deployableFeatures = project.features.entries.filter(function(feature){
+        return (new Date(feature.created).getTime() > new Date(project.currentRelease.headFeature.created).getTime())
+      }).length
+    } 
+
+    let releasesQueued = project.releases.entries.filter(function(release){
+      return ["waiting", "running"].includes(release.state)
+    }).length
 
     this.props.store.app.leftNavItems = [
         {
@@ -162,6 +167,8 @@ class Project extends React.Component {
           icon: <ReleasesIcon />,
           name: "Releases",
           slug: this.props.match.url + "/releases",
+          count: releasesQueued,
+          badgeColor: "secondary",
         },
         {
           key: "30",
@@ -223,7 +230,7 @@ class Project extends React.Component {
             <Toolbar style={{paddingLeft: "0px"}}>
               {bookmarked}
               <Typography variant="title">
-                {project.slug} <span className={styles.gitBranch}>({project.gitBranch})</span>
+                {project.name} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
             </Toolbar>
           </Grid>
@@ -254,9 +261,10 @@ class Project extends React.Component {
           </Grid>
         </Grid>
         <Switch>
-          <Route exact path='/projects/:slug/:environment' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
-          )}/>
+          <Route exact path='/projects/:slug/:environment' render={(props) => {
+            this.props.history.push("/projects/" + props.match.params.slug + "/" + props.match.params.environment + "/features")
+            return (<div></div>)
+          }}/>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
             <ProjectFeatures history={history} {...props} socket={socket} />
           )}/>
@@ -267,7 +275,7 @@ class Project extends React.Component {
             <ProjectServices {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets limit={100} {...props} />
+            <ProjectSecrets  history={history} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
             <ProjectExtensions {...props} socket={socket} />

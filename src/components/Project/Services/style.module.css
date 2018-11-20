@@ -62,15 +62,16 @@
     margin-top: 2em;
 }
 
+.settingsPanelOpen {
+    padding: 1em;
+}
+
 .advancedSettingsExpansionPanel {
     width: 100%;
 }
 
 .advancedSettingTitle {
 
-}
-
-.deploymentStrategyForm {
 }
 
 .probeForm {

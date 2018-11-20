@@ -61,17 +61,98 @@ query Project($slug: String, $environmentID: String){
 
 @inject("store") @observer
 
-export default class LoadBalancer extends React.Component {
+export default class Route53Ingress extends React.Component {
   constructor(props){
     super(props)
-    this.state = {}
+    this.state = {
+      domainOptions: [],
+      optionData: {},
+      selectedOption: {}
+    }
+
+    this.onIngressSelect = this.onIngressSelect.bind(this)
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    let project = props.data.project
+
+    if (props.data.loading) {
+      return state
+    }
+
+    let domainOptions = []
+    let optionData = {}
+
+    project.extensions.forEach(function(extension){
+      let controller = _.find(extension.artifacts, function(a) { return a.key === "ingress_controller" });
+      if (!controller) {
+        return
+      }
+      let controlledApexDomain = _.find(extension.artifacts, function(a) { return a.key === "controlled_apex_domain"})
+      let elbFQDN = _.find(extension.artifacts, function(a) { return a.key === "elb_dns"})
+      if(extension.extension.key.includes("ingress") && extension.customConfig.type === "loadbalancer") {
+
+        extension.customConfig.upstream_domains.forEach(function(domain) {
+          if (domain.apex === controlledApexDomain.value) {
+            let optionKey = extension.id + '-' + domain.subdomain + '-' + controlledApexDomain
+            domainOptions.push({
+              key: optionKey,
+              value: domain.subdomain + '.' + domain.apex + " (" + controller.value + ")"
+            })
+
+            optionData[optionKey] = {
+              controller: controller,
+              elbFQDN: elbFQDN,
+              domain: domain,
+              type: extension.customConfig.type,
+            }
+          }
+        })
+      }
+    })
+
+    state.domainOptions = domainOptions
+    state.optionData = optionData
+    return state
   }
 
   componentDidMount() {
+
+    const fields = [
+      'subdomain',
+      'loadbalancer',
+      'loadbalancer_fqdn',
+      'loadbalancer_type',
+    ]
+    const rules = {}
+    const labels = {
+        'subdomain': 'DOMAIN',
+        'loadbalancer': 'LOADBALANCER',
+        'loadbalancer_fqdn': 'LOADBALANCER FQDN',
+        'loadbalancer_type': 'LOADBALANCER TYPE',
+    }
+    const initials = {}
+    const types = {}
+    const extra = {}
+    const hooks = {
+      "loadbalancer": {
+        onChange: (field) => {
+          this.onIngressSelect(field)
+        }
+      }
+    };
+
+    const plugins = { dvr: validatorjs }
+    this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
+
     this.props.onRef(this)
     if(this.props.init){
       this.form.update(this.props.init)
     }
+  }
+
+  componentDidUpdate() {
+    this.form.set('extra', {'loadbalancer': this.state.domainOptions})
   }
 
   componentWillUnmount() {
@@ -80,29 +161,6 @@ export default class LoadBalancer extends React.Component {
 
   values(){
     return this.form.values() 
-  }
-
-  componentWillMount(){
-    const fields = [
-        'subdomain',
-        'loadbalancer',
-        'loadbalancer_fqdn',
-        'loadbalancer_type',
-    ]
-    const rules = {}
-    const labels = {
-        'subdomain': 'SUBDOMAIN',
-        'loadbalancer': 'LOADBALANCER',
-        'loadbalancer_fqdn': 'LOADBALANCER FQDN',
-        'loadbalancer_type': 'LOADBALANCER TYPE',
-    }
-    const initials = {}
-    const types = {}
-    const extra = {}
-    const hooks = {};
-
-    const plugins = { dvr: validatorjs }
-    this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
   }
 
   onError(form){
@@ -123,31 +181,14 @@ export default class LoadBalancer extends React.Component {
     }
   }
 
-  onAdd(extension, event){
-    this.setState({ addButtonDisabled: true })
-    if(this.form){
-      this.form.onSubmit(event, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
-    }
-  }   
-
   renderFQDN(extensionId) {
     if(!extensionId) {
       return null 
     }
-
-    const { project } = this.props.data;
-
-    project.extensions.forEach((extension) => {
-      if(extension.id === extensionId) {
-        let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
-
-        this.form.$('loadbalancer_fqdn').set(artifact.value);
-        this.form.$('loadbalancer_type').set(extension.customConfig.type);
-      }
-    })
     
     return (
       <Grid item xs={12}>
+        <InputField fullWidth={true} field={this.form.$('subdomain')} disabled/>
         <InputField fullWidth={true} field={this.form.$('loadbalancer_fqdn')} disabled/>
         <InputField fullWidth={true} field={this.form.$('loadbalancer_type')} disabled/>
       </Grid>
@@ -160,10 +201,7 @@ export default class LoadBalancer extends React.Component {
         <form onSubmit={(e) => e.preventDefault()}>
           <Grid container spacing={24}>
             <Grid item xs={12}>
-              <InputField fullWidth={true} field={this.form.$('subdomain')} autoComplete={'off'}/>
-            </Grid>
-            <Grid item xs={12}>
-              <SelectField fullWidth={true} field={this.form.$('loadbalancer')} extraKey={'extensions'} />
+              <SelectField fullWidth={true} field={this.form.$('loadbalancer')} />
             </Grid>
             { this.renderFQDN(this.form.values()['loadbalancer']) }
           </Grid>
@@ -184,6 +222,17 @@ export default class LoadBalancer extends React.Component {
     return this.renderLoadBalancerForm(project)
   }
 
+  onIngressSelect(field){
+    let selectedOption = this.state.optionData[field.value]
+    this.setState({
+      selectedOption: selectedOption
+    })
+
+    this.form.$('subdomain').set(selectedOption.domain.subdomain)
+    this.form.$('loadbalancer_fqdn').set(selectedOption.elbFQDN.value)
+    this.form.$('loadbalancer_type').set(selectedOption.type)
+  }
+
   render(){
     const { loading, project } = this.props.data;
     const { type } = this.props;
@@ -193,27 +242,6 @@ export default class LoadBalancer extends React.Component {
         <Loading />
       );
     }
-    
-    var extraOptions = []
-    project.extensions.forEach(function(extension){
-      let artifact = _.find(extension.artifacts, function(a) { return a.key === "dns" });
-      let value = extension.extension.name
-
-      if (artifact){
-        value = `${value} (${artifact.value})`
-      }
-
-      if(extension.extension.key.includes("loadbalancer") && extension.customConfig.type !== "internal") {
-        extraOptions.push({
-          key: extension.id,
-          value: value,
-        })
-      }
-    })
-
-    this.form.state.extra({
-        extensions: extraOptions,
-    })
 
     if(type === "enabled"){
       return this.renderEnabledView(project)

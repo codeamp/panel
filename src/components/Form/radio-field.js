@@ -6,7 +6,7 @@ import Grid from 'material-ui/Grid';
 import FormHelperText from 'material-ui/Form/FormHelperText';
 import { FormLabel } from 'material-ui/Form';
 
-export default observer(({field}) => {
+export default observer(({field, disabled=false}) => {
   return (
     <div className={styles.root}>
       <Grid container spacing={24}>   
@@ -17,6 +17,7 @@ export default observer(({field}) => {
               value={option}
               onChange={(e, value) => field.onChange(e)}
               checked={option === field.value}
+              disabled={disabled}
             />
             <FormLabel>{option}</FormLabel>
           </Grid>                
