@@ -251,7 +251,8 @@ class Project extends React.Component {
                   variant="raised"
                   aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
                   aria-haspopup="true"
-                  onClick={this.handleEnvironmentClick.bind(this)}>
+                  onClick={this.handleEnvironmentClick.bind(this)}
+                  disabled={project.environments.length <= 1}>
                   {app.currentEnvironment.name}
                 </Button>
               }

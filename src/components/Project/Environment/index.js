@@ -84,8 +84,14 @@ export default class Environment extends React.Component {
     let currentEnv = this.props.store.app.currentEnvironment
     let environmentName = null
 
+    // Iterate over all of the environments we received from the query
     environments.forEach((env) => {
-      if(env.key === this.props.match.params.environment || (!!currentEnv && currentEnv.key === env.key)){
+      // If the environment slug (from the url) matches one of the env's in our list
+      // OR
+      // if the environment in the app-store matches one of the env's in the list
+      if(env.key === this.props.match.params.environment || currentEnv.key === env.key){
+        // If the current env is unset, or the new env is different from the app-store's env
+        // then update the app-store
         if(!currentEnv.key || currentEnv.key !== env.key) {
           this.props.store.app.setCurrentEnv({
             id: env.id, 
@@ -100,9 +106,14 @@ export default class Environment extends React.Component {
       }
     })
 
+    // If we didn't find an environment name because it wasn't provided,
+    // or because it was wrong ("dev" vs "development" for example) then 
+    // present the user with the environment selection prompt
     if(!environmentName) {
       return this.renderEnvironmentSelector()
     } else {
+      // If we have a valid environment, redirect the user to the 
+      // url with the environment encoded (it will send us back through here once more)
       return <EnvironmentForwarder {...this.props} env={environmentName}/>
     }
   }
