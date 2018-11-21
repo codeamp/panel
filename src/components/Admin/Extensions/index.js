@@ -13,6 +13,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import InputField from 'components/Form/input-field';
 import SelectField from 'components/Form/select-field';
 import EnvVarSelectField from 'components/Form/envvar-select-field';
+import CheckboxField from 'components/Form/checkbox-field';
 import Loading from 'components/Utils/Loading';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
@@ -49,6 +50,7 @@ query {
     id
     type
     key
+    cacheable
     name
     component
     environment {
@@ -81,11 +83,12 @@ query {
 `)
 
 @graphql(gql`
-mutation CreateExtension ($name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+mutation CreateExtension ($name: String!, $key: String!, $type: String!, $cacheable: Boolean!, $environmentID: String!, $config: JSON!, $component: String!) {
     createExtension(extension:{
       name: $name,
       key: $key,
       type: $type,
+      cacheable: $cacheable, 
       environmentID: $environmentID,
       config: $config,
       component: $component,
@@ -98,12 +101,13 @@ mutation CreateExtension ($name: String!, $key: String!, $type: String!, $enviro
 
 
 @graphql(gql`
-mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: String!, $cacheable: Boolean!, $environmentID: String!, $config: JSON!, $component: String!) {
     updateExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
       type: $type,
+      cacheable: $cacheable, 
       environmentID: $environmentID,
       config: $config,
       component: $component,
@@ -116,12 +120,13 @@ mutation UpdateExtension ($id: String, $name: String!, $key: String!, $type: Str
 
 
 @graphql(gql`
-mutation DeleteExtension ($id: String, $name: String!, $key: String!, $type: String!, $environmentID: String!, $config: JSON!, $component: String!) {
+mutation DeleteExtension ($id: String, $name: String!, $key: String!, $type: String!, $cacheable: Boolean!, $environmentID: String!, $config: JSON!, $component: String!) {
     deleteExtension(extension:{
       id: $id,
       name: $name,
       key: $key,
       type: $type,
+      cacheable: $cacheable, 
       environmentID: $environmentID,
       config: $config,
       component: $component,
@@ -162,6 +167,7 @@ export default class Extensions extends React.Component {
       'index',
       'name',
       'key',
+      'cacheable',
       'type',
       'config',
       'config[]',
@@ -184,6 +190,7 @@ export default class Extensions extends React.Component {
       'name': 'Name',
       'key': 'Key',
       'type': 'Type',
+      'cacheable': 'Enable caching',
       'config': 'Config',
       'config[].key': 'Key',
       'config[].value': 'Environment Variable',
@@ -194,6 +201,7 @@ export default class Extensions extends React.Component {
     const initials = formInitials
 
     const types = {
+      'cacheable': 'checkbox',
     };
     const extra = {
       'type': [{
@@ -233,6 +241,7 @@ export default class Extensions extends React.Component {
     const hooks = {
       'name': $hooks,
       'key': $hooks,
+      'cacheable': $hooks,
       'type': $hooks,
       'config': $hooks,
       'config[]': $hooks,
@@ -252,6 +261,7 @@ export default class Extensions extends React.Component {
     this.form = this.initAdminExtensionsForm({
       'type': 'Workflow',
       'environmentID': null,
+      'cacheable': false,
       'config[].allowOverride': false,
     })
   }
@@ -284,6 +294,7 @@ export default class Extensions extends React.Component {
     this.form = this.initAdminExtensionsForm({
       'type': 'Workflow',
       'environmentID': null,
+      'cacheable': false,
       'config[].allowOverride': false,
     })
     this.setOptions()
@@ -299,6 +310,7 @@ export default class Extensions extends React.Component {
       index: index,
       name: extension.name,
       key: extension.key,
+      cacheable: extension.cacheable,
       environmentID: extension.environment.id,
       component: extension.component,
       type: extension.type,
@@ -324,6 +336,7 @@ export default class Extensions extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.props.store.app.setSnackbar({ open: true, msg: 'Extension ' + form.values()['name'] + ' has been created'})
         this.setState({ saving: false })
       });
     } else {
@@ -331,6 +344,7 @@ export default class Extensions extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
+        this.props.store.app.setSnackbar({ open: true, msg: 'Extension ' + form.values()['name'] + ' has been updated'})
         this.setState({ saving: false })        
       });
     }
@@ -356,6 +370,7 @@ export default class Extensions extends React.Component {
   }
 
   onSubmit(e, form){
+    console.log('onSubmit')
     form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
@@ -494,6 +509,7 @@ export default class Extensions extends React.Component {
         name: extension.name,
         key: extension.key,
         environmentID: extension.environment.id,
+        cacheable: extension.cacheable,
         component: extension.component,
         type: extension.type,
         'config[].allowOverride': false,
@@ -575,13 +591,19 @@ export default class Extensions extends React.Component {
             </Grid>
           </ExpansionPanelSummary>
 
-          <Divider />
+          <Divider className={styles.sectionDivider} />
 
           <ExpansionPanelDetails className={styles.details}>
             {this.renderMobxReactComponent(mobxForm)}
+            <Grid item xs={12} style={{ marginBottom: 20, marginTop: 20 }}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} style={{ marginBottom: 20 }}>
+              <Typography variant="subheading"> Config </Typography>
+            </Grid>            
             {mobxForm && mobxForm.$('config').map((kv, i) => {
                 return (
-                  <Grid container spacing={40} key={kv.id}>
+                  <Grid container spacing={40} key={kv.id}>                  
                       <Grid item xs={2}>
                           <InputField field={kv.$('key')} fullWidth={true} />
                       </Grid>
@@ -600,13 +622,23 @@ export default class Extensions extends React.Component {
                 )
             })}
             {mobxForm && (
-              <Grid container spacing={40} className={styles.configActions} align="center">
-                <Grid item xs={2}>
+              <Grid container spacing={40} className={styles.configActions} align="left">
+                <Grid item xs={12}>
                   <Button color="default" variant="raised" onClick={mobxForm.$('config').onAdd}>
                     Add Config
                   </Button>
                 </Grid>    
-                <Grid item xs={2}>
+                <Grid item xs={12} className={styles.sectionDivider}>
+                  <Divider />
+                </Grid>
+                {extension.type === 'workflow' &&
+                  <Tooltip placement="bottom-start" title="Whether results from the process should be cached and re-used during deploys">
+                    <Grid item xs={12}>
+                      <CheckboxField field={mobxForm.$('cacheable')} fullWidth={true} />
+                    </Grid>
+                  </Tooltip>
+                }
+                <Grid item xs={12}>
                   <Button color="default" variant="raised" onClick={(e) => this.onSubmit(e, mobxForm)}>
                     Save
                   </Button>
@@ -691,6 +723,9 @@ export default class Extensions extends React.Component {
                 </Grid>
                 <Grid item xs={4}>
                   <InputField field={this.form.$('component')} fullWidth={true} />
+                </Grid>
+                <Grid item xs={4}>
+                  <CheckboxField field={this.form.$('cacheable')} fullWidth={true} />
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="title">
