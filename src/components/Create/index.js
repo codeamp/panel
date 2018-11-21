@@ -151,7 +151,7 @@ export default class Create extends React.Component {
         bookmarked: this.state.bookmarked
       }
     }).then(({data}) => {
-      self.props.history.push('/projects/' + data.createProject.slug)
+      self.props.history.push('/projects/' + data.createProject.slug, data)
     }).catch(error => {
       let obj = JSON.parse(JSON.stringify(error))
       if(Object.keys(obj).length > 0 && obj.constructor === Object){
