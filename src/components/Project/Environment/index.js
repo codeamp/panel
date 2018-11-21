@@ -46,7 +46,7 @@ export default class Environment extends React.Component {
       name: environment.name, 
       key: environment.key 
     })
-    this.props.history.push('/projects/'+this.props.match.params.slug+"/"+environment.key)      
+    this.props.history.push(`/projects/${this.props.match.params.slug}/${environment.key}/features`)      
   } 
 
   renderEnvironmentSelector() {
@@ -82,38 +82,46 @@ export default class Environment extends React.Component {
     }
 
     let currentEnv = this.props.store.app.currentEnvironment
-    let matched = false
-    environments.map((env) => {
-      if(env.key === currentEnv.key || env.key === this.props.match.params.environment){
-        matched = true
-        
-        if(!currentEnv.key) {
+    let environmentName = null
+
+    environments.forEach((env) => {
+      if(env.key === this.props.match.params.environment || (!!currentEnv && currentEnv.key === env.key)){
+        if(!currentEnv.key || currentEnv.key !== env.key) {
           this.props.store.app.setCurrentEnv({
             id: env.id, 
             color: env.color, 
             name: env.name, 
             key: env.key 
           })
-
-          if(!this.props.match.params.environment) {
-            this.props.history.push('/projects/' + env.key + "/" + this.props.match.params.slug)      
-          }
         }
 
-        return null
+        environmentName = env.key
+        return 
       }
-      return null
     })
 
-    if(!matched) {
+    if(!environmentName) {
       return this.renderEnvironmentSelector()
+    } else {
+      return <EnvironmentForwarder {...this.props} env={environmentName}/>
     }
-
-    return (
-      <div>
-        {this.props.children}
-      </div>
-    );
   }
 
+}
+
+class EnvironmentForwarder extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {}
+  }
+
+  componentWillMount() {
+    if (!!this.props.env) {
+      this.props.history.push(`/projects/${this.props.match.params.slug}/${this.props.env}/features`)
+    }
+  }
+
+  render() {
+    return null
+  }
 }

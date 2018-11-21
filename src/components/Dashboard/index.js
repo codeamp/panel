@@ -168,7 +168,7 @@ export default class Dashboard extends React.Component {
                 }
                 return (                  
                   <Card key={project.id} className={styles.bookmarkedProject}>
-                    <Link to={"/projects/" + project.slug + "/environments"}>
+                    <Link to={"/projects/" + project.slug}>
                       <CardContent
                         tabIndex={-1}
                         key={project.id}

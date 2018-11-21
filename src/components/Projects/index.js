@@ -73,7 +73,7 @@ export default class Projects extends React.Component {
               {projects.entries.length > 0 && projects.entries.map(function(project, idx){
                 return (                  
                   <Card key={project.id} className={styles.bookmarkedProject}>
-                    <Link to={"/projects/" + project.slug + "/environments"}>
+                    <Link to={"/projects/" + project.slug}>
                       <CardContent
                         tabIndex={-1}
                         key={project.id}

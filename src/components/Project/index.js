@@ -154,19 +154,21 @@ class Project extends React.Component {
       return ["waiting", "running"].includes(release.state)
     }).length
 
+    let currentEnv = this.props.store.app.currentEnvironment.key
+    console.log("Current Env (Nav): ", currentEnv)
     this.props.store.app.leftNavItems = [
         {
           key: "10",
           icon: <FeaturesIcon />,
           name: "Features",
-          slug: this.props.match.url + "/features",
+          slug: `${props.match.url}/${currentEnv}/features`,
           count: deployableFeatures,
         },
         {
           key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
-          slug: this.props.match.url + "/releases",
+          slug: `${props.match.url}/${currentEnv}/releases`,
           count: releasesQueued,
           badgeColor: "secondary",
         },
@@ -174,34 +176,47 @@ class Project extends React.Component {
           key: "30",
           icon: <ServicesIcon />,
           name: "Services",
-          slug: this.props.match.url + "/services",
+          slug: `${props.match.url}/${currentEnv}/services`,
         },
         {
           key: "40",
           icon: <SecretIcon />,
           name: "Secrets",
-          slug: this.props.match.url + "/secrets",
+          slug: `${props.match.url}/${currentEnv}/secrets`,
         },
         {
           key: "50",
           icon: <ExtensionsIcon />,
           name: "Extensions",
-          slug: this.props.match.url + "/extensions",
+          slug: `${props.match.url}/${currentEnv}/extensions`,
         },
         {
           key: "60",
           icon: <SettingsIcon />,
           name: "Settings",
-          slug: this.props.match.url + "/settings",
+          slug: `${props.match.url}/${currentEnv}/settings`,
         },
     ];
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setLeftNavProjectItems(nextProps)
+    console.log("Project/componentWillReceiveProps")
+    console.log(this.props)
+    console.log(nextProps)
+    console.log(window.location.href)
+
+    let currentEnv = this.props.store.app.currentEnvironment
+    if (!!currentEnv && !!currentEnv.key) {
+      this.setLeftNavProjectItems(nextProps)
+    }
+  }
+
+  componentWillUnmount() {
+    this.props.store.app.leftNavItems = []
   }
 
   render() {
+    console.log("Project/render")
     const { history, socket } = this.props;
     const { loading, project } = this.props.data;
     const { app } = this.props.store;
@@ -261,32 +276,29 @@ class Project extends React.Component {
           </Grid>
         </Grid>
         <Switch>
-          <Route exact path='/projects/:slug/:environment' render={(props) => {
-            this.props.history.push("/projects/" + props.match.params.slug + "/" + props.match.params.environment + "/features")
-            return (<div></div>)
-          }}/>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
+            <ProjectFeatures history={history} socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
-            <ProjectReleases {...props} socket={socket} />
+            <ProjectReleases socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/services' render={(props) => (
-            <ProjectServices {...props} />
+            <ProjectServices socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets  history={history} {...props} />
+            <ProjectSecrets  history={history} socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
-            <ProjectExtensions {...props} socket={socket} />
+            <ProjectExtensions socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
-            <ProjectSettings {...props} />
+            <ProjectSettings socket={socket} {...props} />
+          )}/>
+          <Route exact path='/projects/:slug/:environment' render={(props) => (
+            <ProjectEnvironment {...props}/>
           )}/>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectEnvironment {...props}>
-              <Project socket={socket} {...props} />
-            </ProjectEnvironment>
+            <ProjectEnvironment {...props}/>
           )} />
           <Route component={DoesNotExist404} />
         </Switch>
