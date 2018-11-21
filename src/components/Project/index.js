@@ -155,7 +155,6 @@ class Project extends React.Component {
     }).length
 
     let currentEnv = this.props.store.app.currentEnvironment.key
-    console.log("Current Env (Nav): ", currentEnv)
     this.props.store.app.leftNavItems = [
         {
           key: "10",
@@ -200,11 +199,6 @@ class Project extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log("Project/componentWillReceiveProps")
-    console.log(this.props)
-    console.log(nextProps)
-    console.log(window.location.href)
-
     let currentEnv = this.props.store.app.currentEnvironment
     if (!!currentEnv && !!currentEnv.key) {
       this.setLeftNavProjectItems(nextProps)
@@ -216,7 +210,6 @@ class Project extends React.Component {
   }
 
   render() {
-    console.log("Project/render")
     const { history, socket } = this.props;
     const { loading, project } = this.props.data;
     const { app } = this.props.store;
@@ -238,6 +231,7 @@ class Project extends React.Component {
         </IconButton>
       )
     }
+    
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -251,27 +245,31 @@ class Project extends React.Component {
           </Grid>
           <Grid item xs={3} style={{textAlign: "right"}}>
             <Toolbar style={{textAlign: "right", display: "inline-flex"}}>
-              <Button
-                className={styles.EnvButton}
-                variant="raised"
-                aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
-                aria-haspopup="true"
-                onClick={this.handleEnvironmentClick.bind(this)}>
-                {app.currentEnvironment.name}
-              </Button>
-              <Menu
-                id="environment-menu"
-                anchorEl={this.state.environmentAnchorEl}
-                open={Boolean(this.state.environmentAnchorEl)}
-                onClose={this.handleEnvironmentClose.bind(this)}>
-                {project.environments.map((env) => {
-                  return (<MenuItem
-                    key={env.id}
-                    onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
-                    {env.name}
-                  </MenuItem>)
-                })}
-              </Menu>
+              { !!app.currentEnvironment.id && 
+                <Button
+                  className={styles.EnvButton}
+                  variant="raised"
+                  aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+                  aria-haspopup="true"
+                  onClick={this.handleEnvironmentClick.bind(this)}>
+                  {app.currentEnvironment.name}
+                </Button>
+              }
+              { project.environments.length > 0 && 
+                <Menu
+                  id="environment-menu"
+                  anchorEl={this.state.environmentAnchorEl}
+                  open={Boolean(this.state.environmentAnchorEl)}
+                  onClose={this.handleEnvironmentClose.bind(this)}>
+                  {project.environments.map((env) => {
+                    return (<MenuItem
+                      key={env.id}
+                      onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
+                      {env.name}
+                    </MenuItem>)
+                  })}
+                </Menu>
+              }
             </Toolbar>
           </Grid>
         </Grid>

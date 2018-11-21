@@ -162,7 +162,6 @@ export default class App extends React.Component {
                       <Projects socket={socket} {...props} />
                   )} />
                   <Route path='/projects/:slug' render={(props) => {
-                      console.log("app - /projects/:slug")
                       return (<Project socket={socket} {...props} />)
                   }} />                  
                   <Route exact path='/create' render={(props) => (
