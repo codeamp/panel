@@ -140,7 +140,7 @@ export default class Features extends React.Component {
       },
     }).then(({data}) => {
       this.props.data.refetch()
-      this.props.history.push("/projects/" + this.props.match.params.slug + "/" + this.props.match.params.environment + "/releases")
+      this.props.history.push(`/projects/${this.props.match.params.slug}/${this.props.match.params.environment}/releases`)
     });
   }
 
@@ -160,7 +160,7 @@ export default class Features extends React.Component {
                 Make sure all relevant features are pushed into {project.gitBranch}. 
                 {project.gitProtocol === "SSH" &&
                   <div>
-                  If you haven't done so already, <NavLink to={"/projects/" + project.slug + "/settings"}><strong> make sure your deploy key is added in your git settings.</strong></NavLink>
+                  If you haven't done so already, <NavLink to={"/projects/" + project.slug + "/" + this.props.store.app.currentEnvironment.name + "/settings"}><strong> make sure your deploy key is added in your git settings.</strong></NavLink>
                   </div>
                 }
               </Typography>               
