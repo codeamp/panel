@@ -15,7 +15,6 @@ import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
 import Project from 'components/Project';
 import Projects from 'components/Projects';
-import ProjectEnvironment from 'components/Project/Environment';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
 
@@ -162,22 +161,16 @@ export default class App extends React.Component {
                   <Route exact path='/projects' render={(props) => (
                       <Projects socket={socket} {...props} />
                   )} />
+                  <Route path='/projects/:slug' render={(props) => {
+                      return (<Project socket={socket} {...props} />)
+                  }} />                  
                   <Route exact path='/create' render={(props) => (
                     <Create projects={projects.entries} type={"create"} {...props} />
                   )} />
                   <Route path='/admin' render={(props) => (
                     <Admin socket={socket} data={this.props.data} projects={projects.entries} {...props} />
                   )} />
-                  <Route exact path='/projects/:slug' render={(props) => (
-                    <ProjectEnvironment {...props}>
-                      <Project socket={socket} {...props} />
-                    </ProjectEnvironment>
-                  )} />
-                  <Route path='/projects/:slug/:environment' render={(props) => (
-                    <ProjectEnvironment {...props}>
-                      <Project socket={socket} {...props} />
-                    </ProjectEnvironment>
-                  )} />
+
                 </Switch>
               </div>
             </Grid>
