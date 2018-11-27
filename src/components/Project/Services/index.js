@@ -48,11 +48,6 @@ import GeneralIcon from '@material-ui/icons/Autorenew';
 @inject("store")
 @graphql(gql`
 query Project($slug: String, $environmentID: String) {
-  user {
-    id
-    email
-    permissions
-  }
   project(slug: $slug, environmentID: $environmentID) {
     id
     services{
@@ -668,7 +663,7 @@ export default class Services extends React.Component {
 
   render() {
     const self = this;
-    const { loading, project, serviceSpecs, user } = this.props.data;
+    const { loading, project, serviceSpecs } = this.props.data;
 
     if(loading){
       return (
