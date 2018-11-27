@@ -497,35 +497,6 @@ export default class Services extends React.Component {
     this.form = this.initProjectServicesForm()
   }
 
-  componentWillReceiveProps(nextProps) {
-    if(this.state.queryArgsProcessed){
-      return
-    }
-
-    const { project, loading } = nextProps.data;
-    const self = this;
-
-    if(project !== undefined){
-      // check for serviceID argument
-      const args = nextProps.location.search.substr(1).split('=')
-      let serviceID = ""
-
-      for(let i = 0; i < args.length; i++){
-        if(args[i] === 'serviceID' && args.length >= i + 1) {
-          serviceID = args[i+1]
-        }
-      }
-
-      project.services.entries.map(function(service, idx){
-        if(service.id === serviceID){
-          self.editService(service, idx)
-        }
-      })
-    }
-
-    this.setState({ queryArgsProcessed: true })    
-  }
-
   onSuccess(form) {
     if(form.values()['id'] !== ""){
       this.props.updateService({
