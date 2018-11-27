@@ -154,19 +154,20 @@ class Project extends React.Component {
       return ["waiting", "running"].includes(release.state)
     }).length
 
+    let currentEnv = this.props.store.app.currentEnvironment.key
     this.props.store.app.leftNavItems = [
         {
           key: "10",
           icon: <FeaturesIcon />,
           name: "Features",
-          slug: this.props.match.url + "/features",
+          slug: `${props.match.url}/${currentEnv}/features`,
           count: deployableFeatures,
         },
         {
           key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
-          slug: this.props.match.url + "/releases",
+          slug: `${props.match.url}/${currentEnv}/releases`,
           count: releasesQueued,
           badgeColor: "secondary",
         },
@@ -174,31 +175,38 @@ class Project extends React.Component {
           key: "30",
           icon: <ServicesIcon />,
           name: "Services",
-          slug: this.props.match.url + "/services",
+          slug: `${props.match.url}/${currentEnv}/services`,
         },
         {
           key: "40",
           icon: <SecretIcon />,
           name: "Secrets",
-          slug: this.props.match.url + "/secrets",
+          slug: `${props.match.url}/${currentEnv}/secrets`,
         },
         {
           key: "50",
           icon: <ExtensionsIcon />,
           name: "Extensions",
-          slug: this.props.match.url + "/extensions",
+          slug: `${props.match.url}/${currentEnv}/extensions`,
         },
         {
           key: "60",
           icon: <SettingsIcon />,
           name: "Settings",
-          slug: this.props.match.url + "/settings",
+          slug: `${props.match.url}/${currentEnv}/settings`,
         },
     ];
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setLeftNavProjectItems(nextProps)
+    let currentEnv = this.props.store.app.currentEnvironment
+    if (!!currentEnv && !!currentEnv.key) {
+      this.setLeftNavProjectItems(nextProps)
+    }
+  }
+
+  componentWillUnmount() {
+    this.props.store.app.leftNavItems = []
   }
 
   render() {
@@ -223,6 +231,7 @@ class Project extends React.Component {
         </IconButton>
       )
     }
+    
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
@@ -236,57 +245,59 @@ class Project extends React.Component {
           </Grid>
           <Grid item xs={3} style={{textAlign: "right"}}>
             <Toolbar style={{textAlign: "right", display: "inline-flex"}}>
-              <Button
-                className={styles.EnvButton}
-                variant="raised"
-                aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
-                aria-haspopup="true"
-                onClick={this.handleEnvironmentClick.bind(this)}>
-                {app.currentEnvironment.name}
-              </Button>
-              <Menu
-                id="environment-menu"
-                anchorEl={this.state.environmentAnchorEl}
-                open={Boolean(this.state.environmentAnchorEl)}
-                onClose={this.handleEnvironmentClose.bind(this)}>
-                {project.environments.map((env) => {
-                  return (<MenuItem
-                    key={env.id}
-                    onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
-                    {env.name}
-                  </MenuItem>)
-                })}
-              </Menu>
+              { !!app.currentEnvironment.id && 
+                <Button
+                  className={styles.EnvButton}
+                  variant="raised"
+                  aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+                  aria-haspopup="true"
+                  onClick={this.handleEnvironmentClick.bind(this)}
+                  disabled={project.environments.length <= 1}>
+                  {app.currentEnvironment.name}
+                </Button>
+              }
+              { project.environments.length > 0 && 
+                <Menu
+                  id="environment-menu"
+                  anchorEl={this.state.environmentAnchorEl}
+                  open={Boolean(this.state.environmentAnchorEl)}
+                  onClose={this.handleEnvironmentClose.bind(this)}>
+                  {project.environments.map((env) => {
+                    return (<MenuItem
+                      key={env.id}
+                      onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
+                      {env.name}
+                    </MenuItem>)
+                  })}
+                </Menu>
+              }
             </Toolbar>
           </Grid>
         </Grid>
         <Switch>
-          <Route exact path='/projects/:slug/:environment' render={(props) => {
-            this.props.history.push("/projects/" + props.match.params.slug + "/" + props.match.params.environment + "/features")
-            return (<div></div>)
-          }}/>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
+            <ProjectFeatures history={history} socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
-            <ProjectReleases {...props} socket={socket} />
+            <ProjectReleases socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/services' render={(props) => (
-            <ProjectServices {...props} />
+            <ProjectServices socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets  history={history} {...props} />
+            <ProjectSecrets  history={history} socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
-            <ProjectExtensions {...props} socket={socket} />
+            <ProjectExtensions socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
-            <ProjectSettings {...props} />
+            <ProjectSettings socket={socket} {...props} />
+          )}/>
+          <Route exact path='/projects/:slug/:environment' render={(props) => (
+            <ProjectEnvironment {...props}/>
           )}/>
           <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectEnvironment {...props}>
-              <Project socket={socket} {...props} />
-            </ProjectEnvironment>
+            <ProjectEnvironment {...props}/>
           )} />
           <Route component={DoesNotExist404} />
         </Switch>

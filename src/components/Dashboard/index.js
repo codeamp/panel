@@ -105,7 +105,7 @@ export default class Dashboard extends React.Component {
                   <Typography variant="headline" component="h2" className={styles.title}>
                     Projects
                   </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
+                  <Typography variant="headline" component="h2" className={styles.bigNumber}>
                     {projects.count}
                   </Typography>
                 </CardContent>
@@ -118,7 +118,7 @@ export default class Dashboard extends React.Component {
                   <Typography variant="headline" component="h2" className={styles.title}>
                     Features
                   </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
+                  <Typography variant="headline" component="h2" className={styles.bigNumber}>
                     {features.count}
                   </Typography>
                 </CardContent>
@@ -131,7 +131,7 @@ export default class Dashboard extends React.Component {
                   <Typography variant="headline" component="h2" className={styles.title}>
                     Releases
                   </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
+                  <Typography variant="headline" component="h2" className={styles.bigNumber}>
                     {releases.count}
                   </Typography>
                 </CardContent>
@@ -144,7 +144,7 @@ export default class Dashboard extends React.Component {
                   <Typography variant="headline" component="h2" className={styles.title}>
                     Users
                   </Typography>
-                  <Typography component="headline" className={styles.bigNumber}>
+                  <Typography variant="headline" component="h2" className={styles.bigNumber}>
                     {users.length}
                   </Typography>
                 </CardContent>
@@ -168,7 +168,7 @@ export default class Dashboard extends React.Component {
                 }
                 return (                  
                   <Card key={project.id} className={styles.bookmarkedProject}>
-                    <Link to={"/projects/" + project.slug + "/environments"}>
+                    <Link to={"/projects/" + project.slug}>
                       <CardContent
                         tabIndex={-1}
                         key={project.id}
