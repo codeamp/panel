@@ -274,8 +274,6 @@ export default class ServiceSpecs extends React.Component {
       );
     }
 
-    console.log(serviceSpecs)
-
     return (
       <div className={styles.root}>
         <Grid container spacing={24}>
