@@ -72,7 +72,6 @@ query Project($slug: String, $environmentID: String) {
         readinessProbe
         livenessProbe
         preStopHook
-        autoscaleEnabled
       }
     }
   }
@@ -99,7 +98,6 @@ query Project($slug: String, $environmentID: String) {
 mutation CreateService($projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
-    $autoscaleEnabled: Boolean!,
     $preStopHook: String) {
     createService(service:{
     projectID: $projectID,
@@ -113,7 +111,6 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!,
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
     preStopHook: $preStopHook,
-    autoscaleEnabled: $autoscaleEnabled,
     }) {
       id
     }
@@ -123,7 +120,6 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!,
 mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
-    $autoscaleEnabled: Boolean!,
     $preStopHook: String) {
     updateService(service:{
     id: $id,
@@ -138,7 +134,6 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
     preStopHook: $preStopHook,
-    autoscaleEnabled: $autoscaleEnabled,
     }) {
       id
     }
@@ -148,7 +143,6 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
 mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!,
   $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
   $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
-  $autoscaleEnabled: Boolean!,
   $preStopHook: String) {
   deleteService(service:{
   id: $id,
@@ -163,7 +157,6 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   readinessProbe: $readinessProbe,
   livenessProbe: $livenessProbe,
   preStopHook: $preStopHook
-  autoscaleEnabled: $autoscaleEnabled,
   }) {
     id
   }
@@ -258,7 +251,6 @@ export default class Services extends React.Component {
       'ports[].protocol',
       'environmentID',
       'index',
-      'autoscaleEnabled',
       'deploymentStrategy',
       'deploymentStrategy.type',
       'deploymentStrategy.maxUnavailable',
@@ -381,7 +373,6 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[].value': "Value",
 
       'preStopHook': "Command",
-      'autoscaleEnabled': "Enable autoscaling so the suggested service spec is used (experimental)"
     };
 
     const initials = formInitials
@@ -405,7 +396,6 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': 'number',
       'readinessProbe.successThreshold': 'number',
       'readinessProbe.failureThreshold': 'number',
-      'autoscaleEnabled': 'checkbox',
     };
 
     const keys = {};
@@ -609,7 +599,6 @@ export default class Services extends React.Component {
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
       preStopHook: service.preStopHook,
-      autoscaleEnabled: service.autoscaleEnabled,
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -1125,11 +1114,6 @@ export default class Services extends React.Component {
                         </ExpansionPanel>
 
                     </Grid>
-                    {user.permissions.includes("admin") &&
-                      <Grid item xs={12}>
-                        <CheckboxField field={this.form.$('autoscaleEnabled')} fullWidth={true} />
-                      </Grid>
-                    }
                     <Grid item xs={12}>
                       <Button color="primary"
                           className={styles.buttonSpacing}
