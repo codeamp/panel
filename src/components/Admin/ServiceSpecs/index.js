@@ -156,7 +156,6 @@ export default class ServiceSpecs extends React.Component {
       'id',
       'index',
       'isDefault',
-      'autoscaleEnabled',
     ];
 
     const rules = {
@@ -393,6 +392,9 @@ export default class ServiceSpecs extends React.Component {
                       <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
                     </Grid>
                   }
+                  <Grid item xs={12}>
+                    <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
+                  </Grid>                  
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
