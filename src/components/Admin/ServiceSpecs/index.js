@@ -50,14 +50,6 @@ query {
     isDefault
     service {
       id
-      project {
-        id
-        slug
-      }
-      environment {
-        id
-        key
-      }
     }
   }
 }
