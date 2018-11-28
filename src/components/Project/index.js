@@ -136,7 +136,6 @@ class Project extends React.Component {
   }
 
   handleBookmarkProject = () => {
-    console.log("Handling bookmarked project")
     this.props.bookmarkProject({
       variables: {
         'id': this.props.data.project.id,
