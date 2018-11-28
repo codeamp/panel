@@ -25,8 +25,6 @@ class EnvironmentSelector extends React.Component {
   }
 
   componentWillMount(){
-    console.log("COMPONENT WILL MOUNT")
-
     let projectsMap = {}
     this.props.projects.entries.forEach((project) => {
       projectsMap[project.slug] = project
@@ -108,12 +106,16 @@ class EnvironmentSelector extends React.Component {
         return this.renderEnvironmentSelector()
       }
     } else {    
-      console.log("routing to!")
+      // If the url is good, then proceed on to rendering project or routing from there
+      // If we have come in here after a visiting another proejct for the first time,
+      // the environment will not be in the url. If that's the case, redirect to a form
+      // that includes the environment name because project routing depends on it.
       return (      
         <Switch>
           <Route path='/projects/:slug/:environment' render={(props) => (
             <Project {...props} environment={environment} socket={socket}/>
           )}/>
+          <Redirect from={`/projects/${this.props.match.params.slug}`} to={`/projects/${this.props.match.params.slug}/${environment.key}`}/>
         </Switch>      
       );
     }

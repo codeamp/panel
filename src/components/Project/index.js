@@ -3,6 +3,7 @@ import styles from './style.module.css';
 import gql from 'graphql-tag';
 
 import DoesNotExist404 from 'components/Utils/DoesNotExist404'
+import Loading from 'components/Utils/Loading';
 
 import { withApollo } from 'react-apollo';
 import { Route, Switch, Redirect } from "react-router-dom";
@@ -77,7 +78,7 @@ import Typography from 'material-ui/Typography';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
+      environmentID: props.environment.id
     }
   })
 })
@@ -96,13 +97,11 @@ class Project extends React.Component {
     }
   }
 
-  componentWillMount() {
-    console.log("Will mount!")
+  componentDidUpdate() {
     this.setLeftNavProjectItems(this.props)
   }
 
   componentWillUnmount() {
-    console.log("Unmounting!")
     this.props.store.app.leftNavItems = []
   }
 
@@ -165,20 +164,19 @@ class Project extends React.Component {
       return ["waiting", "running"].includes(release.state)
     }).length
 
-    let currentEnv = this.props.store.app.currentEnvironment.key
     this.props.store.app.leftNavItems = [
         {
           key: "10",
           icon: <FeaturesIcon />,
           name: "Features",
-          slug: `${props.match.url}/${currentEnv}/features`,
+          slug: `${props.match.url}/features`,
           count: deployableFeatures,
         },
         {
           key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
-          slug: `${props.match.url}/${currentEnv}/releases`,
+          slug: `${props.match.url}/releases`,
           count: releasesQueued,
           badgeColor: "secondary",
         },
@@ -186,25 +184,25 @@ class Project extends React.Component {
           key: "30",
           icon: <ServicesIcon />,
           name: "Services",
-          slug: `${props.match.url}/${currentEnv}/services`,
+          slug: `${props.match.url}/services`,
         },
         {
           key: "40",
           icon: <SecretIcon />,
           name: "Secrets",
-          slug: `${props.match.url}/${currentEnv}/secrets`,
+          slug: `${props.match.url}/secrets`,
         },
         {
           key: "50",
           icon: <ExtensionsIcon />,
           name: "Extensions",
-          slug: `${props.match.url}/${currentEnv}/extensions`,
+          slug: `${props.match.url}/extensions`,
         },
         {
           key: "60",
           icon: <SettingsIcon />,
           name: "Settings",
-          slug: `${props.match.url}/${currentEnv}/settings`,
+          slug: `${props.match.url}/settings`,
         },
     ];
   }
@@ -222,33 +220,23 @@ class Project extends React.Component {
   }
 
   render() {
-    console.log("project render")
-
     const { history, socket } = this.props;
     const { loading, project, error } = this.props.data;
     if(loading){
-      console.log("LOADING")
-      return null
+      return <Loading/>
     }
 
     const { app } = this.props.store;
 
     if (!project || error) {
-      console.log("one")
       return <DoesNotExist404/>
     }
 
     const { environments } = project;
     if (environments === null) {
-      console.log("two")
       return <DoesNotExist404/> 
     }
     
-    console.log(project)
-    console.log(`${this.props.location.pathname}/features`)
-
-    console.log(this.props.match)
-
     let renderBookmark = this.renderBookmark.bind(this)
 
     // If we have a valid environment, redirect the user to the 
@@ -315,6 +303,7 @@ class Project extends React.Component {
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
             <ProjectSettings socket={socket} {...props} />
           )}/>
+
           <Redirect strict exact from={this.props.match.path + '/'} to={`${this.props.location.pathname}features`} />          
           <Redirect exact from ={this.props.match.path} to={`${this.props.location.pathname}/features`}/>
 
