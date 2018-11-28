@@ -103,6 +103,7 @@ class Project extends React.Component {
 
   componentWillUnmount() {
     console.log("Unmounting!")
+    this.props.store.app.leftNavItems = []
   }
 
   handleEnvironmentClick = event => {
@@ -244,7 +245,9 @@ class Project extends React.Component {
     }
     
     console.log(project)
-    console.log(`{this.props.location}/features`)
+    console.log(`${this.props.location.pathname}/features`)
+
+    console.log(this.props.match)
 
     let renderBookmark = this.renderBookmark.bind(this)
 
@@ -312,9 +315,9 @@ class Project extends React.Component {
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
             <ProjectSettings socket={socket} {...props} />
           )}/>
-          <Route exact path='/projects/:slug/:environment' render={(props) => (
-            <Redirect to={`{this.props.location}/features`}/>
-          )}/>
+          <Redirect strict exact from={this.props.match.path + '/'} to={`${this.props.location.pathname}features`} />          
+          <Redirect exact from ={this.props.match.path} to={`${this.props.location.pathname}/features`}/>
+
           <Route component={DoesNotExist404} />
         </Switch>
       </div>

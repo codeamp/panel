@@ -18,6 +18,8 @@ import ProjectsInventory from 'components/Projects';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
 
+import DoesNotExist404 from 'components/Utils/DoesNotExist404'
+
 import Raven from 'raven-js'
 
 const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
@@ -171,7 +173,7 @@ export default class App extends React.Component {
                   <Route path='/admin' render={(props) => (
                     <Admin socket={socket} data={this.props.data} projects={projects.entries} {...props} />
                   )} />
-
+                  <Route component={DoesNotExist404}/>
                 </Switch>
               </div>
             </Grid>
