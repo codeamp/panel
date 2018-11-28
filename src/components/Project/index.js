@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
 import DoesNotExist404 from 'components/Utils/DoesNotExist404'
 
 import { withApollo } from 'react-apollo';
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 
@@ -94,11 +94,55 @@ class Project extends React.Component {
     this.state = {
 
     }
-    console.log("RPOJECT CONSTRUCTED")
   }
 
   componentWillMount() {
-    console.log("Project:", this.props)
+    console.log("Will mount!")
+    this.setLeftNavProjectItems(this.props)
+  }
+
+  componentWillUnmount() {
+    console.log("Unmounting!")
+  }
+
+  handleEnvironmentClick = event => {
+    this.setState({ environmentAnchorEl: event.currentTarget });
+  };
+
+  handleEnvironmentClose = (event, id) => {
+    this.setState({ environmentAnchorEl: null });
+  };
+
+  handleEnvironmentSelect = (id) => {
+    const { project } = this.props.data;
+
+    project.environments.map((env) => {
+      if(env.id === id){
+        this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name, key: env.key })
+
+        var tokenizedURL = this.props.location.pathname.split("/")
+        var redirectUrl = '/projects/' + this.props.match.params.slug + "/" + env.key
+        if (tokenizedURL.length === 5) {
+          redirectUrl += "/" + tokenizedURL[4]
+        }
+
+        this.props.history.push(redirectUrl)
+        return null
+      }
+      return null
+    })
+
+    this.setState({ environmentAnchorEl: null });
+  }
+
+  handleBookmarkProject = () => {
+    this.props.bookmarkProject({
+      variables: {
+        'id': this.props.data.project.id,
+      }
+    }).then(({ data }) => {
+      this.props.data.refetch()
+    })
   }
 
   setLeftNavProjectItems = (props) => {
@@ -168,7 +212,7 @@ class Project extends React.Component {
     let handleBookmarkProject = this.handleBookmarkProject.bind(this)
 
     let bookmarked = (
-     <IconButton aria-label="Bookmark" onClick={handleBookmarkProject()}>
+     <IconButton aria-label="Bookmark" onClick={handleBookmarkProject}>
         <StarBorderIcon/>
       </IconButton>
     )
@@ -189,17 +233,18 @@ class Project extends React.Component {
     const { app } = this.props.store;
 
     if (!project || error) {
-      console.log("THIS DOES NOT EXIST")
+      console.log("one")
       return <DoesNotExist404/>
     }
 
     const { environments } = project;
     if (environments === null) {
-      console.log("THIS DOES NOT EXIST 2")
+      console.log("two")
       return <DoesNotExist404/> 
     }
     
     console.log(project)
+    console.log(`{this.props.location}/features`)
 
     let renderBookmark = this.renderBookmark.bind(this)
 
@@ -267,12 +312,9 @@ class Project extends React.Component {
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
             <ProjectSettings socket={socket} {...props} />
           )}/>
-          <Route path='/projects/:slug/:environment' render={(props) => (
-            <ProjectFeatures history={history} socket={socket} {...props} />
+          <Route exact path='/projects/:slug/:environment' render={(props) => (
+            <Redirect to={`{this.props.location}/features`}/>
           )}/>
-          <Route path='/projects/:slug' render={(props) => (
-            <ProjectFeatures history={history} socket={socket} {...props} />
-          )} />
           <Route component={DoesNotExist404} />
         </Switch>
       </div>
@@ -280,23 +322,5 @@ class Project extends React.Component {
     
   }
 }
-
-// class EnvironmentForwarder extends React.Component {
-//   constructor(props){
-//     super(props)
-//     this.state = {}
-//   }
-
-//   componentWillMount() {
-//     if (!!this.props.env) {
-//       this.props.history.push(`/projects/${this.props.match.params.slug}/${this.props.env}/features`)
-//     }
-//   }
-
-//   render() {
-//     return null
-//   }
-// }
-
 
 export default withApollo(Project)

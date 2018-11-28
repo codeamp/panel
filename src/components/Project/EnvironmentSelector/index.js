@@ -25,6 +25,8 @@ class EnvironmentSelector extends React.Component {
   }
 
   componentWillMount(){
+    console.log("COMPONENT WILL MOUNT")
+
     let projectsMap = {}
     this.props.projects.entries.forEach((project) => {
       projectsMap[project.slug] = project
@@ -106,6 +108,7 @@ class EnvironmentSelector extends React.Component {
         return this.renderEnvironmentSelector()
       }
     } else {    
+      console.log("routing to!")
       return (      
         <Switch>
           <Route path='/projects/:slug/:environment' render={(props) => (
