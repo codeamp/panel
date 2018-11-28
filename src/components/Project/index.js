@@ -1,9 +1,22 @@
 import React from 'react';
-import { Route, Switch } from "react-router-dom";
+import styles from './style.module.css';
+import gql from 'graphql-tag';
+
+import DoesNotExist404 from 'components/Utils/DoesNotExist404'
+import Loading from 'components/Utils/Loading';
+
+import { withApollo } from 'react-apollo';
+import { Route, Switch, Redirect } from "react-router-dom";
 import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
-import styles from './style.module.css';
+
+import ProjectFeatures from 'components/Project/Features';
+import ProjectSecrets from 'components/Project/Secrets';
+import ProjectReleases from 'components/Project/Releases';
+import ProjectSettings from 'components/Project/Settings';
+import ProjectServices from 'components/Project/Services';
+import ProjectExtensions from 'components/Project/Extensions';
+
 import IconButton from 'material-ui/IconButton';
 import SettingsIcon from '@material-ui/icons/Settings';
 import FeaturesIcon from '@material-ui/icons/Input';
@@ -13,21 +26,12 @@ import SecretIcon from '@material-ui/icons/VpnKey';
 import ExtensionsIcon from '@material-ui/icons/Extension';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import StarIcon from '@material-ui/icons/Star';
-import ProjectFeatures from 'components/Project/Features';
-import ProjectSecrets from 'components/Project/Secrets';
-import ProjectReleases from 'components/Project/Releases';
-import ProjectSettings from 'components/Project/Settings';
-import ProjectServices from 'components/Project/Services';
-import ProjectExtensions from 'components/Project/Extensions';
-import ProjectEnvironment from 'components/Project/Environment';
-import Loading from 'components/Utils/Loading';
-import DoesNotExist404 from 'components/Utils/DoesNotExist404';
-import Typography from 'material-ui/Typography';
+
+import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Button from 'material-ui/Button';
-import { withApollo } from 'react-apollo';
-import Grid from 'material-ui/Grid';
+import Typography from 'material-ui/Typography';
 
 @inject("store") @observer
 
@@ -74,7 +78,7 @@ import Grid from 'material-ui/Grid';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
+      environmentID: props.environment.id
     }
   })
 })
@@ -89,10 +93,24 @@ class Project extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      fetchDelay: null,
-      url: this.props.match.url,
-      environmentAnchorEl: undefined,
+
     }
+  }
+
+  componentDidUpdate() {
+    this.setLeftNavProjectItems(this.props)
+
+    const { environment } = this.props;
+    this.props.store.app.setCurrentEnv({
+      id: environment.id, 
+      color: environment.color, 
+      name: environment.name, 
+      key: environment.key 
+    })
+  }
+
+  componentWillUnmount() {
+    this.props.store.app.leftNavItems = []
   }
 
   handleEnvironmentClick = event => {
@@ -104,7 +122,7 @@ class Project extends React.Component {
   };
 
   handleEnvironmentSelect = (id) => {
-  	const { project } = this.props.data;
+    const { project } = this.props.data;
 
     project.environments.map((env) => {
       if(env.id === id){
@@ -159,14 +177,14 @@ class Project extends React.Component {
           key: "10",
           icon: <FeaturesIcon />,
           name: "Features",
-          slug: this.props.match.url + "/features",
+          slug: `${props.match.url}/features`,
           count: deployableFeatures,
         },
         {
           key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
-          slug: this.props.match.url + "/releases",
+          slug: `${props.match.url}/releases`,
           count: releasesQueued,
           badgeColor: "secondary",
         },
@@ -174,61 +192,76 @@ class Project extends React.Component {
           key: "30",
           icon: <ServicesIcon />,
           name: "Services",
-          slug: this.props.match.url + "/services",
+          slug: `${props.match.url}/services`,
         },
         {
           key: "40",
           icon: <SecretIcon />,
           name: "Secrets",
-          slug: this.props.match.url + "/secrets",
+          slug: `${props.match.url}/secrets`,
         },
         {
           key: "50",
           icon: <ExtensionsIcon />,
           name: "Extensions",
-          slug: this.props.match.url + "/extensions",
+          slug: `${props.match.url}/extensions`,
         },
         {
           key: "60",
           icon: <SettingsIcon />,
           name: "Settings",
-          slug: this.props.match.url + "/settings",
+          slug: `${props.match.url}/settings`,
         },
     ];
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setLeftNavProjectItems(nextProps)
-  }
-
-  render() {
-    const { history, socket } = this.props;
-    const { loading, project } = this.props.data;
-    const { app } = this.props.store;
-
-    if(loading){
-      return (<Loading />)
-    }
+  renderBookmark(isBookmarked) {
+    let handleBookmarkProject = this.handleBookmarkProject.bind(this)
 
     let bookmarked = (
-      <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+     <IconButton aria-label="Bookmark" onClick={handleBookmarkProject}>
         <StarBorderIcon/>
       </IconButton>
     )
 
-    if(project.bookmarked) {
+    if(isBookmarked) {
       bookmarked = (
-        <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+        <IconButton aria-label="Bookmark" onClick={handleBookmarkProject}>
           <StarIcon/>
         </IconButton>
       )
     }
+
+    return bookmarked
+  }
+
+  render() {
+    const { history, socket, environment } = this.props;
+    const { loading, project, error } = this.props.data;
+    if(loading){
+      return <Loading/>
+    }
+    
+    if (!project || error) {
+      return <DoesNotExist404/>
+    }
+
+    const { environments } = project;
+    if (environments === null) {
+      return <DoesNotExist404/> 
+    }
+    
+    let renderBookmark = this.renderBookmark.bind(this)
+
+    // If we have a valid environment, redirect the user to the 
+    // url with the environment encoded (it will send us back through here once more)
+    // return <EnvironmentForwarder {...this.props} env={environmentName}/>
     return (
-      <div className={styles.root}>
+      <div>
         <Grid container spacing={24}>
           <Grid item xs={9}>
             <Toolbar style={{paddingLeft: "0px"}}>
-              {bookmarked}
+              {renderBookmark(project.bookmarked)}
               <Typography variant="title">
                 {project.name} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
@@ -236,62 +269,63 @@ class Project extends React.Component {
           </Grid>
           <Grid item xs={3} style={{textAlign: "right"}}>
             <Toolbar style={{textAlign: "right", display: "inline-flex"}}>
-              <Button
-                className={styles.EnvButton}
-                variant="raised"
-                aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
-                aria-haspopup="true"
-                onClick={this.handleEnvironmentClick.bind(this)}>
-                {app.currentEnvironment.name}
-              </Button>
-              <Menu
-                id="environment-menu"
-                anchorEl={this.state.environmentAnchorEl}
-                open={Boolean(this.state.environmentAnchorEl)}
-                onClose={this.handleEnvironmentClose.bind(this)}>
-                {project.environments.map((env) => {
-                  return (<MenuItem
-                    key={env.id}
-                    onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
-                    {env.name}
-                  </MenuItem>)
-                })}
-              </Menu>
+              { !!environment.id && 
+                <Button
+                  className={styles.EnvButton}
+                  variant="raised"
+                  aria-owns={this.state.environmentAnchorEl ? 'environment-menu' : null}
+                  aria-haspopup="true"
+                  onClick={this.handleEnvironmentClick.bind(this)}
+                  disabled={project.environments.length <= 1}>
+                  {environment.name}
+                </Button>
+              }
+              { project.environments.length > 0 && 
+                <Menu
+                  id="environment-menu"
+                  anchorEl={this.state.environmentAnchorEl}
+                  open={Boolean(this.state.environmentAnchorEl)}
+                  onClose={this.handleEnvironmentClose.bind(this)}>
+                  {project.environments.map((env) => {
+                    return (<MenuItem
+                      key={env.id}
+                      onClick={this.handleEnvironmentSelect.bind(this, env.id)}>
+                      {env.name}
+                    </MenuItem>)
+                  })}
+                </Menu>
+              }
             </Toolbar>
           </Grid>
         </Grid>
         <Switch>
-          <Route exact path='/projects/:slug/:environment' render={(props) => {
-            this.props.history.push("/projects/" + props.match.params.slug + "/" + props.match.params.environment + "/features")
-            return (<div></div>)
-          }}/>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
-            <ProjectFeatures history={history} {...props} socket={socket} />
+            <ProjectFeatures history={history} socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
-            <ProjectReleases {...props} socket={socket} />
+            <ProjectReleases socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/services' render={(props) => (
-            <ProjectServices {...props} />
+            <ProjectServices socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets  history={history} {...props} />
+            <ProjectSecrets  history={history} socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
-            <ProjectExtensions {...props} socket={socket} />
+            <ProjectExtensions socket={socket} {...props} />
           )}/>
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
-            <ProjectSettings {...props} />
+            <ProjectSettings socket={socket} {...props} />
           )}/>
-          <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectEnvironment {...props}>
-              <Project socket={socket} {...props} />
-            </ProjectEnvironment>
-          )} />
+
+          <Redirect strict exact from={this.props.match.path + '/'} to={`${this.props.location.pathname}features`} />          
+          <Redirect exact from ={this.props.match.path} to={`${this.props.location.pathname}/features`}/>
+
           <Route component={DoesNotExist404} />
         </Switch>
       </div>
-    );
+    )
+    
   }
 }
 
