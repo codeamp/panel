@@ -7,6 +7,7 @@ import Typography from 'material-ui/Typography';
 
 export default class Pagination extends React.Component {
     render() {
+      console.log("This component (Pagination) has been deprecated. Please switch to (Paginator).")
       const { paginator } = this.props;
 
       let lastPage = Math.ceil(paginator.count / paginator.limit)
