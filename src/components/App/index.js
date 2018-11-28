@@ -13,8 +13,8 @@ import LeftNav from 'components/LeftNav';
 import TopNav from 'components/TopNav';
 import Dashboard from 'components/Dashboard';
 import Create from 'components/Create';
-import Project from 'components/Project';
-import Projects from 'components/Projects';
+import ProjectEnvironmentSelector from 'components/Project/EnvironmentSelector';
+import ProjectsInventory from 'components/Projects';
 import Admin from 'components/Admin';
 import Loading from 'components/Utils/Loading';
 
@@ -38,6 +38,7 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
         environments {
           id
           name
+          key
           color
         }
       }
@@ -159,11 +160,11 @@ export default class App extends React.Component {
                     <Dashboard projects={projects.entries} history={this.props.history}/>
                   )} />
                   <Route exact path='/projects' render={(props) => (
-                      <Projects socket={socket} {...props} />
+                      <ProjectsInventory socket={socket} {...props} />
                   )} />
-                  <Route path='/projects/:slug' render={(props) => {
-                      return (<Project socket={socket} {...props} />)
-                  }} />                  
+                  <Route path='/projects/:slug/:environment?' render={(props) => (
+                      <ProjectEnvironmentSelector socket={socket} {...props} projects={this.props.data.projects} user={this.props.data.user}/>
+                  )} />                  
                   <Route exact path='/create' render={(props) => (
                     <Create projects={projects.entries} type={"create"} {...props} />
                   )} />

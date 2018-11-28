@@ -1,9 +1,21 @@
 import React from 'react';
+import styles from './style.module.css';
+import gql from 'graphql-tag';
+
+import DoesNotExist404 from 'components/Utils/DoesNotExist404'
+
+import { withApollo } from 'react-apollo';
 import { Route, Switch } from "react-router-dom";
 import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
-import gql from 'graphql-tag';
-import styles from './style.module.css';
+
+import ProjectFeatures from 'components/Project/Features';
+import ProjectSecrets from 'components/Project/Secrets';
+import ProjectReleases from 'components/Project/Releases';
+import ProjectSettings from 'components/Project/Settings';
+import ProjectServices from 'components/Project/Services';
+import ProjectExtensions from 'components/Project/Extensions';
+
 import IconButton from 'material-ui/IconButton';
 import SettingsIcon from '@material-ui/icons/Settings';
 import FeaturesIcon from '@material-ui/icons/Input';
@@ -12,22 +24,13 @@ import ServicesIcon from '@material-ui/icons/Widgets';
 import SecretIcon from '@material-ui/icons/VpnKey';
 import ExtensionsIcon from '@material-ui/icons/Extension';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
-import StarIcon from '@material-ui/icons/Star';
-import ProjectFeatures from 'components/Project/Features';
-import ProjectSecrets from 'components/Project/Secrets';
-import ProjectReleases from 'components/Project/Releases';
-import ProjectSettings from 'components/Project/Settings';
-import ProjectServices from 'components/Project/Services';
-import ProjectExtensions from 'components/Project/Extensions';
-import ProjectEnvironment from 'components/Project/Environment';
-import Loading from 'components/Utils/Loading';
-import DoesNotExist404 from 'components/Utils/DoesNotExist404';
-import Typography from 'material-ui/Typography';
+//import StarIcon from '@material-ui/icons/Star';
+
+import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
 import Menu, { MenuItem } from 'material-ui/Menu';
 import Button from 'material-ui/Button';
-import { withApollo } from 'react-apollo';
-import Grid from 'material-ui/Grid';
+import Typography from 'material-ui/Typography';
 
 @inject("store") @observer
 
@@ -89,50 +92,13 @@ class Project extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      fetchDelay: null,
-      url: this.props.match.url,
-      environmentAnchorEl: undefined,
+
     }
+    console.log("RPOJECT CONSTRUCTED")
   }
 
-  handleEnvironmentClick = event => {
-    this.setState({ environmentAnchorEl: event.currentTarget });
-  };
-
-  handleEnvironmentClose = (event, id) => {
-    this.setState({ environmentAnchorEl: null });
-  };
-
-  handleEnvironmentSelect = (id) => {
-  	const { project } = this.props.data;
-
-    project.environments.map((env) => {
-      if(env.id === id){
-        this.props.store.app.setCurrentEnv({id: id, color: env.color, name: env.name, key: env.key })
-
-        var tokenizedURL = this.props.location.pathname.split("/")
-        var redirectUrl = '/projects/' + this.props.match.params.slug + "/" + env.key
-        if (tokenizedURL.length === 5) {
-          redirectUrl += "/" + tokenizedURL[4]
-        }
-
-        this.props.history.push(redirectUrl)
-        return null
-      }
-      return null
-    })
-
-    this.setState({ environmentAnchorEl: null });
-  }
-
-  handleBookmarkProject = () => {
-    this.props.bookmarkProject({
-      variables: {
-        'id': this.props.data.project.id,
-      }
-    }).then(({ data }) => {
-      this.props.data.refetch()
-    })
+  componentWillMount() {
+    console.log("Project:", this.props)
   }
 
   setLeftNavProjectItems = (props) => {
@@ -198,46 +164,54 @@ class Project extends React.Component {
     ];
   }
 
-  componentWillReceiveProps(nextProps) {
-    let currentEnv = this.props.store.app.currentEnvironment
-    if (!!currentEnv && !!currentEnv.key) {
-      this.setLeftNavProjectItems(nextProps)
-    }
-  }
-
-  componentWillUnmount() {
-    this.props.store.app.leftNavItems = []
-  }
-
-  render() {
-    const { history, socket } = this.props;
-    const { loading, project } = this.props.data;
-    const { app } = this.props.store;
-
-    if(loading){
-      return (<Loading />)
-    }
+  renderBookmark() {
+    let handleBookmarkProject = this.handleBookmarkProject.bind(this)
 
     let bookmarked = (
-      <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+     <IconButton aria-label="Bookmark" onClick={handleBookmarkProject()}>
         <StarBorderIcon/>
       </IconButton>
     )
 
-    if(project.bookmarked) {
-      bookmarked = (
-        <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
-          <StarIcon/>
-        </IconButton>
-      )
+    return bookmarked
+  }
+
+  render() {
+    console.log("project render")
+
+    const { history, socket } = this.props;
+    const { loading, project, error } = this.props.data;
+    if(loading){
+      console.log("LOADING")
+      return null
+    }
+
+    const { app } = this.props.store;
+
+    if (!project || error) {
+      console.log("THIS DOES NOT EXIST")
+      return <DoesNotExist404/>
+    }
+
+    const { environments } = project;
+    if (environments === null) {
+      console.log("THIS DOES NOT EXIST 2")
+      return <DoesNotExist404/> 
     }
     
+    console.log(project)
+
+    let renderBookmark = this.renderBookmark.bind(this)
+
+    // If we have a valid environment, redirect the user to the 
+    // url with the environment encoded (it will send us back through here once more)
+    // return <EnvironmentForwarder {...this.props} env={environmentName}/>
     return (
-      <div className={styles.root}>
+      <div>
         <Grid container spacing={24}>
           <Grid item xs={9}>
             <Toolbar style={{paddingLeft: "0px"}}>
-              {bookmarked}
+              {renderBookmark()}
               <Typography variant="title">
                 {project.name} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
@@ -293,17 +267,36 @@ class Project extends React.Component {
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
             <ProjectSettings socket={socket} {...props} />
           )}/>
-          <Route exact path='/projects/:slug/:environment' render={(props) => (
-            <ProjectEnvironment {...props}/>
+          <Route path='/projects/:slug/:environment' render={(props) => (
+            <ProjectFeatures history={history} socket={socket} {...props} />
           )}/>
-          <Route exact path='/projects/:slug' render={(props) => (
-            <ProjectEnvironment {...props}/>
+          <Route path='/projects/:slug' render={(props) => (
+            <ProjectFeatures history={history} socket={socket} {...props} />
           )} />
           <Route component={DoesNotExist404} />
         </Switch>
       </div>
-    );
+    )
+    
   }
 }
+
+// class EnvironmentForwarder extends React.Component {
+//   constructor(props){
+//     super(props)
+//     this.state = {}
+//   }
+
+//   componentWillMount() {
+//     if (!!this.props.env) {
+//       this.props.history.push(`/projects/${this.props.match.params.slug}/${this.props.env}/features`)
+//     }
+//   }
+
+//   render() {
+//     return null
+//   }
+// }
+
 
 export default withApollo(Project)
