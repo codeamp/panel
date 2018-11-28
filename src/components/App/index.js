@@ -53,7 +53,6 @@ const socket = io(process.env.REACT_APP_CIRCUIT_WSS_URI);
 		variables: {
 			projectSearch: {
 				repository: "",
-				bookmarked: true,
 			}
 		}
 	})
