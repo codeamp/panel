@@ -24,7 +24,6 @@ import ExpansionPanel, {
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import SelectField from 'components/Form/select-field';
-import CheckboxField from 'components/Form/checkbox-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
@@ -633,7 +632,6 @@ export default class Services extends React.Component {
   }
 
   render() {
-    const self = this;
     const { loading, project, serviceSpecs } = this.props.data;
 
     if(loading){
