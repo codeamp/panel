@@ -25,7 +25,7 @@ import ServicesIcon from '@material-ui/icons/Widgets';
 import SecretIcon from '@material-ui/icons/VpnKey';
 import ExtensionsIcon from '@material-ui/icons/Extension';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
-//import StarIcon from '@material-ui/icons/Star';
+import StarIcon from '@material-ui/icons/Star';
 
 import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
@@ -136,6 +136,7 @@ class Project extends React.Component {
   }
 
   handleBookmarkProject = () => {
+    console.log("Handling bookmarked project")
     this.props.bookmarkProject({
       variables: {
         'id': this.props.data.project.id,
@@ -207,7 +208,7 @@ class Project extends React.Component {
     ];
   }
 
-  renderBookmark() {
+  renderBookmark(isBookmarked) {
     let handleBookmarkProject = this.handleBookmarkProject.bind(this)
 
     let bookmarked = (
@@ -215,6 +216,14 @@ class Project extends React.Component {
         <StarBorderIcon/>
       </IconButton>
     )
+
+    if(isBookmarked) {
+      bookmarked = (
+        <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+          <StarIcon/>
+        </IconButton>
+      )
+    }
 
     return bookmarked
   }
@@ -247,7 +256,7 @@ class Project extends React.Component {
         <Grid container spacing={24}>
           <Grid item xs={9}>
             <Toolbar style={{paddingLeft: "0px"}}>
-              {renderBookmark()}
+              {renderBookmark(project.bookmarked)}
               <Typography variant="title">
                 {project.name} <span className={styles.gitBranch}>({project.gitBranch})</span>
               </Typography>
