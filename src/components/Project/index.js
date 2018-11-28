@@ -218,7 +218,7 @@ class Project extends React.Component {
 
     if(isBookmarked) {
       bookmarked = (
-        <IconButton aria-label="Bookmark" onClick={this.handleBookmarkProject.bind(this)}>
+        <IconButton aria-label="Bookmark" onClick={handleBookmarkProject}>
           <StarIcon/>
         </IconButton>
       )
