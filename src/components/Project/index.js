@@ -99,6 +99,14 @@ class Project extends React.Component {
 
   componentDidUpdate() {
     this.setLeftNavProjectItems(this.props)
+
+    const { environment } = this.props;
+    this.props.store.app.setCurrentEnv({
+      id: environment.id, 
+      color: environment.color, 
+      name: environment.name, 
+      key: environment.key 
+    })
   }
 
   componentWillUnmount() {
@@ -228,14 +236,12 @@ class Project extends React.Component {
   }
 
   render() {
-    const { history, socket } = this.props;
+    const { history, socket, environment } = this.props;
     const { loading, project, error } = this.props.data;
     if(loading){
       return <Loading/>
     }
-
-    const { app } = this.props.store;
-
+    
     if (!project || error) {
       return <DoesNotExist404/>
     }
@@ -263,7 +269,7 @@ class Project extends React.Component {
           </Grid>
           <Grid item xs={3} style={{textAlign: "right"}}>
             <Toolbar style={{textAlign: "right", display: "inline-flex"}}>
-              { !!app.currentEnvironment.id && 
+              { !!environment.id && 
                 <Button
                   className={styles.EnvButton}
                   variant="raised"
@@ -271,7 +277,7 @@ class Project extends React.Component {
                   aria-haspopup="true"
                   onClick={this.handleEnvironmentClick.bind(this)}
                   disabled={project.environments.length <= 1}>
-                  {app.currentEnvironment.name}
+                  {environment.name}
                 </Button>
               }
               { project.environments.length > 0 && 
