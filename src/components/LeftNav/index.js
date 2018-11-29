@@ -11,8 +11,8 @@ import SupervisorAccountIcon from '@material-ui/icons/SupervisorAccount';
 import Divider from 'material-ui/Divider';
 import Badge from 'material-ui/Badge';
 import Collapse from 'material-ui/transitions/Collapse';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import ExpandLess from '@material-ui/icons/ExpandMore';
+import ExpandMore from '@material-ui/icons/ChevronRight';
 import ServiceSpecIcon from '@material-ui/icons/Description';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import SecretIcon from '@material-ui/icons/VpnKey';
@@ -77,7 +77,7 @@ export default class LeftNav extends React.Component {
                   <ListItemText primary="Admin" />
                   {this.props.store.app.adminLeftNavOpen ? <ExpandLess /> : <ExpandMore />}
                 </ListItem>
-                <Collapse in={this.props.store.app.adminLeftNavOpen} unmountOnExit>
+                <Collapse in={this.props.store.app.adminLeftNavOpen} unmountOnExit className={styles.adminDrawer}>
                   <NavLink to="/admin/environments" exact activeClassName={styles.active}>
                     <ListItem button>
                       <ListItemIcon>
