@@ -34,8 +34,7 @@ import MobxReactForm from 'mobx-react-form';
       }
     }
   }
-`, 
-  {name: "createProject"},
+`, {name: "createProject"})
 )
 
 export default class Create extends React.Component {
