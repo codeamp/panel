@@ -71,7 +71,7 @@ class AppStore {
 
   setSnackbar = action(params => {
     this.snackbar.created = new Date();
-    this.snackbar.msg = params.msg;
+    this.snackbar.msg = params.msg || this.snackbar.msg;
     this.snackbar.open = params.open;
   })
 

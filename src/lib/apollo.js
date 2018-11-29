@@ -67,9 +67,10 @@ export default (GRAPHQL_URI = process.env.REACT_APP_CIRCUIT_URI + '/query') => {
       query: {
         errorPolicy: 'apollo-link',
       },
-      mutate: {
-        errorPolicy: 'all',  
-      },
+      // https://github.com/apollographql/apollo-client/issues/3336
+      // mutate: {
+      //   errorPolicy: 'all',  
+      // },
     }
   });
 };
