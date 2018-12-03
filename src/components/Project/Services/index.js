@@ -44,7 +44,7 @@ import Tooltip from 'components/Utils/Tooltip';
 import OneShotIcon from '@material-ui/icons/LooksOne';
 import GeneralIcon from '@material-ui/icons/Autorenew';
 
-@inject("store") 
+@inject("store")
 @graphql(gql`
 query Project($slug: String, $environmentID: String) {
   project(slug: $slug, environmentID: $environmentID) {
@@ -89,7 +89,7 @@ query Project($slug: String, $environmentID: String) {
 
 // Mutations
 @graphql(gql`
-mutation CreateService($projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+mutation CreateService($projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
     $preStopHook: String) {
@@ -97,7 +97,6 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
     projectID: $projectID,
     command: $command,
     name: $name,
-    serviceSpecID: $serviceSpecID,
     count: $count,
     type: $type,
     ports: $ports,
@@ -105,14 +104,14 @@ mutation CreateService($projectID: String!, $command: String!, $name: String!, $
     deploymentStrategy: $deploymentStrategy,
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
-    preStopHook: $preStopHook
+    preStopHook: $preStopHook,
     }) {
       id
     }
 }`, { name: "createService" })
 
 @graphql(gql`
-mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+mutation UpdateService($id: String, $projectID: String!, $command: String!, $name: String!,
     $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
     $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
     $preStopHook: String) {
@@ -121,7 +120,6 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     projectID: $projectID,
     command: $command,
     name: $name,
-    serviceSpecID: $serviceSpecID,
     count: $count,
     type: $type,
     ports: $ports,
@@ -129,14 +127,14 @@ mutation UpdateService($id: String, $projectID: String!, $command: String!, $nam
     deploymentStrategy: $deploymentStrategy,
     readinessProbe: $readinessProbe,
     livenessProbe: $livenessProbe,
-    preStopHook: $preStopHook
+    preStopHook: $preStopHook,
     }) {
       id
     }
 }`, { name: "updateService" })
 
 @graphql(gql`
-mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!, $serviceSpecID: String!,
+mutation DeleteService ($id: String, $projectID: String!, $command: String!, $name: String!,
   $count: Int!, $type: String!, $ports: [ServicePortInput!], $environmentID: String!,
   $deploymentStrategy: DeploymentStrategyInput!, $readinessProbe: HealthProbeInput, $livenessProbe: HealthProbeInput,
   $preStopHook: String) {
@@ -145,7 +143,6 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   projectID: $projectID,
   command: $command,
   name: $name,
-  serviceSpecID: $serviceSpecID,
   count: $count,
   type: $type,
   ports: $ports,
@@ -168,15 +165,16 @@ export default class Services extends React.Component {
       anchorEl: null,
       userHasUnsavedChanges: false,
       saving: false,
+      queryArgsProcessed: false,
 
-      showConfirmDeleteDialog: false,      
+      showConfirmDeleteDialog: false,
       showAddServiceMenu: false,
       showDiscardEditsConfirmDialog: false,
       showAdvancedSettings: false,
       showDeploymentStrategySettings: false,
       showReadinessProbeSettings: false,
       showLivenessProbeSettings: false,
-      showLifecycleSettings: false
+      showLifecycleSettings: false,
     }
 
     this.handleDeleteService = this.handleDeleteService.bind(this)
@@ -195,13 +193,13 @@ export default class Services extends React.Component {
   handleServiceMenuClickAway() {
     if (this.state.showAddServiceMenu === true) {
       this.setState({showAddServiceMenu:false})
-    } 
+    }
   }
 
   handleDrawerClickAway() {
     if (this.state.drawerOpen === true) {
       this.handleCancelForm()
-    } 
+    }
   }
 
   handleCancelForm() {
@@ -291,7 +289,6 @@ export default class Services extends React.Component {
 
     const rules = {
       'name': 'string|required|min:1|max:63',
-      'serviceSpecID': 'string|required',
       'command': 'string',
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
@@ -369,7 +366,7 @@ export default class Services extends React.Component {
       'readinessProbe.httpHeaders[].name': "Name",
       'readinessProbe.httpHeaders[].value': "Value",
 
-      'preStopHook': "Command"
+      'preStopHook': "Command",
     };
 
     const initials = formInitials
@@ -460,7 +457,7 @@ export default class Services extends React.Component {
       'ports[]': $hooks,
       'deploymentStrategy': $hooks,
       'readinessProbe': $hooks,
-      
+
       'livenessProbe.method': $hooks,
       'livenessProbe.command': $hooks,
       'livenessProbe.port': $hooks,
@@ -482,7 +479,7 @@ export default class Services extends React.Component {
       'readinessProbe.timeoutSeconds': $hooks,
       'readinessProbe.successThreshold': $hooks,
       'readinessProbe.failureThreshold': $hooks,
-      
+
       'preStopHook': $hooks
     };
 
@@ -492,7 +489,7 @@ export default class Services extends React.Component {
       autoParseNumbers: true
     }
 
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins, options });    
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types, keys }, { plugins, options });
   }
 
   componentWillMount(){
@@ -532,8 +529,8 @@ export default class Services extends React.Component {
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
       'readinessProbe.method': 'default',
-      'livenessProbe.method': 'default'
-    })    
+      'livenessProbe.method': 'default',
+    })
 
     this.openDrawer()
   };
@@ -553,7 +550,7 @@ export default class Services extends React.Component {
           userHasUnsavedChanges: false,
           showAdvancedSettings: false,
         })
-    } 
+    }
   }
 
   editService(service, index){
@@ -566,7 +563,7 @@ export default class Services extends React.Component {
       id: service.id,
       index: index,
       environmentID: this.props.store.app.currentEnvironment.id,
-      preStopHook: service.preStopHook
+      preStopHook: service.preStopHook,
     })
     this.form.$('name').set('disabled', true)
     this.form.update({ ports: service.ports })
@@ -603,6 +600,7 @@ export default class Services extends React.Component {
     }
 
     this.setState(newState)
+    this.form.$('serviceSpecID').set('disabled', true)
 
     this.openDrawer()
   }
@@ -635,6 +633,7 @@ export default class Services extends React.Component {
 
   render() {
     const { loading, project, serviceSpecs } = this.props.data;
+
     if(loading){
       return (
         <Loading />
@@ -647,12 +646,13 @@ export default class Services extends React.Component {
         return {
           key: serviceSpec.id,
           value: serviceSpec.name,
-          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " + 
-                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " + 
+          tooltip: "Req: " + serviceSpec.cpuRequest + "mcpu | Lim: " +
+                     serviceSpec.cpuLimit + "mcpu | Req: " + serviceSpec.memoryRequest + "mb | Lim: " +
                      serviceSpec.memoryLimit + "mb | T/o: " + serviceSpec.terminationGracePeriod + "s",
         }
       })
     })
+
     return (
       <div>
           <Paper className={styles.tablePaper}>
@@ -682,9 +682,6 @@ export default class Services extends React.Component {
                     Open Ports
                   </TableCell>
                   <TableCell>
-                    Service Spec
-                  </TableCell>
-                  <TableCell>
                     Created
                   </TableCell>
                 </TableRow>
@@ -702,7 +699,6 @@ export default class Services extends React.Component {
                       <TableCell> <Input value={ service.command } disabled fullWidth={true} /></TableCell>
                       <TableCell> { this.getServiceTypeGlyph(service) }</TableCell>
                       <TableCell> { service.ports.length}</TableCell>
-                      <TableCell> { service.serviceSpec.name}</TableCell>
                       <TableCell> { moment(new Date(service.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")" }</TableCell>
                     </TableRow>
                   )
@@ -766,9 +762,11 @@ export default class Services extends React.Component {
                     <Grid item xs={3}>
                       <InputField field={this.form.$('count')} fullWidth={true}/>
                     </Grid>
-                    <Grid item xs={9}>
-                      <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
-                    </Grid>
+                    {this.form.values()['id'] !== "" &&
+                      <Grid item xs={9}>
+                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
+                      </Grid>
+                    }
                     <Grid item xs={12}>
                         <div>
                           <Grid container spacing={24}>
@@ -843,7 +841,7 @@ export default class Services extends React.Component {
                                   </ExpansionPanelDetails>
                                 </ExpansionPanel>
                               </Grid>
-                              
+
                               <Grid item xs={12}>
                                 <ExpansionPanel expanded={this.state.showReadinessProbeSettings} onChange={this.handleToggleReadinessProbeSettings()}>
                                   <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
@@ -1125,7 +1123,7 @@ export default class Services extends React.Component {
               Confirm
             </Button>
           </DialogActions>
-        </Dialog>          
+        </Dialog>
 
         {project.services.entries[this.form.values()['index']] &&
           <Dialog open={this.state.showConfirmDeleteDialog}>
