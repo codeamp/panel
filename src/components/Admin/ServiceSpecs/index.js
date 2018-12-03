@@ -44,6 +44,9 @@ query {
     memoryLimit
     terminationGracePeriod
     isDefault
+    service {
+      id
+    }
   }
 }
 `,{
@@ -119,6 +122,7 @@ export default class ServiceSpecs extends React.Component {
       drawerOpen: false,
       saving: false,
       dirtyFormDialogOpen: false,
+      currentServiceSpec: {},
     }
   }
 
@@ -150,14 +154,14 @@ export default class ServiceSpecs extends React.Component {
       'cpuLimit': 'CPU Limit (millicpus)',
       'memoryRequest': 'Memory Request (mb)',
       'memoryLimit': 'Memory Limit (mb)',
-      'terminationGracePeriod': 'Termination Grace Period (seconds)',
+      'terminationGracePeriod': 'Timeout (seconds)',
       'isDefault': 'Default profile that will be applied to new services.',
     };
 
     const initials = formInitials;
 
     const types = {
-      'isDefault': 'checkbox',      
+      'isDefault': 'checkbox',
     };
 
     const extra = {};
@@ -166,7 +170,7 @@ export default class ServiceSpecs extends React.Component {
 
     const plugins = { dvr: validatorjs };
 
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })    
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
   }
 
   componentWillMount(){
@@ -185,12 +189,12 @@ export default class ServiceSpecs extends React.Component {
       memoryRequest: serviceSpec.memoryRequest,
       memoryLimit: serviceSpec.memoryLimit,
       terminationGracePeriod: serviceSpec.terminationGracePeriod,
-      isDefault: serviceSpec.isDefault,      
+      isDefault: serviceSpec.isDefault,
       id: serviceSpec.id,
       index: index,
     })
 
-    this.setState({ selected: serviceSpec.id, drawerOpen: true })
+    this.setState({ currentServiceSpec: serviceSpec, selected: serviceSpec.id, drawerOpen: true })
   }
 
   onSuccess(form){
@@ -199,10 +203,10 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.props.store.app.setSnackbar({ 
-          msg: this.form.values()['name'] + " has been created",
+        this.props.store.app.setSnackbar({
+          msg: form.values()['name'] + " has been created",
           open: true,
-        })        
+        })
         this.closeDrawer(true)
       });
     } else {
@@ -210,8 +214,8 @@ export default class ServiceSpecs extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch();
-        this.props.store.app.setSnackbar({ 
-          msg: this.form.values()['name'] + " has been updated",
+        this.props.store.app.setSnackbar({
+          msg: form.values()['name'] + " has been updated",
           open: true,
         })
         this.closeDrawer(true)
@@ -239,7 +243,7 @@ export default class ServiceSpecs extends React.Component {
     } else {
       this.setState({ drawerOpen: false, dirtyFormDialogOpen: false, dialogOpen: false })
     }
-  }  
+  }
 
   onError(){
     // todo
@@ -293,7 +297,7 @@ export default class ServiceSpecs extends React.Component {
                     </TableCell>
                     <TableCell>
                       Default
-                    </TableCell>                    
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -362,9 +366,11 @@ export default class ServiceSpecs extends React.Component {
                   <Grid item xs={6}>
                     <InputField field={this.form.$('terminationGracePeriod')} fullWidth={true} />
                   </Grid>
-                  <Grid item xs={12}>
-                    <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
-                  </Grid>                  
+                  {this.state.currentServiceSpec.service === null &&
+                    <Grid item xs={12}>
+                      <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
+                    </Grid>
+                  }                
                   <Grid item xs={12}>
                     <Button color="primary"
                         className={styles.buttonSpacing}
@@ -383,7 +389,6 @@ export default class ServiceSpecs extends React.Component {
                         Delete
                       </Button>
                     }
-
                     <Button
                       color="primary"
                       onClick={this.closeDrawer.bind(this)}>
@@ -411,7 +416,7 @@ export default class ServiceSpecs extends React.Component {
               Confirm
             </Button>
           </DialogActions>
-        </Dialog>                  
+        </Dialog>
 
         {serviceSpecs[this.form.values()['index']] != null &&
           <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
