@@ -168,12 +168,10 @@ class TopNav extends React.Component {
   }
 
   onMouseEnter(index){
-    console.log("on mouse enter", index)
     this.setState({ hovering: true, selectedSuggestionIndex: index })
   }
 
   onMouseLeave(index){
-    console.log("on mouse leave", index)
     this.setState({ hovering: false, selectedSuggestionIndex: null})
   }
 
