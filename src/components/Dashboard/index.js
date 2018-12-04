@@ -6,6 +6,7 @@ import Link from 'react-router-dom/Link';
 import Typography from 'material-ui/Typography';
 import Card, { CardContent } from 'material-ui/Card';
 import Loading from 'components/Utils/Loading';
+import { formatNumber } from 'components/Utils/Numbers';
 import gql from 'graphql-tag';
 import styles from './style.module.css';
 import BookmarkedIcon from '@material-ui/icons/Star';
@@ -68,7 +69,7 @@ export default class Dashboard extends React.Component {
     const { projects } = this.props.data;
     this.props.store.app.setNavProjects(projects.entries)
   }
-  
+
   handleChange = panel => (event, expanded) => {
     this.setState({
       expanded: expanded ? panel : false,
@@ -77,7 +78,7 @@ export default class Dashboard extends React.Component {
 
   copyGitHash(featureHash){
     this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash, open: true });
-  }  
+  }
 
   render() {
     const { loading, projects, releases, features, users } = this.props.data;
@@ -88,7 +89,7 @@ export default class Dashboard extends React.Component {
     let { expanded } = this.state;
     if (expanded === null) {
       expanded = 0
-    }    
+    }
 
     let bookmarkedProjects = projects.entries.filter(function(project){
       return project.bookmarked
@@ -106,10 +107,10 @@ export default class Dashboard extends React.Component {
                     Projects
                   </Typography>
                   <Typography variant="headline" component="h2" className={styles.bigNumber}>
-                    {projects.count}
+                    {formatNumber(projects.count)}
                   </Typography>
                 </CardContent>
-              </Card>        
+              </Card>
             </Grid>
               {/* Features */}
             <Grid item xs={3}>
@@ -119,10 +120,10 @@ export default class Dashboard extends React.Component {
                     Features
                   </Typography>
                   <Typography variant="headline" component="h2" className={styles.bigNumber}>
-                    {features.count}
+                    {formatNumber(features.count)}
                   </Typography>
                 </CardContent>
-              </Card>        
+              </Card>
             </Grid>
               {/* Releases */}
             <Grid item xs={3}>
@@ -132,10 +133,10 @@ export default class Dashboard extends React.Component {
                     Releases
                   </Typography>
                   <Typography variant="headline" component="h2" className={styles.bigNumber}>
-                    {releases.count}
+                    {formatNumber(releases.count)}
                   </Typography>
                 </CardContent>
-              </Card>        
+              </Card>
             </Grid>
               {/* Users */}
             <Grid item xs={3}>
@@ -145,28 +146,28 @@ export default class Dashboard extends React.Component {
                     Users
                   </Typography>
                   <Typography variant="headline" component="h2" className={styles.bigNumber}>
-                    {users.length}
+                    {formatNumber(users.length)}
                   </Typography>
                 </CardContent>
-              </Card>        
+              </Card>
             </Grid>
-          </Grid>                   
+          </Grid>
         </div>
         <div className={styles.bookmarks}>
           <Grid container spacing={16}>
             <Grid item xs={12}>
               <Card style={{userSelect:"none"}}>
-                <CardContent>                      
+                <CardContent>
                   <Typography variant="title">
                     Bookmarked Projects
-                  </Typography>              
+                  </Typography>
                 </CardContent>
-              </Card>            
+              </Card>
               {bookmarkedProjects.length > 0 && projects.entries.map(function(project, idx){
                 if (!project.bookmarked) {
                   return null
                 }
-                return (                  
+                return (
                   <Card key={project.id} className={styles.bookmarkedProject}>
                     <Link to={"/projects/" + project.slug}>
                       <CardContent
@@ -189,7 +190,7 @@ export default class Dashboard extends React.Component {
                   </Typography>
                 </Card>
               }
-            </Grid>        
+            </Grid>
           </Grid>
 
         </div>
