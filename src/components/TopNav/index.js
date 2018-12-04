@@ -136,12 +136,7 @@ class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
-    let currentEnv = this.props.store.app.currentEnvironment
-    if (currentEnv.key === null) {
-      currentEnv = "environments"
-    }
-
-    this.props.history.push('/projects/'+suggestion.project.slug+"/"+currentEnv.key)      
+    this.props.history.push('/projects/'+suggestion.project.slug)
     this.hideSuggestions(true)
     this.setState({ projectQuery: "" })
   }
@@ -219,7 +214,7 @@ class TopNav extends React.Component {
                       return (
                         <Link 
                         key={"link-" + project.id}
-                        to={"/projects/" + project.project.slug + "/environments"}
+                        to={"/projects/" + project.project.slug}
                         onClick = {(e)=>self.hideSuggestions(true)}>
                           <Paper
                             key={project.id}

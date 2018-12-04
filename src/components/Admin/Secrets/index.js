@@ -272,7 +272,6 @@ export default class Secrets extends React.Component {
         this.props.data.refetch()
         this.form.$('key').set('disabled', false)
         this.closeDrawer(true)
-        this.form.$('isSecret').set('disabled', data.updateSecret.isSecret)
       });
     } else {
       this.props.updateSecret({
@@ -281,7 +280,7 @@ export default class Secrets extends React.Component {
         this.props.data.refetch()
         this.form.$('id').set(data.updateSecret.id)
         this.form.$('key').set('disabled', true)
-        this.form.$('isSecret').set('disabled', data.updateSecret.isSecret)
+        this.form.$('isSecret').set('disabled', !data.updateSecret.isSecret)
         this.setState({ saving: false })
       });
     }
