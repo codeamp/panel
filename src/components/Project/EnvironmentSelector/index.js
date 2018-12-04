@@ -94,7 +94,6 @@ class EnvironmentSelector extends React.Component {
       }
     })
 
-    console.error(this.props.match.params.environment)
     // If we didn't find an environment name because it wasn't provided,
     // or because it was wrong ("dev" vs "development" for example) then 
     // present the user with the environment selection prompt
