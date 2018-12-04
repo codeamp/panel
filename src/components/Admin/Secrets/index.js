@@ -246,7 +246,7 @@ export default class Secrets extends React.Component {
       })
 
       this.form.$('key').set('disabled', true)
-      this.form.$('isSecret').set('disabled', true)
+      this.form.$('isSecret').set('disabled', secret.isSecret)
       this.form.$('scope').set('disabled', true)
       this.form.$('type').set('disabled', true)
       this.form.$('environmentID').set('disabled', true)      
@@ -272,6 +272,7 @@ export default class Secrets extends React.Component {
         this.props.data.refetch()
         this.form.$('key').set('disabled', false)
         this.closeDrawer(true)
+        this.form.$('isSecret').set('disabled', data.updateSecret.isSecret)
       });
     } else {
       this.props.updateSecret({
@@ -280,6 +281,7 @@ export default class Secrets extends React.Component {
         this.props.data.refetch()
         this.form.$('id').set(data.updateSecret.id)
         this.form.$('key').set('disabled', true)
+        this.form.$('isSecret').set('disabled', data.updateSecret.isSecret)
         this.setState({ saving: false })
       });
     }
@@ -482,7 +484,6 @@ export default class Secrets extends React.Component {
           onClose={() => {this.closeDrawer()}}
           open={this.state.drawerOpen}
         >
-          <div tabIndex={0} className={styles.createServiceBar}>
             <AppBar position="static" color="default">
               <Toolbar>
                 <Typography variant="title" color="inherit">
@@ -507,7 +508,7 @@ export default class Secrets extends React.Component {
                     </Grid>
                     <Grid item xs={12}>
                       <InputField field={this.form.$('value')} fullWidth={true} />
-                      <CheckboxField field={this.form.$('isSecret')} fullWidth={true} />
+                      <CheckboxField field={this.form.$('isSecret')} disabled={this.form.$('isSecret').disabled} fullWidth={true} />
                       <Typography variant="caption"> Hide value after saving </Typography>
                     </Grid>
                   </Grid>
@@ -571,7 +572,6 @@ export default class Secrets extends React.Component {
                 </Grid>
               </div>
             </form>
-          </div>
         </Drawer>
         
         {/* Used for confirmation of escaping panel if dirty form */}
