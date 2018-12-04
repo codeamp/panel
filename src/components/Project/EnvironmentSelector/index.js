@@ -73,6 +73,18 @@ class EnvironmentSelector extends React.Component {
     );
   }
 
+  componentWillReceiveProps(nextProps){
+    let projectsMap = {}
+    nextProps.projects.entries.forEach((project) => {
+      projectsMap[project.slug] = project
+    })
+
+    this.setState({
+      projectsMap: projectsMap,
+      project: projectsMap[nextProps.match.params.slug]
+    })
+  }
+
   render() {
     const { socket } = this.props;
     const { project } = this.state;
