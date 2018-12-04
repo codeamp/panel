@@ -88,12 +88,13 @@ class EnvironmentSelector extends React.Component {
 
     // Iterate over all of the environments we received from the query
     environments.forEach((env) => {
-      if(env.key === this.props.match.params.environment || currentEnv.key === env.key){
+      if(currentEnv.key === env.key){
         environment = env
         return 
       }
     })
 
+    console.error(this.props.match.params.environment)
     // If we didn't find an environment name because it wasn't provided,
     // or because it was wrong ("dev" vs "development" for example) then 
     // present the user with the environment selection prompt
