@@ -162,6 +162,14 @@ class TopNav extends React.Component {
     }
   }
 
+  onMouseEnter(index){
+    this.setState({ hovering: true, selectedSuggestionIndex: index })
+  }
+
+  onMouseLeave(index){
+    this.setState({ hovering: false, selectedSuggestionIndex: null})
+  }
+
   render() {
     var self = this
     const { store } = this.props
@@ -201,8 +209,8 @@ class TopNav extends React.Component {
                     onChange={(e)=>this.onChange(e)}
                     
                   />
-                  <div tabIndex="0" className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
-                    {this.state.projects.map(function(project, index){
+                  <div tabIndex="0" className={self.state.showSuggestions ? styles.suggestions : styles.showNone}>
+                    {self.state.projects.map(function(project, index){
                       return (
                         <Link 
                         key={"link-" + project.id}
@@ -210,10 +218,13 @@ class TopNav extends React.Component {
                         onClick = {(e)=>self.hideSuggestions(true)}>
                           <Paper
                             key={project.id}
-                            className={styles.suggestion}
+                            className={index === self.state.selectedSuggestionIndex ? styles.selectedSuggestion : styles.suggestion}
                             square={true}>
-                            <ListItem>                  
-                              <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
+                            <ListItem
+                              onMouseEnter={() => self.onMouseEnter(index)}
+                              onMouseLeave={() => self.onMouseLeave(index)}
+                              onClick={()=>self.onSuggestionItemClick(project)}>                  
+                                <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
                             </ListItem>
                           </Paper>
                         </Link>
