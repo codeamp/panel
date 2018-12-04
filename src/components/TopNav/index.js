@@ -58,7 +58,7 @@ class TopNav extends React.Component {
     hovering: false,
     projects: [],
     projectQuery: '',
-    selectedSuggestionIndex: null,
+    selectedSuggestionIndex: 0,
     timeout: null,
   };
 
