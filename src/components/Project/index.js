@@ -98,7 +98,6 @@ class Project extends React.Component {
   }
 
   componentDidUpdate() {
-    console.log("project component did update")
     this.setLeftNavProjectItems(this.props)
 
     const { environment } = this.props;
