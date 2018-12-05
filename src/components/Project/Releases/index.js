@@ -125,6 +125,12 @@ class ReleaseView extends React.Component {
     }
   }
 
+  componentWillUnmount(){
+    if (this.timerInterval !== null){
+      clearInterval(this.timerInterval)
+    }
+  }
+
   renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
     // filter out 'once' types
