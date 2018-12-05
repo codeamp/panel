@@ -181,7 +181,7 @@ export default class App extends React.Component {
             open={this.props.store.app.snackbar.open}
             className={styles.snackbar}
             onClose={() => {this.props.store.app.setSnackbar({ open: false })}}
-            SnackbarContentProps={{
+            ContentProps={{
               'aria-describedby': 'message-id',
               className: styles.snackbarContent,
             }}
