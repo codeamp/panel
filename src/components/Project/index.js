@@ -236,7 +236,7 @@ class Project extends React.Component {
   }
 
   render() {
-    const { history, socket, environment } = this.props;
+    const { environment } = this.props;
     const { loading, project, error } = this.props.data;
     if(loading){
       return <Loading/>
@@ -300,22 +300,22 @@ class Project extends React.Component {
         </Grid>
         <Switch>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
-            <ProjectFeatures history={history} socket={socket} {...props} />
+            <ProjectFeatures {...props} {...this.props}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
-            <ProjectReleases socket={socket} {...props} />
+            <ProjectReleases {...props}  {...this.props}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/services' render={(props) => (
-            <ProjectServices socket={socket} {...props} />
+            <ProjectServices {...props}  {...this.props}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets  history={history} socket={socket} {...props} />
+            <ProjectSecrets {...props}  {...this.props}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
-            <ProjectExtensions socket={socket} {...props} />
+            <ProjectExtensions {...props}  {...this.props}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
-            <ProjectSettings socket={socket} {...props} />
+            <ProjectSettings {...props}  {...this.props}/>
           )}/>
 
           <Redirect strict exact from={this.props.match.path + '/'} to={`${this.props.location.pathname}features`} />          

@@ -78,7 +78,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
     fetchPolicy: 'network-only',
     variables: {
       slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
+      environmentID: props.environment.id,
       params: {
         limit: props.limit || props.store.app.paginator.limit,
         page: props.page || 0,
