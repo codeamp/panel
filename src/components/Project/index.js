@@ -98,6 +98,7 @@ class Project extends React.Component {
   }
 
   componentDidUpdate() {
+    console.log("project component did update")
     this.setLeftNavProjectItems(this.props)
 
     const { environment } = this.props;
@@ -300,22 +301,22 @@ class Project extends React.Component {
         </Grid>
         <Switch>
           <Route exact path='/projects/:slug/:environment/features' render={(props) => (
-            <ProjectFeatures history={history} socket={socket} {...props} />
+            <ProjectFeatures history={history} socket={socket} {...props} environment={this.props.environment}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/releases' render={(props) => (
-            <ProjectReleases socket={socket} {...props} />
+            <ProjectReleases socket={socket} {...props} environment={this.props.environment}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/services' render={(props) => (
-            <ProjectServices socket={socket} {...props} />
+            <ProjectServices socket={socket} {...props} environment={this.props.environment}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/secrets' render={(props) => (
-            <ProjectSecrets  history={history} socket={socket} {...props} />
+            <ProjectSecrets  history={history} socket={socket} {...props} environment={this.props.environment}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/extensions' render={(props) => (
-            <ProjectExtensions socket={socket} {...props} />
+            <ProjectExtensions socket={socket} {...props} environment={this.props.environment}/>
           )}/>
           <Route exact path='/projects/:slug/:environment/settings' render={(props) => (
-            <ProjectSettings socket={socket} {...props} />
+            <ProjectSettings socket={socket} {...props} environment={this.props.environment}/>
           )}/>
 
           <Redirect strict exact from={this.props.match.path + '/'} to={`${this.props.location.pathname}features`} />          
