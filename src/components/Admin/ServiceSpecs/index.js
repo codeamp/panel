@@ -21,6 +21,8 @@ import DefaultIcon from '@material-ui/icons/Done';
 import Loading from 'components/Utils/Loading';
 import ServiceSpecForm from 'components/Utils/ServiceSpecForm';
 import { observer, inject } from 'mobx-react';
+import validatorjs from 'validatorjs';
+import MobxReactForm from 'mobx-react-form';
 import styles from './style.module.css';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
@@ -141,6 +143,8 @@ export default class ServiceSpecs extends React.Component {
       serviceSpecFormValues: {},
       dialogOpen: false,
     }
+
+    this.form = this.initServiceSpecsForm()
   }
 
   isSelected(id){
@@ -148,8 +152,64 @@ export default class ServiceSpecs extends React.Component {
   }
 
   handleClick(e, serviceSpec, index){
+    this.form = this.initServiceSpecsForm(serviceSpec)
     this.setState({ currentServiceSpec: serviceSpec, selected: serviceSpec.id, drawerOpen: true })
   }
+
+  onError(){
+    // todo
+  }
+
+  onSubmit(e){
+    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+  }
+
+  onSuccess(form){
+    if(this.form.values()['id'] === ''){
+      this.props.create(form.values())
+    } else {
+      this.props.update(form.values())
+    }
+  }  
+
+  initServiceSpecsForm(formInitials = {}) {
+    const fields = [
+      'name',
+      'cpuRequest',
+      'cpuLimit',
+      'memoryRequest',
+      'memoryLimit',
+      'terminationGracePeriod',
+      'id',
+      'isDefault',
+    ];
+    const rules = {
+      'name': 'required|string',
+      'cpuRequest': 'required|numeric',
+      'cpuLimit': 'required|numeric',
+      'memoryRequest': 'required|numeric',
+      'memoryLimit': 'required|numeric',
+      'terminationGracePeriod': 'required|string',
+    };
+    const labels = {
+      'name': 'Name',
+      'cpuRequest': 'CPU Request (millicpus)',
+      'cpuLimit': 'CPU Limit (millicpus)',
+      'memoryRequest': 'Memory Request (mb)',
+      'memoryLimit': 'Memory Limit (mb)',
+      'terminationGracePeriod': 'Timeout (seconds)',
+      'isDefault': 'Default profile that will be applied to new services.',
+    };
+    const initials = formInitials;
+    const types = {
+      'isDefault': 'checkbox',
+    };
+    const extra = {};
+    const hooks = {};
+    const plugins = { dvr: validatorjs };
+
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
+  }      
 
   onSuccess(form){
     if(this.form.values()['id'] === ''){
@@ -329,7 +389,8 @@ export default class ServiceSpecs extends React.Component {
                   delete={this.handleDeleteServiceSpec.bind(this)} 
                   create={this.handleCreateServiceSpec.bind(this)}
                   update={this.handleUpdateServiceSpec.bind(this)}
-                  serviceSpec={this.state.currentServiceSpec} 
+                  form={this.form}
+                  serviceSpec={this.state.currentServiceSpec}
                   cancel={this.closeDrawer.bind(this)} />
                 {!!this.state.currentServiceSpec.service &&
                   <Grid container spacing={24} className={styles.grid}>
