@@ -94,11 +94,13 @@ export default class ServiceSpecForm extends React.Component {
   }    
 
   render() {
+    console.log(this.props)
     const { serviceSpec } = this.props;
+    console.log('serviceSpec', serviceSpec)
 
     if(!serviceSpec){
       return (
-        <div> No Service Spec found </div>
+        <div className={styles.grid}> No Service Spec found </div>
       )
     }
 
@@ -129,9 +131,6 @@ export default class ServiceSpecForm extends React.Component {
                 <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
               </Grid>
             }
-            <Grid item xs={12}>
-              <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
-            </Grid>                  
             <Grid item xs={12}>
               <Button color="primary"
                   className={styles.buttonSpacing}

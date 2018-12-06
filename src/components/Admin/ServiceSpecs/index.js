@@ -148,6 +148,7 @@ export default class ServiceSpecs extends React.Component {
   }
 
   handleClick(e, serviceSpec, index){
+    console.log(serviceSpec)
     this.setState({ currentServiceSpec: serviceSpec, selected: serviceSpec.id, drawerOpen: true })
   }
 
@@ -324,54 +325,54 @@ export default class ServiceSpecs extends React.Component {
                   </Typography>
                 </Toolbar>
               </AppBar>
-              {this.state.currentServiceSpec.service != null &&
-                <div>
-                  <ServiceSpecForm 
-                    delete={this.handleDeleteServiceSpec.bind(this)} 
-                    create={this.handleCreateServiceSpec.bind(this)}
-                    update={this.handleUpdateServiceSpec.bind(this)}
-                    serviceSpec={this.state.currentServiceSpec} 
-                    cancel={this.closeDrawer.bind(this)} />
+              <div>
+                <ServiceSpecForm 
+                  delete={this.handleDeleteServiceSpec.bind(this)} 
+                  create={this.handleCreateServiceSpec.bind(this)}
+                  update={this.handleUpdateServiceSpec.bind(this)}
+                  serviceSpec={this.state.currentServiceSpec} 
+                  cancel={this.closeDrawer.bind(this)} />
+                {!!this.state.currentServiceSpec.service &&
                   <Grid container spacing={24} className={styles.grid}>
-                      <Grid item xs={12}>
-                        <Link to={"/projects/" + this.state.currentServiceSpec.service.project.slug + "/" + this.state.currentServiceSpec.service.environment.key + "/services?serviceID=" + this.state.currentServiceSpec.service.id}>
-                          <Typography variant="body2">Edit Service</Typography>
-                        </Link>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Card style={{ padding: 25 }}>
-                          <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
-                          <Grid container spacing={24}>
-                            <Grid item xs={12}>
-                              <Typography variant="subheading">CPU</Typography>
-                              <Typography variant="body2">(millicpus)</Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuRequest} label={"Request"} disabled/>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuLimit} label={"Limit"} disabled />
-                            </Grid>
-                          </Grid>
-                          <br/>
-                          {/* <Divider style={{ marginTop: 15, marginBottom: 15 }}/> */}
-                          <Grid container spacing={24}>
-                            <Grid item xs={12}>
-                              <Typography variant="subheading">Memory</Typography>
-                              <Typography variant="body2">(mb)</Typography>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryRequest} label={"Request"} disabled/>
-                            </Grid>
-                            <Grid item xs={6}>
-                              <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryLimit} label={"Limit"} disabled />
-                            </Grid>
-                          </Grid>
-                        </Card>
-                      </Grid>
+                    <Grid item xs={12}>
+                      <Link to={"/projects/" + this.state.currentServiceSpec.service.project.slug + "/" + this.state.currentServiceSpec.service.environment.key + "/services?serviceID=" + this.state.currentServiceSpec.service.id}>
+                        <Typography variant="body2">Edit Service</Typography>
+                      </Link>
                     </Grid>
-                  </div>
+                    <Grid item xs={12}>
+                      <Card style={{ padding: 25 }}>
+                        <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
+                        <Grid container spacing={24}>
+                          <Grid item xs={12}>
+                            <Typography variant="subheading">CPU</Typography>
+                            <Typography variant="body2">(millicpus)</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuRequest} label={"Request"} disabled/>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuLimit} label={"Limit"} disabled />
+                          </Grid>
+                        </Grid>
+                        <br/>
+                        {/* <Divider style={{ marginTop: 15, marginBottom: 15 }}/> */}
+                        <Grid container spacing={24}>
+                          <Grid item xs={12}>
+                            <Typography variant="subheading">Memory</Typography>
+                            <Typography variant="body2">(mb)</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryRequest} label={"Request"} disabled/>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryLimit} label={"Limit"} disabled />
+                          </Grid>
+                        </Grid>
+                      </Card>
+                    </Grid>
+                  </Grid>
                   }
+                </div>
             </div>
         </Drawer>
 
