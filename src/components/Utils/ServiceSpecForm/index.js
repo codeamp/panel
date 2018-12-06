@@ -5,8 +5,6 @@ import Button from 'material-ui/Button';
 import InputField from 'components/Form/input-field';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
 
 
 @inject("store") @observer
@@ -24,16 +22,7 @@ export default class ServiceSpecForm extends React.Component {
 
   onSubmit(e){
     this.props.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
-  }
-
-  componentWillMount() {
-    // validate service spec form that it has attributes name, cpuRequest, cpuLimit, memoryRequest, memoryLimit, terminationGracePeriod, isDefault    
-    if(!!this.props.form){
-      Object.keys(this.props.form.values()).forEach(function(val){
-        console.log(val)
-      })
-    }
-  }  
+  } 
 
   onSuccess(form){
     if(this.props.form.values()['id'] === ''){
@@ -55,10 +44,12 @@ export default class ServiceSpecForm extends React.Component {
     return (
       <div>
         <form onSubmit={(e) => e.preventDefault()}>
-          <Grid container spacing={24} className={styles.grid}>
-            <Grid item xs={12}>
-              <InputField field={this.props.form.$('name')} fullWidth={true} />
-            </Grid>
+          <Grid container spacing={24}>
+            {!!Object.keys(this.props.form.values()).includes('name') &&
+              <Grid item xs={12}>
+                <InputField field={this.props.form.$('name')} fullWidth={true} />
+              </Grid>
+            }
             <Grid item xs={6}>
               <InputField field={this.props.form.$('cpuRequest')} fullWidth={true} />
             </Grid>

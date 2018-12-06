@@ -385,21 +385,23 @@ export default class ServiceSpecs extends React.Component {
                 </Toolbar>
               </AppBar>
               <div>
-                <ServiceSpecForm 
-                  delete={this.handleDeleteServiceSpec.bind(this)} 
-                  create={this.handleCreateServiceSpec.bind(this)}
-                  update={this.handleUpdateServiceSpec.bind(this)}
-                  form={this.form}
-                  serviceSpec={this.state.currentServiceSpec}
-                  cancel={this.closeDrawer.bind(this)} />
+                <Grid item className={styles.serviceSpecForm}>
+                  <ServiceSpecForm 
+                    delete={this.handleDeleteServiceSpec.bind(this)} 
+                    create={this.handleCreateServiceSpec.bind(this)}
+                    update={this.handleUpdateServiceSpec.bind(this)}
+                    form={this.form}
+                    serviceSpec={this.state.currentServiceSpec}
+                    cancel={this.closeDrawer.bind(this)} />
+                </Grid>
                 {!!this.state.currentServiceSpec.service &&
                   <Grid container spacing={24} className={styles.grid}>
-                    <Grid item xs={12}>
+                    <Grid item xs={12} className={styles.grid}>
                       <Link to={"/projects/" + this.state.currentServiceSpec.service.project.slug + "/" + this.state.currentServiceSpec.service.environment.key + "/services?serviceID=" + this.state.currentServiceSpec.service.id}>
                         <Typography variant="body2">Edit Service</Typography>
                       </Link>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid item xs={12} className={styles.grid}>
                       <Card style={{ padding: 25 }}>
                         <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
                         <Grid container spacing={24}>
@@ -416,7 +418,7 @@ export default class ServiceSpecs extends React.Component {
                         </Grid>
                         <br/>
                         {/* <Divider style={{ marginTop: 15, marginBottom: 15 }}/> */}
-                        <Grid container spacing={24}>
+                        <Grid container spacing={24} className={styles.grid}>
                           <Grid item xs={12}>
                             <Typography variant="subheading">Memory</Typography>
                             <Typography variant="body2">(mb)</Typography>

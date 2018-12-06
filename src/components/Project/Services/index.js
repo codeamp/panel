@@ -61,10 +61,6 @@ query Project($slug: String, $environmentID: String) {
         id
         name
         command
-        serviceSpec {
-          id
-          name
-        }
         count
         type
         ports
@@ -74,6 +70,33 @@ query Project($slug: String, $environmentID: String) {
         livenessProbe
         preStopHook
         autoscaleEnabled
+        serviceSpec {
+          id
+          cpuRequest
+          cpuLimit
+          memoryRequest
+          memoryLimit
+          terminationGracePeriod
+          isDefault
+          service {
+            id
+            project {
+              id
+              slug
+            }
+            suggestedServiceSpec {
+              id
+              cpuRequest
+              cpuLimit
+              memoryRequest
+              memoryLimit
+            }
+            environment {
+              id
+              key
+            }
+          }          
+        }
       }
     }
   }
@@ -170,6 +193,25 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
   }
 }`, { name: "deleteService" })
 
+@graphql(gql`
+mutation UpdateServiceSpec ($id: String!, $name: String!, $cpuRequest: String!, $cpuLimit: String!,
+  $memoryRequest: String!, $memoryLimit: String!, $terminationGracePeriod: String!, $isDefault: Boolean!) {
+    updateServiceSpec(serviceSpec:{
+    id: $id,
+    name: $name,
+    cpuRequest: $cpuRequest,
+    cpuLimit: $cpuLimit,
+    memoryRequest: $memoryRequest,
+    memoryLimit: $memoryLimit,
+    terminationGracePeriod: $terminationGracePeriod,
+    isDefault: $isDefault,
+    }) {
+        id
+        name
+    }
+}
+`, { name: "updateServiceSpec" })
+
 @observer
 export default class Services extends React.Component {
   constructor(props){
@@ -185,10 +227,12 @@ export default class Services extends React.Component {
       showAddServiceMenu: false,
       showDiscardEditsConfirmDialog: false,
       showAdvancedSettings: false,
+      showServiceSpecSettings: false,
       showDeploymentStrategySettings: false,
       showReadinessProbeSettings: false,
       showLivenessProbeSettings: false,
       showLifecycleSettings: false,
+      currentService: {},
     }
 
     this.handleDeleteService = this.handleDeleteService.bind(this)
@@ -226,7 +270,11 @@ export default class Services extends React.Component {
 
   handleToggleAdvancedSettings = panel => (event) => {
     this.setState({ showAdvancedSettings: !this.state.showAdvancedSettings });
-  };
+  }
+  
+  handleToggleServiceSpecSettings = panel => (event) => {
+    this.setState({ showServiceSpecSettings: !this.state.showServiceSpecSettings })
+  }
 
   handleToggleDeploymentStrategySettings = panel => (event) => {
     this.setState(({showDeploymentStrategySettings: !this.state.showDeploymentStrategySettings}))
@@ -244,11 +292,46 @@ export default class Services extends React.Component {
     this.setState(({showLifecycleSettings: !this.state.showLifecycleSettings}))
   }
 
+  initServiceSpecForm(formInitials = {}) {
+    const fields = [
+      'cpuRequest',
+      'cpuLimit',
+      'memoryRequest',
+      'memoryLimit',
+      'terminationGracePeriod',
+      'id',
+      'isDefault',
+    ];
+    const rules = {
+      'cpuRequest': 'required|numeric',
+      'cpuLimit': 'required|numeric',
+      'memoryRequest': 'required|numeric',
+      'memoryLimit': 'required|numeric',
+      'terminationGracePeriod': 'required|string',
+    };
+    const labels = {
+      'cpuRequest': 'CPU Request (millicpus)',
+      'cpuLimit': 'CPU Limit (millicpus)',
+      'memoryRequest': 'Memory Request (mb)',
+      'memoryLimit': 'Memory Limit (mb)',
+      'terminationGracePeriod': 'Timeout (seconds)',
+      'isDefault': 'Default profile that will be applied to new services.',
+    };
+    const initials = formInitials;
+    const types = {
+      'isDefault': 'checkbox',
+    };
+    const extra = {};
+    const hooks = {};
+    const plugins = { dvr: validatorjs };
+
+    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
+  }        
+
   initProjectServicesForm(formInitials  = {}) {
     const fields = [
       'id',
       'name',
-      'serviceSpecID',
       'count',
       'command',
       'type',
@@ -342,7 +425,6 @@ export default class Services extends React.Component {
 
     const labels = {
       'name': 'Name',
-      'serviceSpecID': 'Service Spec',
       'count': 'Count',
       'command': 'Command',
       'ports': 'Container Ports',
@@ -470,7 +552,6 @@ export default class Services extends React.Component {
       'count': $hooks,
       'command': $hooks,
       'ports': $hooks,
-      'serviceSpecID': $hooks,
       'ports[]': $hooks,
       'deploymentStrategy': $hooks,
       'readinessProbe': $hooks,
@@ -510,7 +591,8 @@ export default class Services extends React.Component {
   }
 
   componentWillMount(){
-    this.form = this.initProjectServicesForm()
+    this.serviceForm = this.initProjectServicesForm()
+    this.serviceSpecForm = this.initServiceSpecForm()
   }
 
   componentWillReceiveProps(nextProps) {
@@ -548,7 +630,18 @@ export default class Services extends React.Component {
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
-        this.closeDrawer(true)
+      })
+
+      console.log(this.serviceSpecForm.values())
+      let serviceSpecFormValuesWithName = this.serviceSpecForm.values()
+      serviceSpecFormValuesWithName.name = ""
+
+      this.props.updateServiceSpec({
+        variables: serviceSpecFormValuesWithName,
+      }).then(({data}) => {
+        this.props.data.refetch()
+        this.setState({ saving: false })
+        this.props.store.app.setSnackbar({ open: true, msg: `Service ${form.values()['name']} has been updated!`})
       })
     } else {
       this.props.createService({
@@ -556,7 +649,7 @@ export default class Services extends React.Component {
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer(true)
-      });
+      })
     }
   }
 
@@ -565,18 +658,19 @@ export default class Services extends React.Component {
   }
 
   handleClick = event => {
-    this.setState({ showAddServiceMenu: true, anchorEl: event.currentTarget });
+    this.setState({ showAddServiceMenu: true, anchorEl: event.currentTarget })
   };
 
   handleServiceRequest = value => {
-    this.form.$('type').set(value);
-    this.form = this.initProjectServicesForm({
+    this.serviceForm.$('type').set(value);
+    this.serviceForm = this.initProjectServicesForm({
       'type': value,
       'environmentID': this.props.store.app.currentEnvironment.id,
       'deploymentStrategy.type': 'default',
       'readinessProbe.method': 'default',
       'livenessProbe.method': 'default',
     })
+    this.serviceSpecForm = this.initServiceSpecForm()
 
     this.openDrawer()
   };
@@ -592,19 +686,20 @@ export default class Services extends React.Component {
           showAddServiceMenu: false,
           saving: false,
           showDiscardEditsConfirmDialog: false,
+          showServiceSpecSettings: false,
           showConfirmDeleteDialog: false,
           userHasUnsavedChanges: false,
           showAdvancedSettings: false,
+          currentService: {},
         })
     }
   }
 
   editService(service, index){
-    this.form = this.initProjectServicesForm({
+    this.serviceForm = this.initProjectServicesForm({
       name: service.name,
       count: service.count,
       command: service.command,
-      serviceSpecID: service.serviceSpec.id,
       type: service.type,
       id: service.id,
       index: index,
@@ -612,31 +707,36 @@ export default class Services extends React.Component {
       preStopHook: service.preStopHook,
       autoscaleEnabled: service.autoscaleEnabled,
     })
-    this.form.$('name').set('disabled', true)
-    this.form.update({ ports: service.ports })
+    this.serviceForm.$('name').set('disabled', true)
+    this.serviceForm.update({ ports: service.ports })
 
-    let newState = {}
+    // init service spec form as well
+    this.serviceSpecForm = this.initServiceSpecForm(service.serviceSpec)
+
+    let newState = {
+      currentService: service
+    }
 
     if (service.deploymentStrategy.type === "" || service.deploymentStrategy.type === "default" ) {
-      this.form.update({ deploymentStrategy: {type: "default"} })
+      this.serviceForm.update({ deploymentStrategy: {type: "default"} })
     } else {
-      this.form.update({ deploymentStrategy: service.deploymentStrategy })
+      this.serviceForm.update({ deploymentStrategy: service.deploymentStrategy })
       newState.showAdvancedSettings = true
       newState.showDeploymentStrategySettings = true
     }
 
     if (service.readinessProbe.method === "") {
-      this.form.update({readinessProbe: {method: "default"}})
+      this.serviceForm.update({readinessProbe: {method: "default"}})
     } else {
-      this.form.update({readinessProbe: service.readinessProbe})
+      this.serviceForm.update({readinessProbe: service.readinessProbe})
       newState.showAdvancedSettings = true
       newState.showReadinessProbeSettings = true
     }
 
     if (service.livenessProbe.method === "") {
-      this.form.update({livenessProbe: {method: "default"}})
+      this.serviceForm.update({livenessProbe: {method: "default"}})
     } else {
-      this.form.update({livenessProbe: service.livenessProbe})
+      this.serviceForm.update({livenessProbe: service.livenessProbe})
       newState.showAdvancedSettings = true
       newState.showLivenessProbeSettings = true
     }
@@ -647,20 +747,19 @@ export default class Services extends React.Component {
     }
 
     this.setState(newState)
-    this.form.$('serviceSpecID').set('disabled', true)
 
     this.openDrawer()
   }
 
   onSubmit(e) {
     this.setState({ saving: true})
-    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+    this.serviceForm.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
 
   handleDeleteService() {
     this.setState({ showConfirmDeleteDialog: false, loading: true })
     this.props.deleteService({
-      variables: this.form.values(),
+      variables: this.serviceForm.values(),
     }).then(({data}) => {
       this.props.data.refetch()
       this.closeDrawer(true)
@@ -687,8 +786,8 @@ export default class Services extends React.Component {
       )
     }
 
-    this.form.$('projectID').set(project.id)
-    this.form.state.extra({
+    this.serviceForm.$('projectID').set(project.id)
+    this.serviceForm.state.extra({
       serviceSpecs: serviceSpecs.map(function(serviceSpec){
         return {
           key: serviceSpec.id,
@@ -797,35 +896,30 @@ export default class Services extends React.Component {
                   </Typography>
                   </Toolbar>
               </AppBar>
-              <form onSubmit={this.form.onSubmit}>
+              <form onSubmit={this.serviceForm.onSubmit}>
                 <div className={styles.drawerBody}>
                   <Grid container spacing={24} className={styles.grid}>
                     <Grid item xs={12}>
-                      <InputField field={this.form.$('name')} fullWidth={true} disabled={this.form.$('name').disabled} />
+                      <InputField field={this.serviceForm.$('name')} fullWidth={true} disabled={this.serviceForm.$('name').disabled} />
                     </Grid>
                     <Grid item xs={12}>
-                      <InputField field={this.form.$('command')} fullWidth={true}/>
+                      <InputField field={this.serviceForm.$('command')} fullWidth={true}/>
                     </Grid>
                     <Grid item xs={3}>
-                      <InputField field={this.form.$('count')} fullWidth={true}/>
+                      <InputField field={this.serviceForm.$('count')} fullWidth={true}/>
                     </Grid>
-                    {this.form.values()['id'] !== "" &&
-                      <Grid item xs={9}>
-                        <SelectField field={this.form.$('serviceSpecID')} extraKey={"serviceSpecs"} fullWidth={true}/>
-                      </Grid>
-                    }
                     <Grid item xs={12}>
                         <div>
                           <Grid container spacing={24}>
-                              { this.form.$('ports').value.length > 0 &&
+                              { this.serviceForm.$('ports').value.length > 0 &&
                                 <Grid item xs={12}>
                                   <Typography variant="subheading"> Container Ports </Typography>
                                 </Grid>
                               }
-                              { this.form.$('ports').value.length > 0 &&
+                              { this.serviceForm.$('ports').value.length > 0 &&
                                 <Grid item xs={12}>
                                   <div>
-                                      {this.form.$('ports').map(port =>
+                                      {this.serviceForm.$('ports').map(port =>
                                         <Grid key={port.id} container spacing={24}>
                                           <Grid item xs={4}>
                                             <InputField field={port.$('port')} fullWidth={false} className={styles.portFormInput} />
@@ -844,7 +938,7 @@ export default class Services extends React.Component {
                                 </Grid>
                               }
                               <Grid item xs={12}>
-                                <Button variant="raised" type="secondary" onClick={this.form.$('ports').onAdd}>
+                                <Button variant="raised" type="secondary" onClick={this.serviceForm.$('ports').onAdd}>
                                     Add container port
                                 </Button>
                               </Grid>
@@ -861,21 +955,27 @@ export default class Services extends React.Component {
 
                           <ExpansionPanelDetails>
                             <Grid container spacing={8} direction={'row'}>
-                              <Grid item xs={12}>
-                                <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showDeploymentStrategySettings} onChange={this.handleToggleDeploymentStrategySettings()}>
-                                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
-                                    <Typography>
-                                      Service Spec
-                                    </Typography>
-                                  </ExpansionPanelSummary>
-                                  <Divider/>
-                                  <ExpansionPanelDetails>
-                                    <Grid item xs={12} className={styles.settingsPanelOpen}>
-                                      <ServiceSpecForm />
-                                    </Grid>
-                                  </ExpansionPanelDetails>
-                                </ExpansionPanel>
-                              </Grid>
+                              {!!this.state.currentService.serviceSpec &&
+                                <Grid item xs={12}>
+                                  <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showServiceSpecSettings} onChange={this.handleToggleServiceSpecSettings()}>
+                                    <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                      <Typography>
+                                        Service Spec
+                                      </Typography>
+                                    </ExpansionPanelSummary>
+                                    <Divider/>
+                                    <ExpansionPanelDetails>
+                                      <Grid item xs={12} className={styles.settingsPanelOpen}>
+                                        <ServiceSpecForm 
+                                          form={this.serviceSpecForm}
+                                          serviceSpec={this.state.currentService.serviceSpec}
+                                          disableCancel={true}
+                                        />
+                                      </Grid>
+                                    </ExpansionPanelDetails>
+                                  </ExpansionPanel>
+                                </Grid>
+                              }
 
                               <Grid item xs={12}>
                                 <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showDeploymentStrategySettings} onChange={this.handleToggleDeploymentStrategySettings()}>
@@ -886,17 +986,17 @@ export default class Services extends React.Component {
                                   </ExpansionPanelSummary>
                                   <Divider/>
                                   <ExpansionPanelDetails>
-                                    <Grid item xs={12} className={styles.settingsPanelOpen} key={this.form.$('deploymentStrategy').id}>
+                                    <Grid item xs={12} className={styles.settingsPanelOpen} key={this.serviceForm.$('deploymentStrategy').id}>
                                       <Grid item xs={12}>
-                                        <SelectField field={this.form.$('deploymentStrategy.type')} fullWidth={false} />
+                                        <SelectField field={this.serviceForm.$('deploymentStrategy.type')} fullWidth={false} />
                                       </Grid>
-                                      { this.form.$('deploymentStrategy.type').value === "rollingUpdate" &&
+                                      { this.serviceForm.$('deploymentStrategy.type').value === "rollingUpdate" &&
                                         <Grid container spacing={24}>
                                           <Grid item xs={6}>
-                                            <InputField field={this.form.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
+                                            <InputField field={this.serviceForm.$('deploymentStrategy.maxUnavailable')} fullWith={false} />
                                           </Grid>
                                           <Grid item xs={6}>
-                                            <InputField field={this.form.$('deploymentStrategy.maxSurge')} fullWith={false} />
+                                            <InputField field={this.serviceForm.$('deploymentStrategy.maxSurge')} fullWith={false} />
                                           </Grid>
                                         </Grid>
                                       }
@@ -915,38 +1015,38 @@ export default class Services extends React.Component {
                                   <Divider/>
                                   <ExpansionPanelDetails>
                                   <Grid item xs={12}>
-                                    <Grid key={this.form.$('readinessProbe').id} container direction={'column'} className={styles.healthProbe}>
+                                    <Grid key={this.serviceForm.$('readinessProbe').id} container direction={'column'} className={styles.healthProbe}>
                                       <Grid item xs={12}>
                                         <Grid container direction={'row'}>
                                           <Grid item xs={6}>
-                                            <SelectField field={this.form.$('readinessProbe.method')} fullWidth={true} />
+                                            <SelectField field={this.serviceForm.$('readinessProbe.method')} fullWidth={true} />
                                           </Grid>
                                         </Grid>
                                       </Grid>
 
-                                        {this.form.$('readinessProbe.method').value !== 'default' && (
+                                        {this.serviceForm.$('readinessProbe.method').value !== 'default' && (
                                           <Grid item xs={12}>
-                                          { this.form.$('readinessProbe.method').value === 'exec' && (
+                                          { this.serviceForm.$('readinessProbe.method').value === 'exec' && (
                                             <Grid item xs={12}>
-                                              <InputField field={this.form.$('readinessProbe.command')} fullWidth={true} />
+                                              <InputField field={this.serviceForm.$('readinessProbe.command')} fullWidth={true} />
                                             </Grid>
                                           )}
 
-                                          { this.form.$('readinessProbe.method').value === 'http' && (
+                                          { this.serviceForm.$('readinessProbe.method').value === 'http' && (
                                             <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
                                               <Grid item xs={4}>
-                                                <SelectField field={this.form.$('readinessProbe.scheme')} fullWidth={true} />
+                                                <SelectField field={this.serviceForm.$('readinessProbe.scheme')} fullWidth={true} />
                                               </Grid>
                                               <Grid item xs={2}>
-                                                <InputField field={this.form.$('readinessProbe.port')} fullWidth={true} />
+                                                <InputField field={this.serviceForm.$('readinessProbe.port')} fullWidth={true} />
                                               </Grid>
                                               <Grid item xs={12}>
-                                                <InputField field={this.form.$('readinessProbe.path')} fullWidth={true} />
+                                                <InputField field={this.serviceForm.$('readinessProbe.path')} fullWidth={true} />
                                               </Grid>
                                                 <Grid item xs={12}>
-                                                  {this.form.$('readinessProbe.httpHeaders').value.length > 0 && (
+                                                  {this.serviceForm.$('readinessProbe.httpHeaders').value.length > 0 && (
                                                     <Grid item xs={12}>
-                                                      {this.form.$('readinessProbe.httpHeaders').map(header =>
+                                                      {this.serviceForm.$('readinessProbe.httpHeaders').map(header =>
                                                       <Grid container spacing={8} key={header.id}>
                                                           <Grid item xs={6}>
                                                             <InputField field={header.$('name')}/>
@@ -964,39 +1064,39 @@ export default class Services extends React.Component {
                                                     </Grid>
                                                   )}
                                                   <Grid item xs={12} className={styles.addHeaderButton}>
-                                                    <Button variant="raised" type="secondary" onClick={this.form.$('readinessProbe.httpHeaders').onAdd}>
+                                                    <Button variant="raised" type="secondary" onClick={this.serviceForm.$('readinessProbe.httpHeaders').onAdd}>
                                                         Add Header
                                                     </Button>
                                                   </Grid>
                                                 </Grid>
                                             </Grid>
                                           )}
-                                          { this.form.$('readinessProbe.method').value === 'tcp' && (
+                                          { this.serviceForm.$('readinessProbe.method').value === 'tcp' && (
                                             <Grid container justify={'flex-start'}>
                                               <Grid item xs={4}>
-                                                <InputField field={this.form.$('readinessProbe.port')} fullWidth={true} />
+                                                <InputField field={this.serviceForm.$('readinessProbe.port')} fullWidth={true} />
                                               </Grid>
                                             </Grid>
                                           )}
-                                          { this.form.$('readinessProbe.method').value !== "" && (
+                                          { this.serviceForm.$('readinessProbe.method').value !== "" && (
                                             <Grid container spacing={8} direction={'column'}>
                                               <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
                                                 <Grid item xs={6}>
-                                                  <InputField field={this.form.$('readinessProbe.successThreshold')} fullWidth={true}/>
+                                                  <InputField field={this.serviceForm.$('readinessProbe.successThreshold')} fullWidth={true}/>
                                                 </Grid>
                                                 <Grid item xs={6}>
-                                                  <InputField field={this.form.$('readinessProbe.failureThreshold')} fullWidth={true} />
+                                                  <InputField field={this.serviceForm.$('readinessProbe.failureThreshold')} fullWidth={true} />
                                                 </Grid>
                                               </Grid>
                                               <Grid container spacing={40} direction={'row'} justify={'space-around'}>
                                                 <Grid item xs={3}>
-                                                  <InputField field={this.form.$('readinessProbe.initialDelaySeconds')} fullWidth={true}/>
+                                                  <InputField field={this.serviceForm.$('readinessProbe.initialDelaySeconds')} fullWidth={true}/>
                                                 </Grid>
                                                 <Grid item xs={3}>
-                                                  <InputField field={this.form.$('readinessProbe.periodSeconds')} fullWidth={true} />
+                                                  <InputField field={this.serviceForm.$('readinessProbe.periodSeconds')} fullWidth={true} />
                                                 </Grid>
                                                 <Grid item xs={3}>
-                                                  <InputField field={this.form.$('readinessProbe.timeoutSeconds')} fullWidth={true} />
+                                                  <InputField field={this.serviceForm.$('readinessProbe.timeoutSeconds')} fullWidth={true} />
                                                 </Grid>
                                               </Grid>
                                             </Grid>
@@ -1019,39 +1119,39 @@ export default class Services extends React.Component {
                                   <Divider/>
                                   <ExpansionPanelDetails>
                                     <Grid item xs={12}>
-                                      <Grid key={this.form.$('livenessProbe').id} container direction={'column'} className={styles.healthProbe}>
+                                      <Grid key={this.serviceForm.$('livenessProbe').id} container direction={'column'} className={styles.healthProbe}>
                                         <Grid item xs={12}>
                                           <Grid container direction={'row'}>
                                             <Grid item xs={6}>
-                                              <SelectField field={this.form.$('livenessProbe.method')} fullWidth={true} />
+                                              <SelectField field={this.serviceForm.$('livenessProbe.method')} fullWidth={true} />
                                             </Grid>
                                           </Grid>
                                         </Grid>
 
-                                        {this.form.$('livenessProbe.method').value !== 'default' && (
+                                        {this.serviceForm.$('livenessProbe.method').value !== 'default' && (
                                           <Grid item xs={12}>
-                                          { this.form.$('livenessProbe.method').value === 'exec' && (
+                                          { this.serviceForm.$('livenessProbe.method').value === 'exec' && (
                                             <Grid item xs={12}>
-                                              <InputField field={this.form.$('livenessProbe.command')} fullWidth={true} />
+                                              <InputField field={this.serviceForm.$('livenessProbe.command')} fullWidth={true} />
                                             </Grid>
                                           )}
 
-                                          { this.form.$('livenessProbe.method').value === 'http' && (
+                                          { this.serviceForm.$('livenessProbe.method').value === 'http' && (
                                             <Grid container direction={'row'} spacing={8} justify={'flex-start'}>
                                               <Grid item xs={4}>
-                                                <SelectField field={this.form.$('livenessProbe.scheme')} fullWidth={true} />
+                                                <SelectField field={this.serviceForm.$('livenessProbe.scheme')} fullWidth={true} />
                                               </Grid>
                                               <Grid item xs={2}>
-                                                <InputField field={this.form.$('livenessProbe.port')} fullWidth={true} />
+                                                <InputField field={this.serviceForm.$('livenessProbe.port')} fullWidth={true} />
                                               </Grid>
                                               <Grid item xs={12}>
-                                                <InputField field={this.form.$('livenessProbe.path')} fullWidth={true} />
+                                                <InputField field={this.serviceForm.$('livenessProbe.path')} fullWidth={true} />
                                               </Grid>
 
                                                 <Grid item xs={12}>
-                                                  {this.form.$('livenessProbe.httpHeaders').value.length > 0 && (
+                                                  {this.serviceForm.$('livenessProbe.httpHeaders').value.length > 0 && (
                                                     <Grid item xs={12}>
-                                                      {this.form.$('livenessProbe.httpHeaders').map(header =>
+                                                      {this.serviceForm.$('livenessProbe.httpHeaders').map(header =>
                                                       <Grid container spacing={8} key={header.id}>
                                                           <Grid item xs={6}>
                                                             <InputField field={header.$('name')}/>
@@ -1069,7 +1169,7 @@ export default class Services extends React.Component {
                                                     </Grid>
                                                   )}
                                                   <Grid item xs={12} className={styles.addHeaderButton}>
-                                                    <Button variant="raised" type="secondary" onClick={this.form.$('livenessProbe.httpHeaders').onAdd}>
+                                                    <Button variant="raised" type="secondary" onClick={this.serviceForm.$('livenessProbe.httpHeaders').onAdd}>
                                                         Add Header
                                                     </Button>
                                                   </Grid>
@@ -1077,32 +1177,32 @@ export default class Services extends React.Component {
                                             </Grid>
                                           )}
 
-                                          { this.form.$('livenessProbe.method').value === 'tcp' && (
+                                          { this.serviceForm.$('livenessProbe.method').value === 'tcp' && (
                                             <Grid container justify={'flex-start'}>
                                               <Grid item xs={4}>
-                                                <InputField field={this.form.$('livenessProbe.port')} fullWidth={true} />
+                                                <InputField field={this.serviceForm.$('livenessProbe.port')} fullWidth={true} />
                                               </Grid>
                                             </Grid>
                                           )}
 
-                                          { this.form.$('livenessProbe.method').value !== "" && (
+                                          { this.serviceForm.$('livenessProbe.method').value !== "" && (
                                             <Grid container spacing={8} direction={'column'}>
 
                                               <Grid container spacing={40} direction={'row'} justify={'flex-start'}>
                                                 <Grid item xs={6}>
-                                                  <InputField field={this.form.$('livenessProbe.successThreshold')} fullWidth={true}/>
+                                                  <InputField field={this.serviceForm.$('livenessProbe.successThreshold')} fullWidth={true}/>
                                                 </Grid>
                                                 <Grid item xs={6}>
-                                                  <InputField field={this.form.$('livenessProbe.failureThreshold')} fullWidth={true} />
+                                                  <InputField field={this.serviceForm.$('livenessProbe.failureThreshold')} fullWidth={true} />
                                                 </Grid>
                                                 <Grid item xs={3}>
-                                                  <InputField field={this.form.$('livenessProbe.initialDelaySeconds')} fullWidth={true}/>
+                                                  <InputField field={this.serviceForm.$('livenessProbe.initialDelaySeconds')} fullWidth={true}/>
                                                 </Grid>
                                                 <Grid item xs={3}>
-                                                  <InputField field={this.form.$('livenessProbe.periodSeconds')} fullWidth={true} />
+                                                  <InputField field={this.serviceForm.$('livenessProbe.periodSeconds')} fullWidth={true} />
                                                 </Grid>
                                                 <Grid item xs={3}>
-                                                  <InputField field={this.form.$('livenessProbe.timeoutSeconds')} fullWidth={true} />
+                                                  <InputField field={this.serviceForm.$('livenessProbe.timeoutSeconds')} fullWidth={true} />
                                                 </Grid>
                                               </Grid>
                                             </Grid>
@@ -1124,12 +1224,12 @@ export default class Services extends React.Component {
                                   </ExpansionPanelSummary>
                                   <Divider/>
                                   <ExpansionPanelDetails>
-                                    <Grid item xs={12} key={this.form.$('preStopHook').id} className={styles.settingsPanelOpen}>
+                                    <Grid item xs={12} key={this.serviceForm.$('preStopHook').id} className={styles.settingsPanelOpen}>
                                       <Typography variant={"subheading"}>
                                           PreStop ExecHook
                                       </Typography>
                                       <Grid item xs={12}>
-                                        <InputField field={this.form.$('preStopHook')} fullWidth={true} />
+                                        <InputField field={this.serviceForm.$('preStopHook')} fullWidth={true} />
                                       </Grid>
                                     </Grid>
                                   </ExpansionPanelDetails>
@@ -1143,7 +1243,7 @@ export default class Services extends React.Component {
                     </Grid>
                     {user.permissions.includes("admin") &&
                       <Grid item xs={12}>
-                        <CheckboxField field={this.form.$('autoscaleEnabled')} fullWidth={true} />
+                        <CheckboxField field={this.serviceForm.$('autoscaleEnabled')} fullWidth={true} />
                       </Grid>
                     }
                     <Grid item xs={12}>
@@ -1155,7 +1255,7 @@ export default class Services extends React.Component {
                           onClick={e => this.onSubmit(e)}>
                             Save
                       </Button>
-                      {this.form.values()['id'] &&
+                      {this.serviceForm.values()['id'] &&
                         <Button
                           disabled={this.state.saving}
                           color="inherit"
@@ -1193,9 +1293,9 @@ export default class Services extends React.Component {
           </DialogActions>
         </Dialog>
 
-        {project.services.entries[this.form.values()['index']] &&
+        {project.services.entries[this.serviceForm.values()['index']] &&
           <Dialog open={this.state.showConfirmDeleteDialog}>
-            <DialogTitle>{"Ae you sure you want to delete " + project.services.entries[this.form.values()['index']].name + "?"}</DialogTitle>
+            <DialogTitle>{"Ae you sure you want to delete " + project.services.entries[this.serviceForm.values()['index']].name + "?"}</DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will remove the service as well as all its related properties e.g. container ports and commands that you've associated
