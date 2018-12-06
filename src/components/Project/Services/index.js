@@ -517,7 +517,7 @@ export default class Services extends React.Component {
       return
     }
 
-    const { project, loading } = nextProps.data;
+    const { project } = nextProps.data;
     const self = this;
 
     if(project !== undefined){
@@ -531,7 +531,7 @@ export default class Services extends React.Component {
         }
       }
 
-      project.services.entries.map(function(service, idx){
+      project.services.entries.forEach(function(service, idx){
         if(service.id === serviceID){
           self.editService(service, idx)
         }
@@ -678,7 +678,6 @@ export default class Services extends React.Component {
   }
 
   render() {
-    const self = this;
     const { loading, project, serviceSpecs, user } = this.props.data;
 
     if(loading){

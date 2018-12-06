@@ -2,7 +2,6 @@ import React from 'react';
 import Grid from 'material-ui/Grid';
 import Typography from 'material-ui/Typography';
 import Drawer from 'material-ui/Drawer';
-import CheckboxField from 'components/Form/checkbox-field';
 import TextField from 'material-ui/TextField';
 import AppBar from 'material-ui/AppBar';
 import Card from 'material-ui/Card';
@@ -17,15 +16,12 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
-import Divider from '@material-ui/core/Divider';
 import AddIcon from '@material-ui/icons/Add';
 import DefaultIcon from '@material-ui/icons/Done';
-import InputField from 'components/Form/input-field';
 import Loading from 'components/Utils/Loading';
+import ServiceSpecForm from 'components/Utils/ServiceSpecForm';
 import { observer, inject } from 'mobx-react';
 import styles from './style.module.css';
-import validatorjs from 'validatorjs';
-import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
@@ -142,59 +138,9 @@ export default class ServiceSpecs extends React.Component {
       saving: false,
       dirtyFormDialogOpen: false,
       currentServiceSpec: {},
+      serviceSpecFormValues: {},
+      dialogOpen: false,
     }
-  }
-
-  initServiceSpecsForm(formInitials = {}) {
-    const fields = [
-      'name',
-      'cpuRequest',
-      'cpuLimit',
-      'memoryRequest',
-      'memoryLimit',
-      'terminationGracePeriod',
-      'id',
-      'index',
-      'isDefault',
-      'autoscaleEnabled',
-    ];
-
-    const rules = {
-      'name': 'required|string',
-      'cpuRequest': 'required|numeric',
-      'cpuLimit': 'required|numeric',
-      'memoryRequest': 'required|numeric',
-      'memoryLimit': 'required|numeric',
-      'terminationGracePeriod': 'required|string',
-    };
-
-    const labels = {
-      'name': 'Name',
-      'cpuRequest': 'CPU Request (millicpus)',
-      'cpuLimit': 'CPU Limit (millicpus)',
-      'memoryRequest': 'Memory Request (mb)',
-      'memoryLimit': 'Memory Limit (mb)',
-      'terminationGracePeriod': 'Timeout (seconds)',
-      'isDefault': 'Default profile that will be applied to new services.',
-    };
-
-    const initials = formInitials;
-
-    const types = {
-      'isDefault': 'checkbox',
-    };
-
-    const extra = {};
-
-    const hooks = {};
-
-    const plugins = { dvr: validatorjs };
-
-    return new MobxReactForm({ fields, rules, labels, initials, extra, hooks, types }, { plugins })
-  }
-
-  componentWillMount(){
-    this.form = this.initServiceSpecsForm()
   }
 
   isSelected(id){
@@ -202,18 +148,6 @@ export default class ServiceSpecs extends React.Component {
   }
 
   handleClick(e, serviceSpec, index){
-    this.form = this.initServiceSpecsForm({
-      name: serviceSpec.name,
-      cpuRequest: serviceSpec.cpuRequest,
-      cpuLimit: serviceSpec.cpuLimit,
-      memoryRequest: serviceSpec.memoryRequest,
-      memoryLimit: serviceSpec.memoryLimit,
-      terminationGracePeriod: serviceSpec.terminationGracePeriod,
-      isDefault: serviceSpec.isDefault,
-      id: serviceSpec.id,
-      index: index,
-    })
-
     this.setState({ currentServiceSpec: serviceSpec, selected: serviceSpec.id, drawerOpen: true })
   }
 
@@ -243,34 +177,58 @@ export default class ServiceSpecs extends React.Component {
     }
   }
 
-  handleDeleteServiceSpec() {
-    this.props.deleteServiceSpec({
-      variables: this.form.values(),
-    }).then(({ data }) => {
-      this.props.data.refetch()
-      this.closeDrawer(true)
-    });
-  }
-
   openDrawer(){
     this.form = this.initServiceSpecsForm()
     this.setState({ drawerOpen: true })
   }
 
   closeDrawer(force = false){
-    if(!force && this.form.isDirty){
+    if(!force){
       this.setState({ dirtyFormDialogOpen: true })
     } else {
       this.setState({ drawerOpen: false, dirtyFormDialogOpen: false, dialogOpen: false })
     }
   }
 
-  onError(){
-    // todo
+  handleUpdateServiceSpec(requestPayload = {}) {
+    this.props.updateServiceSpec({
+      variables: requestPayload,
+    }).then(({data}) => {
+      this.props.data.refetch();
+      this.props.store.app.setSnackbar({
+        msg: requestPayload['name'] + " has been updated",
+        open: true,
+      })
+      this.closeDrawer(true)
+    });
   }
 
-  onSubmit(e){
-    this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
+  handleCreateServiceSpec(requestPayload = {}) {
+    this.props.createServiceSpec({
+      variables: requestPayload,
+    }).then(({data}) => {
+      this.props.data.refetch()
+      this.props.store.app.setSnackbar({
+        msg: requestPayload['name'] + " has been created",
+        open: true,
+      })
+      this.closeDrawer(true)
+    });
+}
+
+  handleDeleteServiceSpec(requestPayload = {}) {
+    this.setState({ dialogOpen: true, serviceSpecFormValues: requestPayload })
+  }
+
+  confirmDeleteServiceSpec(){
+    if(!!this.state.currentServiceSpec){
+      this.props.deleteServiceSpec({
+        variables: this.state.currentServiceSpec,
+      }).then(({ data }) => {
+        this.props.data.refetch()
+        this.closeDrawer(true)
+      });
+    }
   }
 
   render() {
@@ -281,8 +239,6 @@ export default class ServiceSpecs extends React.Component {
         <Loading />
       );
     }
-
-    console.log(serviceSpecs)
 
     return (
       <div className={styles.root}>
@@ -368,63 +324,21 @@ export default class ServiceSpecs extends React.Component {
                   </Typography>
                 </Toolbar>
               </AppBar>
-              <form onSubmit={(e) => e.preventDefault()}>
-                <Grid container spacing={24} className={styles.grid}>
-                  <Grid item xs={12}>
-                    <InputField field={this.form.$('name')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <InputField field={this.form.$('cpuRequest')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <InputField field={this.form.$('cpuLimit')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <InputField field={this.form.$('memoryRequest')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <InputField field={this.form.$('memoryLimit')} fullWidth={true} />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <InputField field={this.form.$('terminationGracePeriod')} fullWidth={true} />
-                  </Grid>
-                  {this.state.currentServiceSpec.service === null &&
-                    <Grid item xs={12}>
-                      <CheckboxField field={this.form.$('isDefault')} fullWidth={true} />
-                    </Grid>
-                  }
-                  <Grid item xs={12}>
-                    <Button color="primary"
-                        className={styles.buttonSpacing}
-                        disabled={this.state.saving}
-                        type="submit"
-                        variant="raised"
-                        onClick={this.onSubmit.bind(this)}>
-                        Save
-                    </Button>
-
-                    {this.form.values()['id'] !== '' &&
-                      <Button
-                        disabled={this.state.saving}
-                        style={{ color: "red" }}
-                        onClick={()=>this.setState({ dialogOpen: true })}>
-                        Delete
-                      </Button>
-                    }
-                    <Button
-                      color="primary"
-                      onClick={this.closeDrawer.bind(this)}>
-                      Cancel
-                    </Button>
-                  </Grid>
-                  {this.state.currentServiceSpec.service != null &&
-                  <Grid container spacing={24}>
-                      <Grid item xs={12} style={{ padding: 25 }}>
+              {this.state.currentServiceSpec.service != null &&
+                <div>
+                  <ServiceSpecForm 
+                    delete={this.handleDeleteServiceSpec.bind(this)} 
+                    create={this.handleCreateServiceSpec.bind(this)}
+                    update={this.handleUpdateServiceSpec.bind(this)}
+                    serviceSpec={this.state.currentServiceSpec} 
+                    cancel={this.closeDrawer.bind(this)} />
+                  <Grid container spacing={24} className={styles.grid}>
+                      <Grid item xs={12}>
                         <Link to={"/projects/" + this.state.currentServiceSpec.service.project.slug + "/" + this.state.currentServiceSpec.service.environment.key + "/services?serviceID=" + this.state.currentServiceSpec.service.id}>
                           <Typography variant="body2">Edit Service</Typography>
                         </Link>
                       </Grid>
-                      <Grid item xs={12} style={{ padding: 25 }}>
+                      <Grid item xs={12}>
                         <Card style={{ padding: 25 }}>
                           <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
                           <Grid container spacing={24}>
@@ -456,43 +370,26 @@ export default class ServiceSpecs extends React.Component {
                         </Card>
                       </Grid>
                     </Grid>
+                  </div>
                   }
-                </Grid>
-              </form>
             </div>
         </Drawer>
 
-        {/* Used for confirmation of escaping panel if dirty form */}
-        <Dialog open={this.state.dirtyFormDialogOpen}>
-          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {"You'll lose any progress made so far."}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {serviceSpecs[this.form.values()['index']] != null &&
-          <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-            <DialogTitle>{"Ae you sure you want to delete " + serviceSpecs[this.form.values()['index']].name + "?"}</DialogTitle>
+        {!!this.state.currentServiceSpec.id &&
+          <Dialog open={this.state.dialogOpen}>
+            <DialogTitle>
+              {"Ae you sure you want to delete " + this.state.currentServiceSpec.name + "?"}
+            </DialogTitle>
             <DialogContent>
               <DialogContentText>
                 This will delete the service spec.
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+              <Button onClick={() => this.setState({ dialogOpen: false })} color="primary">
                 Cancel
               </Button>
-              <Button onClick={this.handleDeleteServiceSpec.bind(this)} style={{ color: "red" }}>
+              <Button onClick={this.confirmDeleteServiceSpec.bind(this)} style={{ color: "red" }}>
                 Confirm
               </Button>
             </DialogActions>
