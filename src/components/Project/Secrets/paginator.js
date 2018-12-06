@@ -295,7 +295,7 @@ export default class SecretsPaginator extends React.Component {
       return true
     }
 
-    if (this.props != nextProps) {
+    if (this.props !== nextProps) {
       return true
     }
 
