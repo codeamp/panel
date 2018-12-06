@@ -148,7 +148,6 @@ export default class ServiceSpecs extends React.Component {
   }
 
   handleClick(e, serviceSpec, index){
-    console.log(serviceSpec)
     this.setState({ currentServiceSpec: serviceSpec, selected: serviceSpec.id, drawerOpen: true })
   }
 
@@ -369,8 +368,8 @@ export default class ServiceSpecs extends React.Component {
                           </Grid>
                         </Grid>
                       </Card>
+                      </Grid>
                     </Grid>
-                  </Grid>
                   }
                 </div>
             </div>

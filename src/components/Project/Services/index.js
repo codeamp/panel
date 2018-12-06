@@ -41,6 +41,7 @@ import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
 import Tooltip from 'components/Utils/Tooltip';
+import ServiceSpecForm from 'components/Utils/ServiceSpecForm';
 
 import OneShotIcon from '@material-ui/icons/LooksOne';
 import GeneralIcon from '@material-ui/icons/Autorenew';
@@ -860,6 +861,22 @@ export default class Services extends React.Component {
 
                           <ExpansionPanelDetails>
                             <Grid container spacing={8} direction={'row'}>
+                              <Grid item xs={12}>
+                                <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showDeploymentStrategySettings} onChange={this.handleToggleDeploymentStrategySettings()}>
+                                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
+                                    <Typography>
+                                      Service Spec
+                                    </Typography>
+                                  </ExpansionPanelSummary>
+                                  <Divider/>
+                                  <ExpansionPanelDetails>
+                                    <Grid item xs={12} className={styles.settingsPanelOpen}>
+                                      <ServiceSpecForm />
+                                    </Grid>
+                                  </ExpansionPanelDetails>
+                                </ExpansionPanel>
+                              </Grid>
+
                               <Grid item xs={12}>
                                 <ExpansionPanel className={styles.advancedSettingsExpansionPanel} expanded={this.state.showDeploymentStrategySettings} onChange={this.handleToggleDeploymentStrategySettings()}>
                                   <ExpansionPanelSummary expandIcon={<ExpandMoreIcon/>}>
