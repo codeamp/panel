@@ -125,6 +125,12 @@ class ReleaseView extends React.Component {
     }
   }
 
+  componentWillUnmount(){
+    if (this.timerInterval !== null){
+      clearInterval(this.timerInterval)
+    }
+  }
+
   renderReleaseExtensionStatuses() { 
     const { release, extensions } = this.props;
     // filter out 'once' types
@@ -383,7 +389,7 @@ class ReleaseView extends React.Component {
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
+      environmentID: props.environment.id,
     },
   })
 })

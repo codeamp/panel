@@ -87,6 +87,7 @@ export default class Secrets extends React.Component {
           handleOutOfBounds={this.handleOutOfBounds.bind(this)}
           history={this.props.history}
           match={this.props.match}
+          environment={this.props.environment}
           {...this.state}
           /> 
     )

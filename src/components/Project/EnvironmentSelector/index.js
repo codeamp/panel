@@ -25,14 +25,37 @@ class EnvironmentSelector extends React.Component {
   }
 
   componentWillMount(){
+    this.updateProjectFromProps(this.props)
+  }
+
+  updateProjectFromProps(props) {
     let projectsMap = {}
-    this.props.projects.entries.forEach((project) => {
+    props.projects.entries.forEach((project) => {
       projectsMap[project.slug] = project
     })
+    
+    let project = projectsMap[props.match.params.slug]
     this.setState({
       projectsMap: projectsMap,
-      project: projectsMap[this.props.match.params.slug]
+      project: project,
+      environment: this.getEnvironmentFromProps(props, project)
     })
+  }
+
+  getEnvironmentFromProps(props, project) {
+    let currentEnv = props.store.app.currentEnvironment
+    let environment = null
+
+    // Iterate over all of the environments we received from the query
+    project.environments.forEach((env) => {
+      // Either the slug matches an env outright, OR we have a valid current env AND it matches the slug
+      if(env.key === props.match.params.environment || env.key === currentEnv.key){
+        environment = env
+        return 
+      }
+    })
+
+    return environment
   }
 
   handleEnvironmentSelect(environment) {
@@ -73,26 +96,17 @@ class EnvironmentSelector extends React.Component {
     );
   }
 
+  componentWillReceiveProps(nextProps){
+    this.updateProjectFromProps(nextProps)
+  }
+
   render() {
     const { socket } = this.props;
-    const { project } = this.state;
+    const { project, environment } = this.state;
   
     if(!project) {
       return (<DoesNotExist404/>)
     }
-
-    let environments = project.environments
-
-    let currentEnv = this.props.store.app.currentEnvironment
-    let environment = null
-
-    // Iterate over all of the environments we received from the query
-    environments.forEach((env) => {
-      if(env.key === this.props.match.params.environment || currentEnv.key === env.key){
-        environment = env
-        return 
-      }
-    })
 
     // If we didn't find an environment name because it wasn't provided,
     // or because it was wrong ("dev" vs "development" for example) then 
