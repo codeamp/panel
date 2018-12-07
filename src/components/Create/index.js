@@ -156,6 +156,7 @@ export default class Create extends React.Component {
       let obj = JSON.parse(JSON.stringify(error))
       if(Object.keys(obj).length > 0 && obj.constructor === Object){
         self.setState({ urlIsValid: false,  msg: obj.graphQLErrors[0].message })
+        this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
       }
     });
   }

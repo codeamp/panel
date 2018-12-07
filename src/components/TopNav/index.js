@@ -136,12 +136,7 @@ class TopNav extends React.Component {
   }
 
   onSuggestionItemClick(suggestion){
-    let currentEnv = this.props.store.app.currentEnvironment
-    if (currentEnv.key === null) {
-      currentEnv = "environments"
-    }
-
-    this.props.history.push('/projects/'+suggestion.project.slug+"/"+currentEnv.key)      
+    this.props.history.push('/projects/'+suggestion.project.slug)
     this.hideSuggestions(true)
     this.setState({ projectQuery: "" })
   }
@@ -165,6 +160,14 @@ class TopNav extends React.Component {
       })
       this.setState({ projects: projects })
     }
+  }
+
+  onMouseEnter(index){
+    this.setState({ hovering: true, selectedSuggestionIndex: index })
+  }
+
+  onMouseLeave(index){
+    this.setState({ hovering: false, selectedSuggestionIndex: null})
   }
 
   render() {
@@ -206,19 +209,22 @@ class TopNav extends React.Component {
                     onChange={(e)=>this.onChange(e)}
                     
                   />
-                  <div tabIndex="0" className={this.state.showSuggestions ? styles.suggestions : styles.showNone}>
-                    {this.state.projects.map(function(project, index){
+                  <div tabIndex="0" className={self.state.showSuggestions ? styles.suggestions : styles.showNone}>
+                    {self.state.projects.map(function(project, index){
                       return (
                         <Link 
                         key={"link-" + project.id}
-                        to={"/projects/" + project.project.slug + "/environments"}
+                        to={"/projects/" + project.project.slug}
                         onClick = {(e)=>self.hideSuggestions(true)}>
                           <Paper
                             key={project.id}
-                            className={styles.suggestion}
+                            className={index === self.state.selectedSuggestionIndex ? styles.selectedSuggestion : styles.suggestion}
                             square={true}>
-                            <ListItem>                  
-                              <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
+                            <ListItem
+                              onMouseEnter={() => self.onMouseEnter(index)}
+                              onMouseLeave={() => self.onMouseLeave(index)}
+                              onClick={()=>self.onSuggestionItemClick(project)}>                  
+                                <ListItemText primary={project.label} style={{"userSelect":"none"}}/>                            
                             </ListItem>
                           </Paper>
                         </Link>

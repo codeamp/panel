@@ -37,10 +37,6 @@
   padding: 10px 12px;
 }
 
-.suggestion:hover{
-  background-color: lightsteelblue;
-}
-
 .selectedSuggestion {
   background-color: lightsteelblue;
 }

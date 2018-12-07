@@ -94,7 +94,7 @@ import ExtensionNotificationIcon from '@material-ui/icons/NotificationsActive';
   options: (props) => ({
     variables: {
       slug: props.match.params.slug,
-      environmentID: props.store.app.currentEnvironment.id,
+      environmentID: props.environment.id,
     }
   })
 })
