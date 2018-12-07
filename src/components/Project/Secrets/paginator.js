@@ -355,7 +355,7 @@ export default class SecretsPaginator extends React.Component {
   openDrawer(project, secretIdx){
     let secretID = null
     if (project && secretIdx) {
-      secretID = project.secrets.entries[idx].id
+      secretID = project.secrets.entries[secretIdx].id
     }
     this.setState({
       addEnvVarMenuOpen: false,
