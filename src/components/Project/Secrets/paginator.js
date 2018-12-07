@@ -282,9 +282,7 @@ export default class SecretsPaginator extends React.Component {
 
   onClick(idx){   
     const { project } = this.props.data
-
-    this.setState({selectedSecretID: project.secrets.entries[idx].id})
-    this.openDrawer(project)
+    this.openDrawer(project, idx)
   }
 
   componentWillMount(){
@@ -354,8 +352,17 @@ export default class SecretsPaginator extends React.Component {
     }
   }
 
-  openDrawer(){
-    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
+  openDrawer(project, secretIdx){
+    let secretID = null
+    if (project && secretIdx) {
+      secretID = project.secrets.entries[idx].id
+    }
+    this.setState({
+      addEnvVarMenuOpen: false,
+      drawerOpen: true,
+      saving: false,
+      selectedSecretID: secretID
+    })
   }
 
   closeDrawer(force = false){
@@ -363,7 +370,15 @@ export default class SecretsPaginator extends React.Component {
       this.setState({ dirtyFormDialogOpen: true })
     } else {
       this.form = this.initProjectSecretsForm()
-      this.setState({ selectedSecret: null, selectedSecretID: null, drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })
+      this.setState({
+        selectedSecret: null,
+        selectedSecretID: null,
+        drawerOpen: false,
+        addEnvVarMenuOpen: false,
+        saving: false,
+        dialogOpen: false,
+        dirtyFormDialogOpen: false
+      })
     }
   } 
 
