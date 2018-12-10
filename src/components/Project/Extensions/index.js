@@ -156,16 +156,30 @@ export default class ProjectExtensions extends React.Component {
       dialogOpen: false,
     }
 
-    this.setupSocketHandlers();    
+    this.socketHandler = this.socketHandler.bind(this);
+  }
+
+  componentDidMount() {
+    this.setupSocketHandlers()
+  }
+
+  componentWillUnmount() {
+    this.teardownSocketHandlers()
   }
   
   setupSocketHandlers(){
     const { socket, match } = this.props;
-    
-    socket.on(match.url.substring(1, match.url.length), (data) => {
-      this.props.data.refetch()
-    });    
+    socket.on(match.url.substring(1, match.url.length), this.socketHandler);
   }  
+
+  socketHandler() {
+    this.props.data.refetch()
+  }
+
+  teardownSocketHandlers() {
+    const { socket, match } = this.props;
+    socket.removeListener(match.url.substring(1, match.url.length), this.socketHandler);
+  }
 
   async openExtensionDrawer(e, extension){
     let component = null

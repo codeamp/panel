@@ -425,22 +425,34 @@ export default class Releases extends React.Component {
       openConfirmRollbackModal: false,
       drawerRelease: null,
     }
-    this.props.data.refetch()
 
-    const { socket, match } = this.props;
-    
-    console.log("registering event for: " + match.url.substring(1, match.url.length) + '/releases')
-    socket.on(match.url.substring(1, match.url.length) + '/releases', (data) => {
-      console.log("received release event")
-      this.props.data.refetch()
-    });    
-    
-    console.log("registering event for: " + match.url.substring(1, match.url.length) + '/reCompleted')
-    socket.on(match.url.substring(1, match.url.length) + '/releases/reCompleted', (data) => {
-      console.log("received release extension completed event")
-      this.props.data.refetch()
-    });        
+    this.initMobxForm();
+    this.socketHandler = this.socketHandler.bind(this);
+  }
 
+  componentDidMount() {
+    this.setupSocketHandlers()
+  }
+
+  componentWillUnmount() {
+    this.teardownSocketHandlers()
+  }
+
+  static getDerivedStateFromProps(props, currentState) {
+    if (currentState.drawerOpen && currentState.drawerRelease !== null) {
+      for (let release of props.data.project.releases.entries) {
+        if (release.id === currentState.drawerRelease.id) {
+          if (JSON.stringify(release) !== JSON.stringify(currentState.drawerRelease)) {
+            currentState.drawerRelease = release
+            return currentState
+          }
+        }
+      }
+    }
+    return null
+  }
+
+  initMobxForm() {
     const fields = [
       'id',
       'index',
@@ -458,18 +470,20 @@ export default class Releases extends React.Component {
     this.form = new MobxReactForm({ fields, rules, disabled, labels, initials, extra, hooks, types, keys }, { plugins });
   }
 
-  static getDerivedStateFromProps(props, currentState) {
-    if (currentState.drawerOpen && currentState.drawerRelease !== null) {
-      for (let release of props.data.project.releases.entries) {
-        if (release.id === currentState.drawerRelease.id) {
-          if (JSON.stringify(release) !== JSON.stringify(currentState.drawerRelease)) {
-            currentState.drawerRelease = release
-            return currentState
-          }
-        }
-      }
-    }
-    return null
+  socketHandler() {
+    this.props.data.refetch()
+  }
+
+  setupSocketHandlers() {
+    const { socket, match } = this.props;
+    socket.on(match.url.substring(1, match.url.length) + '/releases', this.socketHandler);
+    socket.on(match.url.substring(1, match.url.length) + '/releases/reCompleted', this.socketHandler);
+  }
+
+  teardownSocketHandlers() {
+    const { socket, match } = this.props;
+    socket.removeListener(match.url.substring(1, match.url.length) + '/releases', this.socketHandler);
+    socket.removeListener(match.url.substring(1, match.url.length) + '/releases/reCompleted', this.socketHandler);
   }
 
   renderReleaseExtensionTable() {
