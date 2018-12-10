@@ -429,11 +429,15 @@ export default class Releases extends React.Component {
 
     const { socket, match } = this.props;
     
-    socket.on(match.url.substring(1, match.url.length), (data) => {
+    console.log("registering event for: " + match.url.substring(1, match.url.length) + '/releases')
+    socket.on(match.url.substring(1, match.url.length) + '/releases', (data) => {
+      console.log("received release event")
       this.props.data.refetch()
     });    
     
-    socket.on(match.url.substring(1, match.url.length) + '/reCompleted', (data) => {
+    console.log("registering event for: " + match.url.substring(1, match.url.length) + '/reCompleted')
+    socket.on(match.url.substring(1, match.url.length) + '/releases/reCompleted', (data) => {
+      console.log("received release extension completed event")
       this.props.data.refetch()
     });        
 
