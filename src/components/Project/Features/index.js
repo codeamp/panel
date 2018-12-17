@@ -115,8 +115,9 @@ export default class Features extends React.Component {
       syncingCommits: false,
     };
 
-    this.setFilterAndRefetchFeatures.bind(this);
-    this.setupSocketHandlers();
+    // Bind socketHandler to THIS so when we pass it to the socket
+    // lib and refernece 'this' its still 'us'
+    this.socketHandler = this.socketHandler.bind(this);
   }
 
   handleChange = panel => (event, expanded) => {
@@ -124,6 +125,16 @@ export default class Features extends React.Component {
       expanded: expanded ? panel : false,
     });
   };
+
+  componentDidMount(){
+    const { match } = this.props;
+    this.socketHandlerEventName = match.url.substring(1, match.url.length) + '/features'
+    this.setupSocketHandlers();
+  }
+
+  componentWillUnmount(){
+    this.teardownSocketHandlers();
+  }
 
   copyGitHash(featureHash){
     this.props.store.app.setSnackbar({msg: "Git hash copied: " + featureHash, open: true });
@@ -248,11 +259,18 @@ export default class Features extends React.Component {
     this.props.store.app.setFeatures({ showDeployed: showDeployed })
   }
 
+  socketHandler(data) {
+    this.props.data.refetch()
+  }
+
   setupSocketHandlers(){
-    const { socket, match } = this.props;
-    socket.on(match.url.substring(1, match.url.length) + '/features', (data) => {
-      this.props.data.refetch()
-    });    
+    const { socket } = this.props;
+    socket.on(this.socketHandlerEventName, this.socketHandler);    
+  }
+
+  teardownSocketHandlers(){
+    const { socket } = this.props;
+    socket.removeListener(this.socketHandlerEventName, this.socketHandler)
   }
 
   render() {
