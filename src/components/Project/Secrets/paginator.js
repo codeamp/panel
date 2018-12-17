@@ -20,7 +20,7 @@ import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-import { graphql } from 'react-apollo';
+import { graphql, Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
@@ -43,6 +43,31 @@ import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 import Paper from 'material-ui/Paper';
 
+const GET_SECRET = gql`
+  query Secret($id: String!) {
+    secret(id: $id) {
+      id
+      key
+      value
+      isSecret
+      user {
+        id
+        email
+      }
+      versions {
+        value
+        created
+        user {
+          id
+          email
+        }
+      }
+      type
+      created
+    }
+  } 
+`
+
 @inject("store") @observer
 @graphql(gql`
 query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
@@ -54,19 +79,10 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
       entries {
         id
         key
-        value
         isSecret
         user {
           id
           email
-        }
-        versions {
-          value
-          created
-          user {
-            id
-            email
-          }
         }
         type
         created
@@ -86,7 +102,6 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
     }
   })
 })
-
 
 @graphql(gql`
   mutation CreateSecret ($key: String!, $value: String!, $projectID: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
@@ -178,6 +193,8 @@ export default class SecretsPaginator extends React.Component {
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
+      selectedSecret: null,
+      selectedSecretID: null,
       dialogOpen: false,
       dirtyFormDialogOpen: false,
       limit: props.limit || this.props.store.app.paginator.limit || 7,
@@ -254,7 +271,7 @@ export default class SecretsPaginator extends React.Component {
   }
 
   handleAddClick(event){
-    this.setState({ addEnvVarMenuOpen: true, anchorEl: event.currentTarget });
+    this.setState({ addEnvVarMenuOpen: true });
   }
 
   onSubmit(e) {
@@ -265,30 +282,22 @@ export default class SecretsPaginator extends React.Component {
 
   onClick(idx){   
     const { project } = this.props.data
-    let secret = project.secrets.entries[idx]
-
-    if(secret !== null){
-      // find this
-      this.form = this.initProjectSecretsForm({
-        'key': secret.key,
-        'value': secret.value,
-        'type': secret.type,
-        'id': secret.id,
-        'index': idx,
-        'isSecret': secret.isSecret,
-        'projectID': project.id,
-        'environmentID': this.props.store.app.currentEnvironment.id,
-        'scope': "project",
-      })
-      this.form.$('key').set('disabled', true)
-      this.form.$('isSecret').set('disabled', true)
-
-      this.openDrawer(project)
-    }
+    this.openDrawer(project, idx)
   }
 
   componentWillMount(){
     this.form = this.initProjectSecretsForm()
+  }
+  shouldComponentUpdate(nextProps, nextState){
+    if (JSON.stringify(this.state) !== JSON.stringify(nextState)) {
+      return true
+    }
+
+    if (this.props !== nextProps) {
+      return true
+    }
+
+    return false
   }
 
   handleDeleteEnvVar(){
@@ -305,8 +314,8 @@ export default class SecretsPaginator extends React.Component {
   }
 
 
-  onClickVersion(versionIdx) {
-    this.form.$('value').set(this.props.data.project.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
+  onClickVersion(versions, idx) {
+    this.form.$('value').set(versions[idx].value)
   }
 
   onError(form){
@@ -343,15 +352,33 @@ export default class SecretsPaginator extends React.Component {
     }
   }
 
-  openDrawer(){
-    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false })
+  openDrawer(project, secretIdx){
+    let secretID = null
+    if (project && secretIdx) {
+      secretID = project.secrets.entries[secretIdx].id
+    }
+    this.setState({
+      addEnvVarMenuOpen: false,
+      drawerOpen: true,
+      saving: false,
+      selectedSecretID: secretID
+    })
   }
 
   closeDrawer(force = false){
     if(!force && this.form.isDirty){
       this.setState({ dirtyFormDialogOpen: true })
     } else {
-      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })
+      this.form = this.initProjectSecretsForm()
+      this.setState({
+        selectedSecret: null,
+        selectedSecretID: null,
+        drawerOpen: false,
+        addEnvVarMenuOpen: false,
+        saving: false,
+        dialogOpen: false,
+        dirtyFormDialogOpen: false
+      })
     }
   } 
 
@@ -368,6 +395,7 @@ export default class SecretsPaginator extends React.Component {
     const { page, limit } = this.props;
     const { loading, project } = this.props.data
 
+    let self = this
     if(loading){
       return (<Loading />)
     }
@@ -379,7 +407,7 @@ export default class SecretsPaginator extends React.Component {
             rows={project.secrets ? project.secrets.entries : []}
             handleBackButtonClick={this.handleBackButtonClick}
             handleNextButtonClick={this.handleNextButtonClick}
-            onClick={this.onClick}          
+            onClick={this.onClick}
             paginator={{
               count: project.secrets.count,
               page: page,
@@ -417,7 +445,7 @@ export default class SecretsPaginator extends React.Component {
               label: "Created",
               getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},
             }]}
-          />     
+          />
 
         <div className={styles.addButton}>
           <Manager>
@@ -448,7 +476,29 @@ export default class SecretsPaginator extends React.Component {
           </Manager>
         </div>
 
-        <Drawer
+        {this.state.drawerOpen &&
+        <Query query={GET_SECRET} variables={{id: this.state.selectedSecretID}}>
+          {({ loading, error, data }) => {
+              if (loading) return <div></div>
+              if (error) return `Error! ${error.message}`
+              let secret = data.secret
+              if(secret.value !== "" && !self.form.isDirty && !this.state.saving){
+                this.form = this.initProjectSecretsForm({
+                  'key': secret.key,
+                  'value': secret.value,
+                  'type': secret.type,
+                  'id': secret.id,
+                  'index': this.state.selectedSecretID,
+                  'isSecret': secret.isSecret,
+                  'projectID': project.id,
+                  'environmentID': this.props.store.app.currentEnvironment.id,
+                  'scope': "project",
+                })
+                this.form.$('key').set('disabled', true)
+                this.form.$('isSecret').set('disabled', true)
+              }
+   
+        return (<div><Drawer
             anchor="right"
             classes={{
             paper: styles.list,
@@ -502,10 +552,10 @@ export default class SecretsPaginator extends React.Component {
                       </Grid>
                     }
 
-                    {this.form.values()['index'] >= 0 && project && project.secrets.entries[this.form.values()['index']] &&
+                    {
                       <EnvVarVersionHistory
-                        versions={project.secrets.entries[this.form.values()['index']].versions}
-                        onClickVersion={this.onClickVersion.bind(this)}
+                        versions={data.secret.versions}
+                        onClickVersion={this.onClickVersion.bind(this, data.secret.versions)}
                       />
                     }
 
@@ -538,46 +588,47 @@ export default class SecretsPaginator extends React.Component {
                 </div>
               </form>
             </div>
-        </Drawer>
-
+          </Drawer>
         {/* Used for confirmation of escaping panel if dirty form */}
-        <Dialog open={this.state.dirtyFormDialogOpen}>
-          <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {"You'll lose any progress made so far."}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+          <Dialog open={this.state.dirtyFormDialogOpen}>
+            <DialogTitle>{"Are you sure you want to escape?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"You'll lose any progress made so far."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dirtyFormDialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={() => {this.closeDrawer(true)}} style={{ color: "red" }}>
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-        {project && project.secrets.entries.length > 0 && project.secrets.entries[this.form.values()['index']] &&
-            <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
-              <DialogTitle>{"Are you sure you want to delete " + project.secrets.entries[this.form.values()['index']].key + "?"}</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  {"This will delete the environment variable and all its versions."}
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                  Cancel
-                </Button>
-                <Button onClick={this.handleDeleteEnvVar.bind(this)} style={{ color: "red" }}>
-                  Confirm
-                </Button>
-              </DialogActions>
-            </Dialog>
+              <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+                <DialogTitle>{"Are you sure you want to delete " + secret.key + "?"}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    {"This will delete the environment variable and all its versions."}
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                    Cancel
+                  </Button>
+                  <Button onClick={this.handleDeleteEnvVar.bind(this)} style={{ color: "red" }}>
+                    Confirm
+                  </Button>
+                </DialogActions>
+              </Dialog>
+          {/* } */}
+        </div> )
+        }}
+        </Query>
         }
       </div>
     )
   }
 }
-
