@@ -42,6 +42,7 @@ import moment from 'moment';
 import 'moment-timezone';
 import Tooltip from 'components/Utils/Tooltip';
 import ServiceSpecForm from 'components/Utils/ServiceSpecForm';
+import SuggestedServiceSpec from 'components/Utils/SuggestedServiceSpec';
 
 import OneShotIcon from '@material-ui/icons/LooksOne';
 import GeneralIcon from '@material-ui/icons/Autorenew';
@@ -70,6 +71,13 @@ query Project($slug: String, $environmentID: String) {
         livenessProbe
         preStopHook
         autoscaleEnabled
+        suggestedServiceSpec {
+          id
+          cpuRequest
+          cpuLimit
+          memoryRequest
+          memoryLimit
+        }        
         serviceSpec {
           id
           cpuRequest
@@ -83,13 +91,6 @@ query Project($slug: String, $environmentID: String) {
             project {
               id
               slug
-            }
-            suggestedServiceSpec {
-              id
-              cpuRequest
-              cpuLimit
-              memoryRequest
-              memoryLimit
             }
             environment {
               id
@@ -970,6 +971,9 @@ export default class Services extends React.Component {
                                           form={this.serviceSpecForm}
                                           serviceSpec={this.state.currentService.serviceSpec}
                                           disableCancel={true}
+                                        />
+                                        <SuggestedServiceSpec
+                                          suggestedServiceSpec={this.state.currentService.suggestedServiceSpec}
                                         />
                                       </Grid>
                                     </ExpansionPanelDetails>

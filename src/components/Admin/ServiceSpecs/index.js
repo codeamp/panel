@@ -20,6 +20,7 @@ import AddIcon from '@material-ui/icons/Add';
 import DefaultIcon from '@material-ui/icons/Done';
 import Loading from 'components/Utils/Loading';
 import ServiceSpecForm from 'components/Utils/ServiceSpecForm';
+import SuggestedServiceSpec from 'components/Utils/SuggestedServiceSpec';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
@@ -163,14 +164,6 @@ export default class ServiceSpecs extends React.Component {
   onSubmit(e){
     this.form.onSubmit(e, { onSuccess: this.onSuccess.bind(this), onError: this.onError.bind(this) })
   }
-
-  onSuccess(form){
-    if(this.form.values()['id'] === ''){
-      this.props.create(form.values())
-    } else {
-      this.props.update(form.values())
-    }
-  }  
 
   initServiceSpecsForm(formInitials = {}) {
     const fields = [
@@ -402,37 +395,11 @@ export default class ServiceSpecs extends React.Component {
                       </Link>
                     </Grid>
                     <Grid item xs={12} className={styles.grid}>
-                      <Card style={{ padding: 25 }}>
-                        <Typography variant="title" style={{ marginBottom: 15 }}>Suggested Resource Specification</Typography>
-                        <Grid container spacing={24}>
-                          <Grid item xs={12}>
-                            <Typography variant="subheading">CPU</Typography>
-                            <Typography variant="body2">(millicpus)</Typography>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuRequest} label={"Request"} disabled/>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.cpuLimit} label={"Limit"} disabled />
-                          </Grid>
-                        </Grid>
-                        <br/>
-                        {/* <Divider style={{ marginTop: 15, marginBottom: 15 }}/> */}
-                        <Grid container spacing={24} className={styles.grid}>
-                          <Grid item xs={12}>
-                            <Typography variant="subheading">Memory</Typography>
-                            <Typography variant="body2">(mb)</Typography>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryRequest} label={"Request"} disabled/>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <TextField value={this.state.currentServiceSpec.service.suggestedServiceSpec.memoryLimit} label={"Limit"} disabled />
-                          </Grid>
-                        </Grid>
-                      </Card>
-                      </Grid>
+                      <SuggestedServiceSpec 
+                        suggestedServiceSpec={this.state.currentServiceSpec.service.suggestedServiceSpec}
+                      />
                     </Grid>
+                  </Grid>
                   }
                 </div>
             </div>
