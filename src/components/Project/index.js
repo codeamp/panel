@@ -53,18 +53,18 @@ import Typography from 'material-ui/Typography';
            created
          }
       }
-      releases {
-        entries{
-          id
-          state
-        }
-      }
-      features(params: { limit: 25}){
-        entries {
-          id
-          created
-        }
-      }
+      # releases {
+      #   entries{
+      #     id
+      #     state
+      #   }
+      # }
+      # features(params: { limit: 25}){
+      #   entries {
+      #     id
+      #     created
+      #   }
+      # }
       environments {
         id
         key
@@ -161,16 +161,16 @@ class Project extends React.Component {
     }
 
     // count deployable features by comparing currentRelease created and feature created
-    let deployableFeatures = project.features.entries.length
-    if(project.currentRelease){
-      deployableFeatures = project.features.entries.filter(function(feature){
-        return (new Date(feature.created).getTime() > new Date(project.currentRelease.headFeature.created).getTime())
-      }).length
-    } 
+    // let deployableFeatures = project.features.entries.length
+    // if(project.currentRelease){
+    //   deployableFeatures = project.features.entries.filter(function(feature){
+    //     return (new Date(feature.created).getTime() > new Date(project.currentRelease.headFeature.created).getTime())
+    //   }).length
+    // } 
 
-    let releasesQueued = project.releases.entries.filter(function(release){
-      return ["waiting", "running"].includes(release.state)
-    }).length
+    // let releasesQueued = project.releases.entries.filter(function(release){
+    //   return ["waiting", "running"].includes(release.state)
+    // }).length
 
     this.props.store.app.leftNavItems = [
         {
@@ -178,14 +178,14 @@ class Project extends React.Component {
           icon: <FeaturesIcon />,
           name: "Features",
           slug: `${props.match.url}/features`,
-          count: deployableFeatures,
+          // count: deployableFeatures,
         },
         {
           key: "20",
           icon: <ReleasesIcon />,
           name: "Releases",
           slug: `${props.match.url}/releases`,
-          count: releasesQueued,
+          // count: releasesQueued,
           badgeColor: "secondary",
         },
         {
