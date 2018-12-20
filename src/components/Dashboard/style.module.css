@@ -19,13 +19,15 @@
   color: white;
   user-select: none;
   text-shadow: 2px 2px 2px #444444;
+  font-family: 'Roboto', 'Verdana', 'Trebuchet MS', 'sans-serif';
 }
 
 .title {
-  color: #faf1f1;
+  color: #ffffff;
   font-weight: 500;
   user-select: none;
   text-shadow: 2px 2px 2px #444444;
+  font-family: 'Roboto', 'Verdana', 'Trebuchet MS', 'sans-serif';
 }
 
 .bookmarks {
