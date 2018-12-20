@@ -152,6 +152,11 @@ export default class Features extends React.Component {
     }).then(({data}) => {
       this.props.data.refetch()
       this.props.history.push(`/projects/${this.props.match.params.slug}/${this.props.match.params.environment}/releases`)
+    }).catch(error => {
+      let obj = JSON.parse(JSON.stringify(error))
+      if(Object.keys(obj).length > 0 && obj.constructor === Object){
+        this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+      }
     });
   }
 

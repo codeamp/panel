@@ -205,7 +205,7 @@ class ReleaseView extends React.Component {
     let state
     switch(release.state) {  
       case "waiting":
-        state = (<CircularProgress className={styles.progress} />)
+        state = (<Chip label="QUEUED" style={{ backgroundColor: "#ff8000", color: "white" }} />)
       break;
       case "running":
         state = (<CircularProgress className={styles.progress} color="secondary" />)
@@ -249,7 +249,7 @@ class ReleaseView extends React.Component {
                 {_.has(currentRelease, 'id') && currentRelease.id === release.id && <Chip label="LATEST" className={styles.activeRelease} />}
                 <div style={{ marginTop: 40 }}>
                   <Typography variant="subheading">
-                    {this.getReadableDuration(this.state.timer)}
+                    {release.state !== "waiting" && this.getReadableDuration(this.state.timer)}
                   </Typography>
                 </div>                
               </Grid>
