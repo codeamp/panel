@@ -168,10 +168,6 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
         id
         key
         value
-        user {
-          id
-          email
-        }
         project {
           id
           name
@@ -306,7 +302,11 @@ export default class SecretsPaginator extends React.Component {
     }).then(({data}) => {
       this.closeDrawer(true)
       this.props.data.refetch()
-    });
+    }).catch(error => {
+      let obj = JSON.parse(JSON.stringify(error))
+      if(Object.keys(obj).length > 0 && obj.constructor === Object){
+        this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+      }});
   }
 
   onFileEditorChange(newValue) {
@@ -337,7 +337,11 @@ export default class SecretsPaginator extends React.Component {
         this.props.data.refetch()
         self.setState()
         self.closeDrawer(true)
-      });
+      }).catch(error => {
+        let obj = JSON.parse(JSON.stringify(error))
+        if(Object.keys(obj).length > 0 && obj.constructor === Object){
+          this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+        }});
     } else {
       this.props.updateSecret({
         variables: form.values(),
@@ -348,7 +352,11 @@ export default class SecretsPaginator extends React.Component {
         form.$('value').set(data.updateSecret.value)
         self.setState({ saving: false })
         self.closeDrawer(true)
-      });
+      }).catch(error => {
+        let obj = JSON.parse(JSON.stringify(error))
+        if(Object.keys(obj).length > 0 && obj.constructor === Object){
+          this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+        }});
     }
   }
 
@@ -607,7 +615,7 @@ export default class SecretsPaginator extends React.Component {
             </DialogActions>
           </Dialog>
 
-              <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+              <Dialog open={this.state.dialogOpen}>
                 <DialogTitle>{"Are you sure you want to delete " + secret.key + "?"}</DialogTitle>
                 <DialogContent>
                   <DialogContentText>
