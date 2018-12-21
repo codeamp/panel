@@ -168,10 +168,6 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
         id
         key
         value
-        user {
-          id
-          email
-        }
         project {
           id
           name
@@ -304,6 +300,7 @@ export default class SecretsPaginator extends React.Component {
     this.props.deleteSecret({
       variables: this.form.values(),
     }).then(({data}) => {
+      console.log(data)
       this.closeDrawer(true)
       this.props.data.refetch()
     });
