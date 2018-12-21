@@ -302,7 +302,11 @@ export default class SecretsPaginator extends React.Component {
     }).then(({data}) => {
       this.closeDrawer(true)
       this.props.data.refetch()
-    });
+    }).catch(error => {
+      let obj = JSON.parse(JSON.stringify(error))
+      if(Object.keys(obj).length > 0 && obj.constructor === Object){
+        this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+      }});
   }
 
   onFileEditorChange(newValue) {
