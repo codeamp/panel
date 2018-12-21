@@ -337,7 +337,11 @@ export default class SecretsPaginator extends React.Component {
         this.props.data.refetch()
         self.setState()
         self.closeDrawer(true)
-      });
+      }).catch(error => {
+        let obj = JSON.parse(JSON.stringify(error))
+        if(Object.keys(obj).length > 0 && obj.constructor === Object){
+          this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+        }});
     } else {
       this.props.updateSecret({
         variables: form.values(),
@@ -348,7 +352,11 @@ export default class SecretsPaginator extends React.Component {
         form.$('value').set(data.updateSecret.value)
         self.setState({ saving: false })
         self.closeDrawer(true)
-      });
+      }).catch(error => {
+        let obj = JSON.parse(JSON.stringify(error))
+        if(Object.keys(obj).length > 0 && obj.constructor === Object){
+          this.props.store.app.setSnackbar({ open: true, msg: obj.graphQLErrors[0].message })
+        }});
     }
   }
 
