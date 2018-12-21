@@ -615,7 +615,7 @@ export default class SecretsPaginator extends React.Component {
             </DialogActions>
           </Dialog>
 
-              <Dialog open={this.state.dialogOpen} onRequestClose={() => this.setState({ dialogOpen: false })}>
+              <Dialog open={this.state.dialogOpen}>
                 <DialogTitle>{"Are you sure you want to delete " + secret.key + "?"}</DialogTitle>
                 <DialogContent>
                   <DialogContentText>
