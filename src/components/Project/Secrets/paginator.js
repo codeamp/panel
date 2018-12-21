@@ -300,7 +300,6 @@ export default class SecretsPaginator extends React.Component {
     this.props.deleteSecret({
       variables: this.form.values(),
     }).then(({data}) => {
-      console.log(data)
       this.closeDrawer(true)
       this.props.data.refetch()
     });
