@@ -25,3 +25,9 @@
 .buttonSpacing {
     margin-right: 24px;
 }
+
+.serviceSpecForm {
+    width: 100%;
+    margin: 0px;
+    padding: 48px;   
+}
