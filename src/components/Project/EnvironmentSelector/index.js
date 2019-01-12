@@ -101,7 +101,7 @@ class EnvironmentSelector extends React.Component {
   }
 
   render() {
-    const { socket } = this.props;
+    const { socket, user } = this.props;
     const { project, environment } = this.state;
   
     if(!project) {
@@ -127,7 +127,7 @@ class EnvironmentSelector extends React.Component {
       return (      
         <Switch>
           <Route path='/projects/:slug/:environment' render={(props) => (
-            <Project {...props} environment={environment} socket={socket}/>
+            <Project {...props} environment={environment} socket={socket} user={user}/>
           )}/>
           <Redirect from={`/projects/${this.props.match.params.slug}`} to={`/projects/${this.props.match.params.slug}/${environment.key}`}/>
         </Switch>      

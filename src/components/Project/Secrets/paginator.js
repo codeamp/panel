@@ -70,11 +70,11 @@ const GET_SECRET = gql`
 
 @inject("store") @observer
 @graphql(gql`
-query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
+query Project($slug: String, $environmentID: String, $params: PaginatorInput!, $searchKey: String ){
   project(slug: $slug, environmentID: $environmentID) {
     id
     name
-    secrets(params:$params) {
+    secrets(params:$params, searchKey: $searchKey) {
       count
       entries {
         id
@@ -99,6 +99,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput! ){
         limit: props.limit || props.store.app.paginator.limit,
         page: props.page || 0,
       },
+      searchKey: props.searchKey
     }
   })
 })
