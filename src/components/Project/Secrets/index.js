@@ -90,30 +90,28 @@ export default class Secrets extends React.Component {
     const { user } = this.props
 
     return (
-      <div>
-        { user.permissions.includes("admin") && 
-          <div style={{position: "relative"}}>
-            <TextField
-              fullWidth={true}
-              className={styles.searchInput}
-              autoFocus={false}
-              value={this.state.projectQuery}
-              placeholder="Search..."
-              InputProps={{
-                disableUnderline: true,
-                classes: {
-                  root: styles.textFieldRoot,
-                  input: styles.textFieldInput,
-                },
-              }}
-              InputLabelProps={{
-                shrink: true,
-                className: styles.textFieldFormLabel,
-              }}
-              onChange={(e)=>this.handleSearchFieldChange(e)}              
-            />
-          </div>
-        }
+      <div>         
+        <div style={{position: "relative"}}>
+          <TextField
+            fullWidth={true}
+            className={styles.searchInput}
+            autoFocus={false}
+            value={this.state.projectQuery}
+            placeholder="Search..."
+            InputProps={{
+              disableUnderline: true,
+              classes: {
+                root: styles.textFieldRoot,
+                input: styles.textFieldInput,
+              },
+            }}
+            InputLabelProps={{
+              shrink: true,
+              className: styles.textFieldFormLabel,
+            }}
+            onChange={(e)=>this.handleSearchFieldChange(e)}              
+          />
+        </div>
         <SecretsPaginator 
           handleBackButtonClick={this.setPreviousPage.bind(this)}
           handleNextButtonClick={this.setNextPage.bind(this)}
