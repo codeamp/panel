@@ -95,7 +95,7 @@ export default class Secrets extends React.Component {
             className={styles.searchInput}
             autoFocus={false}
             value={this.state.projectQuery}
-            placeholder="Search..."
+            placeholder="Filter..."
             InputProps={{
               disableUnderline: true,
               classes: {
