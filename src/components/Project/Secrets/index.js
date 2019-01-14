@@ -1,6 +1,8 @@
 import React from 'react';
 import SecretsPaginator from './paginator';
 import { observer, inject } from 'mobx-react';
+import TextField from 'material-ui/TextField';
+import styles from './style.module.css';
 
 @inject("store") @observer
 
@@ -10,7 +12,8 @@ export default class Secrets extends React.Component {
 
     this.state = {
       limit: props.limit || this.props.store.app.paginator.limit,
-      page: 0
+      page: 0,
+      searchKey: "",
     }
 
     // check url query params
@@ -79,17 +82,45 @@ export default class Secrets extends React.Component {
     this.setState({page:maxPage-1, limit:limit})
   }
 
+  handleSearchFieldChange(e){
+    this.setState({searchKey: e.target.value})
+  }
+
   render() {
     return (
+      <div>         
+        <div style={{position: "relative"}}>
+          <TextField
+            fullWidth={true}
+            className={styles.searchInput}
+            autoFocus={false}
+            value={this.state.projectQuery}
+            placeholder="Filter..."
+            InputProps={{
+              disableUnderline: true,
+              classes: {
+                root: styles.textFieldRoot,
+                input: styles.textFieldInput,
+              },
+            }}
+            InputLabelProps={{
+              shrink: true,
+              className: styles.textFieldFormLabel,
+            }}
+            onChange={(e)=>this.handleSearchFieldChange(e)}              
+          />
+        </div>
         <SecretsPaginator 
           handleBackButtonClick={this.setPreviousPage.bind(this)}
           handleNextButtonClick={this.setNextPage.bind(this)}
           handleOutOfBounds={this.handleOutOfBounds.bind(this)}
+          searchKey={this.state.searchKey}
           history={this.props.history}
           match={this.props.match}
           environment={this.props.environment}
           {...this.state}
           /> 
+      </div>
     )
   }
 }
