@@ -87,8 +87,6 @@ export default class Secrets extends React.Component {
   }
 
   render() {
-    const { user } = this.props
-
     return (
       <div>         
         <div style={{position: "relative"}}>
