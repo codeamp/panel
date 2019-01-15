@@ -133,3 +133,33 @@
 .tablePaper {
     overflow: auto;
 }
+
+
+.textFieldInput {
+  position:relative;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  font-size: 16px;
+  padding: 12px 12px;
+  width: calc(100% - 24px);
+}
+
+.textFieldRoot {
+  position:relative;
+  padding: 0px;
+  margin-top: 0px !important;
+}
+
+.textFieldFormLabel {
+    font-size: 18px;
+}
+
+.searchInput {
+  position: relative;
+  top: -4px;
+}
+
+.searchInput > label {
+  display: none;
+}

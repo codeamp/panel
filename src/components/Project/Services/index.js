@@ -23,6 +23,7 @@ import ExpansionPanel, {
 } from 'material-ui/ExpansionPanel';
 import Divider from 'material-ui/Divider';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
+import TextField from 'material-ui/TextField';
 import SelectField from 'components/Form/select-field';
 import InputField from 'components/Form/input-field';
 import RadioField from 'components/Form/radio-field';
@@ -46,10 +47,10 @@ import GeneralIcon from '@material-ui/icons/Autorenew';
 
 @inject("store")
 @graphql(gql`
-query Project($slug: String, $environmentID: String) {
+query Project($slug: String, $environmentID: String, $searchKey: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
-    services{
+    services(searchKey: $searchKey){
       entries {
         id
         name
@@ -83,7 +84,8 @@ query Project($slug: String, $environmentID: String) {
     variables: {
       slug: props.match.params.slug,
       environmentID: props.environment.id,
-    }
+      searchKey: ""
+    },
   })
 })
 
@@ -655,6 +657,27 @@ export default class Services extends React.Component {
 
     return (
       <div>
+          <div style={{position: "relative"}}>
+            <TextField
+              fullWidth={true}
+              className={styles.searchInput}
+              autoFocus={false}
+              value={this.state.projectQuery}
+              placeholder="Filter..."
+              InputProps={{
+                disableUnderline: true,
+                classes: {
+                  root: styles.textFieldRoot,
+                  input: styles.textFieldInput,
+                },
+              }}
+              InputLabelProps={{
+                shrink: true,
+                className: styles.textFieldFormLabel,
+              }}
+              onChange={(e)=>this.handleSearchFieldChange(e)}              
+            />
+          </div>
           <Paper className={styles.tablePaper}>
             <Toolbar>
               <div>
