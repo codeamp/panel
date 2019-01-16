@@ -11,7 +11,7 @@ import styles from './style.module.css';
 export default class PanelTable extends React.Component { 
 
   render() {
-    const { title, columns, rows, paginator } = this.props;
+    const { title, columns, rows, paginator, onEmpty } = this.props;
     var self = this;
 
     return (
@@ -57,6 +57,7 @@ export default class PanelTable extends React.Component {
                 })}
               </TableBody>
             </Table>
+            {(rows.length === 0 && onEmpty !== null) && onEmpty()}
             <Pagination 
                   paginator={paginator}
                   handleNextButtonClick={this.props.handleNextButtonClick}

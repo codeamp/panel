@@ -12,6 +12,7 @@ import Dialog, {
   DialogContentText,
   DialogTitle,
 } from 'material-ui/Dialog';
+import Card, { CardContent } from 'material-ui/Card';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import InputField from 'components/Form/input-field';
 import CheckboxField from 'components/Form/checkbox-field';
@@ -400,6 +401,21 @@ export default class SecretsPaginator extends React.Component {
     this.openDrawer()
   };
 
+  onPanelTableEmpty() {
+    return (
+      <Card square={true}>
+        <CardContent>
+          <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+            No Secrets Found!
+          </Typography>
+          <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+            Check filter or create a new Secret
+          </Typography>                  
+        </CardContent>
+      </Card>
+    )
+  }
+
   render() {
     const { page, limit } = this.props;
     const { loading, project } = this.props.data
@@ -417,6 +433,7 @@ export default class SecretsPaginator extends React.Component {
             handleBackButtonClick={this.handleBackButtonClick}
             handleNextButtonClick={this.handleNextButtonClick}
             onClick={this.onClick}
+            onEmpty={this.onPanelTableEmpty}
             paginator={{
               count: project.secrets.count,
               page: page,
@@ -455,7 +472,6 @@ export default class SecretsPaginator extends React.Component {
               getVal: function(row){return moment(new Date(row.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"},
             }]}
           />
-
         <div className={styles.addButton}>
           <Manager>
             <Target>
