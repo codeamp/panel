@@ -14,9 +14,6 @@ export default class PanelTable extends React.Component {
     const { title, columns, rows, paginator, onEmpty } = this.props;
     var self = this;
 
-    console.log(rows.length)
-    console.log(onEmpty)
-
     return (
       <Grid container justify="center" alignItems="center">
         <Grid item xs={12} style={{ textAlign: "center" }}>

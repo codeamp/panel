@@ -402,7 +402,6 @@ export default class SecretsPaginator extends React.Component {
   };
 
   onPanelTableEmpty() {
-    console.log("onPanelTableEmpty!")
     return (
       <Card square={true}>
         <CardContent>
