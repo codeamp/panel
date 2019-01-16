@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Manager, Target, Popper } from 'react-popper';
+
 import { observer, inject } from 'mobx-react';
 import MobxReactForm from 'mobx-react-form';
 
@@ -15,6 +16,7 @@ import Paper from 'material-ui/Paper';
 import Toolbar from 'material-ui/Toolbar';
 import { MenuItem, MenuList } from 'material-ui/Menu';
 import Input from 'material-ui/Input';
+import Card, { CardContent } from 'material-ui/Card';
 
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
@@ -648,7 +650,6 @@ export default class ServicesContent extends React.Component {
         <Loading />
       )
     }
-    console.log(project)
 
     this.form.$('projectID').set(project.id)
     this.form.state.extra({
@@ -715,6 +716,18 @@ export default class ServicesContent extends React.Component {
                 })}
               </TableBody>
             </Table>
+            {(project.services.entries.length === 0) && 
+              <Card square={true}>
+                <CardContent>
+                  <Typography variant="subheading" style={{ textAlign: "center", fontWeight: 500, fontSize: 23, color: "gray" }}>
+                    No Services Found!
+                  </Typography>
+                  <Typography variant="body1" style={{ textAlign: "center", fontSize: 16, color: "gray" }}>
+                    Check filter or create a new Service
+                  </Typography>                  
+                </CardContent>
+              </Card>
+            }
           </Paper>
           <div className={styles.addButton}>
             <Manager>
