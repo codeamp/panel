@@ -241,7 +241,7 @@ export default class Secrets extends React.Component {
         'id': secret.id,
         'index': secretIdx,
         'isSecret': secret.isSecret,
-        'environmentID': this.props.store.app.currentEnvironment.id,
+        'environmentID': secret.environment.id,
         'scope': secret.scope,
       })
 
