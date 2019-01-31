@@ -14,7 +14,6 @@ import MobxReactForm from 'mobx-react-form';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
-
 function getIngressControllers(ingressControllerSecret) {
   let primals = ingressControllerSecret.value.split(",")
 
@@ -202,18 +201,10 @@ export default class Ingress extends React.Component {
       ingress: this.state.ingressControllers,
     })
 
-    // set options for each upstream domain
-    this.form.$('upstream_domains').map((field) => {
-      field.set('extra', {
-        apex: this.state.upstreamApexDomains
-      })
-      return "updated"
-    })
-
     this.form.$('upstream_routes').map((route) => {
       route.$('domains').map((field) => {
         field.set('extra',{
-          apex: this.state.upstreamDomains
+          apex: this.state.upstreamApexDomains
         })
         return "updated"
       })
@@ -223,25 +214,15 @@ export default class Ingress extends React.Component {
     
     if (this.form.$('type').value === "loadbalancer") {
       this.form.$('protocol').set("TCP")
-
       let formValues = this.form.values()
-      if(formValues.upstream_domains.length === 0) {
-        console.log(this.state.controlledApexDomain)
-        this.form.update({
-          upstream_domains: [{
-              subdomain: "",
-              apex: this.state.controlledApexDomain
-            }]
-        })
-      }
-
       if(formValues.upstream_routes.length === 0) {
         this.form.update({
           upstream_routes: [{
             domains: [{
               subdomain: "",
               apex: this.state.controlledApexDomain
-            }]
+            }],
+            http_method: [{method: ""}]
           }]
         })
       }
@@ -269,10 +250,15 @@ export default class Ingress extends React.Component {
       'upstream_routes[].domains',
       'upstream_routes[].domains[].subdomain',
       'upstream_routes[].domains[].apex',
+
+      'upstream_routes[].http_methods',
+      'upstream_routes[].http_methods[].method',
+
       'upstream_routes[].paths',
       'upstream_routes[].paths[]',
-      'upstream_routes[].methods',
-      'upstream_routes[].methods[]',
+
+
+
     ]
     const rules = {
       'upstream_domains[].subdomain': 'string|required',
@@ -280,6 +266,8 @@ export default class Ingress extends React.Component {
 
       'upstream_routes[].domains[].subdomain': 'string|required',
       'upstream_routes[].domains[].apex': 'string|required',
+
+      'upstream_routes[].http_methods[].method': 'string'
     }
     const labels = {
         'ingress': "INGRESS",
@@ -293,19 +281,24 @@ export default class Ingress extends React.Component {
 
         'upstream_routes': "UPSTREAM ROUTES",
         'upstream_routes[].domains[].subdomain': 'UPSTREAM SUBDOMAIN',
-        'upstream_routes[].domains[].apex': "APEX"
+        'upstream_routes[].domains[].apex': "APEX",
+
+        'upstream_routes[].http_methods[].method': 'METHODS'
     }
-    const initials = {}
+    const initials = {
+      'upstream_routes[].http_methods[].method': "GET"
+    }
     const types = {
       "enable_websockets": 'checkbox'
     }
 
-    console.log(this.state.upstreamApexDomains)
     const extra = {
         'ingress': this.state.ingressControllers,
         'service': this.state.services,
         'upstream_domains[].apex': this.state.upstreamApexDomains,
         'upstream_routes[].domains[].apex': this.state.upstreamApexDomains,
+
+        'upstream_routes[].http_methods[].method': "GET",
         'type': [
           {
             "key": "loadbalancer",
@@ -322,6 +315,8 @@ export default class Ingress extends React.Component {
 
     const plugins = { dvr: validatorjs }
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
+
+    console.log(this.form.$('upstream_routes').fields)
   }
 
   onError(form){
@@ -397,50 +392,58 @@ export default class Ingress extends React.Component {
                         </Grid>
                         <Grid item xs={12}>
                           {this.form.$('upstream_routes').map(function(route){
+                            console.log(route.fields)
                             return (
-                              <div>
-                              {route.$('domains').map(function(domain){
-                              return (
-                                <Grid container spacing={24} direction={'row'} key={domain.id}>
-                                  <Grid item xs={6}>
-                                    <InputField fullWidth={true} field={domain.$('subdomain')} />
-                                  </Grid>
-                                  <Grid item xs={4}>
-                                    <SelectField fullWidth={true} field={domain.$('apex')} />
-                                  </Grid>
-                                  <Grid item xs={2}>
-                                    <IconButton>
-                                      <CloseIcon onClick={domain.onDel} />
-                                    </IconButton>
-                                  </Grid>
+                              <Grid>
+                                <Grid>
+                                  {route.$('domains').map(function(domain){
+                                    return (
+                                      <Grid container spacing={24} direction={'row'} key={domain.id}>
+                                        <Grid item xs={6}>
+                                          <InputField fullWidth={true} field={domain.$('subdomain')} />
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                          <SelectField fullWidth={true} field={domain.$('apex')} />
+                                        </Grid>
+                                        <Grid item xs={2}>
+                                          <IconButton>
+                                            <CloseIcon onClick={domain.onDel} />
+                                          </IconButton>
+                                        </Grid>
+                                      </Grid>
+                                    )
+                                  })}
+                                <Grid item xs={12}>
+                                  <Button variant="raised" type="secondary" onClick={route.$('domains').onAdd}>
+                                    Add Domain
+                                  </Button>
                                 </Grid>
-                              )
-                              })}
-                            <Grid item xs={12}>
-                              <Button variant="raised" type="secondary" onClick={route.$('domains').onAdd}>
-                                Add Domain
-                              </Button>
+                              </Grid>
+                              
+                              <Grid>
+                                {route.$('http_methods').map(function(method){
+                                      return (
+                                        <Grid container spacing={24} direction={'row'} key={method.id}>
+                                          <Grid item xs={6}>
+                                            <InputField fullWidth={true} field={method.$('method')} />
+                                          </Grid>
+                                          <Grid item xs={2}>
+                                            <IconButton>
+                                              <CloseIcon onClick={method.onDel} />
+                                            </IconButton>
+                                          </Grid>
+                                        </Grid>
+                                      )
+                                  })}
+                                  <Grid item xs={12}>
+                                    <Button variant="raised" type="secondary" onClick={route.$('http_methods').onAdd}>
+                                      Add Method
+                                    </Button>
+                                  </Grid>
+                              </Grid>
                             </Grid>
-                            </div>
                             )
                           })}
-                          {/* {this.form.$('upstream_domains').map(function(domain){
-                          return (
-                          <Grid container spacing={24} direction={'row'} key={domain.id}>
-                            <Grid item xs={6}>
-                              <InputField fullWidth={true} field={domain.$('subdomain')} />
-                            </Grid>
-                            <Grid item xs={4}>
-                              <SelectField fullWidth={true} field={domain.$('apex')} />
-                            </Grid>
-                            <Grid item xs={2}>
-                              <IconButton>
-                                <CloseIcon onClick={domain.onDel} />
-                              </IconButton>
-                            </Grid>                                                                                          
-                          </Grid>                            
-                          )
-                          })} */}
                           <Grid item xs={12}>
                             <Button variant="raised" type="secondary" onClick={this.form.$('upstream_routes').onAdd}>
                               Add Upstream Routes
