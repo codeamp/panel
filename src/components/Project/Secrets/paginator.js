@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
@@ -21,7 +20,7 @@ import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-import { graphql, Query } from 'react-apollo';
+import { graphql, Query, ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
@@ -109,6 +108,20 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!, $
 })
 
 @graphql(gql`
+  query ExportSecrets($projectID: String!, $environmentID: String!) {
+    exportSecrets(params:{
+      projectID: $projectID,
+      environmentID: $environmentID,
+    })
+  }
+`, {
+  name: "exportSecrets",
+  options: ({ projectID, environmentID }) => ({
+    variables: { projectID, environmentID },
+  })
+})
+
+@graphql(gql`
   mutation CreateSecret ($key: String!, $value: String!, $projectID: String!, $type: String!, $scope: String!, $isSecret: Boolean!, $environmentID: String!) {
     createSecret(secret:{
     projectID: $projectID,
@@ -180,14 +193,6 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
         created
     }
 }`, {name: "deleteSecret"})
-
-@graphql(gql`
-mutation ExportSecrets($projectID: String!, $environmentID: String!) {
-    exportSecrets(params:{
-    projectID: $projectID,
-    environmentID: $environmentID,
-    })
-}`, {name: "exportSecrets"})
 
 @graphql(gql`
 mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAMLString: String!) {
@@ -462,14 +467,13 @@ export default class SecretsPaginator extends React.Component {
 
   onSecretsFileExport() {
     const self = this
-    const { project } = this.props.data;
+    const { project } = this.props.data
     const currentEnv = this.props.store.app.currentEnvironment
 
-    this.props.exportSecrets({
-      variables: {
-        projectID: project.id,
-        environmentID: currentEnv.id,
-      }
+    console.log(this.props)
+    this.props.exportSecrets.refetch({
+      projectID: project.id,
+      environmentID: currentEnv.id,
     })
     .then(({data}) => {
       var blob = new Blob([data.exportSecrets], {type: "text/plain;charset=utf-8"});
@@ -489,6 +493,8 @@ export default class SecretsPaginator extends React.Component {
     if(loading){
       return (<Loading />)
     }
+
+    console.log(this.props)
 
     return (
       <div>
