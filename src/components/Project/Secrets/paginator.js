@@ -209,6 +209,18 @@ mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAM
     }
 }`, {name: "importSecrets"})
 
+@graphql(gql`
+mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAMLString: String!) {
+    importSecrets(secrets:{
+    projectID: $projectID,
+    environmentID: $environmentID,
+    secretsYAMLString: $secretsYAMLString,
+    }) {
+      id
+      key
+    }
+}`, {name: "importSecrets"})
+
 export default class SecretsPaginator extends React.Component { 
   constructor(props){
     super(props)
