@@ -470,7 +470,6 @@ export default class SecretsPaginator extends React.Component {
     const { project } = this.props.data
     const currentEnv = this.props.store.app.currentEnvironment
 
-    console.log(this.props)
     this.props.exportSecrets.refetch({
       projectID: project.id,
       environmentID: currentEnv.id,
@@ -493,8 +492,6 @@ export default class SecretsPaginator extends React.Component {
     if(loading){
       return (<Loading />)
     }
-
-    console.log(this.props)
 
     return (
       <div>
