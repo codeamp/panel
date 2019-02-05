@@ -423,7 +423,7 @@ export default class SecretsPaginator extends React.Component {
     this.form.$('key').set('disabled', false)
     this.form.$('isSecret').set('disabled', false)
     this.openDrawer()
-  };
+  }
 
   onPanelTableEmpty() {
     return (
@@ -450,22 +450,36 @@ export default class SecretsPaginator extends React.Component {
         environmentID: self.props.store.app.currentEnvironment.id,
         secretsYAMLString: result.srcElement.result, 
       }
-    }).then(({data}) => {
+    })
+    .then(({data}) => {
+      console.log(data)
       self.props.data.refetch()
     })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+      self.setState({ saving: false })
+    })    
   }
 
   onExportSecretsClick() {
+    const self = this
     const { project } = this.props.data;
     const currentEnv = this.props.store.app.currentEnvironment
+
     this.props.exportSecrets({
       variables: {
         projectID: project.id,
         environmentID: currentEnv.id,
       }
-    }).then(({data}) => {
+    })
+    .then(({data}) => {
+      console.log(data)
       var blob = new Blob([data.exportSecrets], {type: "text/plain;charset=utf-8"});
       saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);      
+    })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+      self.setState({ saving: false })
     })
   }  
 
