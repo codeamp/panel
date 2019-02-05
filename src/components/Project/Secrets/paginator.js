@@ -502,6 +502,10 @@ export default class SecretsPaginator extends React.Component {
     .catch(function(error){
       self.props.store.app.setSnackbar({ open: true, msg: error.message })
     })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+      self.setState({ saving: false })
+    })
   }  
 
   render() {
