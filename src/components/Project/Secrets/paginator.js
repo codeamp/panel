@@ -45,6 +45,7 @@ import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 import Paper from 'material-ui/Paper';
+import { saveAs } from 'file-saver';
 
 const GET_SECRET = gql`
   query Secret($id: String!) {
@@ -77,6 +78,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!, $
   project(slug: $slug, environmentID: $environmentID) {
     id
     name
+    slug
     secrets(params:$params, searchKey: $searchKey) {
       count
       entries {
@@ -181,12 +183,24 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
 }`, {name: "deleteSecret"})
 
 @graphql(gql`
-mutation ExportSecrets ($projectID: String!, $environmentID: String!) {
+mutation ExportSecrets($projectID: String!, $environmentID: String!) {
     exportSecrets(params:{
     projectID: $projectID,
     environmentID: $environmentID,
     })
 }`, {name: "exportSecrets"})
+
+@graphql(gql`
+mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAMLString: String!) {
+    importSecrets(secrets:{
+    projectID: $projectID,
+    environmentID: $environmentID,
+    secretsYAMLString: $secretsYAMLString,
+    }) {
+      id
+      key
+    }
+}`, {name: "importSecrets"})
 
 export default class SecretsPaginator extends React.Component { 
   constructor(props){
@@ -427,29 +441,51 @@ export default class SecretsPaginator extends React.Component {
     )
   }
 
-  onImportSecretsButton() {
+  onImportSecretsClick() {
     console.log('onImportSecrets')
     this.refs.fileUploader.click();    
   }
 
   onSecretsFileImport(event) {
     console.log('onSecretsFileImport')
-    event.stopPropagation();
-    event.preventDefault();
-    var file = event.target.files[0];
-    console.log(file);    
+    const self = this
+    const { project } = this.props.data
+
+    event.stopPropagation()
+    event.preventDefault()
+    var file = event.target.files[0]
+    console.log(file)
+    let fileReader = new FileReader()
+    fileReader.onloadend = function(e) {
+      const content = fileReader.result
+      console.log(content)
+      self.props.importSecrets({
+        variables: {
+          projectID: project.id,
+          environmentID: self.props.store.app.currentEnvironment.id,
+          secretsYAMLString: content, 
+        }
+      }).then(({data}) => {
+        console.log(data)
+        self.props.data.refetch()
+      })
+      
+    }
+    fileReader.readAsText(file)
   }
 
   onExportSecrets() {
     console.log('onExportSecrets')
     const { project } = this.props.data;
+    const currentEnv = this.props.store.app.currentEnvironment
     this.props.exportSecrets({
       variables: {
         projectID: project.id,
-        environmentID: this.props.store.app.currentEnvironment.id,
+        environmentID: currentEnv.id,
       }
     }).then(({data}) => {
-      console.log(data.exportSecrets)
+      var blob = new Blob([data.exportSecrets], {type: "text/plain;charset=utf-8"});
+      saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);      
     })
   }  
 
@@ -545,7 +581,7 @@ export default class SecretsPaginator extends React.Component {
                 aria-owns={this.state.importExportMenuOpen}
                 aria-haspopup="true"
                 style={{ marginRight: 20 }}
-                onClick={this.onImportSecretsButton.bind(this)}>
+                onClick={this.onImportSecretsClick.bind(this)}>
                 <ImportIcon /> import
               </Button>
               <Button variant="raised" type="submit" color="secondary"

@@ -22,6 +22,7 @@
     "css-loader": "^1.0.0",
     "custom-react-scripts": ">=0.1.4",
     "director": ">=1.2.8",
+    "file-saver": "^2.0.0",
     "graphql": "^14.0.0",
     "graphql-tag": "^2.9.2",
     "jstimezonedetect": "^1.0.6",
