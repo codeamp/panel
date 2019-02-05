@@ -460,7 +460,7 @@ export default class SecretsPaginator extends React.Component {
     })    
   }
 
-  onExportSecretsClick() {
+  onSecretsFileExport() {
     const self = this
     const { project } = this.props.data;
     const currentEnv = this.props.store.app.currentEnvironment
@@ -570,7 +570,7 @@ export default class SecretsPaginator extends React.Component {
             <Target>
               <ImportExport 
                 onFileImport={this.onSecretsFileImport.bind(this)}
-                onExportBtnClick={this.onExportSecretsClick.bind(this)}
+                onExportBtnClick={this.onSecretsFileExport.bind(this)}
               />          
             </Target>
           </Manager>
