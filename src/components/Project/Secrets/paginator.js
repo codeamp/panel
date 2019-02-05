@@ -33,13 +33,12 @@ import moment from 'moment';
 import 'moment-timezone';
 import ProtectedIcon from '@material-ui/icons/Lock';
 import AddIcon from '@material-ui/icons/Add';
-import ImportIcon from '@material-ui/icons/ArrowUpward';
-import ExportIcon from '@material-ui/icons/ArrowDownward';
 import MissingSecretIcon from '@material-ui/icons/Report';
 import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
 import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
 import Tooltip from 'components/Utils/Tooltip';
+import ImportExport from 'components/Utils/ImportExport';
 
 import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
@@ -441,24 +440,16 @@ export default class SecretsPaginator extends React.Component {
     )
   }
 
-  onImportSecretsClick() {
-    console.log('onImportSecrets')
-    this.refs.fileUploader.click();    
-  }
-
   onSecretsFileImport(event) {
-    console.log('onSecretsFileImport')
     const self = this
     const { project } = this.props.data
 
     event.stopPropagation()
     event.preventDefault()
     var file = event.target.files[0]
-    console.log(file)
     let fileReader = new FileReader()
     fileReader.onloadend = function(e) {
       const content = fileReader.result
-      console.log(content)
       self.props.importSecrets({
         variables: {
           projectID: project.id,
@@ -466,7 +457,6 @@ export default class SecretsPaginator extends React.Component {
           secretsYAMLString: content, 
         }
       }).then(({data}) => {
-        console.log(data)
         self.props.data.refetch()
       })
       
@@ -474,8 +464,7 @@ export default class SecretsPaginator extends React.Component {
     fileReader.readAsText(file)
   }
 
-  onExportSecrets() {
-    console.log('onExportSecrets')
+  onExportSecretsClick() {
     const { project } = this.props.data;
     const currentEnv = this.props.store.app.currentEnvironment
     this.props.exportSecrets({
@@ -573,23 +562,13 @@ export default class SecretsPaginator extends React.Component {
             </Popper>
           </Manager>
         </div>
-        <input type="file" id="file" ref="fileUploader" accept=".yml,.yaml" onChange={this.onSecretsFileImport.bind(this)} style={{display: "none"}}/>        
         <div className={styles.importButton}>
           <Manager>
             <Target>
-              <Button variant="raised" type="submit" color="secondary"
-                aria-owns={this.state.importExportMenuOpen}
-                aria-haspopup="true"
-                style={{ marginRight: 20 }}
-                onClick={this.onImportSecretsClick.bind(this)}>
-                <ImportIcon /> import
-              </Button>
-              <Button variant="raised" type="submit" color="secondary"
-                aria-owns={this.state.importExportMenuOpen}
-                aria-haspopup="true"
-                onClick={this.onExportSecrets.bind(this)}>
-                <ExportIcon /> export                
-              </Button>              
+              <ImportExport 
+                onFileImport={this.onSecretsFileImport.bind(this)}
+                onExportBtnClick={this.onExportSecretsClick.bind(this)}
+              />          
             </Target>
           </Manager>
         </div>        
