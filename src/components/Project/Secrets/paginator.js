@@ -517,8 +517,6 @@ export default class SecretsPaginator extends React.Component {
       return (<Loading />)
     }
 
-    console.log(this.props)
-
     return (
       <div>
         <div className={styles.importButton}>
