@@ -452,7 +452,6 @@ export default class SecretsPaginator extends React.Component {
       }
     })
     .then(({data}) => {
-      console.log(data)
       self.props.data.refetch()
     })
     .catch(function(error){
@@ -473,7 +472,6 @@ export default class SecretsPaginator extends React.Component {
       }
     })
     .then(({data}) => {
-      console.log(data)
       var blob = new Blob([data.exportSecrets], {type: "text/plain;charset=utf-8"});
       saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);      
     })
