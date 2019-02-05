@@ -33,6 +33,8 @@ import moment from 'moment';
 import 'moment-timezone';
 import ProtectedIcon from '@material-ui/icons/Lock';
 import AddIcon from '@material-ui/icons/Add';
+import ImportIcon from '@material-ui/icons/ArrowUpward';
+import ExportIcon from '@material-ui/icons/ArrowDownward';
 import MissingSecretIcon from '@material-ui/icons/Report';
 import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
 import FileIcon from '@material-ui/icons/Note';
@@ -178,6 +180,14 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
     }
 }`, {name: "deleteSecret"})
 
+@graphql(gql`
+mutation ExportSecrets ($projectID: String!, $environmentID: String!) {
+    exportSecrets(params:{
+    projectID: $projectID,
+    environmentID: $environmentID,
+    })
+}`, {name: "exportSecrets"})
+
 export default class SecretsPaginator extends React.Component { 
   constructor(props){
     super(props)
@@ -188,6 +198,7 @@ export default class SecretsPaginator extends React.Component {
     this.onClick = this.onClick.bind(this)
     
     this.state = {
+      importExportMenuOpen: false,
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
@@ -416,6 +427,32 @@ export default class SecretsPaginator extends React.Component {
     )
   }
 
+  onImportSecretsButton() {
+    console.log('onImportSecrets')
+    this.refs.fileUploader.click();    
+  }
+
+  onSecretsFileImport(event) {
+    console.log('onSecretsFileImport')
+    event.stopPropagation();
+    event.preventDefault();
+    var file = event.target.files[0];
+    console.log(file);    
+  }
+
+  onExportSecrets() {
+    console.log('onExportSecrets')
+    const { project } = this.props.data;
+    this.props.exportSecrets({
+      variables: {
+        projectID: project.id,
+        environmentID: this.props.store.app.currentEnvironment.id,
+      }
+    }).then(({data}) => {
+      console.log(data.exportSecrets)
+    })
+  }  
+
   render() {
     const { page, limit } = this.props;
     const { loading, project } = this.props.data
@@ -500,6 +537,26 @@ export default class SecretsPaginator extends React.Component {
             </Popper>
           </Manager>
         </div>
+        <input type="file" id="file" ref="fileUploader" accept=".yml,.yaml" onChange={this.onSecretsFileImport.bind(this)} style={{display: "none"}}/>        
+        <div className={styles.importButton}>
+          <Manager>
+            <Target>
+              <Button variant="raised" type="submit" color="secondary"
+                aria-owns={this.state.importExportMenuOpen}
+                aria-haspopup="true"
+                style={{ marginRight: 20 }}
+                onClick={this.onImportSecretsButton.bind(this)}>
+                <ImportIcon /> import
+              </Button>
+              <Button variant="raised" type="submit" color="secondary"
+                aria-owns={this.state.importExportMenuOpen}
+                aria-haspopup="true"
+                onClick={this.onExportSecrets.bind(this)}>
+                <ExportIcon /> export                
+              </Button>              
+            </Target>
+          </Manager>
+        </div>        
 
         {this.state.drawerOpen &&
         <Query query={GET_SECRET} variables={{id: this.state.selectedSecretID}}>
