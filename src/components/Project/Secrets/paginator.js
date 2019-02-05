@@ -440,28 +440,19 @@ export default class SecretsPaginator extends React.Component {
     )
   }
 
-  onSecretsFileImport(event) {
+  onSecretsFileImport(result) {
     const self = this
     const { project } = this.props.data
 
-    event.stopPropagation()
-    event.preventDefault()
-    var file = event.target.files[0]
-    let fileReader = new FileReader()
-    fileReader.onloadend = function(e) {
-      const content = fileReader.result
-      self.props.importSecrets({
-        variables: {
-          projectID: project.id,
-          environmentID: self.props.store.app.currentEnvironment.id,
-          secretsYAMLString: content, 
-        }
-      }).then(({data}) => {
-        self.props.data.refetch()
-      })
-      
-    }
-    fileReader.readAsText(file)
+    self.props.importSecrets({
+      variables: {
+        projectID: project.id,
+        environmentID: self.props.store.app.currentEnvironment.id,
+        secretsYAMLString: result.srcElement.result, 
+      }
+    }).then(({data}) => {
+      self.props.data.refetch()
+    })
   }
 
   onExportSecretsClick() {

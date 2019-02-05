@@ -5,15 +5,29 @@ import ImportIcon from '@material-ui/icons/ArrowUpward';
 import ExportIcon from '@material-ui/icons/ArrowDownward';
 
 export default class Loading extends React.Component { 
+  constructor(props){
+    super(props)
+    this.onImportSecretsClick = this.onImportSecretsClick.bind(this)
+  }
 
   onImportSecretsClick() {
-    this.refs.fileUploader.click()
+    this.fileUploader.click()
   } 
+
+  onChange(event) {
+    event.stopPropagation()
+    event.preventDefault()
+    var file = event.target.files[0]
+    let fileReader = new FileReader()
+    fileReader.onloadend = this.props.onFileImport
+    fileReader.readAsText(file)    
+    this.fileUploader.value = ""
+  }
 
   render() {
     return (
       <div>
-        <input type="file" id="file" ref="fileUploader" accept=".yml,.yaml" onChange={this.props.onFileImport.bind(this)} style={{display: "none"}}/>                    
+        <input type="file" id="file" ref={(child) => this.fileUploader = child} accept=".yml,.yaml" onChange={this.onChange.bind(this)} style={{display: "none"}}/>                    
         <Button variant="raised" type="submit" color="secondary"
             aria-haspopup="true"
             style={{ marginRight: 20 }}
