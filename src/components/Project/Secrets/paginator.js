@@ -32,8 +32,6 @@ import moment from 'moment';
 import 'moment-timezone';
 import ProtectedIcon from '@material-ui/icons/Lock';
 import AddIcon from '@material-ui/icons/Add';
-import ImportIcon from '@material-ui/icons/ArrowUpward';
-import ExportIcon from '@material-ui/icons/ArrowDownward';
 import MissingSecretIcon from '@material-ui/icons/Report';
 import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
 import FileIcon from '@material-ui/icons/Note';
