@@ -32,6 +32,8 @@ import moment from 'moment';
 import 'moment-timezone';
 import ProtectedIcon from '@material-ui/icons/Lock';
 import AddIcon from '@material-ui/icons/Add';
+import ImportIcon from '@material-ui/icons/ArrowUpward';
+import ExportIcon from '@material-ui/icons/ArrowDownward';
 import MissingSecretIcon from '@material-ui/icons/Report';
 import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
 import FileIcon from '@material-ui/icons/Note';
@@ -217,6 +219,7 @@ export default class SecretsPaginator extends React.Component {
     this.onClick = this.onClick.bind(this)
     
     this.state = {
+      importExportMenuOpen: false,
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
