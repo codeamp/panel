@@ -478,9 +478,8 @@ export default class SecretsPaginator extends React.Component {
     .then(({data}) => {
       const contents = data.exportSecrets
       try {
-        var doc = yaml.safeLoad(contents, 'utf-8')
-        console.log(doc)
-        var stringContents = yaml.safeDump(doc)
+        var yamlArr = yaml.safeLoad(contents, 'utf-8')
+        var stringContents = yaml.safeDump(yamlArr)
         var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
         saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);              
       } catch(e) {
