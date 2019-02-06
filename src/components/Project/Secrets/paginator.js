@@ -462,7 +462,6 @@ export default class SecretsPaginator extends React.Component {
     })
     .catch(function(error){
       self.props.store.app.setSnackbar({ open: true, msg: error.message })
-      self.setState({ saving: false })
     })    
   }
 
@@ -483,12 +482,11 @@ export default class SecretsPaginator extends React.Component {
         var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
         saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);              
       } catch(e) {
-        console.log(e)
+        self.props.store.app.setSnackbar({ open: true, msg: error.message })  
       }
     })
     .catch(function(error){
       self.props.store.app.setSnackbar({ open: true, msg: error.message })
-      self.setState({ saving: false })
     })
   }  
 
