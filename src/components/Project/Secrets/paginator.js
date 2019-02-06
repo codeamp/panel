@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
@@ -38,11 +37,14 @@ import EnvVarIcon from '@material-ui/icons/ExplicitOutlined';
 import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
 import Tooltip from 'components/Utils/Tooltip';
+import ImportExport from 'components/Utils/ImportExport';
 
 import { Manager, Target, Popper } from 'react-popper';
 import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 import Paper from 'material-ui/Paper';
+import { saveAs } from 'file-saver';
+import yaml from 'js-yaml';
 
 const GET_SECRET = gql`
   query Secret($id: String!) {
@@ -75,6 +77,7 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!, $
   project(slug: $slug, environmentID: $environmentID) {
     id
     name
+    slug
     secrets(params:$params, searchKey: $searchKey) {
       count
       entries {
@@ -102,6 +105,20 @@ query Project($slug: String, $environmentID: String, $params: PaginatorInput!, $
       },
       searchKey: props.searchKey
     }
+  })
+})
+
+@graphql(gql`
+  query ExportSecrets($projectID: String!, $environmentID: String!) {
+    exportSecrets(params:{
+      projectID: $projectID,
+      environmentID: $environmentID,
+    })
+  }
+`, {
+  name: "exportSecrets",
+  options: ({ projectID, environmentID }) => ({
+    variables: { projectID, environmentID },
   })
 })
 
@@ -177,6 +194,18 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
         created
     }
 }`, {name: "deleteSecret"})
+
+@graphql(gql`
+mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAMLString: String!) {
+    importSecrets(secrets:{
+    projectID: $projectID,
+    environmentID: $environmentID,
+    secretsYAMLString: $secretsYAMLString,
+    }) {
+      id
+      key
+    }
+}`, {name: "importSecrets"})
 
 export default class SecretsPaginator extends React.Component { 
   constructor(props){
@@ -399,7 +428,7 @@ export default class SecretsPaginator extends React.Component {
     this.form.$('key').set('disabled', false)
     this.form.$('isSecret').set('disabled', false)
     this.openDrawer()
-  };
+  }
 
   onPanelTableEmpty() {
     return (
@@ -416,6 +445,52 @@ export default class SecretsPaginator extends React.Component {
     )
   }
 
+  onSecretsFileImport(result) {
+    const self = this
+    const { project } = this.props.data
+
+    self.props.importSecrets({
+      variables: {
+        projectID: project.id,
+        environmentID: self.props.store.app.currentEnvironment.id,
+        secretsYAMLString: result.srcElement.result, 
+      }
+    })
+    .then(({data}) => {
+      self.props.data.refetch()
+      const resource = data.importSecrets.length === 1 ? 'secret' : 'secrets'
+      self.props.store.app.setSnackbar({ open: true, msg: `${data.importSecrets.length} ${resource} imported` })      
+    })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+    })    
+  }
+
+  onSecretsFileExport() {
+    const self = this
+    const { project } = this.props.data
+    const currentEnv = this.props.store.app.currentEnvironment
+
+    this.props.exportSecrets.refetch({
+      projectID: project.id,
+      environmentID: currentEnv.id,
+    })
+    .then(({data}) => {
+      const contents = data.exportSecrets
+      try {
+        var yamlArr = yaml.safeLoad(contents, 'utf-8')
+        var stringContents = yaml.safeDump(yamlArr)
+        var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
+        saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);              
+      } catch(error) {
+        self.props.store.app.setSnackbar({ open: true, msg: error.message })  
+      }
+    })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+    })
+  }  
+
   render() {
     const { page, limit } = this.props;
     const { loading, project } = this.props.data
@@ -427,6 +502,12 @@ export default class SecretsPaginator extends React.Component {
 
     return (
       <div>
+        <div className={styles.importButton}>
+          <ImportExport 
+            onFileImport={this.onSecretsFileImport.bind(this)}
+            onExportBtnClick={this.onSecretsFileExport.bind(this)}
+          />   
+        </div>               
         <PanelTable
             title={"Secrets"}
             rows={project.secrets ? project.secrets.entries : []}
@@ -500,7 +581,6 @@ export default class SecretsPaginator extends React.Component {
             </Popper>
           </Manager>
         </div>
-
         {this.state.drawerOpen &&
         <Query query={GET_SECRET} variables={{id: this.state.selectedSecretID}}>
           {({ loading, error, data }) => {
