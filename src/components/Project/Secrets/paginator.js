@@ -458,7 +458,7 @@ export default class SecretsPaginator extends React.Component {
     })
     .then(({data}) => {
       self.props.data.refetch()
-      const resource = data.importSecrets.length == 1 ? 'secret' : 'secrets'
+      const resource = data.importSecrets.length === 1 ? 'secret' : 'secrets'
       self.props.store.app.setSnackbar({ open: true, msg: `${data.importSecrets.length} ${resource} imported` })      
     })
     .catch(function(error){
