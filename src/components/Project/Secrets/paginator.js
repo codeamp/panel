@@ -207,18 +207,6 @@ mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAM
     }
 }`, {name: "importSecrets"})
 
-@graphql(gql`
-mutation ImportSecrets($projectID: String!, $environmentID: String!, $secretsYAMLString: String!) {
-    importSecrets(secrets:{
-    projectID: $projectID,
-    environmentID: $environmentID,
-    secretsYAMLString: $secretsYAMLString,
-    }) {
-      id
-      key
-    }
-}`, {name: "importSecrets"})
-
 export default class SecretsPaginator extends React.Component { 
   constructor(props){
     super(props)
@@ -229,7 +217,6 @@ export default class SecretsPaginator extends React.Component {
     this.onClick = this.onClick.bind(this)
     
     this.state = {
-      importExportMenuOpen: false,
       addEnvVarMenuOpen: false,
       saving: false,
       drawerOpen: false,
@@ -501,10 +488,6 @@ export default class SecretsPaginator extends React.Component {
     })
     .catch(function(error){
       self.props.store.app.setSnackbar({ open: true, msg: error.message })
-    })
-    .catch(function(error){
-      self.props.store.app.setSnackbar({ open: true, msg: error.message })
-      self.setState({ saving: false })
     })
   }  
 
