@@ -501,6 +501,12 @@ export default class SecretsPaginator extends React.Component {
 
     return (
       <div>
+        <div className={styles.importButton}>
+          <ImportExport 
+            onFileImport={this.onSecretsFileImport.bind(this)}
+            onExportBtnClick={this.onSecretsFileExport.bind(this)}
+          />   
+        </div>               
         <PanelTable
             title={"Secrets"}
             rows={project.secrets ? project.secrets.entries : []}
@@ -574,17 +580,6 @@ export default class SecretsPaginator extends React.Component {
             </Popper>
           </Manager>
         </div>
-        <div className={styles.importButton}>
-          <Manager>
-            <Target>
-              <ImportExport 
-                onFileImport={this.onSecretsFileImport.bind(this)}
-                onExportBtnClick={this.onSecretsFileExport.bind(this)}
-              />          
-            </Target>
-          </Manager>
-        </div>        
-
         {this.state.drawerOpen &&
         <Query query={GET_SECRET} variables={{id: this.state.selectedSecretID}}>
           {({ loading, error, data }) => {
