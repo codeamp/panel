@@ -20,7 +20,7 @@ import styles from './style.module.css';
 import { observer, inject } from 'mobx-react';
 import validatorjs from 'validatorjs';
 import MobxReactForm from 'mobx-react-form';
-import { graphql, Query, ApolloConsumer } from 'react-apollo';
+import { graphql, Query } from 'react-apollo';
 import gql from 'graphql-tag';
 import AceEditor from 'react-ace';
 import 'brace/mode/yaml';
