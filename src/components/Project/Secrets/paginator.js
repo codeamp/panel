@@ -44,6 +44,7 @@ import ClickAwayListener from 'material-ui/utils/ClickAwayListener';
 import Grow from 'material-ui/transitions/Grow';
 import Paper from 'material-ui/Paper';
 import { saveAs } from 'file-saver';
+import yaml from 'js-yaml';
 
 const GET_SECRET = gql`
   query Secret($id: String!) {
@@ -475,8 +476,16 @@ export default class SecretsPaginator extends React.Component {
       environmentID: currentEnv.id,
     })
     .then(({data}) => {
-      var blob = new Blob([data.exportSecrets], {type: "text/plain;charset=utf-8"});
-      saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);      
+      const contents = data.exportSecrets
+      try {
+        var doc = yaml.safeLoad(contents, 'utf-8')
+        console.log(doc)
+        var stringContents = yaml.safeDump(doc)
+        var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
+        saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);              
+      } catch(e) {
+        console.log(e)
+      }
     })
     .catch(function(error){
       self.props.store.app.setSnackbar({ open: true, msg: error.message })
