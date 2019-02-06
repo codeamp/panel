@@ -481,7 +481,7 @@ export default class SecretsPaginator extends React.Component {
         var stringContents = yaml.safeDump(yamlArr)
         var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
         saveAs(blob, `${project.slug}-${currentEnv.key}-secrets.yaml`);              
-      } catch(e) {
+      } catch(error) {
         self.props.store.app.setSnackbar({ open: true, msg: error.message })  
       }
     })
