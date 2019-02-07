@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, ApolloConsumer } from 'react-apollo';
+import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import { Manager, Target, Popper } from 'react-popper';
 
@@ -679,11 +679,13 @@ export default class ServicesContent extends React.Component {
       variables: {
         projectID: project.id,
         environmentID: self.props.store.app.currentEnvironment.id,
-        secretsYAMLString: result.srcElement.result, 
+        servicesYAMLString: result.srcElement.result, 
       }
     })
     .then(({data}) => {
       self.props.data.refetch()
+      const resource = data.importServices.length === 1 ? 'service' : 'services'
+      self.props.store.app.setSnackbar({ open: true, msg: `${data.importServices.length} ${resource} imported` })            
     })
     .catch(function(error){
       self.props.store.app.setSnackbar({ open: true, msg: error.message })
