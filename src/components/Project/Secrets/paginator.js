@@ -587,7 +587,7 @@ export default class SecretsPaginator extends React.Component {
               if (loading) return <div></div>
               if (error) return `Error! ${error.message}`
               let secret = data.secret
-              if(secret.value !== "" && !self.form.isDirty && !this.state.saving){
+              if(!self.form.isDirty && !this.state.saving){
                 this.form = this.initProjectSecretsForm({
                   'key': secret.key,
                   'value': secret.value,
@@ -657,12 +657,10 @@ export default class SecretsPaginator extends React.Component {
                       </Grid>
                     }
 
-                    {
-                      <EnvVarVersionHistory
-                        versions={data.secret.versions}
-                        onClickVersion={this.onClickVersion.bind(this, data.secret.versions)}
-                      />
-                    }
+                    <EnvVarVersionHistory
+                      versions={data.secret.versions}
+                      onClickVersion={this.onClickVersion.bind(this, data.secret.versions)}
+                    />
 
                     <Grid item xs={12}>
                       <Button color="primary"
@@ -712,23 +710,22 @@ export default class SecretsPaginator extends React.Component {
             </DialogActions>
           </Dialog>
 
-              <Dialog open={this.state.dialogOpen}>
-                <DialogTitle>{"Are you sure you want to delete " + secret.key + "?"}</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    {"This will delete the environment variable and all its versions."}
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
-                    Cancel
-                  </Button>
-                  <Button onClick={this.handleDeleteEnvVar.bind(this)} style={{ color: "red" }}>
-                    Confirm
-                  </Button>
-                </DialogActions>
-              </Dialog>
-          {/* } */}
+          <Dialog open={this.state.dialogOpen}>
+            <DialogTitle>{"Are you sure you want to delete " + secret.key + "?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                {"This will delete the environment variable and all its versions."}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={()=> this.setState({ dialogOpen: false })} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={this.handleDeleteEnvVar.bind(this)} style={{ color: "red" }}>
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
         </div> )
         }}
         </Query>
