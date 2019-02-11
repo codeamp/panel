@@ -15,14 +15,23 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 function getIngressControllers(ingressControllerSecret) {
-  let primals = ingressControllerSecret.value.split(",")
+  // let primals = ingressControllerSecret.value.split(",")
 
-  let controllers = primals.map((primal) => {
-    let parts = primal.split(":")
+  // let controllers = primals.map((primal) => {
+  //   let parts = primal.split(":")
+  //   return {
+  //     key: primal,
+  //     value: parts[0]
+
+  //   }
+  // })
+
+  let parsedControllers = JSON.parse(ingressControllerSecret.value)
+
+  let controllers = parsedControllers.map((controller) => {
     return {
-      key: primal,
-      value: parts[0]
-
+      key: controller.id,
+      value: controller.name
     }
   })
   
@@ -196,6 +205,7 @@ export default class Ingress extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
     this.form.set('extra', {
       service: this.state.services,
       ingress: this.state.ingressControllers,
@@ -222,9 +232,12 @@ export default class Ingress extends React.Component {
               subdomain: "",
               apex: this.state.controlledApexDomain
             }],
-            http_method: [{method: ""}]
+            paths: null,
+            methods: null
           }]
         })
+
+        console.log(this.form.values())
       }
     }
   }
@@ -242,32 +255,18 @@ export default class Ingress extends React.Component {
       'protocol',
       'subdomain',
       'enable_websockets',
-      'upstream_domains',
-      'upstream_domains[].subdomain',
-      'upstream_domains[].apex',
-      
       'upstream_routes',
       'upstream_routes[].domains',
       'upstream_routes[].domains[].subdomain',
       'upstream_routes[].domains[].apex',
-
-      'upstream_routes[].http_methods',
-      'upstream_routes[].http_methods[].method',
-
-      'upstream_routes[].paths',
-      'upstream_routes[].paths[]',
-
-
-
+      "upstream_routes[].paths",
+      "upstream_routes[].methods",
     ]
     const rules = {
-      'upstream_domains[].subdomain': 'string|required',
-      'upstream_domains[].apex': 'string|required',
-
       'upstream_routes[].domains[].subdomain': 'string|required',
       'upstream_routes[].domains[].apex': 'string|required',
-
-      'upstream_routes[].http_methods[].method': 'string'
+      'upstream_routes[].paths': 'string',
+      'upstream_routes[].methods': 'string',
     }
     const labels = {
         'ingress': "INGRESS",
@@ -275,19 +274,13 @@ export default class Ingress extends React.Component {
         'protocol': "PROTOCOL",
         'enable_websockets': 'ENABLE WEBSOCKETS',
         'type': "TYPE",
-        'upstream_domains': 'UPSTREAM DOMAINS',
-        'upstream_domains[].subdomain': "UPSTREAM SUBDOMAIN",
-        'upstream_domains[].apex': "APEX",
-
         'upstream_routes': "UPSTREAM ROUTES",
-        'upstream_routes[].domains[].subdomain': 'UPSTREAM SUBDOMAIN',
+        'upstream_routes[].domains[].subdomain': 'SUBDOMAIN',
         'upstream_routes[].domains[].apex': "APEX",
-
-        'upstream_routes[].http_methods[].method': 'METHODS'
+        'upstream_routes[].paths': "PATHS",
+        'upstream_routes[].methods': "METHODS",
     }
-    const initials = {
-      'upstream_routes[].http_methods[].method': "GET"
-    }
+    const initials = {}
     const types = {
       "enable_websockets": 'checkbox'
     }
@@ -295,10 +288,7 @@ export default class Ingress extends React.Component {
     const extra = {
         'ingress': this.state.ingressControllers,
         'service': this.state.services,
-        'upstream_domains[].apex': this.state.upstreamApexDomains,
         'upstream_routes[].domains[].apex': this.state.upstreamApexDomains,
-
-        'upstream_routes[].http_methods[].method': "GET",
         'type': [
           {
             "key": "loadbalancer",
@@ -315,8 +305,6 @@ export default class Ingress extends React.Component {
 
     const plugins = { dvr: validatorjs }
     this.form = new MobxReactForm({ fields, rules, labels, initials, types, extra, hooks }, {plugins })
-
-    console.log(this.form.$('upstream_routes').fields)
   }
 
   onError(form){
@@ -324,7 +312,6 @@ export default class Ingress extends React.Component {
   }
 
   onSuccess(form){
-    // convert obj -> { "config": [kv] }
     var self = this
     var userConfig = {
       "config": [],
@@ -392,9 +379,8 @@ export default class Ingress extends React.Component {
                         </Grid>
                         <Grid item xs={12}>
                           {this.form.$('upstream_routes').map(function(route){
-                            console.log(route.fields)
                             return (
-                              <Grid>
+                              <Grid key={route.id}>
                                 <Grid>
                                   {route.$('domains').map(function(domain){
                                     return (
@@ -419,9 +405,25 @@ export default class Ingress extends React.Component {
                                   </Button>
                                 </Grid>
                               </Grid>
-                              
-                              <Grid>
-                                {route.$('http_methods').map(function(method){
+
+                              <Grid item xs={8}>
+                                <InputField fullWidth={true} field={route.$('paths')} />
+                              </Grid>
+                              <Grid item xs={8}>
+                                <InputField fullWidth={true} field={route.$('methods')} />
+                              </Grid>
+
+                              <Grid item xs={2}>
+                                <IconButton>
+                                  <CloseIcon onClick={route.onDel} />
+                                </IconButton>
+                              </Grid>
+
+                              {/* <Grid>
+                                <InputField fullWidth={true} field={route.$('http_method')} />
+                              </Grid> */}
+                              {/* <Grid> */}
+                                {/* {route.$('paths').map(function(method){
                                       return (
                                         <Grid container spacing={24} direction={'row'} key={method.id}>
                                           <Grid item xs={6}>
@@ -436,11 +438,11 @@ export default class Ingress extends React.Component {
                                       )
                                   })}
                                   <Grid item xs={12}>
-                                    <Button variant="raised" type="secondary" onClick={route.$('http_methods').onAdd}>
+                                    <Button variant="raised" type="secondary" onClick={route.$('paths').onAdd}>
                                       Add Method
                                     </Button>
-                                  </Grid>
-                              </Grid>
+                                  </Grid> */}
+                              {/* </Grid> */}
                             </Grid>
                             )
                           })}
