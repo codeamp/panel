@@ -53,6 +53,9 @@ import styles from './style.module.css';
 import jstz from 'jstimezonedetect';
 import moment from 'moment';
 import 'moment-timezone';
+import ImportExport from 'components/Utils/ImportExport';
+import yaml from 'js-yaml';
+import { saveAs } from 'file-saver';
 
 @inject("store") @observer
 
@@ -60,6 +63,7 @@ import 'moment-timezone';
 query Project($slug: String, $environmentID: String, $searchKey: String) {
   project(slug: $slug, environmentID: $environmentID) {
     id
+    slug
     services(searchKey: $searchKey){
       entries {
         id
@@ -167,6 +171,31 @@ mutation DeleteService ($id: String, $projectID: String!, $command: String!, $na
     id
   }
 }`, { name: "deleteService" })
+
+@graphql(gql`
+mutation ImportServices($projectID: String!, $environmentID: String!, $servicesYAMLString: String!) {
+    importServices(services:{
+      projectID: $projectID,
+      environmentID: $environmentID,
+      servicesYAMLString: $servicesYAMLString,
+    }) {
+      id
+    }
+}`, {name: "importServices"})
+
+@graphql(gql`
+  query ExportServices($projectID: String!, $environmentID: String!) {
+    exportServices(params:{
+      projectID: $projectID,
+      environmentID: $environmentID,
+    })
+  }
+`, {
+  name: "exportServices",
+  options: ({ projectID, environmentID }) => ({
+    variables: { projectID, environmentID },
+  })
+})
 
 export default class ServicesContent extends React.Component {
   constructor(props){
@@ -642,6 +671,53 @@ export default class ServicesContent extends React.Component {
     }
   }
 
+  onServicesFileImport(result) {
+    const self = this
+    const { project } = this.props.data
+
+    self.props.importServices({
+      variables: {
+        projectID: project.id,
+        environmentID: self.props.store.app.currentEnvironment.id,
+        servicesYAMLString: result.srcElement.result, 
+      }
+    })
+    .then(({data}) => {
+      self.props.data.refetch()
+      const resource = data.importServices.length === 1 ? 'service' : 'services'
+      self.props.store.app.setSnackbar({ open: true, msg: `${data.importServices.length} ${resource} imported` })            
+    })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+    })    
+  }  
+
+  onServicesFileExport() {
+    const self = this
+    const { project } = this.props.data
+    const currentEnv = this.props.store.app.currentEnvironment
+
+    console.log(this.props)
+    this.props.exportServices.refetch({
+      projectID: project.id,
+      environmentID: currentEnv.id,
+    })
+    .then(({data}) => {
+      const contents = data.exportServices
+      try {
+        var yamlArr = yaml.safeLoad(contents, 'utf-8')
+        var stringContents = yaml.safeDump(yamlArr)
+        var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
+        saveAs(blob, `${project.slug}-${currentEnv.key}-services.yaml`)
+      } catch(error) {
+        self.props.store.app.setSnackbar({ open: true, msg: error.message })  
+      }      
+    })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+    })
+  }    
+
 	render() {
     const { loading, project, serviceSpecs } = this.props.data;
 
@@ -666,6 +742,12 @@ export default class ServicesContent extends React.Component {
 
     return (
       <div>
+        <div className={styles.importExportButton}>
+          <ImportExport 
+            onFileImport={this.onServicesFileImport.bind(this)}
+            onExportBtnClick={this.onServicesFileExport.bind(this)}
+          />                    
+        </div>
       	<Paper className={styles.tablePaper}>
           <Toolbar>
             <div>
@@ -755,7 +837,7 @@ export default class ServicesContent extends React.Component {
                 </ClickAwayListener>
               </Popper>
             </Manager>
-          </div>
+          </div>              
         <Drawer
             anchor="right"
             classes={{
