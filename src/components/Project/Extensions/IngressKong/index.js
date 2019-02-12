@@ -15,16 +15,6 @@ import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 
 function getIngressControllers(ingressControllerSecret) {
-  // let primals = ingressControllerSecret.value.split(",")
-
-  // let controllers = primals.map((primal) => {
-  //   let parts = primal.split(":")
-  //   return {
-  //     key: primal,
-  //     value: parts[0]
-
-  //   }
-  // })
 
   let parsedControllers = JSON.parse(ingressControllerSecret.value)
 
@@ -236,8 +226,6 @@ export default class Ingress extends React.Component {
             methods: null
           }]
         })
-
-        console.log(this.form.values())
       }
     }
   }
@@ -418,31 +406,6 @@ export default class Ingress extends React.Component {
                                   <CloseIcon onClick={route.onDel} />
                                 </IconButton>
                               </Grid>
-
-                              {/* <Grid>
-                                <InputField fullWidth={true} field={route.$('http_method')} />
-                              </Grid> */}
-                              {/* <Grid> */}
-                                {/* {route.$('paths').map(function(method){
-                                      return (
-                                        <Grid container spacing={24} direction={'row'} key={method.id}>
-                                          <Grid item xs={6}>
-                                            <InputField fullWidth={true} field={method.$('method')} />
-                                          </Grid>
-                                          <Grid item xs={2}>
-                                            <IconButton>
-                                              <CloseIcon onClick={method.onDel} />
-                                            </IconButton>
-                                          </Grid>
-                                        </Grid>
-                                      )
-                                  })}
-                                  <Grid item xs={12}>
-                                    <Button variant="raised" type="secondary" onClick={route.$('paths').onAdd}>
-                                      Add Method
-                                    </Button>
-                                  </Grid> */}
-                              {/* </Grid> */}
                             </Grid>
                             )
                           })}
