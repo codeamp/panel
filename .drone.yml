@@ -5,8 +5,9 @@ steps:
 - name: restore-cache
   image: drillster/drone-volume-cache
   restore: true
-  mount:
-  - ./node_modules
+  settings:
+    mount:
+    - ./node_modules
   volumes:
   - name: cache
     host: /tmp/cache
@@ -48,8 +49,9 @@ steps:
 - name: rebuild-cache
   image: drillster/drone-volume-cache
   rebuild: true
-  mount:
-  - ./node_modules
-  volumes:
-  - name: cache
-    host: /tmp/cache
+  settings:
+    mount:
+    - ./node_modules
+    volumes:
+    - name: cache
+      host: /tmp/cache
