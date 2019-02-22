@@ -2,12 +2,7 @@ kind: pipeline
 name: pipeline-test
 
 steps:
-- name: test
-  image: busybox
-  commands:
-  - echo "success"
-
-- name: install dependencies
+- name: install-dependencies
   image: node
   commands:
   - npm install
