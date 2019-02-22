@@ -52,6 +52,6 @@ steps:
     rebuild: true
     mount:
     - ./node_modules
-    volumes:
-    - name: cache
-      host: /tmp/cache
+  volumes:
+  - name: cache
+    host: /tmp/cache
