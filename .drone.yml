@@ -7,17 +7,25 @@ steps:
   commands:
   - echo "success"
 
-- name: build
+- name: install dependencies
   image: node
   commands:
   - npm install
+
+- name: build
+  image: node
+  commands:
   - npm run-script build
 
 - name: notify
   image: plugins/slack
+  settings:
+    webhook:
+      from_secret: slack_webhook
+    channel: 
+      from_secret: slack_channel
   when:
-    status:
-    - failure
+    status: [ success, failure ]
 
 - name: publish
   image: plugins/scp
