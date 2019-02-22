@@ -8,7 +8,7 @@ steps:
   - echo "success"
 
 - name: build
-  image: nodejs
+  image: node
   commands:
   - npm install
   - npm run-script build
