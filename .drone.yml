@@ -2,6 +2,14 @@ kind: pipeline
 name: pipeline-test
 
 steps:
+- name: restore-cache
+  image: drillster/drone-volume-cache
+  restore: true
+  mount:
+    - ./node_modules
+  volumes:
+    - /tmp/cache:/cache
+
 - name: install-dependencies
   image: node
   commands:
@@ -35,3 +43,11 @@ steps:
     - production
     event:
     - deploy
+
+- name: rebuild-cache
+  image: drillster/drone-volume-cache
+  rebuild: true
+  mount:
+    - ./node_modules
+  volumes:
+    - /tmp/cache:/cache
