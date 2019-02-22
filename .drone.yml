@@ -8,10 +8,10 @@ steps:
   - echo "success"
 
 - name: build
-  image: golang
+  image: nodejs
   commands:
-  - go build
-  - go test
+  - npm install
+  - npm run-script build
 
 - name: notify
   image: plugins/slack
