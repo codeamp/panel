@@ -4,8 +4,8 @@ name: pipeline-test
 steps:
 - name: restore-cache
   image: drillster/drone-volume-cache
-  restore: true
   settings:
+    restore: true
     mount:
     - ./node_modules
   volumes:
@@ -48,8 +48,8 @@ steps:
 
 - name: rebuild-cache
   image: drillster/drone-volume-cache
-  rebuild: true
   settings:
+    rebuild: true
     mount:
     - ./node_modules
     volumes:
