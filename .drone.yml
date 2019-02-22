@@ -1,0 +1,28 @@
+kind: pipeline
+name: default
+
+steps:
+- name: test
+  image: busybox
+  commands:
+  - echo "success"
+
+- name: build
+  image: golang
+  commands:
+  - go build
+  - go test
+
+- name: notify
+  image: plugins/slack
+  when:
+    status:
+    - failure
+
+- name: publish
+  image: plugins/scp
+  when:
+    target:
+    - production
+    event:
+    - deploy
