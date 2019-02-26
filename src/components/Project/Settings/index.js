@@ -13,6 +13,9 @@ import CheckboxField from 'components/Form/checkbox-field';
 import Card, {CardContent, CardActions} from 'material-ui/Card';
 import { FormLabel, FormControl, FormControlLabel } from 'material-ui/Form';
 import Radio, {RadioGroup} from 'material-ui/Radio';
+import ImportExport from 'components/Utils/ImportExport';
+import yaml from 'js-yaml';
+import { saveAs } from 'file-saver';
 
 @inject("store") @observer
 
@@ -77,6 +80,17 @@ import Radio, {RadioGroup} from 'material-ui/Radio';
     }
   }
 `, { name: "updateProjectEnvironments"})
+
+@graphql(gql`
+  query ExportProject($id: String!, $environmentID: String!) {
+    exportProject(id: $id, environmentID: $environmentID)
+  }
+`, {
+  name: "exportProject",
+  options: ({ id, environmentID }) => ({
+    variables: { id, environmentID },
+  })
+})
 
 export default class Settings extends React.Component {
   constructor(props){
@@ -273,6 +287,38 @@ export default class Settings extends React.Component {
     return
   }
 
+  importConfiguration() {
+    console.log('importConfiguration')
+  }
+
+  exportConfiguration() {
+    console.log('exportConfiguration')
+    const { project } = this.props.data
+    const currentEnv = this.props.store.app.currentEnvironment
+    const self = this
+
+    this.props.exportProject.refetch({
+      id: project.id,
+      environmentID: currentEnv.id,
+    })
+    .then(({data}) => {
+      console.log(data)
+      const contents = data.exportProject
+      try {
+        var yamlArr = yaml.safeLoad(contents, 'utf-8')
+        var stringContents = yaml.safeDump(yamlArr)
+        var blob = new Blob([stringContents], {type: "text/plain;charset=utf-8", endings:'native'});
+        saveAs(blob, `${project.slug}-${currentEnv.key}.yaml`)
+      } catch(error) {
+        self.props.store.app.setSnackbar({ open: true, msg: error.message })  
+      }      
+    })
+    .catch(function(error){
+      self.props.store.app.setSnackbar({ open: true, msg: error.message })
+    })    
+
+  }
+
   render() {
     const { loading, user } = this.props.data;
 
@@ -451,7 +497,25 @@ export default class Settings extends React.Component {
                   </Button>
                 </CardActions>
               </Card>
-            </Grid>                   
+            </Grid>
+
+            <Grid container spacing={24} style={{ padding: 10 }}>
+              <Grid item sm={3}>
+                <Typography variant="title" className={styles.settingsDescription}>
+                  Import/ Export
+                </Typography>
+                <Typography variant="caption" className={styles.settingsCaption}>
+                  Import a project configuration to create new resources in this project, or export this project configuartion to a YAML file.
+                </Typography>
+              </Grid>
+              <Grid item sm={9} style={{ marginTop: 15 }}>
+                <ImportExport 
+                  onFileImport={this.importConfiguration.bind(this)}
+                  onExportBtnClick={this.exportConfiguration.bind(this)}
+                />                                  
+              </Grid>
+            </Grid>
+
           </Grid>
         </Grid>
       </div>
