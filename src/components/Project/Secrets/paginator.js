@@ -427,6 +427,7 @@ export default class SecretsPaginator extends React.Component {
     })
     this.form.$('key').set('disabled', false)
     this.form.$('isSecret').set('disabled', false)
+
     this.openDrawer()
   }
 
@@ -587,7 +588,7 @@ export default class SecretsPaginator extends React.Component {
               if (loading) return <div></div>
               if (error) return `Error! ${error.message}`
               let secret = data.secret
-              if(!self.form.isDirty && !this.state.saving){
+              if(secret.versions.length > 0 && !self.form.isDirty && !this.state.saving){
                 this.form = this.initProjectSecretsForm({
                   'key': secret.key,
                   'value': secret.value,
@@ -606,7 +607,7 @@ export default class SecretsPaginator extends React.Component {
         return (<div><Drawer
             anchor="right"
             classes={{
-            paper: styles.list,
+              paper: styles.list,
             }}
             onClose={() => {this.closeDrawer()}}
             open={this.state.drawerOpen}
