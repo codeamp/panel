@@ -72,6 +72,11 @@ query Project($slug: String, $environmentID: String, $searchKey: String) {
         serviceSpec {
           id
           name
+          cpuRequest
+          cpuLimit
+          memoryRequest
+          memoryLimit
+          terminationGracePeriod
         }
         count
         type
@@ -83,15 +88,6 @@ query Project($slug: String, $environmentID: String, $searchKey: String) {
         preStopHook
       }
     }
-  }
-  serviceSpecs {
-    id
-    name
-    cpuRequest
-    cpuLimit
-    memoryRequest
-    memoryLimit
-    terminationGracePeriod
   }
 }`, {
   options: (props) => ({
@@ -719,7 +715,7 @@ export default class ServicesContent extends React.Component {
   }    
 
 	render() {
-    const { loading, project, serviceSpecs } = this.props.data;
+    const { loading, project } = this.props.data;
 
     if(loading){
       return (
@@ -727,9 +723,11 @@ export default class ServicesContent extends React.Component {
       )
     }
 
+    console.log(project.services.entries)
     this.form.$('projectID').set(project.id)
     this.form.state.extra({
-      serviceSpecs: serviceSpecs.map(function(serviceSpec){
+      serviceSpecs: project.services.entries.map(function(service){
+        var serviceSpec = service.serviceSpec
         return {
           key: serviceSpec.id,
           value: serviceSpec.name,
