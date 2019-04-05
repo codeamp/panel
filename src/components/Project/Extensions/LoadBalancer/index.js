@@ -70,6 +70,7 @@ export default class LoadBalancer extends React.Component {
     const fields = [
         'service',
         'type',
+        'projext_lb_source_ranges',
         'listener_pairs',
         'listener_pairs[].port',
         'listener_pairs[].containerPort',
@@ -79,6 +80,7 @@ export default class LoadBalancer extends React.Component {
     const labels = {
         'service': 'SERVICE',
         'type': 'SCOPE',
+        'projext_lb_source_ranges': 'WHITELIST CIDR CSV (LEAVE BLANK IF UNSURE)',
         'listener_pairs': 'LISTENER PAIRS',
         'listener_pairs[].port': 'PORT',
         'listener_pairs[].containerPort': 'CONTAINER PORT',
@@ -170,37 +172,43 @@ export default class LoadBalancer extends React.Component {
             </Grid>
             <Grid item xs={12}>
               <SelectField fullWidth={true} field={this.form.$('type')} />
-            </Grid>        
+            </Grid>
           </Grid>
           {/* port maps */}
           {this.form.values()['service'] !== "" &&
           <div>
             {this.form.$('listener_pairs').map(function(portMap){
             return (
-            <Grid container spacing={24} key={portMap.id}>
-              <Grid item xs={3}>
-                <InputField fullWidth={true} field={portMap.$('port')} />
-              </Grid>
-              <Grid item xs={4}>
-                <SelectField fullWidth={true} field={portMap.$('containerPort')} extraKey={'containerPort'} />
-              </Grid>        
-              <Grid item xs={3}>
-                <SelectField fullWidth={true} field={portMap.$('serviceProtocol')} />
-              </Grid>      
-              <Grid item xs={2}>
-                <IconButton>
-                  <CloseIcon onClick={portMap.onDel} />
-                </IconButton>
-              </Grid>                                                                                          
-            </Grid>                            
-            )
+              <Grid container spacing={24} key={portMap.id}>
+                <Grid item xs={3}>
+                  <InputField fullWidth={true} field={portMap.$('port')} />
+                </Grid>
+                <Grid item xs={4}>
+                  <SelectField fullWidth={true} field={portMap.$('containerPort')} extraKey={'containerPort'} />
+                </Grid>        
+                <Grid item xs={3}>
+                  <SelectField fullWidth={true} field={portMap.$('serviceProtocol')} />
+                </Grid>      
+                <Grid item xs={2}>
+                  <IconButton>
+                    <CloseIcon onClick={portMap.onDel} />
+                  </IconButton>
+                </Grid>                                                                                          
+              </Grid>                            
+              )
             })}
             <Grid item xs={12}>
               <Button variant="raised" type="secondary" onClick={this.form.$('listener_pairs').onAdd}>
                 Add Port Map
               </Button>
-            </Grid>        
+            </Grid>    
             <br/>  
+            <Grid container spacing={24}>
+              <Grid item xs={12}>
+                <InputField fullWidth={true} field={this.form.$('projext_lb_source_ranges')}/>
+              </Grid>           
+            </Grid>
+            <br/>
           </div>      
           }
         </form>
