@@ -113,7 +113,6 @@ class Project extends React.Component {
   }
 
   socketHandler() {
-    console.log("received message: project/branch-update")
     this.props.data.refetch()
   }
 
