@@ -88,6 +88,7 @@ export default class Settings extends React.Component {
       automationSaving: false,
       settingsSet: false
     }
+    this.socketHandler = this.socketHandler.bind(this);
   }
 
   createProjectForm(){
@@ -132,6 +133,28 @@ export default class Settings extends React.Component {
       this.setFormValues(nextProps)
     }
   } 
+
+  componentWillUnmount() {
+    this.teardownSocketHandlers()
+  }
+
+  componentDidMount() {
+    this.setupSocketHandlers()
+  }
+
+  setupSocketHandlers(){
+    const { socket } = this.props;
+    socket.on("project/branch-update", this.socketHandler);
+  }
+
+  socketHandler() {
+    this.setState({ settingsSet: false })
+  }
+
+  teardownSocketHandlers() {
+    const { socket } = this.props;
+    socket.removeListener("project/branch-update", this.socketHandler);
+  }
 
   updateProject(form){
     this.props.updateProject({

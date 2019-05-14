@@ -83,6 +83,7 @@ class Project extends React.Component {
     this.state = {
 
     }
+    this.socketHandler = this.socketHandler.bind(this);
   }
 
   componentDidUpdate() {
@@ -99,6 +100,26 @@ class Project extends React.Component {
 
   componentWillUnmount() {
     this.props.store.app.leftNavItems = []
+    this.teardownSocketHandlers()
+  }
+
+  componentDidMount() {
+    this.setupSocketHandlers()
+  }
+
+  setupSocketHandlers(){
+    const { socket } = this.props;
+    socket.on("project/branch-update", this.socketHandler);
+  }
+
+  socketHandler() {
+    console.log("received message: project/branch-update")
+    this.props.data.refetch()
+  }
+
+  teardownSocketHandlers() {
+    const { socket } = this.props;
+    socket.removeListener("project/branch-update", this.socketHandler);
   }
 
   handleEnvironmentClick = event => {
