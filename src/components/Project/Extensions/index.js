@@ -169,7 +169,7 @@ export default class ProjectExtensions extends React.Component {
   
   setupSocketHandlers(){
     const { socket, match } = this.props;
-    socket.on(match.url.substring(1, match.url.length), this.socketHandler);
+    socket.on(match.url.substring(1, match.url.length) + "/extensions", this.socketHandler);
   }  
 
   socketHandler() {
@@ -486,6 +486,9 @@ export default class ProjectExtensions extends React.Component {
     let multiline = false
     let rows = 1
 
+    if (!artifact.value) {
+      return (<div/>)
+    }
     if (artifact.value.includes("\n")) {
       multiline = true
       rows = 10
