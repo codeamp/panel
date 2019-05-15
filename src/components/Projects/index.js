@@ -11,32 +11,28 @@ import { observer, inject } from 'mobx-react';
 import { graphql } from 'react-apollo';
 import gql from 'graphql-tag';
 import BookmarkedIcon from '@material-ui/icons/Star';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Chip from '@material-ui/core/Chip';
 
 @graphql(gql`
-  query AllProjects($projectSearch: ProjectSearchInput){
-    projects(projectSearch: $projectSearch){
-      entries {
+  query{
+    environments{
+      id
+      name
+      key
+      projects{
         id
         name
         slug
         bookmarked
-        environments {
-          id
-          name
-          key
-          __typename
-        }
-      }  
-      count
+        gitBranch
+      }
     }
   }
 `, {
   options: (props) => ({
-    fetchPolicy: "network-only",
-    variables: {
-      projectSearch: {
-      },
-    },
+    fetchPolicy: "network-only"
   })
 })
 
@@ -44,25 +40,49 @@ import BookmarkedIcon from '@material-ui/icons/Star';
 export default class Projects extends React.Component {
   constructor(props){
     super(props)
-    this.state = {}
+    this.state = {
+      value: 0
+    }
   }
 
-  render() {
-    const { loading, projects } = this.props.data;
+  handleChange = (event, value) => {
+    this.setState({ value });
+  };
 
-    if(loading || !projects){
+  render() {
+    const { loading, environments } = this.props.data;
+
+    if(loading || !environments){
       return (
         <Loading />
       )
     }      
+
+    var projects = environments[this.state.value].projects
+    var environment = environments[this.state.value]
     
     return (
       <div>
+        <Paper>
+          <Tabs
+            value={this.state.value}
+            onChange={this.handleChange}
+            indicatorColor="primary"
+            textColor="primary"
+            centered
+          >
+            {environments.length > 0 && environments.map((environment, idx) => {
+              return (                  
+                <Tab label={environment.name} />
+              )
+            }, this)}
+          </Tabs>
+        </Paper>
         <Paper className={styles.tablePaper}>
             <Toolbar>
               <div>
                 <Typography variant="title">
-                  Projects ({projects.count})
+                  Projects ({projects.length})
                 </Typography>
               </div>
             </Toolbar>
@@ -70,24 +90,33 @@ export default class Projects extends React.Component {
         <div className={styles.bookmarks}>
           <Grid container spacing={16}>
             <Grid item xs={12}>
-              {projects.entries.length > 0 && projects.entries.map(function(project, idx){
+              {projects.length > 0 && projects.map(function(project, idx){
                 return (                  
                   <Card key={project.id} className={styles.bookmarkedProject}>
-                    <Link to={"/projects/" + project.slug}>
+                    <Link to={"/projects/" + project.slug + "/" + environment.key}>
                       <CardContent
                         tabIndex={-1}
                         key={project.id}
                         history={this.props.history}>
-                          <Typography variant="subheading" style={{"userSelect":"none"}}>
-                          { project.bookmarked ? <BookmarkedIcon className={styles.bookmarkedProjectGlyph}/> : null }
-                          {project.name}
-                          </Typography>
+                        <Grid container spacing={0}>
+                          <Grid item xs={8}>
+                            <Typography variant="subheading" style={{"userSelect":"none"}}>
+                            { project.bookmarked ? <BookmarkedIcon className={styles.bookmarkedProjectGlyph}/> : null }
+                            {project.name}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Typography variant="subheading" align="right">
+                              <Chip label={project.gitBranch} color={project.gitBranch === "master" ? "primary" : "secondary"}/>
+                            </Typography>
+                          </Grid>
+                        </Grid>
                       </CardContent>
                     </Link>
                   </Card>
                 )
               }, this)}
-              {projects.entries.length === 0 &&
+              {projects.length === 0 &&
                 <Card style={{padding: 20}}>
                   <Typography variant="subheading" className={styles.bookmarkedProjectsEmpty}>
                     There are no bookmarked projects.
