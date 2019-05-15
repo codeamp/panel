@@ -71,7 +71,7 @@ export default class Projects extends React.Component {
             textColor="primary"
             centered
           >
-            {environments.length > 0 && environments.map(function(environment, idx){
+            {environments.length > 0 && environments.map((environment, idx) => {
               return (                  
                 <Tab label={environment.name} />
               )
