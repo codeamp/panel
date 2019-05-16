@@ -28,7 +28,13 @@ import Avatar from '@material-ui/core/Avatar';
         slug
         bookmarked
         gitBranch
-        features(showDeployed: true, params: { limit: 25 }) {
+        releases(params: {limit: 1}) {
+          entries {
+            id
+            state
+          }
+        }
+        features(showDeployed: false, params: { limit: 25 }) {
           entries {
             id
           }
@@ -55,6 +61,33 @@ export default class Projects extends React.Component {
     this.setState({ value });
   };
 
+  getLatestReleaseStatus = (releases) => {
+    let style = { backgroundColor: "gray", color: "black", marginRight: 5 }
+
+    if (releases.entries.length !== 1) {
+      return (<Chip avatar={<Avatar>RS</Avatar>} label="NO RELEASES FOUND" style={style} />)
+    }
+
+    switch (releases.entries[0].state) {
+      case "waiting":
+        style = { backgroundColor: "yellow", color: "black", marginRight: 5 }
+        break
+      case "complete":
+        style = { backgroundColor: "green", color: "white", marginRight: 5 }
+        break
+      case "failed":
+        style = { backgroundColor: "red", color: "white", marginRight: 5 }
+        break
+      case "canceled":
+        style = { backgroundColor: "purple", color: "white", marginRight: 5 }
+        break
+      default:
+        break
+    }
+
+    return (<Chip avatar={<Avatar>RS</Avatar>} label={releases.entries[0].state} style={style} />)
+  }
+
   render() {
     const { loading, environments } = this.props.data;
 
@@ -66,7 +99,7 @@ export default class Projects extends React.Component {
 
     var projects = environments[this.state.value].projects
     var environment = environments[this.state.value]
-    
+
     return (
       <div>
         <Paper>
@@ -113,6 +146,7 @@ export default class Projects extends React.Component {
                           </Grid>
                           <Grid item xs={7}>
                             <Typography variant="subheading" align="right">
+                              {this.getLatestReleaseStatus(project.releases)}
                               {project.features.entries.length > 0 && <Chip avatar={<Avatar>{project.features.entries.length}</Avatar>} label="available features" style={{marginRight: 5}}/>}
                               <Chip label={project.gitBranch} color={project.gitBranch === "master" ? "primary" : "secondary"}/>
                             </Typography>
