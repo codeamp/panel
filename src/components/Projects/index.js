@@ -14,6 +14,7 @@ import BookmarkedIcon from '@material-ui/icons/Star';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Chip from '@material-ui/core/Chip';
+import Avatar from '@material-ui/core/Avatar';
 
 @graphql(gql`
   query{
@@ -27,6 +28,11 @@ import Chip from '@material-ui/core/Chip';
         slug
         bookmarked
         gitBranch
+        features(showDeployed: true, params: { limit: 25 }) {
+          entries {
+            id
+          }
+        }
       }
     }
   }
@@ -99,14 +105,15 @@ export default class Projects extends React.Component {
                         key={project.id}
                         history={this.props.history}>
                         <Grid container spacing={0}>
-                          <Grid item xs={8}>
+                          <Grid item xs={5}>
                             <Typography variant="subheading" style={{"userSelect":"none"}}>
                             { project.bookmarked ? <BookmarkedIcon className={styles.bookmarkedProjectGlyph}/> : null }
                             {project.name}
                             </Typography>
                           </Grid>
-                          <Grid item xs={4}>
+                          <Grid item xs={7}>
                             <Typography variant="subheading" align="right">
+                              {project.features.entries.length > 0 && <Chip avatar={<Avatar>{project.features.entries.length}</Avatar>} label="available features" style={{marginRight: 5}}/>}
                               <Chip label={project.gitBranch} color={project.gitBranch === "master" ? "primary" : "secondary"}/>
                             </Typography>
                           </Grid>
@@ -125,12 +132,9 @@ export default class Projects extends React.Component {
               }
             </Grid>        
           </Grid>
-
         </div>
-      
       </div>
     )
   }
-
 }
 
