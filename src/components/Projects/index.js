@@ -44,7 +44,7 @@ import Avatar from '@material-ui/core/Avatar';
   }
 `, {
   options: (props) => ({
-    fetchPolicy: "network-only"
+    fetchPolicy: "no-cache"
   })
 })
 
@@ -97,7 +97,6 @@ export default class Projects extends React.Component {
       )
     }      
 
-    var projects = environments[this.state.value].projects
     var environment = environments[this.state.value]
 
     return (
@@ -121,7 +120,7 @@ export default class Projects extends React.Component {
             <Toolbar>
               <div>
                 <Typography variant="title">
-                  Projects ({projects.length})
+                  Projects ({environment.projects.length})
                 </Typography>
               </div>
             </Toolbar>
@@ -129,7 +128,7 @@ export default class Projects extends React.Component {
         <div className={styles.bookmarks}>
           <Grid container spacing={16}>
             <Grid item xs={12}>
-              {projects.length > 0 && projects.map(function(project, idx){
+              {environment.projects.length > 0 && environment.projects.map(function(project, idx){
                 return (                  
                   <Card key={project.id} className={styles.bookmarkedProject}>
                     <Link to={"/projects/" + project.slug + "/" + environment.key}>
@@ -157,7 +156,7 @@ export default class Projects extends React.Component {
                   </Card>
                 )
               }, this)}
-              {projects.length === 0 &&
+              {environment.projects.length === 0 &&
                 <Card style={{padding: 20}}>
                   <Typography variant="subheading" className={styles.bookmarkedProjectsEmpty}>
                     There are no bookmarked projects.
@@ -171,4 +170,3 @@ export default class Projects extends React.Component {
     )
   }
 }
-
