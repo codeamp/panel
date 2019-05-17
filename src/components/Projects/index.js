@@ -94,7 +94,6 @@ export default class Projects extends React.Component {
         <Loading />
       )
     }      
-
     var projects = environments[this.state.value].projects
     var environment = environments[this.state.value]
 
@@ -129,11 +128,11 @@ export default class Projects extends React.Component {
             <Grid item xs={12}>
               {projects.length > 0 && projects.map(function(project, idx){
                 return (                  
-                  <Card key={project.id + "-" + environment.key} className={styles.bookmarkedProject}>
+                  <Card key={project.id+"-"+environment.key+"-card"} className={styles.bookmarkedProject}>
                     <Link to={"/projects/" + project.slug + "/" + environment.key}>
                       <CardContent
                         tabIndex={-1}
-                        key={project.id}
+                        key={project.id+"-"+environment.key+"-cardContent"}
                         history={this.props.history}>
                         <Grid container spacing={0}>
                           <Grid item xs={5}>
