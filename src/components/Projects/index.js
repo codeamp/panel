@@ -94,7 +94,6 @@ export default class Projects extends React.Component {
         <Loading />
       )
     }      
-    console.log(this.state.value)
     var projects = environments[this.state.value].projects
     var environment = environments[this.state.value]
 
