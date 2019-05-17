@@ -34,10 +34,8 @@ import Avatar from '@material-ui/core/Avatar';
             state
           }
         }
-        features(showDeployed: false, params: { limit: 25 }) {
-          entries {
-            id
-          }
+        features(showDeployed: false, params: { limit: 0 }) {
+          count
         }
       }
     }
@@ -85,7 +83,7 @@ export default class Projects extends React.Component {
         break
     }
 
-    return (<Chip avatar={<Avatar>RS</Avatar>} label={releases.entries[0].state} style={style} />)
+    return (<Chip key={releases.entries[0].id+"-release"} avatar={<Avatar>RS</Avatar>} label={releases.entries[0].state} style={style} />)
   }
 
   render() {
@@ -112,7 +110,7 @@ export default class Projects extends React.Component {
           >
             {environments.length > 0 && environments.map((environment, idx) => {
               return (                  
-                <Tab label={environment.name} />
+                <Tab key={environment.key+"-tab"} label={environment.name} />
               )
             }, this)}
           </Tabs>
@@ -131,7 +129,7 @@ export default class Projects extends React.Component {
             <Grid item xs={12}>
               {projects.length > 0 && projects.map(function(project, idx){
                 return (                  
-                  <Card key={project.id} className={styles.bookmarkedProject}>
+                  <Card key={project.id + "-" + environment.key} className={styles.bookmarkedProject}>
                     <Link to={"/projects/" + project.slug + "/" + environment.key}>
                       <CardContent
                         tabIndex={-1}
@@ -147,8 +145,8 @@ export default class Projects extends React.Component {
                           <Grid item xs={7}>
                             <Typography variant="subheading" align="right">
                               {this.getLatestReleaseStatus(project.releases)}
-                              {project.features.entries.length > 0 && <Chip avatar={<Avatar>{project.features.entries.length}</Avatar>} label="available features" style={{marginRight: 5}}/>}
-                              <Chip label={project.gitBranch} color={project.gitBranch === "master" ? "primary" : "secondary"}/>
+                              {project.features.count > 0 && <Chip key={project.id+"-"+environment.key+"-features"} avatar={<Avatar>{project.features.count}</Avatar>} label="available features" style={{marginRight: 5}}/>}
+                              <Chip key={project.id+"-"+environment.key+"-gitBranch"} label={project.gitBranch} color={project.gitBranch === "master" ? "primary" : "secondary"}/>
                             </Typography>
                           </Grid>
                         </Grid>
