@@ -242,7 +242,6 @@ export default class Ingress extends React.Component {
       'type',
       'protocol',
       'subdomain',
-      'enable_websockets',
       'upstream_routes',
       'upstream_routes[].domains',
       'upstream_routes[].domains[].subdomain',
@@ -260,7 +259,6 @@ export default class Ingress extends React.Component {
         'ingress': "INGRESS",
         'service': "SERVICE",
         'protocol': "PROTOCOL",
-        'enable_websockets': 'ENABLE WEBSOCKETS',
         'type': "TYPE",
         'upstream_routes': "UPSTREAM ROUTES",
         'upstream_routes[].domains[].subdomain': 'SUBDOMAIN',
@@ -269,9 +267,7 @@ export default class Ingress extends React.Component {
         'upstream_routes[].methods': "METHODS",
     }
     const initials = {}
-    const types = {
-      "enable_websockets": 'checkbox'
-    }
+    const types = {}
 
     const extra = {
         'ingress': this.state.ingressControllers,
@@ -361,9 +357,6 @@ export default class Ingress extends React.Component {
                       <Grid container spacing={24} direction={'row'}>
                         <Grid item xs={8}>
                           <SelectField fullWidth={true} field={this.form.$('ingress')} />
-                        </Grid>
-                        <Grid item xs={4}>
-                          <CheckboxField field={this.form.$('enable_websockets')} />
                         </Grid>
                         <Grid item xs={12}>
                           {this.form.$('upstream_routes').map(function(route){
