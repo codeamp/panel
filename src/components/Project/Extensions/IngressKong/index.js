@@ -5,7 +5,6 @@ import Button from 'material-ui/Button';
 import IconButton from 'material-ui/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import SelectField from 'components/Form/select-field';
-import CheckboxField from 'components/Form/checkbox-field';
 import RadioField from 'components/Form/radio-field';
 import Loading from 'components/Utils/Loading';
 import validatorjs from 'validatorjs';
