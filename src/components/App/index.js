@@ -165,9 +165,12 @@ export default class App extends React.Component {
                   )} />
                   <Route path='/projects/:slug/:environment?' render={(props) => (
                       <ProjectEnvironmentSelector socket={socket} {...props} projects={this.props.data.projects} user={this.props.data.user}/>
-                  )} />                  
+                  )} />
                   <Route exact path='/create' render={(props) => (
-                    <Create projects={projects.entries} type={"create"} {...props} />
+                    <Create projects={projects.entries} type={"create"} {...props} onCreated={(data) => {
+                      this.props.data.refetch()
+                      this.props.history.push('/projects/' + data.createProject.slug, data)
+                    }}/>
                   )} />
                   <Route path='/admin' render={(props) => (
                     <Admin socket={socket} data={this.props.data} projects={projects.entries} {...props} />
