@@ -1,0 +1,18 @@
+imagePullPolicy: Never
+ingress:
+  enabled: true
+  annotations:
+    ingress.kubernetes.io/ingress.class: nginx
+  hosts:
+  - host: codeamp.local
+    paths:
+      - /
+env:
+- name: REACT_APP_DEX_URI
+  value: http://codamp-dex.local
+- name: REACT_APP_CIRCUIT_URI
+  value: http://codeamp-circuit.local
+- name: REACT_APP_CIRCUIT_WSS_URI
+  value: http://codeamp-circuit.local
+- name: REACT_APP_PANEL_URI
+  value: http://codeamp.local

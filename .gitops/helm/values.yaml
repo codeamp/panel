@@ -1,0 +1,26 @@
+# Default values for microservice.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image: "codeamp-panel"
+imagePullPolicy: IfNotPresent
+nameOverride: ""
+fullnameOverride: ""
+containerPort: 3010
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+ingress:
+  enabled: false
