@@ -147,13 +147,6 @@ mutation DeleteSecret ($id: String!, $key: String!, $value: String!, $type: Stri
   environmentID: $environmentID,
   }) {
       id
-      key
-      value
-      user {
-        id
-        email
-      }
-      created
   }
 }
 `, { name: "deleteSecret" })
@@ -285,6 +278,7 @@ export default class Secrets extends React.Component {
         this.form.$('key').set('disabled', true)
         this.form.$('isSecret').set('disabled', !data.updateSecret.isSecret)
         this.setState({ saving: false })
+        this.closeDrawer(true)
       });
     }
   }
@@ -311,7 +305,14 @@ export default class Secrets extends React.Component {
     if(!force && this.form.isDirty){
       this.setState({ dirtyFormDialogOpen: true })
     } else {
-      this.setState({ drawerOpen: false, addEnvVarMenuOpen: false, saving: true, dialogOpen: false, dirtyFormDialogOpen: false })    
+      this.form = this.initAdminSecretsForm()
+      this.setState({
+        drawerOpen: false,
+        addEnvVarMenuOpen: false,
+        saving: true,
+        dialogOpen: false,
+        dirtyFormDialogOpen: false
+      })
     }
   }
 
