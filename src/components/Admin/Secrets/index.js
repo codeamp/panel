@@ -320,8 +320,8 @@ export default class Secrets extends React.Component {
       this.props.deleteSecret({
         variables: this.form.values(),
       }).then(({data}) => {
-        this.props.data.refetch()
         this.closeDrawer(true)
+        this.props.data.refetch()
       });
       this.setState({ dialogOpen: false })
     }
@@ -386,10 +386,6 @@ export default class Secrets extends React.Component {
             </TableHead>
             <TableBody>
               {secrets.entries.map(function(secret, idx){
-                let emptyValue
-                if (secret.user === null) {
-                  emptyValue = styles.emptyValue
-                }
                 return <Secret idx={idx} secret={secret} onClick={self.onClick} key={idx}/>
               })}
             </TableBody>
