@@ -12,6 +12,12 @@ build:
         REACT_APP_CIRCUIT_WSS_URI: http://codeamp-circuit.local
         REACT_APP_DEX_URI: http://codeamp-dex.local
         REACT_APP_PANEL_URI: http://codeamp.local
+    sync:
+      manual:
+      - src: '**/*.js'
+        dest: .
+      - src: '**/*.css'
+        dest: .
 deploy:
   helm:
     releases:

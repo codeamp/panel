@@ -3,4 +3,5 @@ node_modules
 build
 .gitops/**/*
 .gitops
-*.swp
+**/*.swp
+skaffold.yaml

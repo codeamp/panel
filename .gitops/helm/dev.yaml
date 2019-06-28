@@ -1,4 +1,7 @@
 imagePullPolicy: Never
+args:
+- 'npm'
+- 'start'
 ingress:
   enabled: true
   annotations:
