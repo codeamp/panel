@@ -1,4 +1,5 @@
 import React from 'react';
+import { pure } from 'recompose';
 import Typography from 'material-ui/Typography';
 import Grid from 'material-ui/Grid';
 import Toolbar from 'material-ui/Toolbar';
@@ -45,6 +46,7 @@ import FileIcon from '@material-ui/icons/Note';
 import BuildArgIcon from '@material-ui/icons/Memory';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import GlobalIcon from '@material-ui/icons/Public';
+
 
 @inject("store") @observer
 @graphql(gql`
@@ -233,6 +235,7 @@ export default class Secrets extends React.Component {
 
   onClick(secretIdx){
     const secret = this.props.data.secrets.entries[secretIdx]
+
     if(secret !== undefined){
       this.form = this.initAdminSecretsForm({
         'key': secret.key,
@@ -317,8 +320,8 @@ export default class Secrets extends React.Component {
       this.props.deleteSecret({
         variables: this.form.values(),
       }).then(({data}) => {
-        this.props.data.refetch()
         this.closeDrawer(true)
+        this.props.data.refetch()
       });
       this.setState({ dialogOpen: false })
     }
@@ -326,31 +329,6 @@ export default class Secrets extends React.Component {
 
   onFileEditorChange(newValue) {
     this.form.$('value').set(newValue)
-  }
-
-  getTypeGlyph(secret){
-    switch(secret.type){
-      case "file":
-        return <Tooltip title="File" ><FileIcon/></Tooltip>
-      case "build":
-        return <Tooltip title="Build Arg"><BuildArgIcon/></Tooltip>
-      case "protected-env":
-      case "env":
-        return <Tooltip title="Environment Variable"><EnvVarIcon/></Tooltip>
-      default:
-        return secret.type
-    }
-  }
-
-  getScopeGlyph(secret){
-    switch(secret.scope){
-      case "global":
-        return <Tooltip title="Global"><GlobalIcon/></Tooltip>
-      case "extension":
-        return <Tooltip title="Extension"><ExtensionIcon/></Tooltip>
-      default:
-        return secret.scope
-    }
   }
 
   render() {
@@ -408,39 +386,7 @@ export default class Secrets extends React.Component {
             </TableHead>
             <TableBody>
               {secrets.entries.map(function(secret, idx){
-                let emptyValue
-                if (secret.user === null) {
-                  emptyValue = styles.emptyValue
-                }
-                return (
-                  <TableRow
-                    hover
-                    tabIndex={-1}
-                    onClick={()=> self.onClick(idx)}
-                    key={secret.id}>
-                    <TableCell className={emptyValue}>
-                      {secret.key}
-                    </TableCell>
-                    <TableCell>
-                      {self.getTypeGlyph(secret)}
-                    </TableCell>
-                    <TableCell>
-                      {secret.isSecret ? (<Tooltip title="Protected"><ProtectedIcon/></Tooltip>) : "" }
-                    </TableCell>
-                    <TableCell>
-                      {self.getScopeGlyph(secret)}
-                    </TableCell>
-                    <TableCell>
-                      {secret.environment.name}
-                    </TableCell>
-                    <TableCell>
-                      {secret.user ? secret.user.email : (<Tooltip title="Missing Author or Version"><MissingSecretIcon/></Tooltip>)}
-                    </TableCell>
-                    <TableCell>
-                      {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
-                    </TableCell>
-                  </TableRow>
-                )
+                return <Secret idx={idx} secret={secret} onClick={self.onClick} key={idx}/>
               })}
             </TableBody>
           </Table>
@@ -611,5 +557,67 @@ export default class Secrets extends React.Component {
         }
       </div>
     )
+  }
+}
+
+// export default class Secrets extends React.Component {
+const Secret = pure(function ({idx, secret, onClick}) {
+  let emptyValue
+  if (secret.user === null) {
+    emptyValue = styles.emptyValue
+  }
+  return (
+    <TableRow
+    hover
+    tabIndex={-1}
+    onClick={()=> onClick(idx)}
+    key={secret.id}>
+    <TableCell className={emptyValue}>
+      {secret.key}
+    </TableCell>
+    <TableCell>
+      {getTypeGlyph(secret)}
+    </TableCell>
+    <TableCell>
+      {secret.isSecret ? (<Tooltip title="Protected"><ProtectedIcon/></Tooltip>) : "" }
+    </TableCell>
+    <TableCell>
+      {getScopeGlyph(secret)}
+    </TableCell>
+    <TableCell>
+      {secret.environment.name}
+    </TableCell>
+    <TableCell>
+      {secret.user ? secret.user.email : (<Tooltip title="Missing Author or Version"><MissingSecretIcon/></Tooltip>)}
+    </TableCell>
+    <TableCell>
+      {moment(new Date(secret.created)).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"}
+    </TableCell>
+  </TableRow>)
+})
+
+
+function getTypeGlyph(secret){
+  switch(secret.type){
+    case "file":
+      return <Tooltip title="File" ><FileIcon/></Tooltip>
+    case "build":
+      return <Tooltip title="Build Arg"><BuildArgIcon/></Tooltip>
+    case "protected-env":
+    case "env":
+      return <Tooltip title="Environment Variable"><EnvVarIcon/></Tooltip>
+    default:
+      return secret.type
+  }
+}
+
+function getScopeGlyph(secret){
+  switch(secret.scope){
+    case "global":
+      return <Tooltip title="Global"><GlobalIcon/></Tooltip>
+    case "extension":
+      return <Tooltip title="Extension"><ExtensionIcon/></Tooltip>
+    default:
+      return secret.scope
   }
 }
