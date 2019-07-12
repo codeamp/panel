@@ -60,7 +60,7 @@ class ReleaseView extends React.Component {
     let timer =  0
     let startTimer = false
 
-    if(releaseFinished.getTime() > 0 && this.props.release.state === "complete") {
+    if(releaseFinished.getTime() > 0 && ["complete", "failed", "canceled"].includes(this.props.release.state)) {
       currentTime = new Date(this.props.release.finished)
       diff = currentTime - new Date(this.props.release.started).getTime();
       timer = Math.floor(diff/1000)
@@ -895,7 +895,7 @@ export default class Releases extends React.Component {
     if(loading){
       return (<Loading />)
     }
-    
+
     let latestSuccessfulRelease = this.getLatestSuccessfulRelease()
     
     return (
