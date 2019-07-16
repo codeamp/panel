@@ -253,6 +253,7 @@ export default class Secrets extends React.Component {
 
   onClickVersion(versionIdx) {
     this.form.$('value').set(this.props.data.secrets.entries[this.form.values()['index']].versions[versionIdx].value)
+    this.setState({ formValue: this.form.values()['value'] })
   }
 
   onError(form){
@@ -298,7 +299,7 @@ export default class Secrets extends React.Component {
 
   openDrawer(){
     this.form.showErrors(false)
-    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false });
+    this.setState({ addEnvVarMenuOpen: false, drawerOpen: true, saving: false, formValue: this.form.values()['value'] });
   }
 
   closeDrawer(force = false){
@@ -330,6 +331,7 @@ export default class Secrets extends React.Component {
 
   onFileEditorChange(newValue) {
     this.form.$('value').set(newValue)
+    this.setState({ formValue: newValue })
   }
 
   render() {
@@ -472,7 +474,7 @@ export default class Secrets extends React.Component {
                         mode="yaml"
                         theme="github"
                         onChange={this.onFileEditorChange.bind(this)}
-                        value={this.form.values()['value']}
+                        value={this.state.formValue}
                         name="file-content"
                         editorProps={{$blockScrolling: true}}
                         focus={true}
