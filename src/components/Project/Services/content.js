@@ -280,7 +280,7 @@ export default class ServicesContent extends React.Component {
     ];
 
     const rules = {
-      'name': ['string','required','min:1','max:63','regex:/^[a-zA-Z0-9-]+$/'],
+      'name': ['string','required','min:1','max:63','regex:/^(?![0-9]+$)(?!-)[a-z0-9-]+(?<!-)$/'],
       'command': 'string',
       'count': 'numeric|required|min:0',
       'ports[].port': 'numeric|required|between:1,65535',
@@ -475,7 +475,16 @@ export default class ServicesContent extends React.Component {
       'preStopHook': $hooks
     };
 
-    const plugins = { dvr: validatorjs };
+    const plugins = {
+      dvr: {
+        package: validatorjs,
+        extend ($validator) {
+          const messages = $validator.getMessages('en');
+          messages.regex = "The name MUST NOT start or end with a '-', consist of all numeric values, or contain upper letters.";
+          $validator.setMessages('en', messages);
+        }
+      }
+    };
 
     const options = {
       autoParseNumbers: true
