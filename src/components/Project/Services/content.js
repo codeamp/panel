@@ -494,7 +494,7 @@ export default class ServicesContent extends React.Component {
   }
 
   handleFormChanged() {
-    this.setState({userHasUnsavedChanges: true})
+    this.setState({ userHasUnsavedChanges: true, saving: false })
   }
 
   handleDeleteService() {
@@ -541,13 +541,23 @@ export default class ServicesContent extends React.Component {
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer(true)
-      })
+      }).catch(error => {
+        let obj = JSON.parse(JSON.stringify(error))
+        if(Object.keys(obj).length > 0 && obj.constructor === Object){
+          this.props.store.app.setSnackbar({ open: true, msg: "Error: " + obj.graphQLErrors[0].message })
+        }
+      });
     } else {
       this.props.createService({
         variables: form.values(),
       }).then(({data}) => {
         this.props.data.refetch()
         this.closeDrawer(true)
+      }).catch(error => {
+        let obj = JSON.parse(JSON.stringify(error))
+        if(Object.keys(obj).length > 0 && obj.constructor === Object){
+          this.props.store.app.setSnackbar({ open: true, msg: "Error: " + obj.graphQLErrors[0].message })
+        }
       });
     }
   }
