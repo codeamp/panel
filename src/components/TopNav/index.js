@@ -160,6 +160,10 @@ class TopNav extends React.Component {
       })
       this.setState({ projects: projects })
     }
+
+    if (nextProps.location.pathname !== this.props.location.pathname) {
+      this.setState({ projectQuery: "" })
+    }
   }
 
   onMouseEnter(index){
