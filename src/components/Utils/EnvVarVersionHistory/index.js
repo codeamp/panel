@@ -46,6 +46,7 @@ export default class EnvVarVersionHistory extends React.Component {
               {versions.map(function(secret, idx){
                   return (
                     <TableRow
+                      className={styles.tableRow}
                       hover
                       tabIndex={-1}
                       onClick={() => onClickVersion(idx)}

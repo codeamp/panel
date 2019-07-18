@@ -5,3 +5,7 @@
 .root {
     overflow: auto;
 }
+
+.tableRow {
+    cursor: pointer;
+}

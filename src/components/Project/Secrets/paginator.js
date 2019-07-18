@@ -342,11 +342,13 @@ export default class SecretsPaginator extends React.Component {
 
   onFileEditorChange(newValue) {
     this.form.$('value').set(newValue)
+    this.setState({ formValue: newValue })
   }
 
 
   onClickVersion(versions, idx) {
     this.form.$('value').set(versions[idx].value)
+    this.setState({ formValue: this.form.values()['value'] })
   }
 
   onError(form){
@@ -647,7 +649,7 @@ export default class SecretsPaginator extends React.Component {
                             mode="yaml"
                             theme="github"
                             onChange={this.onFileEditorChange.bind(this)}
-                            value={this.form.values()['value']}
+                            value={this.state.values || this.form.values()['value']}
                             name="file-content"
                             editorProps={{$blockScrolling: true}}
                             focus={true}
