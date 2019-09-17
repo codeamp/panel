@@ -387,68 +387,70 @@ export default class Settings extends React.Component {
               </Grid>
             </Grid>
           }
-          <Grid item sm={3}>
-            <Typography variant="title" className={styles.settingsDescription}>
-              Branch Settings
-            </Typography>
-            <Typography variant="caption" className={styles.settingsCaption}>
-              Updating your branch will update the Features page to show commits from the
-              chosen branch. Make sure the selected branch exists.
-            </Typography>
-          </Grid>
-          <Grid item sm={9}>
-            <Card className={styles.card}>
-              <CardContent>
-                <Grid item xs={12}>
-                  <InputField field={this.form.$('gitBranch')} fullWidth={true} />            
-                </Grid>
-              </CardContent>
-              <CardActions>
-                <Button color="primary"
-                  type="submit"
-                  variant="raised"
-                  disabled={this.state.branchSettingsSaving}
-                  onClick={(e) => this.onUpdateSettings(e, "branchSettings")}>
-                  Save
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>                   
-          {user.permissions.includes("admin") &&
-            <Grid container spacing={24} style={{ padding: 10 }}>
+          {user.permissions.includes("admin") &&                              
+            <Grid container style={{ paddingLeft: 15, paddingTop: 15 }}>
               <Grid item sm={3}>
                 <Typography variant="title" className={styles.settingsDescription}>
-                  Permissions
+                  Branch Settings
                 </Typography>
                 <Typography variant="caption" className={styles.settingsCaption}>
-                  Update which environments this project has access to deploy and build objects within.
+                  Updating your branch will update the Features page to show commits from the
+                  chosen branch. Make sure the selected branch exists.
                 </Typography>
               </Grid>
               <Grid item sm={9}>
                 <Card className={styles.card}>
                   <CardContent>
                     <Grid item xs={12}>
-                      {this.form.$('environments').map((projectEnvironment) => {
-                        return (
-                          <CheckboxField key={projectEnvironment.id} field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
-                        )
-                      })}
+                      <InputField field={this.form.$('gitBranch')} fullWidth={true} />            
                     </Grid>
                   </CardContent>
                   <CardActions>
                     <Button color="primary"
                       type="submit"
                       variant="raised"
-                      disabled={this.state.permissionsSaving}
-                      onClick={(e) => this.onUpdateProjectEnvironments(e)}>
+                      disabled={this.state.branchSettingsSaving}
+                      onClick={(e) => this.onUpdateSettings(e, "branchSettings")}>
                       Save
                     </Button>
                   </CardActions>
                 </Card>
-              </Grid>                   
+              </Grid>          
+              <Grid container style={{ paddingTop: 10 }}>
+                <Grid item sm={3}>
+                  <Typography variant="title" className={styles.settingsDescription}>
+                    Permissions
+                  </Typography>
+                  <Typography variant="caption" className={styles.settingsCaption}>
+                    Update which environments this project has access to deploy and build objects within.
+                  </Typography>
+                </Grid>
+                <Grid item sm={9}>
+                  <Card className={styles.card}>
+                    <CardContent>
+                      <Grid item xs={12}>
+                        {this.form.$('environments').map((projectEnvironment) => {
+                          return (
+                            <CheckboxField key={projectEnvironment.id} field={projectEnvironment.$('grant')} label={projectEnvironment.$('label').value} fullWidth={true} />            
+                          )
+                        })}
+                      </Grid>
+                    </CardContent>
+                    <CardActions>
+                      <Button color="primary"
+                        type="submit"
+                        variant="raised"
+                        disabled={this.state.permissionsSaving}
+                        onClick={(e) => this.onUpdateProjectEnvironments(e)}>
+                        Save
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>                   
+              </Grid>
             </Grid>
           }
-          <Grid container spacing={24} style={{ padding: 10 }}>
+          <Grid container spacing={24} style={{ paddingLeft: 7, paddingTop: 10 }}>
             <Grid item sm={3}>
               <Typography variant="title" className={styles.settingsDescription}>
                 Automation
