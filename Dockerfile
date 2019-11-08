@@ -26,15 +26,14 @@ WORKDIR /usr/src/app
 # add `/usr/src/app/node_modules/.bin` to $PATH
 ENV PATH /usr/src/app/node_modules/.bin:$PATH
 
+EXPOSE 3010
 # install and cache app dependencies
-ADD package.json /usr/src/app/package.json
-ADD package-lock.json /usr/src/app/package-lock.json
+COPY package* ./
 RUN npm install
 RUN npm install -g serve
 
-ADD . /usr/src/app/
+COPY . .
 RUN npm run build
 
-EXPOSE 3010
 # start app
 CMD ["serve", "-s", "build", "-p", "3010"]
