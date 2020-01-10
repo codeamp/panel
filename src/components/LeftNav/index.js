@@ -60,15 +60,6 @@ export default class LeftNav extends React.Component {
             </NavLink>
 
             {user.permissions.includes("admin") &&
-              <NavLink to="/create" exact activeClassName={styles.active}>
-                <ListItem button>
-                  <ListItemIcon>
-                    <PlaylistAddIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Create" />
-                </ListItem>
-              </NavLink>
-
               <div>
                 <ListItem button onClick={this.handleClick.bind(this)}>
                   <ListItemIcon>
@@ -78,6 +69,14 @@ export default class LeftNav extends React.Component {
                   {this.props.store.app.adminLeftNavOpen ? <ExpandLess /> : <ExpandMore />}
                 </ListItem>
                 <Collapse in={this.props.store.app.adminLeftNavOpen} unmountOnExit className={styles.adminDrawer}>
+                  <NavLink to="/create" exact activeClassName={styles.active}>
+                    <ListItem button>
+                      <ListItemIcon>
+                        <PlaylistAddIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Create" />
+                    </ListItem>
+                  </NavLink>
                   <NavLink to="/admin/environments" exact activeClassName={styles.active}>
                     <ListItem button>
                       <ListItemIcon>
