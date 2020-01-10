@@ -27,7 +27,7 @@
     "graphql-tag": "^2.9.2",
     "js-yaml": "^3.12.1",
     "jstimezonedetect": "^1.0.6",
-    "lodash": ">=4.17.5",
+    "lodash": ">=4.17.13",
     "material-ui": "^1.0.0-beta.47",
     "mobx": "^5.1.0",
     "mobx-react": "^5.2.8",
