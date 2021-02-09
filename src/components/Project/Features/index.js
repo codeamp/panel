@@ -118,6 +118,9 @@ export default class Features extends React.Component {
     // Bind socketHandler to THIS so when we pass it to the socket
     // lib and refernece 'this' its still 'us'
     this.socketHandler = this.socketHandler.bind(this);
+
+    // reset feature list when component construct
+    this.props.store.app.setFeatures({ showDeployed: this.state.showDeployed })
   }
 
   handleChange = panel => (event, expanded) => {
