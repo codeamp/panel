@@ -48,6 +48,7 @@ import 'moment-timezone';
           parentHash
           ref
           created
+          notFoundSince
         }
       }
       releases(params: { limit: 25}) {
@@ -198,12 +199,18 @@ export default class Features extends React.Component {
           //Thu Jul 05 2018 13:55:44 (PST)
           let featureMoment = moment(new Date(feature.created))
           let featureTime = featureMoment.format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"
-          return (<ExpansionPanel 
-              key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)}> 
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
+          let notFoundDate = new Date(feature.notFoundSince)
+          let notFoundTime = moment(notFoundDate).format("ddd, MMM Do, YYYY HH:mm:ss") + " (" + moment.tz(jstz.determine().name()).format('z') + ")"
+          let backgroundColor = (notFoundDate.getTime() > 0) ? { backgroundColor: "#f2f2f2" } : {}
+
+          return (
+          <ExpansionPanel key={feature.id} expanded={expanded === feature.id} onChange={this.handleChange(feature.id)} style={backgroundColor}> 
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}> 
               <div> 
-              <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
-              <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { featureTime } </Typography> </div>
+                <Typography variant="body1" style={{ fontSize: 14 }}> <b> { feature.message } </b> </Typography> 
+                <Typography variant="body2" style={{ fontSize: 12 }}> { feature.user } created on { featureTime } </Typography>
+                {notFoundDate.getTime() > 0 && <Typography variant="body2" style={{ fontSize: 12 }}> not found since { notFoundTime } </Typography>}
+              </div>
             </ExpansionPanelSummary>
             <Divider />
             <ExpansionPanelActions>
@@ -213,7 +220,7 @@ export default class Features extends React.Component {
                 </Button>
               </CopyToClipboard>       
               <Button color="primary" size="small"
-                disabled={this.state.disabledDeployBtn || project.extensions.length === 0}
+                disabled={this.state.disabledDeployBtn || project.extensions.length === 0 || notFoundDate.getTime() > 0 }
                 onClick={this.handleDeploy.bind(this, feature, project)}>
                 { this.state.text }
               </Button>

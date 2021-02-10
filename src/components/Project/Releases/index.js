@@ -225,9 +225,11 @@ class ReleaseView extends React.Component {
         state = null
     }
 
+    let cardSytle = release.redeployable ? { paddingBottom: 0 } : { paddingBottom: 0, backgroundColor: "#f2f2f2" }
+
     return (
       <Grid item xs={12} onClick={(e) => {this.props.handleOnClick(e)}}>
-        <Card disabled={this.props.showFullView} square={true} style={{ paddingBottom: 0 }}>
+        <Card disabled={this.props.showFullView} square={true} style={cardSytle}>
           <CardContent>
             <Grid container spacing={0}>
               <Grid item xs={10}>
@@ -336,6 +338,8 @@ class ReleaseView extends React.Component {
           created
           started
           finished
+          redeployable
+          redeployableMessage
           user {
             email
           }
@@ -687,21 +691,23 @@ export default class Releases extends React.Component {
         </div>
       ); 
     }
-
+    
     if (_.has(currentRelease, 'id') && currentRelease.id === release.id) {
       return (<div className={styles.inline}>
-          <Button
+        <Button
           className={styles.drawerButton}
           variant="raised"
           color="primary"
-          onClick={()=> this.redeployRelease(release, false)}>
+          onClick={()=> this.redeployRelease(release, false)}
+          disabled={!release.redeployable}>
           Redeploy
         </Button>
         <Button
           className={styles.drawerButton}
           variant="raised"
           color="secondary"
-          onClick={()=> this.redeployRelease(release, true)}>
+          onClick={()=> this.redeployRelease(release, true)}
+          disabled={!release.redeployable}>
           Rebuild & Redeploy
         </Button>        
         <Button
@@ -827,6 +833,24 @@ export default class Releases extends React.Component {
                 </CardContent>
               </Card>
             </Grid>
+            <Grid item xs={12}>
+              <Card square={true}>
+                <CardContent>
+                  <Typography variant="title">
+                    <b>Redeployable:</b> {release.redeployable.toString()}
+                  </Typography>
+                </CardContent>
+              </Card>
+              {!release.redeployable &&
+                <Card square={true}>
+                  <CardContent>
+                    <Typography>
+                      <b>Message:</b> {release.redeployableMessage}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              }
+            </Grid>
 						<Grid item xs={12}>
               <Grid container>
                 <Grid item xs={12} style={{ textAlign: "left", padding: "1em" }}>
@@ -897,7 +921,7 @@ export default class Releases extends React.Component {
     }
 
     let latestSuccessfulRelease = this.getLatestSuccessfulRelease()
-    
+
     return (
       <div>
         <Grid container spacing={16}>
